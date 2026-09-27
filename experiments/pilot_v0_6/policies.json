@@ -30,7 +30,7 @@
       "sha256": "8c79a9b226de4b3cacfd1f83d24f962d0773be79f1e7b75c6af4ded7e32ae1d6"
     }
   },
-  "decoding": "greedy; llama.cpp local OpenAI-compatible server; 256 token response cap; four rounds maximum; thinking disabled",
+  "decoding": "greedy; llama.cpp local OpenAI-compatible server (--temp 0 --n-predict 256 --reasoning off); four rounds maximum",
   "protocol": "Silo-Bench point-to-point message tool",
   "interaction_scaffold": "Coordination rules: agent IDs are zero-based. With two agents, if you are agent 0 send to agent 1; if you are agent 1 send to agent 0. Never target yourself. Send the private information needed for the task. When a received message makes the exact answer known, call submit_result with that answer immediately. The answer argument must be one bare integer value, not a quoted number, equation, units, or prose. Do not repeat messages or poll again after receiving the needed information. Every agent must submit the same final answer.",
   "conditions": {

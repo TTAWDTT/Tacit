@@ -13,7 +13,7 @@ Download the pinned Q4_K_M GGUF and Windows CUDA 12.4 llama.cpp b11202 release a
   --model .cache/models/Qwen3-4B-Q4_K_M.gguf `
   --alias Qwen3-4B-Q4_K_M `
   --host 127.0.0.1 --port 8000 --n-gpu-layers 99 --ctx-size 8192 `
-  --temp 0 --n-predict 256 --chat-template-kwargs '{"enable_thinking":false}'
+  --temp 0 --n-predict 256 --reasoning off
 ```
 
 Then run the frozen episodes:
@@ -25,6 +25,6 @@ python experiments/pilot_v0_6/run_duosum_heldout.py
 python experiments/pilot_v0_6/analyze_duosum_heldout.py
 ```
 
-The runner makes one warm-up call before the 56 episode-condition runs. All model requests target `127.0.0.1`. Greedy decoding and a 256-token completion cap are used to match v0.5 as closely as this backend allows. Disable thinking through the chat template. Report token counts as backend-reported values and avoid comparing them as though tokenizer/backend accounting were necessarily identical.
+The runner makes one warm-up call before the 56 episode-condition runs. All model requests target `127.0.0.1`. Greedy decoding, reasoning disabled, and a 256-token completion cap are used to match v0.5 as closely as this backend allows. Report token counts as backend-reported values and avoid comparing them as though tokenizer/backend accounting were necessarily identical.
 
 Eight paired episodes on one quantized model remain exploratory. Any differences are confounded by parameter count, quantization, runtime, and model-specific chat templating; they cannot establish a pure scaling effect or general protocol superiority.
