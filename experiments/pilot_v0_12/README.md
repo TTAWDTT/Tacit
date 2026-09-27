@@ -25,3 +25,5 @@ python experiments/pilot_v0_12/analyze_receiver_diagnostic.py --runs `
   .cache/pilot_v0_12/Qwen3-4B/receiver_diagnostic_runs_<run-id>.jsonl `
   .cache/pilot_v0_12/Qwen3-8B/receiver_diagnostic_runs_<run-id>.jsonl
 ```
+
+The generated report must keep injected transcript presence separate from actual simulator receipt. The intervention is not counted as successful model tool use.
