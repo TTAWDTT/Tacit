@@ -138,6 +138,24 @@ Introduces complementary private wall views for constructing a shared 3D object,
 
 Proposes quantized, compressed KV-cache transfer with a heterogeneous-model calibration step and reports 5–6× compression on three QA datasets. This is an important representation-transfer alternative to tokenized messages, but its transfer cost is not directly comparable to text-token count: report transmitted bytes, compatibility/calibration cost, receiver compute, task utility, and persistent model-specific state. Before treating it as a baseline, inspect the full method, implementation availability, and reproducibility; its abstract-level claims do not establish superiority on interactive hidden-information coordination.
 
+### Shi et al. (2026), *KVComm: Enabling Efficient LLM Communication through Selective KV Sharing*, ICLR 2026
+
+[OpenReview](https://openreview.net/forum?id=F7rUng23nw) · [paper](https://arxiv.org/abs/2510.03346) · [official code](https://github.com/Zephyroam/KVComm)
+
+Shares selected KV pairs across model calls using an attention-importance layer selector and reports performance near an input-merging upper bound while transmitting as few as 30% of KV layers. The Apache-2.0 implementation also includes activation injection, natural-language debate, and CIPHER modes, making it a useful comparative platform. Its receiver depends on compatible model internals, so evaluate it as a model-family/runtime-bound channel with serialized bytes and receiver compute accounted for. Keep it distinct from similarly named KVCOMM, which reuses overlapping-context caches to reduce prefill work rather than transmit task-relevant private content.
+
+### Cheng et al. (2026), *When Does Latent Communication Pay? A Causal Audit of Relayed KV Caches in Multi-Agent LLMs*
+
+[arXiv](https://arxiv.org/abs/2608.04893)
+
+Audits whether gains from KV relays depend on the correct example-specific cache by comparing true, mismatched, zeroed, and randomized payloads, and separates receiver-need from receiver-no-need regimes. The authors report strong task-relevant transfer in a calibrated private-information setting, but little or no pairing effect on several standard benchmarks, and recommend mismatched-cache controls before attributing gains to transmitted latent thoughts. This gives Tacit a concrete causal falsification design: equal-shaped, equal-budget relevant versus deranged messages, with single-agent/oracle controls and receiver need explicitly measured.
+
+### Wenzel (2026), *Latent Communication Between Language Model Agents: Channels, Alignment, and the Limits of Text*
+
+[arXiv](https://arxiv.org/abs/2607.14103)
+
+Reports that SAE-sparse latents preserve probe-readable features at much lower representational size than text, yet its task-level cross-lingual concept results do not beat text; the author concludes that much of the lost latent feature content may be surface-form information rather than task-relevant semantics. This is a direct negative result against equating probe recoverability or compression with useful communication. Our primary endpoint must remain held-out downstream task utility under receiver-need controls.
+
 ### Sevestre & Dupoux (2025), *Frequency & Compositionality in Emergent Communication*
 
 [ACL Anthology](https://aclanthology.org/2025.emnlp-main.1387/)
@@ -156,7 +174,7 @@ The appropriate abstraction is task-oriented rate-distortion / information bottl
 
 ## Search gaps / next reading pass
 
-- Read full papers and inspect code/data for the format-selection paper, ProtocolBench, LatentMAS, Interlat, CondenseFlow, CRAFT, and Q-KVComm.
+- Read full papers and inspect code/data for the format-selection paper, ProtocolBench, LatentMAS, Interlat, CondenseFlow, CRAFT, Q-KVComm, KVComm, and the causal KV-relay audit.
 - Review Lewis signaling games, referential games, iterated learning, and reproducibility critiques of emergent-language benchmarks.
 - Review rate-distortion, information bottleneck, communication complexity, interactive compression, and semantic/task-oriented communications.
 - Survey coding theory/error correction and protocol negotiation under noisy or adversarial channels.
