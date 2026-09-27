@@ -1,0 +1,59 @@
+{
+  "study": "CRAFT local 8B parser-adapter feasibility",
+  "version": "0.19",
+  "status": "frozen before scored inference",
+  "purpose": "Non-comparative feasibility study after a parser defect and a separate 14B runtime stall; no language superiority claim.",
+  "question": "Can a locally feasible Qwen3-8B team deliver one natural-language message from each distinct private-view Director to the CRAFT Builder and make measurable progress over two turns?",
+  "source": {
+    "repository": "https://github.com/csu-signal/CRAFT",
+    "commit": "f174fa5ae80c20ce5ccc7bb7cbf4aeab69efe430",
+    "adapter": [
+      "Seed and sample D1, D2, D3 without replacement, one call per role per turn.",
+      "Preserve non-instruction square-bracketed Director prose in the parser fallback.",
+      "Set PYTHONIOENCODING=utf-8 for child console output."
+    ],
+    "prompts_and_environment": "upstream unchanged"
+  },
+  "model": {
+    "all_roles": "Qwen3-8B-Q4_K_M",
+    "artifact_repository": "Qwen/Qwen3-8B-GGUF",
+    "artifact_revision": "7c41481f57cb95916b40956ab2f0b139b296d974",
+    "bytes": 5027783488,
+    "sha256": "d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785",
+    "runtime": "llama.cpp b11202 OpenAI-compatible server; 99 GPU layers, context 8192, reasoning disabled; Director temperature 0.7/max_tokens 500; Builder temperature 0.1/max_tokens 250"
+  },
+  "design": {
+    "structure_indices": [0],
+    "turn_limit": 2,
+    "run_seed": 319,
+    "python_hash_seed": 319,
+    "director_schedule": "seeded sample without replacement; the three Directors share the same pre-round conversation snapshot",
+    "builder_oracle": true,
+    "oracle_candidate_limit": 5,
+    "builder_tools": false,
+    "maximum_scored_completions": 8,
+    "communication_condition": "CRAFT's upstream natural-language prompts and messages, with parser preservation adapter"
+  },
+  "outcomes": {
+    "primary": [
+      "generated Director posts, successfully parsed messages, and Builder-delivered messages separately, per turn",
+      "upstream overall_progress after each turn and at the end"
+    ],
+    "secondary": [
+      "Builder selected move and environment execution result",
+      "backend/parser errors",
+      "wall-clock runtime and completed calls"
+    ],
+    "not_measured": [
+      "token/inference cost",
+      "communication frontier",
+      "generalization",
+      "language ranking"
+    ]
+  },
+  "predictions": [
+    "At least two of three generated messages will be parsed and delivered in each completed turn.",
+    "The task will have nonzero progress by the end of turn two."
+  ],
+  "analysis": "Publish all attempted turns, including failures. Do not infer protocol superiority. If messages are reliably delivered and progress is nonzero, preregister a broader multi-structure capability calibration before any format comparison."
+}
