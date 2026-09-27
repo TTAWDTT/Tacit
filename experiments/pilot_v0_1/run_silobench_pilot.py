@@ -81,15 +81,13 @@ def _summarize(case_dir: Path, condition: str, task_name: str, seconds: float) -
     metadata = read_json(case_dir / "metadata.json")
     results = read_json(case_dir / "results.json")
     message_contents: list[str] = []
-    message_record_bytes = 0
+    message_file_bytes = 0
     message_count = 0
     for message_path in (case_dir / "rounds").glob("round-*/env/messages/*.json"):
         record = read_json(message_path)
         message_count += 1
         message_contents.append(str(record.get("content", "")))
-        message_record_bytes += len(
-            json.dumps(record, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
-        )
+        message_file_bytes += message_path.stat().st_size
     return {
         "condition": condition,
         "task": task_name,
@@ -102,7 +100,7 @@ def _summarize(case_dir: Path, condition: str, task_name: str, seconds: float) -
         + metadata["execution"]["total_output_tokens"],
         "message_count": message_count,
         "message_payload_bytes": sum(len(item.encode("utf-8")) for item in message_contents),
-        "simulator_message_record_bytes": message_record_bytes,
+        "simulator_message_file_bytes": message_file_bytes,
         "elapsed_seconds": round(seconds, 3),
         "rounds": metadata["execution"]["current_round"],
         "task_suite_commit": POLICIES["task_suite_commit"],

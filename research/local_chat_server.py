@@ -7,7 +7,6 @@ request at a time and reports model-token usage measured by the loaded tokenizer
 from __future__ import annotations
 
 import os
-import time
 import uuid
 from typing import Any
 
@@ -66,7 +65,6 @@ async def chat_completions(request: Request) -> JSONResponse:
     if attention_mask is not None:
         attention_mask = attention_mask.to(model.device)
     max_new_tokens = max(1, min(int(body.get("max_tokens", 256)), 2048))
-    started = time.perf_counter()
     try:
         with torch.inference_mode():
             generated = model.generate(
@@ -80,8 +78,6 @@ async def chat_completions(request: Request) -> JSONResponse:
             )
     except Exception as exc:  # pragma: no cover - surfaced as API error for callers
         raise HTTPException(status_code=500, detail=f"generation failed: {exc}") from exc
-    elapsed = time.perf_counter() - started
-
     completion_ids = generated[0, input_ids.shape[1] :]
     content = tokenizer.decode(completion_ids, skip_special_tokens=True).strip()
     completion_tokens = int(completion_ids.numel())
@@ -104,6 +100,5 @@ async def chat_completions(request: Request) -> JSONResponse:
             "completion_tokens": completion_tokens,
             "total_tokens": int(input_ids.shape[1]) + completion_tokens,
         },
-        "x_local_generation_seconds": elapsed,
     }
     return JSONResponse(response)
