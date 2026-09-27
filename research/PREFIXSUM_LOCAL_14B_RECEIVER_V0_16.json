@@ -1,0 +1,223 @@
+{
+  "study": "prefixsum_local_14b_receiver_capability_v0_16",
+  "task_manifest_sha256": "c6302480780c7bea1c54ebc00436c06d57e092b285204139a20311685e3f7d33",
+  "model": "Qwen3-14B Q4_K_M GGUF",
+  "model_revision": "530227a7d994db8eca5ab5ced2fb692b614357fd",
+  "model_file_sha256": "500a8806e85ee9c83f3ae08420295592451379b4f8cf2d0f41c15dffeb6b81f0",
+  "runtime": "llama.cpp b11202, commit fcb3074f2, Windows x64 CUDA 12.4; RTX 4060 Laptop GPU 8 GB; 24 GPU layers requested with CPU offload; context 8192; temperature 0; 256-token server generation cap; API direct calls capped at 128 tokens",
+  "direct_summaries": [
+    {
+      "condition": "combined_receiver",
+      "segment_length": 2,
+      "episodes": 8,
+      "parse_success": 3,
+      "exact": 2,
+      "mean_input_tokens": 107.6,
+      "mean_output_tokens": 30.0,
+      "mean_wall_seconds": 3.75
+    },
+    {
+      "condition": "combined_receiver",
+      "segment_length": 3,
+      "episodes": 8,
+      "parse_success": 4,
+      "exact": 1,
+      "mean_input_tokens": 111.2,
+      "mean_output_tokens": 14.8,
+      "mean_wall_seconds": 2.08
+    },
+    {
+      "condition": "combined_receiver",
+      "segment_length": 4,
+      "episodes": 8,
+      "parse_success": 8,
+      "exact": 4,
+      "mean_input_tokens": 115.9,
+      "mean_output_tokens": 20.8,
+      "mean_wall_seconds": 2.71
+    },
+    {
+      "condition": "local_prefix",
+      "segment_length": 2,
+      "episodes": 8,
+      "parse_success": 8,
+      "exact": 8,
+      "mean_input_tokens": 86.6,
+      "mean_output_tokens": 8.8,
+      "mean_wall_seconds": 1.45
+    },
+    {
+      "condition": "local_prefix",
+      "segment_length": 3,
+      "episodes": 8,
+      "parse_success": 8,
+      "exact": 8,
+      "mean_input_tokens": 90.1,
+      "mean_output_tokens": 12.9,
+      "mean_wall_seconds": 1.87
+    },
+    {
+      "condition": "local_prefix",
+      "segment_length": 4,
+      "episodes": 8,
+      "parse_success": 8,
+      "exact": 8,
+      "mean_input_tokens": 94.5,
+      "mean_output_tokens": 17.9,
+      "mean_wall_seconds": 2.4
+    },
+    {
+      "condition": "offset_vector",
+      "segment_length": 2,
+      "episodes": 8,
+      "parse_success": 8,
+      "exact": 8,
+      "mean_input_tokens": 88.8,
+      "mean_output_tokens": 9.8,
+      "mean_wall_seconds": 1.54
+    },
+    {
+      "condition": "offset_vector",
+      "segment_length": 3,
+      "episodes": 8,
+      "parse_success": 8,
+      "exact": 8,
+      "mean_input_tokens": 93.0,
+      "mean_output_tokens": 15.2,
+      "mean_wall_seconds": 2.11
+    },
+    {
+      "condition": "offset_vector",
+      "segment_length": 4,
+      "episodes": 8,
+      "parse_success": 8,
+      "exact": 8,
+      "mean_input_tokens": 98.2,
+      "mean_output_tokens": 20.8,
+      "mean_wall_seconds": 2.71
+    }
+  ],
+  "simulator_receiver_summaries": [
+    {
+      "segment_length": 2,
+      "episodes": 8,
+      "received_before_submit": 8,
+      "receiver_exact_given_receive": 1,
+      "joint_exact": 1,
+      "message_syntax": 8,
+      "mean_backend_tokens": 4667.2,
+      "mean_wall_seconds": 13.84
+    },
+    {
+      "segment_length": 3,
+      "episodes": 8,
+      "received_before_submit": 8,
+      "receiver_exact_given_receive": 1,
+      "joint_exact": 1,
+      "message_syntax": 8,
+      "mean_backend_tokens": 4686.6,
+      "mean_wall_seconds": 14.3
+    },
+    {
+      "segment_length": 4,
+      "episodes": 8,
+      "received_before_submit": 8,
+      "receiver_exact_given_receive": 0,
+      "joint_exact": 0,
+      "message_syntax": 8,
+      "mean_backend_tokens": 4707.0,
+      "mean_wall_seconds": 14.51
+    }
+  ],
+  "qwen3_8b_v013_direct_baseline": [
+    {
+      "condition": "combined_receiver",
+      "segment_length": 2,
+      "exact": 4,
+      "episodes": 8
+    },
+    {
+      "condition": "combined_receiver",
+      "segment_length": 3,
+      "exact": 2,
+      "episodes": 8
+    },
+    {
+      "condition": "combined_receiver",
+      "segment_length": 4,
+      "exact": 1,
+      "episodes": 8
+    },
+    {
+      "condition": "local_prefix",
+      "segment_length": 2,
+      "exact": 7,
+      "episodes": 8
+    },
+    {
+      "condition": "local_prefix",
+      "segment_length": 3,
+      "exact": 8,
+      "episodes": 8
+    },
+    {
+      "condition": "local_prefix",
+      "segment_length": 4,
+      "exact": 8,
+      "episodes": 8
+    },
+    {
+      "condition": "offset_vector",
+      "segment_length": 2,
+      "exact": 5,
+      "episodes": 8
+    },
+    {
+      "condition": "offset_vector",
+      "segment_length": 3,
+      "exact": 6,
+      "episodes": 8
+    },
+    {
+      "condition": "offset_vector",
+      "segment_length": 4,
+      "exact": 8,
+      "episodes": 8
+    }
+  ],
+  "qwen3_8b_v011_simulator_baseline": [
+    {
+      "segment_length": 2,
+      "episodes": 8,
+      "received_before_submit": 8,
+      "receiver_exact_given_receive": 0,
+      "joint_exact": 0
+    },
+    {
+      "segment_length": 3,
+      "episodes": 8,
+      "received_before_submit": 6,
+      "receiver_exact_given_receive": 0,
+      "joint_exact": 0
+    },
+    {
+      "segment_length": 4,
+      "episodes": 8,
+      "received_before_submit": 1,
+      "receiver_exact_given_receive": 0,
+      "joint_exact": 0
+    }
+  ],
+  "raw_trace_files": [
+    ".cache/pilot_v0_16/direct/direct_runs_20260927T125312Z.jsonl",
+    ".cache/pilot_v0_16/hybrid/hybrid_runs_20260927T125312Z.jsonl"
+  ],
+  "public_run_rows": "research/data/PREFIXSUM_LOCAL_14B_RECEIVER_V0_16_RUNS.jsonl",
+  "limits": [
+    "one additional model checkpoint; family and training differ alongside size",
+    "task inputs are reused from v0.11-v0.15, so this is a capability follow-up rather than fresh task generalization evidence",
+    "short arithmetic task family only",
+    "one greedy sample per case/condition",
+    "CPU/GPU split may make latency unrepresentative of future optimized deployments"
+  ]
+}

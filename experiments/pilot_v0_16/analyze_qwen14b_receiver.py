@@ -97,6 +97,13 @@ def analyze(direct_path: Path, hybrid_path: Path) -> dict[str, Any]:
 
 
 def markdown(result: dict[str, Any]) -> str:
+    receiver_exact = sum(row["joint_exact"] for row in result["simulator_receiver_summaries"])
+    eligibility = (
+        f"The preregistered eligibility gate was not met: {receiver_exact}/24 exact simulator receiver outputs, below the 20/24 threshold. "
+        "Do not start the narrow message-format comparison under this task, receiver, runtime, and interface."
+        if receiver_exact < 20 else
+        f"The preregistered eligibility gate was met ({receiver_exact}/24 exact simulator receiver outputs). This only permits a separate, preregistered narrow message-format study; it is not evidence of protocol superiority."
+    )
     lines = [
         "# Qwen3-14B local receiver capability v0.16", "",
         "A larger local checkpoint was evaluated on direct arithmetic controls and a true oracle-sender/model-receiver episode. Direct calls and simulator outcomes are reported separately.", "",
@@ -125,7 +132,7 @@ def markdown(result: dict[str, Any]) -> str:
         lines.append(f"| {length} | {direct['exact']}/{direct['episodes']} | {simulator['received_before_submit']}/{simulator['episodes']} | {simulator['receiver_exact_given_receive']}/{simulator['received_before_submit']} |")
     lines.extend([
         "", "## Interpretation", "",
-        "Interpret only the direct operation ladder and real simulator receiver path separately. If exact receiver success reaches the preregistered 20/24 gate in the simulator, a narrow message-format study becomes eligible for a separate preregistration. Any model-to-model differences remain confounded by checkpoint, scale, quantization, and CPU/GPU offload.",
+        "Interpret only the direct operation ladder and real simulator receiver path separately. " + eligibility + " Any model-to-model differences remain confounded by checkpoint, scale, quantization, and CPU/GPU offload.",
         "",
         "This is one held-out case family reused from earlier pilots, one greedy sample per case, and a local mixed-offload runtime. No communication-efficiency or general-language claim follows.",
         "",
