@@ -1,0 +1,52 @@
+{
+  "study": "HiddenBench local capability calibration",
+  "version": "0.2",
+  "status": "frozen before v0.2 inference",
+  "amends": "experiments/hiddenbench_v0_1/preregistration.json",
+  "prior_deviation": "v0.1 full-profile evaluation reached the 4096-token context ceiling; the third task failed during final-vote JSON parsing and upstream CLI did not persist completed task records. The hidden profile did not start. See experiments/hiddenbench_v0_1/FAILURE_REPORT.md.",
+  "research_question": "Does local Qwen3-8B reach the individual-reasoning gate on official full-profile controls, and how much does its group accuracy change after official hidden-profile discussion on the three verification tasks?",
+  "sources": {
+    "paper": "https://arxiv.org/abs/2505.11556",
+    "code_repository": "https://github.com/Yassellee/HiddenBench_ICML",
+    "code_revision": "3be6ca16973e4fb751ffc0dfb7eb11f2d28335d1",
+    "license": "MIT",
+    "benchmark_file": "src/hiddenbench/data/benchmark_short.json",
+    "benchmark_sha256": "8684c1c8b02da49bb3a959c9ba352b3eb682c02653a3c508c47b8ed54f7a5df3"
+  },
+  "model": {
+    "name": "Qwen3-8B-Q4_K_M",
+    "artifact_revision": "7c41481f57cb95916b40956ab2f0b139b296d974",
+    "artifact_sha256": "d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785",
+    "runtime": "llama.cpp b11202; 99 GPU layers; one slot; context 8192; batch 1024; micro-batch 256; temperature 0.0; reasoning off",
+    "context_change_rationale": "v0.1 hit the 4096-token limit while forming final votes. Increasing context is required to preserve the official 15-round history without altering prompts or transcript scope."
+  },
+  "design": {
+    "tasks": ["evacuation_west_city", "evacuation_north_hill", "evacuation_east_town"],
+    "agents_per_task": 4,
+    "profiles": ["full", "hidden"],
+    "rounds": 15,
+    "duplications": 1,
+    "base_seed": 20260927,
+    "per_task_seed_rule": "base_seed + task_index * 10000, matching HiddenBench run_evaluation",
+    "max_workers": 1,
+    "extra_prompt": "",
+    "special_agent_ratio": 1.0,
+    "planned_successful_completions": 408,
+    "retry_policy": "Failed API requests may be retried up to three times; invalid vote responses can trigger up to three vote-level attempts, each invoking the client. Planned successful responses are not a hard request cap. Count actual requests/completions and report deviations.",
+    "persistence": "Run each official task in its own upstream CLI process with its matching per-task seed; persist each raw task result before proceeding. Merge only after all three task files exist."
+  },
+  "primary_outcomes": [
+    "Full Profile pre-discussion average and majority accuracy",
+    "Hidden Profile pre-discussion and post-discussion average and majority accuracy",
+    "per-task scores and completion counts",
+    "server request and completion counts, output tokens, prompt-evaluation tokens, truncations, service time, and discussion wire tokens"
+  ],
+  "capability_gate": "If mean Full Profile pre-discussion average accuracy is below 0.8, diagnose local individual reasoning before comparing communication protocols.",
+  "analysis": "Use official HiddenBench scoring. Report taskwise values and both aggregation rules. Three tasks, one seed schedule, one model, and one run per profile are calibration only. No protocol, generalization, scaling, frontier, or universal-necessity claim.",
+  "limits": [
+    "Three related verification tasks, one model, one run per profile.",
+    "No message encoding comparison or fixed communication budget.",
+    "Prompt-evaluation tokens reported by llama.cpp can reflect prefix-cache behavior and are not total client prompt tokens.",
+    "The client may retry. Preserve all per-task outputs and report malformed or truncated responses."
+  ]
+}
