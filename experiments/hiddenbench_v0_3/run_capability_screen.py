@@ -60,9 +60,8 @@ def main() -> None:
     from hiddenbench.prompts import load_prompts
     from hiddenbench.simulator import Profile, collect_initial_votes
 
-    env = os.environ.copy()
-    env["OPENAI_API_KEY"] = "local-experiment"
-    env["PYTHONIOENCODING"] = "utf-8"
+    os.environ["OPENAI_API_KEY"] = "local-experiment"
+    os.environ["PYTHONIOENCODING"] = "utf-8"
     tasks = load_benchmark(path=DATA)
     names = ["evacuation_west_city", "evacuation_north_hill", "evacuation_east_town"]
     tasks = [task for task in tasks if task.name in names]
