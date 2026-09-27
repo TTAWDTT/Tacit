@@ -1,8 +1,8 @@
 # DuoSum held-out calibration v0.4
 
-This version carries the interaction calibration to four held-out seeds, one at each input width. It fixes the v0.3 answer-type failure by adding a common, format-neutral contract that requires the `submit_result` answer to be a bare integer. The held-out cases, model, engine, prompt, and weight hashes are pinned in [`policies.json`](policies.json).
+This version carries the interaction calibration to four held-out episodes, one at each input width. It adds a common, format-neutral instruction requiring a bare integer in `submit_result`, but the held-out traces show that the instruction does not reliably control the answer form. The cases, model, engine, prompt, and weight hashes are pinned in [`policies.json`](policies.json).
 
-Conditions share the same interaction scaffold and final-answer contract: no message-format hint, concise NL, compact key-value, JSON, base-2 digits, and no communication. This is a small test of message representation effects while reducing known control-protocol errors. No claim of general superiority follows from four episodes.
+Conditions share the same interaction scaffold and integer-answer instruction: no message-format hint, concise NL, compact key-value, JSON, base-2 digits, and no communication. This is a small protocol diagnostic, not a clean estimate of representation effects: all arms achieved zero strict success, and the one-agent binary success does not support a comparative claim. No claim of general superiority follows from four episodes.
 
 ## Run locally
 
