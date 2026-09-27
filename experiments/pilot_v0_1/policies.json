@@ -12,6 +12,7 @@
   "protocol": "Silo-Bench P2P message tool; same engine and task files in all arms",
   "conditions": {
     "unconstrained": "No added message-format instruction; upstream system prompt only.",
+    "concise_nl": "When sending a message, use one short, direct plain-English sentence. Include only the exact task-relevant findings and values the recipient needs; omit greetings, repeated instructions, and explanations that do not change the answer.",
     "autoform_prompt": "When sending a message, communicate the task-relevant information as concisely as possible. Prefer a clear structured format (for example a short list, key-value fields, JSON, or mathematical notation) when it helps. Preserve exact values needed by the recipient.",
     "json_schema": "When sending a message, the content must be exactly one valid JSON object with keys task, data, and note. Put the smallest task-relevant exact values in data; use an empty note unless a clarification is essential. Do not put prose outside the object."
   },

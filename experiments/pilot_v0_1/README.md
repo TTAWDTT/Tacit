@@ -1,6 +1,6 @@
 # Exploratory local pilot v0.1
 
-This pilot compares message-format prompts while holding the Silo-Bench P2P environment, Qwen3-1.7B receiver, task files, and decoding policy fixed. It is deliberately only three two-agent Level-I tasks. It is a feasibility/error-analysis pilot, not a confirmatory study and cannot support superiority claims.
+This pilot compares an unconstrained control, a deliberately concise natural-language prompt, an AutoForm-style format-selection prompt, and a fixed JSON schema while holding the Silo-Bench P2P environment, Qwen3-1.7B receiver, task files, and decoding policy fixed. It is deliberately only three two-agent Level-I tasks, plus a no-communication control. It is a feasibility/error-analysis pilot, not a confirmatory study and cannot support superiority claims.
 
 ## Pinned inputs
 
