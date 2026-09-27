@@ -52,6 +52,12 @@ Its runner and report workflow are documented at [`experiments/pilot_v0_15/READM
 
 v0.15 found 12/24 exact answers with XML `submit_result` and 9/24 with direct JSON; XML-only wins were 6 tasks versus 3 JSON-only. The XML answers cost about 30.5 more output tokens and 12 more input tokens per episode. This small paired result reverses the expected direction and does not establish an output or communication format ranking. See the [report](research/PREFIXSUM_OUTPUT_CONTRACT_V0_15.md) and [raw calls](research/data/PREFIXSUM_OUTPUT_CONTRACT_V0_15_RUNS.jsonl).
 
+The next frozen study, [`experiments/pilot_v0_16/preregistration.json`](experiments/pilot_v0_16/preregistration.json), checks whether Qwen3-14B can solve the receiver arithmetic controls and the real tool-mediated receiver task on local CPU/GPU resources.
+
+The local download, checksum, mixed-offload settings, and run workflow are specified in [`experiments/pilot_v0_16/README.md`](experiments/pilot_v0_16/README.md).
+
+The next frozen study, [`experiments/pilot_v0_16/preregistration.json`](experiments/pilot_v0_16/preregistration.json), checks whether Qwen3-14B can solve the receiver arithmetic controls and the real tool-mediated receiver task on local CPU/GPU resources.
+
 ## Repository principles
 
 - Publish hypotheses, negative results, assumptions, and changes to the thesis.

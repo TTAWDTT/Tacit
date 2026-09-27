@@ -23,6 +23,7 @@
 - v0.15 completed 48 paired calls: JSON exact 9/24, XML exact 12/24; XML-only wins were 6, JSON-only 3, 6 both, 9 neither. XML used +12.0 input tokens and +30.5 output tokens on average. This reverses the preregistered prediction and shows no stable contract winner at n=24; the answer-serialization result is not an inter-agent message-format result.
 - Full report and raw calls: `research/PREFIXSUM_OUTPUT_CONTRACT_V0_15.md` and `research/data/PREFIXSUM_OUTPUT_CONTRACT_V0_15_RUNS.jsonl`. Next assess whether a larger fully local model fits available hardware, since the 8B receiver still has only partial direct-task success.
 - v0.15 preregisters that output-contract ablation on the same 24 direct receiver cases and Qwen3-8B: JSON array versus a single XML submit_result call, with identical system/task content and identical prefilled receipt history. No inter-agent representation is varied.
+- Official Qwen3-14B GGUF research: the Qwen repository documents Q4_K_M and llama.cpp use; the pinned file is 9,001,752,960 bytes with SHA-256 `500a8806e85ee9c83f3ae08420295592451379b4f8cf2d0f41c15dffeb6b81f0`. v0.16 preregisters a local CPU/GPU-offloaded receiver follow-up before inference; only a hardware feasibility check is underway.
 
 ## 2026-09-27 — Initial scoping and public thesis
 

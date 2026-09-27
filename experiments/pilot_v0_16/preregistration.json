@@ -1,0 +1,46 @@
+{
+  "study": "prefixsum_local_14b_receiver_capability_v0_16",
+  "status": "frozen_before_inference",
+  "question": "Does a locally runnable Qwen3-14B checkpoint reach receiver capability on the short PrefixSum task where Qwen3-4B/8B remained unreliable?",
+  "motivation": "v0.11-v0.15 show sender success and partial direct receiver success, but no reliable simulator receiver completion. Before deciding that this task family is unsuitable or moving to message-format comparisons, test one stronger local checkpoint under a frozen protocol and separate direct arithmetic from simulator interaction.",
+  "task_suite": "PrefixSum short-shard v0.3; paired reuse of the same 24 v0.11 cases",
+  "task_manifest_sha256": "c6302480780c7bea1c54ebc00436c06d57e092b285204139a20311685e3f7d33",
+  "model": "Qwen3-14B Q4_K_M GGUF",
+  "model_repository": "Qwen/Qwen3-14B-GGUF",
+  "model_repository_revision": "530227a7d994db8eca5ab5ced2fb692b614357fd",
+  "model_source_url": "https://huggingface.co/Qwen/Qwen3-14B-GGUF",
+  "model_file": "Qwen3-14B-Q4_K_M.gguf",
+  "model_file_size_bytes": 9001752960,
+  "model_file_sha256": "500a8806e85ee9c83f3ae08420295592451379b4f8cf2d0f41c15dffeb6b81f0",
+  "runtime": "llama.cpp b11202, commit fcb3074f2, Windows x64 CUDA 12.4; RTX 4060 Laptop GPU 8 GB; 24 GPU layers requested with CPU offload; context 8192; temperature 0; 256-token server generation cap; API direct calls capped at 128 tokens",
+  "design": "Two components with 96 scored episodes total. First, run the three v0.13 direct arithmetic-ladder conditions for all 24 cases (72 direct calls). Second, run an oracle-sender/model-receiver Silo-engine hybrid for all 24 cases (24 episodes) using the frozen compact-KV s=<subtotal> channel. One greedy run per task and condition. The 8B v0.11/v0.13 results are paired descriptive references, not a causal scale estimate.",
+  "direct_conditions": [
+    "local_prefix: given Agent 1 shard x, emit its local inclusive prefix as a strict JSON integer array",
+    "offset_vector: given the exact local-prefix vector p and correct offset s, emit p_i+s as a strict JSON integer array",
+    "combined_receiver: given x and correct s, compute and emit the global prefix segment as a strict JSON integer array"
+  ],
+  "simulator_condition": "Oracle Agent 0 sends the correct compact-KV subtotal through the pinned v0.8 Silo message engine. Qwen3-14B Agent 1 must call receive_messages and submit its exact global prefix segment. No injected receive transcript in this condition.",
+  "primary_outcomes": [
+    "direct strict exact integer-array accuracy by arithmetic condition and length",
+    "simulator Agent 1 exactness among episodes that received the correct oracle subtotal before submission",
+    "simulator receive action, payload receipt, and joint exact task success"
+  ],
+  "secondary_outcomes": [
+    "message receipt, sender syntax, local-prefix-only errors, and raw outputs",
+    "input/output tokens, wall time, rounds, model load settings, and peak observed VRAM/RAM if available"
+  ],
+  "frozen_predictions": [
+    "If direct offset_vector succeeds while combined_receiver and simulator receiver fail, the task requires more than arithmetic substeps and prompts a focused composition/context study.",
+    "If direct combined_receiver succeeds reliably but the simulator receiver does not, orchestration/tool context remains the dominant candidate bottleneck.",
+    "If the simulator receiver achieves at least 20/24 exact outputs with correct receipt and valid interaction, that is an eligibility signal for a separately preregistered message-format comparison on this narrow task, not evidence of protocol superiority.",
+    "If the model cannot load with the pinned 24-layer/8192-context settings, do not run scored inference; preregister an explicit hardware fallback and report the deviation first."
+  ],
+  "analysis": "Report exact counts and denominators per length/condition, no inferential significance claim. Keep direct calls separate from simulator episodes. Report the 8B reference outcomes with model/checkpoint caveats; do not attribute differences to parameter count alone. Do not interpret token differences across models as a format efficiency result.",
+  "limits": [
+    "one additional model checkpoint; family and training differ alongside size",
+    "task inputs are reused from v0.11-v0.15, so this is a capability follow-up rather than fresh task generalization evidence",
+    "short arithmetic task family only",
+    "one greedy sample per case/condition",
+    "CPU/GPU split may make latency unrepresentative of future optimized deployments"
+  ]
+}
