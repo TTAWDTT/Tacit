@@ -26,6 +26,8 @@ The initial thesis, working theory, literature map, and local communication-nece
 
 The first phase is a reproducible research platform and small local experiments. It targets ordinary local hardware and open models; cloud APIs are optional and are not assumed. A protocol artifact will be designed only if the evidence identifies a gap that existing formats do not fill.
 
+The v0.11 calibration freezes 24 fresh held-out tasks at segment lengths 2, 3, and 4 (8 seeds each) and four paired hybrid conditions spanning Qwen3-4B/8B sender and receiver roles. Its manifest, model checksums, predictions, metrics, and limits are pinned in [`experiments/pilot_v0_11/preregistration.json`](experiments/pilot_v0_11/preregistration.json) before inference. The experiment asks where the existing compact-KV task is executable; it does not compare protocols.
+
 ## Repository principles
 
 - Publish hypotheses, negative results, assumptions, and changes to the thesis.

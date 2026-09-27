@@ -1,0 +1,61 @@
+{
+  "case_id": "PSUM2-L04-S02",
+  "case_name": "Two-Agent Short-Shard Role-Explicit Prefix Sum",
+  "paradigm": "Silo-Bench II-11 Prefix Sum short-shard capability calibration v0.3",
+  "task_description": "Compute the global inclusive prefix sum of the two concatenated private segments. Agent 0's segment comes first, followed by Agent 1's segment. Each agent must submit only the prefix sums corresponding to its own segment, as a JSON list of integers. Agent 1 needs Agent 0's exact subtotal before it can compute its first output.",
+  "metadata": {
+    "num_agents": 2,
+    "task_family": "prefix_sum",
+    "task_version": "0.3-short-shards",
+    "segment_length": 4,
+    "value_range": [
+      1,
+      50
+    ],
+    "replicate": 2,
+    "seed": 2026110403,
+    "split": "heldout",
+    "communication_required_for_joint_success": true
+  },
+  "agent_configs": [
+    {
+      "agent_id": 0,
+      "input_shard": [
+        49,
+        5,
+        19,
+        5
+      ],
+      "user_prompt": "Task: Compute the global inclusive prefix sum of the two concatenated private segments. Agent 0's segment comes first, followed by Agent 1's segment. Each agent must submit only the prefix sums corresponding to its own segment, as a JSON list of integers. Agent 1 needs Agent 0's exact subtotal before it can compute its first output.\nYou are Agent 0 of 2.\nYour private segment (in global order) is: [49, 5, 19, 5]\nYour local segment length is 4.\nROLE: SENDER (Agent 0). Before submitting, compute the exact sum of your segment and send exactly one message to Agent 1 using the shared message representation condition. Then submit your own local inclusive prefix sums as a JSON list.\nReturn only the prefix sums for your own segment, in order, using submit_result with a JSON list of integers."
+    },
+    {
+      "agent_id": 1,
+      "input_shard": [
+        10,
+        24,
+        40,
+        22
+      ],
+      "user_prompt": "Task: Compute the global inclusive prefix sum of the two concatenated private segments. Agent 0's segment comes first, followed by Agent 1's segment. Each agent must submit only the prefix sums corresponding to its own segment, as a JSON list of integers. Agent 1 needs Agent 0's exact subtotal before it can compute its first output.\nYou are Agent 1 of 2.\nYour private segment (in global order) is: [10, 24, 40, 22]\nYour local segment length is 4.\nROLE: RECEIVER (Agent 1). Never send a message. Receive Agent 0's message before computing. Decode the shared message representation, add that offset to each local inclusive prefix sum, and submit the resulting global prefix segment as a JSON list.\nReturn only the prefix sums for your own segment, in order, using submit_result with a JSON list of integers."
+    }
+  ],
+  "expected_output": {
+    "type": "distributed",
+    "per_agent_values": [
+      [
+        49,
+        54,
+        73,
+        78
+      ],
+      [
+        88,
+        112,
+        152,
+        174
+      ]
+    ],
+    "is_segmented": true,
+    "verification_logic": "Each agent returns its exact global prefix-sum segment."
+  }
+}

@@ -1,5 +1,13 @@
 # Research log
 
+## 2026-09-27 — Short-shard role calibration v0.11 preregistered
+
+- v0.8–v0.10 found no joint successes on segment lengths 6/15/30, even with correct oracle messages; v0.10 gave no receiver improvement at Qwen3-8B and only a one-case sender change. Before comparing encodings, test whether either model role can execute this task at a shorter length.
+- Generated a new held-out suite of 24 cases, lengths 2/3/4 with eight deterministic seeds per length and values 1–50. The generator verifies exact expected prefixes and that Agent 1's output depends on Agent 0's private segment. Task-manifest SHA-256: `c6302480780c7bea1c54ebc00436c06d57e092b285204139a20311685e3f7d33`.
+- Froze four hybrid conditions (4B/8B × oracle-sender/model-receiver and model-sender/oracle-receiver), one greedy episode per task and condition (96 total), compact-KV wire representation, pinned revisions and GGUF hashes, runtime, metrics, predictions, and limits in `experiments/pilot_v0_11/preregistration.json` before model calls.
+- Candidate gate: only a length where both model roles are reliably exact can support a later preregistered protocol comparison. This calibration cannot establish protocol superiority, scaling laws, or broad task-family capability.
+- Next: implement checksum-enforcing runner and analysis; commit/push them before inference, then run the pinned local models and publish raw per-episode outputs plus error analysis.
+
 ## 2026-09-27 — Initial scoping and public thesis
 
 - Confirmed the project directory was not yet a Git repository and had no project files.

@@ -1,0 +1,62 @@
+{
+  "study": "prefixsum_short_shard_role_capability_v0_11",
+  "status": "frozen_before_inference",
+  "question": "At what short segment lengths can these local models independently execute the sender and receiver roles under the frozen compact-KV message protocol?",
+  "purpose": "Capability calibration only. This study does not rank message formats or claim protocol superiority. A later format comparison is eligible only if both model sender and model receiver controls reach exact success on the selected task region.",
+  "task_suite": "PrefixSum short-shard calibration v0.3",
+  "task_manifest_sha256": "c6302480780c7bea1c54ebc00436c06d57e092b285204139a20311685e3f7d33",
+  "task_count": 24,
+  "segment_lengths": [2, 3, 4],
+  "replicates_per_length": 8,
+  "split": "heldout, generated from fresh deterministic seeds after v0.10",
+  "message_condition": "compact_kv: sender sends only s=<exact subtotal>",
+  "engine": "Silo-Bench pinned upstream engine commit e74127782ed1c42fff474249961f022c063d76f2",
+  "runtime": "llama.cpp b11202, commit fcb3074f2, Windows x64 CUDA 12.4, server at 127.0.0.1:8000",
+  "decoding": "temperature 0, reasoning off, max 4 interaction rounds, context size 8192",
+  "warmup": "One unscored 'Reply with OK' backend request per model before scored episodes, matching the inherited v0.8 runner. Warmup is excluded from outcomes.",
+  "conditions": [
+    {
+      "model": "Qwen3-4B Q4_K_M GGUF",
+      "model_repository": "Qwen/Qwen3-4B-GGUF",
+      "model_repository_revision": "bc640142c66e1fdd12af0bd68f40445458f3869b",
+      "model_file": "Qwen3-4B-Q4_K_M.gguf",
+      "model_file_size_bytes": 2497280256,
+      "model_file_sha256": "7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5",
+      "roles": ["oracle_sender_qwen_receiver", "qwen_sender_oracle_receiver"]
+    },
+    {
+      "model": "Qwen3-8B Q4_K_M GGUF",
+      "model_repository": "Qwen/Qwen3-8B-GGUF",
+      "model_repository_revision": "7c41481f57cb95916b40956ab2f0b139b296d974",
+      "model_file": "Qwen3-8B-Q4_K_M.gguf",
+      "model_file_size_bytes": 5027783488,
+      "model_file_sha256": "d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785",
+      "roles": ["oracle_sender_qwen_receiver", "qwen_sender_oracle_receiver"]
+    }
+  ],
+  "design": "Four paired hybrid conditions, one greedy run for every task in every condition (96 episodes total). For each task and model, run both complementary oracle/model role assignments. Alternate role order by task index. Oracle agents are deterministic controls, not LLM outcomes.",
+  "primary_outcomes": [
+    "Agent 0 exact local prefix segment in model-sender episodes, by segment length",
+    "Agent 0 subtotal message value fidelity in model-sender episodes, by segment length",
+    "Agent 1 exact global prefix segment among model-receiver episodes where the correct oracle subtotal was received before submission, by segment length",
+    "joint exact episode success, by model, role condition, and segment length"
+  ],
+  "secondary_outcomes": [
+    "message syntax, sends, delivery, and receipt",
+    "model backend input/output tokens, wall time, and interaction rounds",
+    "qualitative error categories from exact submissions and messages"
+  ],
+  "frozen_predictions": [
+    "Shorter segment lengths may improve at least one model role relative to the prior L=6/15/30 failures; no minimum improvement is assumed.",
+    "If receiver exactness remains low with a correct oracle subtotal delivered, length reduction alone is insufficient; inspect instruction/tool interaction and arithmetic strategy before protocol comparisons.",
+    "If both roles achieve exact success consistently at any length, that length defines a candidate operating region for a separately preregistered protocol study, not evidence of language superiority."
+  ],
+  "analysis": "Report counts and denominators per length and role. Do not pool oracle performance into model accuracy. Do not interpret token or latency comparisons across these role variants as message-format efficiency. No inferential significance claim is planned for 8 cases per length.",
+  "limits": [
+    "one greedy inference per task and condition; no estimate of decoding variance",
+    "24 generated tasks from one arithmetic task family; narrow construct validity",
+    "the two model checkpoints differ in scale and training, so scale is not isolated",
+    "hybrid roles measure component capability, not end-to-end all-model communication",
+    "all experiments use the same local runner, simulator, transport, and scorer"
+  ]
+}

@@ -1,0 +1,161 @@
+{
+  "suite": "PrefixSum short-shard calibration v0.3",
+  "source_adaptation": "Silo-Bench II-11 Prefix Sum; Unlicense",
+  "seed_base": 2026110001,
+  "value_range": [
+    1,
+    50
+  ],
+  "segment_lengths": [
+    2,
+    3,
+    4
+  ],
+  "replicates_per_length": 8,
+  "files": [
+    {
+      "file": "PSUM2-L02-S00.json",
+      "sha256": "166057a0534706766e7c17dfbae87be4b04b1aab354e60ebe54ce91f89bde459",
+      "seed": 2026110201,
+      "segment_length": 2
+    },
+    {
+      "file": "PSUM2-L02-S01.json",
+      "sha256": "cc2a95668486857b5525c84ce0e8e254ff0259cdc800b5cd95bbd3a2cf0ea4d9",
+      "seed": 2026110202,
+      "segment_length": 2
+    },
+    {
+      "file": "PSUM2-L02-S02.json",
+      "sha256": "c92e3efc323f35bb36c24241b099994cf503a731e8032930c01bae6cb4653e41",
+      "seed": 2026110203,
+      "segment_length": 2
+    },
+    {
+      "file": "PSUM2-L02-S03.json",
+      "sha256": "9583546c23eb33316d1dbb9cc0e8f24d5fe9afdf0b5f230f330d0c13086c4432",
+      "seed": 2026110204,
+      "segment_length": 2
+    },
+    {
+      "file": "PSUM2-L02-S04.json",
+      "sha256": "dc46536a9b870898e3600663f1d555ba2ca0a2e28f492c54b920dd2822392756",
+      "seed": 2026110205,
+      "segment_length": 2
+    },
+    {
+      "file": "PSUM2-L02-S05.json",
+      "sha256": "13d175bec69523e9a92da4b427de0d64c353454a2fcc5db45d3b68fdbc881833",
+      "seed": 2026110206,
+      "segment_length": 2
+    },
+    {
+      "file": "PSUM2-L02-S06.json",
+      "sha256": "8aa897cc9a87a6669ee506c32058af6bab382c3cf570d1dd691523330e8de7a4",
+      "seed": 2026110207,
+      "segment_length": 2
+    },
+    {
+      "file": "PSUM2-L02-S07.json",
+      "sha256": "43442d5f1b0383f4dfd52af1fee76ba91d223af1ba6284870f3018d51f9cc86a",
+      "seed": 2026110208,
+      "segment_length": 2
+    },
+    {
+      "file": "PSUM2-L03-S00.json",
+      "sha256": "0641918283d4f910da9059dffe2d5fcdc992eeea3270218d4ff95066a5b36557",
+      "seed": 2026110301,
+      "segment_length": 3
+    },
+    {
+      "file": "PSUM2-L03-S01.json",
+      "sha256": "2ed573657bc1b88fff256dbc14eb7f0af991e7858675dde7d8486810f5d15171",
+      "seed": 2026110302,
+      "segment_length": 3
+    },
+    {
+      "file": "PSUM2-L03-S02.json",
+      "sha256": "3011acd703f0d9f381fa42a6456fee177f3c01c951fcbbbfd143b3cf32d1d160",
+      "seed": 2026110303,
+      "segment_length": 3
+    },
+    {
+      "file": "PSUM2-L03-S03.json",
+      "sha256": "8baf9c87504cda0fe9cf49f3581e7905926be26f85552487a5d88808cca581ab",
+      "seed": 2026110304,
+      "segment_length": 3
+    },
+    {
+      "file": "PSUM2-L03-S04.json",
+      "sha256": "20edb9227ab847ebcc29f104cb63611a7faf4809c76f396ac14c37b575b71c5b",
+      "seed": 2026110305,
+      "segment_length": 3
+    },
+    {
+      "file": "PSUM2-L03-S05.json",
+      "sha256": "fa11cb9f51670fcbffbbe454f4136e422998b1584fb97805fcb964d93f3aabb8",
+      "seed": 2026110306,
+      "segment_length": 3
+    },
+    {
+      "file": "PSUM2-L03-S06.json",
+      "sha256": "f465170d7fa5f5cf8d9d9a2a040d8c47a44776ef4283de5e5069c34112894018",
+      "seed": 2026110307,
+      "segment_length": 3
+    },
+    {
+      "file": "PSUM2-L03-S07.json",
+      "sha256": "ccc8368e03d1462442a8deb6c5441c2a93c01dd70dbdcd55159a8b2fb7fe5b2c",
+      "seed": 2026110308,
+      "segment_length": 3
+    },
+    {
+      "file": "PSUM2-L04-S00.json",
+      "sha256": "7c50d6fb38b546314f2de70a5f5716916dedba94deccae75f716a352558ad2e8",
+      "seed": 2026110401,
+      "segment_length": 4
+    },
+    {
+      "file": "PSUM2-L04-S01.json",
+      "sha256": "a6d6218f3e4b2fa06e766327a00eefcba2a027b03bd7175f286bf38537929582",
+      "seed": 2026110402,
+      "segment_length": 4
+    },
+    {
+      "file": "PSUM2-L04-S02.json",
+      "sha256": "99e7879fa165feba54cf7f9907f6c7fd7577d40925aa817ed3004f0170198994",
+      "seed": 2026110403,
+      "segment_length": 4
+    },
+    {
+      "file": "PSUM2-L04-S03.json",
+      "sha256": "49b30d5a77a3f44e7d2aa3533db0d8e085cfcc9658bf0b8a8863eec0643d88ef",
+      "seed": 2026110404,
+      "segment_length": 4
+    },
+    {
+      "file": "PSUM2-L04-S04.json",
+      "sha256": "1ec8e0032cecd7a76544fc88859c883fe0c2f3b0458ed9ffd4ebdb6488f853f1",
+      "seed": 2026110405,
+      "segment_length": 4
+    },
+    {
+      "file": "PSUM2-L04-S05.json",
+      "sha256": "99a11d74f494d61b367e2b23b36032d4c7439038880855893fe827d1c36aff92",
+      "seed": 2026110406,
+      "segment_length": 4
+    },
+    {
+      "file": "PSUM2-L04-S06.json",
+      "sha256": "1ae29f179e2f2e03bc0070c558b268ee63985d4416c8ca85141ce9612135cce4",
+      "seed": 2026110407,
+      "segment_length": 4
+    },
+    {
+      "file": "PSUM2-L04-S07.json",
+      "sha256": "fc622fbb7c4e46c3ddc3e0f99bb2d2cbb96b327ca8ac5597239414a456e5e4aa",
+      "seed": 2026110408,
+      "segment_length": 4
+    }
+  ]
+}
