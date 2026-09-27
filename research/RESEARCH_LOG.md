@@ -15,3 +15,12 @@
 - Created the first benchmark and baseline plan as hypotheses/design, not reported results.
 - Machine feasibility noted: RTX 4060 8 GiB VRAM, ~32 GiB RAM. Plan local experiments around small models and symbolic tasks.
 - Next: finish and hash-verify model download; pin task/model revisions and run an exploratory three-task format pilot; then revise protocol and theory from observed errors before any broader experiment.
+
+## 2026-09-27 — First local run and benchmark audit
+
+- Downloaded both Qwen3-1.7B model shards and verified their exact SHA-256 hashes against the pinned Hugging Face revision. A local OpenAI-compatible endpoint returned a successful generation with tokenizer-measured input/output usage; no cloud key or API was used.
+- Started the frozen format pilot, then stopped it when the relevance audit found that `I-03_n2` is exactly solvable from each local shard: the upstream generator forces every other vote to the same winner, leaving the winning candidate as each 25-vote shard's local plurality in this instance.
+- Audited all 60 fixed Paradigm-I instances at 2, 5, 10, 20, 50, and 100 agents. Eight instances make every agent's exact local answer equal the global answer (all six Distributed Vote cases and two Any Match cases). Added a reproducible audit script and detailed n=2 / compact all-size reports.
+- On `I-01_n2`, the no-communication control scored 0.5 because agent 0 already held the global maximum. With communication enabled, agent 0 sent its correct maximum to agent 1, which received it but repeatedly messaged itself rather than submitting. Thus this receiver/prompt/tool interaction is not yet calibrated enough to isolate representation effects. Early format rows are diagnostic only and are recorded in `research/SILOBENCH_PILOT_AUDIT.md`; no superiority result is claimed.
+- Research correction: a benchmark task name that implies distributed computation does not guarantee that a fixed instance needs communication. Require a local-information sufficiency check and an empirical no-communication control on every included instance before comparing protocols.
+- Next: repair the task selection with instance-level information-sufficiency criteria and calibrate multi-agent tool behavior before continuing the format/budget study. Broaden the audit beyond Paradigm I only after defining exact oracle operations for those task families.
