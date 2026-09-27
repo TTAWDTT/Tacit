@@ -20,7 +20,7 @@ This project does **not** assume a new language is better. A 2024 EMNLP study al
 
 ## Current status
 
-The initial thesis and literature map are public. No project-specific language syntax or superiority claim has been adopted. See [the thesis](docs/THESIS.md), [related work](research/RELATED_WORK.md), and [the initial experimental plan](docs/EXPERIMENT_PLAN.md).
+The initial thesis, working theory, literature map, and a small local pilot specification are public. No project-specific language syntax or superiority claim has been adopted. See [the thesis](docs/THESIS.md), [working theory](docs/THEORY.md), [related work](research/RELATED_WORK.md), and [experiment plan](docs/EXPERIMENT_PLAN.md).
 
 ## Scope
 
