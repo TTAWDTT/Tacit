@@ -36,6 +36,8 @@ python experiments/pilot_v0_1/run_silobench_pilot.py
 
 Raw logs and detailed case folders are written to the Git-ignored `.cache/pilot_v0_1/`. Only anonymized aggregate results and methodological changes should be copied into this directory for publication; never commit model weights, credentials, or third-party working checkouts.
 
+The runner makes one fixed, non-task warmup request before timing scenarios and rotates condition order across tasks to avoid always measuring one arm first. Decoding is greedy. These controls reduce simple order effects but do not make three tasks statistically representative.
+
 ## Reported measures
 
 The runner records Silo-Bench success and partial correctness; model-reported input and output token totals; UTF-8 bytes in message payloads; exact simulator message-file bytes; messages, rounds, and end-to-end wall time. Tokens include repeated input context and generation, while message bytes isolate the payload and simulator JSON file. They are different accounting boundaries and should stay separate.

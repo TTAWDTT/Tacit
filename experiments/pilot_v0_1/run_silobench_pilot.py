@@ -18,6 +18,8 @@ from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
 
+import httpx
+
 
 ROOT = Path(__file__).resolve().parents[2]
 UPSTREAM = ROOT / ".cache" / "upstream-silo-bench"
@@ -70,6 +72,19 @@ def _verify_model_shards() -> None:
             raise SystemExit(
                 f"Model shard checksum mismatch for {filename}: {actual_hash}"
             )
+
+
+def _warm_local_model() -> None:
+    response = httpx.post(
+        f"{API_BASE}/chat/completions",
+        json={
+            "model": MODEL_NAME,
+            "messages": [{"role": "user", "content": "Reply with OK."}],
+            "max_tokens": 4,
+        },
+        timeout=180.0,
+    )
+    response.raise_for_status()
 
 
 def _disable_communication() -> None:
@@ -186,13 +201,17 @@ def main() -> None:
             f"got {actual_upstream_commit}"
         )
     _verify_model_shards()
+    _warm_local_model()
 
     OUTPUT.mkdir(parents=True, exist_ok=True)
     rows: list[dict[str, Any]] = []
-    for task_name in args.tasks:
+    for task_index, task_name in enumerate(args.tasks):
         if not (TASKS / task_name).exists():
             raise SystemExit(f"Unknown upstream task file: {task_name}")
-        for condition in args.conditions:
+        # Rotate the deterministic order so each arm is not always measured first.
+        offset = task_index % len(args.conditions)
+        task_conditions = args.conditions[offset:] + args.conditions[:offset]
+        for condition in task_conditions:
             print(f"Running {task_name} / {condition}", flush=True)
             row = run_one(task_name, condition)
             rows.append(row)
