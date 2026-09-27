@@ -134,3 +134,5 @@ The runner verifies and loads the prompt source from the pinned local Silo check
 **Next control:** compare direct JSON-array answer output, as in v0.13, with the XML `submit_result` wrapper under otherwise matched concise receiver instructions and the same prefilled input. The aim is to determine whether the tool-output contract itself contributes to execution failures; it remains a task/runtime diagnostic, not an inter-agent language comparison.
 
 That output-contract diagnostic is preregistered in [`experiments/pilot_v0_15/preregistration.json`](../experiments/pilot_v0_15/preregistration.json). It changes only the final answer serialization in paired Qwen3-8B direct calls; the correct receipt transcript remains artificial and does not count as communication success.
+
+The v0.15 runner strictly validates the entire response under each contract. Usage is documented in [`experiments/pilot_v0_15/README.md`](../experiments/pilot_v0_15/README.md).

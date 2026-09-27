@@ -48,6 +48,8 @@ v0.14 returned 0/24 exact answers under either system prompt. The verbose Silo s
 
 The next registered control compares direct JSON-array submission with the XML `submit_result` wrapper under matched concise instructions: [`experiments/pilot_v0_15/preregistration.json`](experiments/pilot_v0_15/preregistration.json).
 
+Its runner and report workflow are documented at [`experiments/pilot_v0_15/README.md`](experiments/pilot_v0_15/README.md).
+
 ## Repository principles
 
 - Publish hypotheses, negative results, assumptions, and changes to the thesis.
