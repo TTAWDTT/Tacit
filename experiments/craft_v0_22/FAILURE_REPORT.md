@@ -1,0 +1,7 @@
+# v0.22 incomplete multi-structure baseline
+
+The frozen run completed the first (medium) structure for eight turns. It reached final progress 0.2696 and did not complete the target. Three Director requests in its eighth turn exceeded the 4,096-token context; CRAFT's exception handler converted each backend failure into the generic text “I need a moment to analyze the situation,” which was then treated as a delivered message. This is not successful model communication.
+
+The run began the second (simple) structure and completed six turns before a later context overflow stopped the process in turn seven. The pinned runner interpreted the substring `429` in an error saying `4296 tokens` as an HTTP 429 and called `sys.exit(1)`. It therefore never wrote a whole-game JSON result for the partial simple structure. The complex structure did not run. Across both games the server logged 50 completed model calls; additional over-context calls returned errors without generation. The preregistered 96-call ceiling was not reached.
+
+Only the first structure's completed game result is available as JSON. It is preserved locally under ignored `.cache/pilot_v0_22/`; the public report does not include private reasoning or full prompts. The multi-structure baseline is incomplete and must not be treated as a three-level reference. v0.23 preregisters a 16-line shared-history window, accurate exclusion of backend error fallbacks from the communication channel, and removal of the faulty `429` substring exit before rerunning all three structures.
