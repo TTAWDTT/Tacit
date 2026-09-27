@@ -44,6 +44,8 @@ The next preregistered diagnostic compares a concise receiver system prompt with
 
 The runner and report workflow are documented at [`experiments/pilot_v0_14/README.md`](experiments/pilot_v0_14/README.md).
 
+v0.14 returned 0/24 exact answers under either system prompt. The verbose Silo scaffold did improve valid XML `submit_result` calls (23/24 versus 4/24) at 4.3× the mean input tokens. This separates tool-call syntax compliance from task success and shows why protocol evaluation must score both. Read the [report](research/PREFIXSUM_SCAFFOLD_CONTEXT_V0_14.md) and [raw calls](research/data/PREFIXSUM_SCAFFOLD_CONTEXT_V0_14_RUNS.jsonl).
+
 ## Repository principles
 
 - Publish hypotheses, negative results, assumptions, and changes to the thesis.

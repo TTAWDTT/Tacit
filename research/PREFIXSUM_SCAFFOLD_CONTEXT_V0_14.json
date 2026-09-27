@@ -1,0 +1,90 @@
+{
+  "study": "prefixsum_agent_scaffold_context_diagnostic_v0_14",
+  "task_manifest_sha256": "c6302480780c7bea1c54ebc00436c06d57e092b285204139a20311685e3f7d33",
+  "model": "Qwen3-8B Q4_K_M GGUF",
+  "runtime": "llama.cpp b11202, commit fcb3074f2, Windows x64 CUDA 12.4; RTX 4060 8 GB; 99 GPU layers; context 8192; temperature 0; max 128 generated tokens",
+  "summaries_by_condition_length": [
+    {
+      "condition": "concise_receiver_system",
+      "segment_length": 2,
+      "episodes": 8,
+      "valid_submission": 3,
+      "exact": 0,
+      "extra_receive_calls": 0,
+      "mean_input_tokens": 235.6,
+      "mean_output_tokens": 32.2,
+      "mean_wall_seconds": 1.09
+    },
+    {
+      "condition": "concise_receiver_system",
+      "segment_length": 3,
+      "episodes": 8,
+      "valid_submission": 1,
+      "exact": 0,
+      "extra_receive_calls": 0,
+      "mean_input_tokens": 239.4,
+      "mean_output_tokens": 35.5,
+      "mean_wall_seconds": 1.17
+    },
+    {
+      "condition": "concise_receiver_system",
+      "segment_length": 4,
+      "episodes": 8,
+      "valid_submission": 0,
+      "exact": 0,
+      "extra_receive_calls": 0,
+      "mean_input_tokens": 244.2,
+      "mean_output_tokens": 39.5,
+      "mean_wall_seconds": 1.23
+    },
+    {
+      "condition": "verbose_silo_msg_system",
+      "segment_length": 2,
+      "episodes": 8,
+      "valid_submission": 7,
+      "exact": 0,
+      "extra_receive_calls": 0,
+      "mean_input_tokens": 1029.6,
+      "mean_output_tokens": 36.5,
+      "mean_wall_seconds": 1.22
+    },
+    {
+      "condition": "verbose_silo_msg_system",
+      "segment_length": 3,
+      "episodes": 8,
+      "valid_submission": 8,
+      "exact": 0,
+      "extra_receive_calls": 0,
+      "mean_input_tokens": 1033.4,
+      "mean_output_tokens": 38.5,
+      "mean_wall_seconds": 1.24
+    },
+    {
+      "condition": "verbose_silo_msg_system",
+      "segment_length": 4,
+      "episodes": 8,
+      "valid_submission": 8,
+      "exact": 0,
+      "extra_receive_calls": 0,
+      "mean_input_tokens": 1038.2,
+      "mean_output_tokens": 42.9,
+      "mean_wall_seconds": 1.33
+    }
+  ],
+  "paired_transitions": {
+    "both_exact": 0,
+    "concise_only": 0,
+    "verbose_only": 0,
+    "neither_exact": 24
+  },
+  "raw_trace_files": [
+    ".cache/pilot_v0_14/Qwen3-8B/scaffold_context_runs_20260927T113858Z.jsonl"
+  ],
+  "public_run_rows": "research/data/PREFIXSUM_SCAFFOLD_CONTEXT_V0_14_RUNS.jsonl",
+  "limits": [
+    "24 reused task instances from one task family",
+    "the verbose system condition contains tool-operation instructions absent from the concise condition; the intervention tests scaffold compatibility, not token length alone",
+    "direct inference with a prefilled tool transcript is not a deployed multi-agent episode",
+    "one greedy sample per condition/task and one model checkpoint"
+  ]
+}

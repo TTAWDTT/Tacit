@@ -70,7 +70,7 @@ def analyze(paths: list[Path]) -> dict[str, Any]:
 def markdown(result: dict[str, Any]) -> str:
     lines = [
         "# PrefixSum v0.14 agent-scaffold context diagnostic", "",
-        "Paired direct receiver calls with identical data, receive transcript, user task, model, backend, and XML answer contract. The system prompt changes from a concise receiver instruction to the pinned Silo multi-agent tool scaffold.", "",
+        "Paired direct receiver calls with identical data, receive transcript, user task, model, and backend. The system prompt changes from a concise receiver instruction to the pinned Silo multi-agent tool scaffold, which also supplies a full XML tool schema and example.", "",
         f"Task manifest SHA-256: `{result['task_manifest_sha256']}`. Model: {result['model']}. Runtime: {result['runtime']}.", "",
         "Each length-condition cell has 8 cases. Exactness requires one valid XML `submit_result` tool call containing a strict JSON integer array equal to the expected segment.", "",
         "| System condition | L | Valid submit | Exact | Extra receive call | Mean input tokens |",
@@ -79,6 +79,12 @@ def markdown(result: dict[str, Any]) -> str:
     for item in result["summaries_by_condition_length"]:
         lines.append(f"| {item['condition']} | {item['segment_length']} | {item['valid_submission']}/{item['episodes']} | {item['exact']}/{item['episodes']} | {item['extra_receive_calls']}/{item['episodes']} | {item['mean_input_tokens']} |")
     tr = result["paired_transitions"]
+    concise = [item for item in result["summaries_by_condition_length"] if item["condition"] == "concise_receiver_system"]
+    verbose = [item for item in result["summaries_by_condition_length"] if item["condition"] == "verbose_silo_msg_system"]
+    concise_valid = sum(item["valid_submission"] for item in concise)
+    verbose_valid = sum(item["valid_submission"] for item in verbose)
+    concise_tokens = sum(item["mean_input_tokens"] for item in concise) / len(concise)
+    verbose_tokens = sum(item["mean_input_tokens"] for item in verbose) / len(verbose)
     lines.extend([
         "", "Paired exact-output outcomes across all 24 tasks:", "",
         f"- Both exact: {tr['both_exact']}/24",
@@ -86,7 +92,11 @@ def markdown(result: dict[str, Any]) -> str:
         f"- Verbose only: {tr['verbose_only']}/24",
         f"- Neither exact: {tr['neither_exact']}/24",
         "", "## Interpretation", "",
-        "This comparison tests compatibility with the agent/tool scaffold, not token length alone. If the concise prompt outperforms, the verbose framework instructions may interfere with this receiver task; if the difference is small, system scaffolding alone is insufficient to explain the simulator/direct-call gap. With 24 reused tasks, treat paired counts descriptively.",
+        f"Exact receiver output remained 0/24 in both conditions. However, the verbose scaffold produced a syntactically valid `submit_result` call in {verbose_valid}/24 cases, versus {concise_valid}/24 with the concise system prompt. The verbose arm therefore improved tool-call form in this small run, while failing to improve semantic task success.",
+        "",
+        f"Mean input was {concise_tokens:.1f} tokens in the concise arm and {verbose_tokens:.1f} in the verbose arm ({verbose_tokens / concise_tokens:.1f}×). The difference includes tool-schema/example context as well as system length. This is a concrete syntax-versus-semantics and context-cost trade-off, not an efficiency-frontier result.",
+        "",
+        "With 24 reused tasks, treat paired counts descriptively. The study tests scaffold compatibility and tool-schema explicitness together; it does not isolate raw token length as the cause.",
         "",
         "The successful receive transcript is synthetic context and is not counted as model tool use or an actual simulator delivery. No communication format is compared.",
         "",
