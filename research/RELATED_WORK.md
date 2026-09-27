@@ -102,9 +102,17 @@ Representative framework where agents converse using flexible natural language a
 
 ### Zhang et al. (2026), *Silo-Bench: A Scalable Environment for Evaluating Distributed Coordination in Multi-Agent LLM Systems*
 
-[arXiv](https://arxiv.org/abs/2603.01045) · [paper code and benchmark](https://github.com/jwyjohn/acl26-silo-bench)
+[ACL 2026 paper](https://aclanthology.org/2026.acl-long.1354/) · [arXiv](https://arxiv.org/abs/2603.01045) · [paper code and benchmark](https://github.com/jwyjohn/acl26-silo-bench)
 
 30 generated algorithmic tasks divide private data into agent-local shards; the suite varies task communication complexity and agent count (2–100) and includes peer-to-peer, broadcast, and shared-file-system baselines. Its reported communication-reasoning gap localizes failures to integration of distributed state, not merely information exchange. The upstream II-11 Prefix Sum generator is Unlicense, and the local P2P runner works with an OpenAI-compatible local endpoint. Our DuoSum pilot deliberately left this task family's integration behavior untested. A first v0.7 adaptation exposed both role reversal and an upstream XML parser that mutates message contents; the corrected v0.8 replication holds the model/simulator fixed, preserves the wire string, and uses fresh tasks.
+
+The v0.8 and v0.9 controls reproduce this integration failure at small scale with Qwen3-4B: an oracle can solve the task through the same engine, but the model fails both sender-side subtotal formation and receiver-side use of a correct subtotal. This is consistent with Silo-Bench's diagnosis, but it is not an independent validation of the paper's scale claims or an estimate of model-family behavior.
+
+### Hasan & BusiReddyGari (2026), *DPBench: Large Language Models Struggle with Simultaneous Coordination*
+
+[arXiv](https://arxiv.org/abs/2602.13255) · [code and benchmark](https://github.com/najmulhasan-code/dpbench)
+
+Studies Dining-Philosophers resource contention under sequential and simultaneous decisions. The paper reports that simultaneous choices can deadlock even with communication, while pre-commitment / external coordination changes outcomes. This is not a message-compression comparison, but it reinforces a design distinction for this project: distinguish what the message says from when agents act, what they commit to, and what the runtime enforces. The current PrefixSum harness is sequential and role-explicit, so DPBench's concurrency results do not directly explain our current failures.
 
 ### Eisenstein et al. (2026), *MT-PingEval: Evaluating Multi-Turn Collaboration with Private Information Games*
 

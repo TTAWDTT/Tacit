@@ -1,0 +1,47 @@
+{
+  "study": "local_model_scale_hybrid_diagnostic_v0_10",
+  "status": "frozen_before_inference",
+  "question": "Does increasing the local model from Qwen3-4B to Qwen3-8B improve sender-side sufficient-statistic computation or receiver-side offset application on this communication-dependent task?",
+  "comparison_baseline": "The paired Qwen3-4B v0.9 hybrid diagnostic, using the same 12 cases, compact-KV policy, local transport/parser, and scorer.",
+  "task_manifest_sha256": "f6e22454ab1a56b9606f9d668ce74828e80588ca97b5fc9ec8c75ca54341bc79",
+  "model": "Qwen3-8B Q4_K_M GGUF",
+  "model_repository": "Qwen/Qwen3-8B-GGUF",
+  "model_repository_revision": "7c41481f57cb95916b40956ab2f0b139b296d974",
+  "model_file": "Qwen3-8B-Q4_K_M.gguf",
+  "model_file_size_bytes": 5027783488,
+  "model_file_sha256": "d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785",
+  "runtime": "llama.cpp b11202, commit fcb3074f2, Windows x64 CUDA 12.4",
+  "decoding": "temperature 0, reasoning off, max 4 interaction rounds, context size 8192",
+  "variants": [
+    {
+      "name": "oracle_sender_qwen_receiver",
+      "oracle_agent_id": 0,
+      "qwen_agent_id": 1,
+      "primary_outcome": "Qwen Agent 1 exact global prefix segment among episodes where it received the correct oracle subtotal before submission"
+    },
+    {
+      "name": "qwen_sender_oracle_receiver",
+      "oracle_agent_id": 1,
+      "qwen_agent_id": 0,
+      "primary_outcome": "Qwen Agent 0 exact local prefix segment and correct compact-KV subtotal fidelity"
+    }
+  ],
+  "frozen_predictions": [
+    "If model scale is a material cause of v0.9 failures, Qwen3-8B will improve exact receiver output under the oracle sender, sender subtotal fidelity, or both relative to the paired Qwen3-4B result.",
+    "If both role outcomes remain near v0.9 despite twice the parameter count, model scale alone is insufficient to explain the failure; inspect role prompts, arithmetic decomposition, and tool/task interaction before any language comparison.",
+    "No protocol superiority is predicted or tested."
+  ],
+  "metrics": [
+    "exact Agent 0 and Agent 1 outputs",
+    "fully correct episodes",
+    "message syntax, delivery, receipt, and subtotal value fidelity",
+    "backend tokens, wall time, and rounds"
+  ],
+  "limits": [
+    "same 12 task seeds as v0.8/v0.9; no new held-out evidence",
+    "one greedy inference per task and role variant",
+    "within-family scale comparison also changes weight revision; it is not a causal parameter-count intervention in isolation",
+    "oracle agents are deterministic controls, not model results",
+    "if full GPU offload does not fit, report and pin any offload fallback before inference"
+  ]
+}
