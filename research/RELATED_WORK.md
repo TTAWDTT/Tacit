@@ -144,6 +144,12 @@ Proposes quantized, compressed KV-cache transfer with a heterogeneous-model cali
 
 Shares selected KV pairs across model calls using an attention-importance layer selector and reports performance near an input-merging upper bound while transmitting as few as 30% of KV layers. The Apache-2.0 implementation also includes activation injection, natural-language debate, and CIPHER modes, making it a useful comparative platform. Its receiver depends on compatible model internals, so evaluate it as a model-family/runtime-bound channel with serialized bytes and receiver compute accounted for. Keep it distinct from similarly named KVCOMM, which reuses overlapping-context caches to reduce prefill work rather than transmit task-relevant private content.
 
+### Shi et al. (2025), *KVCOMM: Online Cross-context KV-cache Communication for Efficient LLM-based Multi-agent Systems*
+
+[arXiv](https://arxiv.org/abs/2510.12872) · [official code](https://github.com/FastMAS/KVCOMM)
+
+Reuses and aligns KV-cache segments for overlapping shared text across dependent agents, reporting reduced time-to-first-token on shared-prefix multi-agent workloads. This is a serving/prefill optimization baseline: it can reduce the compute cost of rereading common context but does not itself encode or carry the sender's private task-relevant contribution. Include it in end-to-end cost accounting where shared context is large, while keeping it separate from semantic message-channel comparisons.
+
 ### Cheng et al. (2026), *When Does Latent Communication Pay? A Causal Audit of Relayed KV Caches in Multi-Agent LLMs*
 
 [arXiv](https://arxiv.org/abs/2608.04893)
