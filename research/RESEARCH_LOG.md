@@ -43,3 +43,10 @@
 - The gap is primarily at the terminal interface: for 8-, 12-, and 16-bit inputs, agents often communicated the correct values and computed the correct sum but submitted strings like `723 + 2547 = 3270`, while Silo requires an integer. Do not silently normalize this in the evaluator; track strict tool success and semantic answer correctness as separate outcomes.
 - JSON averaged 20.25 UTF-8 payload bytes and 6,187 total model tokens; compact key-value averaged 12.5 bytes but 6,707 tokens. Compact payload length did not imply lower end-to-end token cost. These are four single-seed calibration episodes, not a superiority or scaling result.
 - Added `experiments/pilot_v0_3/analyze_duosum_pilot.py` and the public summary `research/DUOSUM_PILOT_V0_3.md`. Next revision: put a bare-integer answer contract in the shared scaffold, reserve held-out seeds for evaluation, and include a binary-string baseline before measuring budget curves.
+
+## 2026-09-27 — Held-out protocol v0.4 frozen
+
+- Prepared a four-episode held-out run using replicate 1 at each DuoSum input width. The common interaction scaffold now requires a bare integer in the terminal tool answer, addressing the output-type failure without changing the evaluator.
+- Added a base-2 message condition alongside default/scaffold, concise NL, compact key-value, JSON, and no-communication arms. Message-format arms share the same interaction and answer contract; repeated prompt tokens remain counted.
+- Pinned the held-out task IDs, suite manifest hash, simulator revision, model revision and shard checksums in `experiments/pilot_v0_4/policies.json`. The frozen protocol has been committed before any held-out model call.
+- Next: run the four held-out episodes, inspect exact message and submit traces, and determine whether to expand seeds or revise the output contract before starting any budget sweep.
