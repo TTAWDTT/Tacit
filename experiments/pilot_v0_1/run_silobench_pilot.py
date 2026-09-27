@@ -8,7 +8,9 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
+import os
 import sys
 import time
 import subprocess
@@ -51,6 +53,23 @@ def _add_policy_to_initial_context(case_dir: Path, policy: str) -> None:
             "\n\n## Message representation condition\n" + instruction
         )
         write_json(context_path, context)
+
+
+def _verify_model_shards() -> None:
+    model_path = Path(os.environ.get("TLU_MODEL_PATH", ".cache/models/Qwen3-1.7B"))
+    for filename, expected_hash in POLICIES["model_shards_sha256"].items():
+        path = model_path / filename
+        if not path.exists():
+            raise SystemExit(f"Missing pinned model shard: {path}")
+        digest = hashlib.sha256()
+        with path.open("rb") as stream:
+            for chunk in iter(lambda: stream.read(8 * 1024 * 1024), b""):
+                digest.update(chunk)
+        actual_hash = digest.hexdigest()
+        if actual_hash != expected_hash:
+            raise SystemExit(
+                f"Model shard checksum mismatch for {filename}: {actual_hash}"
+            )
 
 
 def _disable_communication() -> None:
@@ -160,6 +179,7 @@ def main() -> None:
             f"Silo-Bench revision mismatch: expected {POLICIES['task_suite_commit']}, "
             f"got {actual_upstream_commit}"
         )
+    _verify_model_shards()
 
     OUTPUT.mkdir(parents=True, exist_ok=True)
     rows: list[dict[str, Any]] = []
