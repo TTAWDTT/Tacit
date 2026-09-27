@@ -1,0 +1,57 @@
+{
+  "study": "CRAFT local communication feasibility",
+  "version": "0.17",
+  "status": "frozen before scored inference",
+  "purpose": "Non-comparative capability and runner-feasibility calibration on a hidden-information collaboration task; no language superiority test.",
+  "research_question": "Can a locally feasible Qwen3-14B CRAFT team make measurable construction progress when each of the three distinct private-view Directors contributes one message per turn and the Builder receives all three?",
+  "source": {
+    "repository": "https://github.com/csu-signal/CRAFT",
+    "commit": "f174fa5ae80c20ce5ccc7bb7cbf4aeab69efe430",
+    "dataset": "data/structures_dataset_20.json",
+    "adapter_change": "Replace three with-replacement Director calls with a seeded sample of D1, D2, D3 without replacement. Preserve simultaneous round semantics: every Director reads the same pre-round conversation snapshot; Builder receives the one response stored for each role.",
+    "upstream_prompts_and_scorer": "unchanged"
+  },
+  "model": {
+    "directors_and_builder": "Qwen3-14B-Q4_K_M",
+    "artifact": "Qwen/Qwen3-14B-GGUF",
+    "artifact_revision": "530227a7d994db8eca5ab5ced2fb692b614357fd",
+    "bytes": 9001752960,
+    "sha256": "500a8806e85ee9c83f3ae08420295592451379b4f8cf2d0f41c15dffeb6b81f0",
+    "runtime": "llama.cpp b11202 OpenAI-compatible server, 24 GPU layers, context 8192, reasoning disabled, temp 0 server default; upstream Director temp 0.7/max_tokens 500, Builder temp 0.1/max_tokens 250"
+  },
+  "design": {
+    "structure_indices": [0, 10, 19],
+    "structure_selection": "fixed spread across the 20-structure evaluation set; report actual ids and complexity from the source data",
+    "run_seed": 317,
+    "python_hash_seed": 317,
+    "turn_limit_per_structure": 5,
+    "director_calls_per_turn": 3,
+    "builder_calls_per_turn": 1,
+    "oracle": true,
+    "oracle_candidates": 5,
+    "builder_tools": false,
+    "communication_condition": "upstream CRAFT natural-language prompts and messages; corrected one-message-per-distinct-role delivery adapter",
+    "inference_budget": "At most 60 scored completions: 3 structures × 5 turns × (3 Director + 1 Builder). Stop a game if the upstream runner stops it earlier. No retry after a model call; preserve any partial trace."
+  },
+  "outcomes": {
+    "primary": "upstream final_progress and completed fields, reported per structure and as an unweighted mean across the three structures",
+    "secondary": [
+      "turns taken and stopping reason",
+      "per-turn progress trajectory",
+      "count of generated Director messages and Builder-delivered messages (must match at three per completed turn)",
+      "failed/invalid Builder moves and parse or backend errors",
+      "wall-clock runtime and calls completed"
+    ],
+    "not_measured": [
+      "exact model token usage or total inference FLOPs",
+      "communication efficiency frontier",
+      "generalization beyond the three selected structures",
+      "language superiority or statistical significance"
+    ]
+  },
+  "predictions": [
+    "The no-replacement adapter will produce three distinct Director roles and three corresponding Builder-visible messages on every completed turn.",
+    "At least one of the three structures will show nonzero progress by turn five; if none do, do not proceed to a message-format comparison on this model/task configuration without revisiting task or model capability."
+  ],
+  "analysis_plan": "Publish all three structure outcomes, including zeros and errors. Verify transcript message counts mechanically. Do not exclude failed calls or turns from task-success denominators. This is a feasibility gate, not a ranking."
+}
