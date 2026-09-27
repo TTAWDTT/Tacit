@@ -1,0 +1,58 @@
+{
+  "study": "HiddenBench Qwen3-14B natural-discussion baseline",
+  "version": "0.5",
+  "status": "frozen before inference",
+  "motivation": "Qwen3-14B passed the full-profile capability gate at 12/12 under the documented Qwen3 reasoning/sampling configuration in v0.4. Run the official full multi-agent task to establish a local natural-discussion reference before testing structured protocols.",
+  "sources": {
+    "benchmark_paper": "https://arxiv.org/abs/2505.11556",
+    "benchmark_repository": "https://github.com/Yassellee/HiddenBench_ICML",
+    "benchmark_revision": "3be6ca16973e4fb751ffc0dfb7eb11f2d28335d1",
+    "benchmark_file": "src/hiddenbench/data/benchmark_short.json",
+    "benchmark_sha256": "8684c1c8b02da49bb3a959c9ba352b3eb682c02653a3c508c47b8ed54f7a5df3",
+    "model_card": "https://huggingface.co/Qwen/Qwen3-14B-GGUF",
+    "model_revision": "530227a7d994db8eca5ab5ced2fb692b614357fd"
+  },
+  "model": {
+    "name": "Qwen3-14B-Q4_K_M",
+    "sha256": "500a8806e85ee9c83f3ae08420295592451379b4f8cf2d0f41c15dffeb6b81f0",
+    "runtime": "llama.cpp b11202; RTX 4060 Laptop GPU 8 GB; 24 GPU layers with CPU offload; one slot; context 8192",
+    "reasoning": "on",
+    "reasoning_budget_tokens": 1024,
+    "temperature": 0.6,
+    "top_k": 20,
+    "top_p": 0.95,
+    "min_p": 0.0,
+    "presence_penalty": 1.5,
+    "fixed_server_seed": 20260928,
+    "max_generated_tokens": 1536
+  },
+  "design": {
+    "tasks": ["evacuation_west_city", "evacuation_north_hill", "evacuation_east_town"],
+    "profiles": ["full", "hidden"],
+    "agents_per_task": 4,
+    "rounds": 15,
+    "duplications": 1,
+    "base_seed": 20260927,
+    "task_seed_rule": "base_seed + task_index * 10000",
+    "max_workers": 1,
+    "extra_prompt": "",
+    "special_agent_ratio": 1.0,
+    "planned_successful_completions": 408,
+    "retry_policy": "The upstream client retries failed API requests up to three times; invalid vote responses can trigger up to three vote-level attempts, each with client retries. 408 is the planned number of successful responses, not a hard cap. Count actual requests, completions, and retries from the server logs.",
+    "persistence": "Run one task per upstream CLI process with its official per-task seed; persist every task output before starting the next; merge only when all task outputs for a profile exist."
+  },
+  "primary_outcomes": [
+    "Full and hidden profile initial average and majority accuracy",
+    "Full and hidden profile final average and majority accuracy",
+    "per-task accuracy and completion status",
+    "discussion wire tokens and UTF-8 bytes",
+    "server prompt-evaluation tokens, generated tokens, requests, summed service latency, max context seen, and truncation count"
+  ],
+  "analysis": "Use the official HiddenBench scorer. Report per-task and both average/majority rules. Full vs hidden is a task/profile diagnostic. This three-task, one-model, one-seed study is not sufficient evidence for a general protocol claim or scaling law. This release compares no message formats.",
+  "limits": [
+    "Only three related verification tasks and one run per profile.",
+    "Local Q4 model with partial CPU offload; latency is hardware-specific.",
+    "Prompt-evaluation token counts reflect llama.cpp cache-aware work and may undercount full client prompt tokens.",
+    "The full study is expensive; actual inference cost will be reported rather than inferred from the wire-token count."
+  ]
+}
