@@ -2,7 +2,7 @@
 
 This is a paired replication of the frozen v0.5 held-out comparison on the same eight DuoSum episodes and the same seven communication conditions. Its purpose is to test whether v0.5's format-adherence and task-success observations persist with a larger local model. It does not isolate model scale: v0.5 used Qwen3-1.7B with Transformers, while this run uses Qwen3-4B Q4_K_M with llama.cpp.
 
-The conditions, task files, message instructions, evaluator, and deterministic semantic diagnostic are unchanged from v0.5. The v0.6 inference environment is pinned in [`policies.json`](policies.json). The protocol was frozen before any v0.6 model calls. The server and runner use localhost only; raw traces remain under ignored `.cache/pilot_v0_6/`.
+The conditions, task files, message instructions, evaluator, and deterministic semantic diagnostic are unchanged from v0.5. The v0.6 inference environment is pinned in [`policies.json`](policies.json), including llama.cpp build `11202` (`fcb3074f2`). The protocol was frozen before any v0.6 model calls. The server and runner use localhost only; raw traces remain under ignored `.cache/pilot_v0_6/`.
 
 ## Runtime
 
