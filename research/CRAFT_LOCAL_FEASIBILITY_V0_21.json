@@ -1,0 +1,219 @@
+{
+  "study": "CRAFT single-slot local inference feasibility v0.21",
+  "source_revision": "f174fa5ae80c20ce5ccc7bb7cbf4aeab69efe430",
+  "model": "Qwen3-8B-Q4_K_M",
+  "model_sha256": "d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785",
+  "server": {
+    "context": 4096,
+    "parallel_slots": 1,
+    "batch_size": 1024,
+    "ubatch_size": 256
+  },
+  "structure": {
+    "id": "structure_001",
+    "complexity": "medium",
+    "completed": false,
+    "turns_taken": 2,
+    "final_progress": 0.13051529790660224,
+    "stopping_reason": "max_turns_reached"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "generated_posts": 3,
+      "parsed_messages": 3,
+      "builder_delivered_messages": 3,
+      "builder_transcript_token_count": 94,
+      "progress": 0.06819645732689211,
+      "builder_followed_oracle": true,
+      "selected_move": {
+        "action": "place",
+        "block": "ys",
+        "position": "(0,0)",
+        "layer": 0,
+        "span_to": null
+      },
+      "messages": [
+        {
+          "role": "D1",
+          "parsed": true,
+          "delivered": true,
+          "message": "[My bottom left has a yellow block, but the middle and right need two large blue ones. Place those large blue blocks across the middle and right of my bottom layer.]",
+          "message_token_count_with_role_label": 38,
+          "has_square_bracket_wrapper": true,
+          "leftover_format_tags": 0
+        },
+        {
+          "role": "D2",
+          "parsed": true,
+          "delivered": true,
+          "message": "[So the bottom layer near me needs a yellow block, then a green one, and then an orange one. Put a yellow small block in my bottom left corner.]\n</message>",
+          "message_token_count_with_role_label": 41,
+          "has_square_bracket_wrapper": true,
+          "leftover_format_tags": 1
+        },
+        {
+          "role": "D3",
+          "parsed": true,
+          "delivered": true,
+          "message": "[Put an orange small block in my bottom left.]",
+          "message_token_count_with_role_label": 14,
+          "has_square_bracket_wrapper": true,
+          "leftover_format_tags": 0
+        }
+      ]
+    },
+    {
+      "turn": 2,
+      "generated_posts": 3,
+      "parsed_messages": 3,
+      "builder_delivered_messages": 3,
+      "builder_transcript_token_count": 92,
+      "progress": 0.13051529790660224,
+      "builder_followed_oracle": true,
+      "selected_move": {
+        "action": "place",
+        "block": "bl",
+        "position": "(1,0)",
+        "layer": 0,
+        "span_to": "(2,0)"
+      },
+      "messages": [
+        {
+          "role": "D1",
+          "parsed": true,
+          "delivered": true,
+          "message": "[My bottom middle and right need two large blue blocks. Place those there now.]",
+          "message_token_count_with_role_label": 20,
+          "has_square_bracket_wrapper": true,
+          "leftover_format_tags": 0
+        },
+        {
+          "role": "D2",
+          "parsed": true,
+          "delivered": true,
+          "message": "[So the bottom layer near me needs a yellow block, then a green one, and then an orange one. Put a green small block next to the yellow in my bottom middle.]\n</message>",
+          "message_token_count_with_role_label": 44,
+          "has_square_bracket_wrapper": true,
+          "leftover_format_tags": 1
+        },
+        {
+          "role": "D3",
+          "parsed": true,
+          "delivered": true,
+          "message": "[The middle and right of my bottom layer are missing green blocks. Add two large green ones there.]\n</message>",
+          "message_token_count_with_role_label": 28,
+          "has_square_bracket_wrapper": true,
+          "leftover_format_tags": 1
+        }
+      ]
+    }
+  ],
+  "message_format_summary": {
+    "messages_with_square_bracket_wrappers": 6,
+    "messages_with_leftover_think_or_message_tags": 3
+  },
+  "inference_calls": [
+    {
+      "task_id": 2,
+      "prompt_ms": 2014.56,
+      "prompt_tokens": 2780,
+      "prompt_tokens_per_second": 1379.96,
+      "generation_ms": 1681.03,
+      "generated_tokens": 41,
+      "generation_tokens_per_second": 23.79,
+      "total_ms": 3695.58,
+      "context_tokens": 2821
+    },
+    {
+      "task_id": 46,
+      "prompt_ms": 2073.82,
+      "prompt_tokens": 2771,
+      "prompt_tokens_per_second": 1336.18,
+      "generation_ms": 8166.93,
+      "generated_tokens": 211,
+      "generation_tokens_per_second": 25.71,
+      "total_ms": 10240.75,
+      "context_tokens": 2982
+    },
+    {
+      "task_id": 260,
+      "prompt_ms": 1943.59,
+      "prompt_tokens": 2770,
+      "prompt_tokens_per_second": 1425.2,
+      "generation_ms": 4400.81,
+      "generated_tokens": 116,
+      "generation_tokens_per_second": 26.13,
+      "total_ms": 6344.4,
+      "context_tokens": 2886
+    },
+    {
+      "task_id": 379,
+      "prompt_ms": 2019.47,
+      "prompt_tokens": 2833,
+      "prompt_tokens_per_second": 1402.84,
+      "generation_ms": 1131.15,
+      "generated_tokens": 29,
+      "generation_tokens_per_second": 24.75,
+      "total_ms": 3150.62,
+      "context_tokens": 2862
+    },
+    {
+      "task_id": 411,
+      "prompt_ms": 600.77,
+      "prompt_tokens": 723,
+      "prompt_tokens_per_second": 1203.45,
+      "generation_ms": 1779.36,
+      "generated_tokens": 44,
+      "generation_tokens_per_second": 24.17,
+      "total_ms": 2380.14,
+      "context_tokens": 767
+    },
+    {
+      "task_id": 456,
+      "prompt_ms": 512.53,
+      "prompt_tokens": 723,
+      "prompt_tokens_per_second": 1410.66,
+      "generation_ms": 996.96,
+      "generated_tokens": 28,
+      "generation_tokens_per_second": 27.08,
+      "total_ms": 1509.48,
+      "context_tokens": 751
+    },
+    {
+      "task_id": 485,
+      "prompt_ms": 544.2,
+      "prompt_tokens": 723,
+      "prompt_tokens_per_second": 1328.56,
+      "generation_ms": 7891.96,
+      "generated_tokens": 226,
+      "generation_tokens_per_second": 28.51,
+      "total_ms": 8436.16,
+      "context_tokens": 949
+    },
+    {
+      "task_id": 712,
+      "prompt_ms": 1291.77,
+      "prompt_tokens": 1895,
+      "prompt_tokens_per_second": 1466.98,
+      "generation_ms": 1522.41,
+      "generated_tokens": 44,
+      "generation_tokens_per_second": 28.24,
+      "total_ms": 2814.17,
+      "context_tokens": 1939
+    }
+  ],
+  "inference_summary": {
+    "completed_calls_in_server_log": 8,
+    "prompt_tokens_total": 15218,
+    "generated_tokens_total": 739,
+    "service_time_seconds_total": 38.571,
+    "mean_prompt_tokens_per_second": 1369.23,
+    "mean_generation_tokens_per_second": 26.05
+  },
+  "limits": [
+    "One medium structure and two turns; this is a feasibility calibration, not a comparison.",
+    "Wire-message token counts are parsed public transcript tokens with role labels; repeated history in model prompts is counted separately as inference input tokens.",
+    "No task completion, generalization, or superiority inference is supported."
+  ]
+}
