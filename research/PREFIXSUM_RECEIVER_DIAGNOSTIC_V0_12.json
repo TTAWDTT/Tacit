@@ -1,0 +1,559 @@
+{
+  "study": "prefixsum_receiver_acquisition_vs_application_v0_12",
+  "task_manifest_sha256": "c6302480780c7bea1c54ebc00436c06d57e092b285204139a20311685e3f7d33",
+  "models": [
+    {
+      "model": "Qwen3-4B Q4_K_M GGUF",
+      "model_repository_revision": "bc640142c66e1fdd12af0bd68f40445458f3869b",
+      "model_file": "Qwen3-4B-Q4_K_M.gguf",
+      "model_file_size_bytes": 2497280256,
+      "model_file_sha256": "7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5"
+    },
+    {
+      "model": "Qwen3-8B Q4_K_M GGUF",
+      "model_repository_revision": "7c41481f57cb95916b40956ab2f0b139b296d974",
+      "model_file": "Qwen3-8B-Q4_K_M.gguf",
+      "model_file_size_bytes": 5027783488,
+      "model_file_sha256": "d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785"
+    }
+  ],
+  "runtime": "llama.cpp b11202, commit fcb3074f2, Windows x64 CUDA 12.4; RTX 4060 8 GB; 99 GPU layers requested; context 8192; temperature 0; 256-token generation cap",
+  "summaries_by_model_condition_length": [
+    {
+      "model": "Qwen3-4B Q4_K_M GGUF",
+      "condition": "injected_successful_receive_transcript",
+      "segment_length": 2,
+      "episodes": 8,
+      "receiver_exact": 0,
+      "joint_exact": 0,
+      "received_before_submit": 0,
+      "injected_transcripts": 8,
+      "local_prefix_only": 0,
+      "receive_actions": 0,
+      "mean_backend_tokens": 1159.1,
+      "mean_wall_seconds": 0.81
+    },
+    {
+      "model": "Qwen3-4B Q4_K_M GGUF",
+      "condition": "injected_successful_receive_transcript",
+      "segment_length": 3,
+      "episodes": 8,
+      "receiver_exact": 0,
+      "joint_exact": 0,
+      "received_before_submit": 0,
+      "injected_transcripts": 8,
+      "local_prefix_only": 0,
+      "receive_actions": 0,
+      "mean_backend_tokens": 1169.1,
+      "mean_wall_seconds": 0.92
+    },
+    {
+      "model": "Qwen3-4B Q4_K_M GGUF",
+      "condition": "injected_successful_receive_transcript",
+      "segment_length": 4,
+      "episodes": 8,
+      "receiver_exact": 0,
+      "joint_exact": 0,
+      "received_before_submit": 0,
+      "injected_transcripts": 8,
+      "local_prefix_only": 0,
+      "receive_actions": 0,
+      "mean_backend_tokens": 1178.2,
+      "mean_wall_seconds": 0.97
+    },
+    {
+      "model": "Qwen3-4B Q4_K_M GGUF",
+      "condition": "ordinary_receive_tool",
+      "segment_length": 2,
+      "episodes": 8,
+      "receiver_exact": 0,
+      "joint_exact": 0,
+      "received_before_submit": 0,
+      "injected_transcripts": 0,
+      "local_prefix_only": 1,
+      "receive_actions": 14,
+      "mean_backend_tokens": 4370.8,
+      "mean_wall_seconds": 2.61
+    },
+    {
+      "model": "Qwen3-4B Q4_K_M GGUF",
+      "condition": "ordinary_receive_tool",
+      "segment_length": 3,
+      "episodes": 8,
+      "receiver_exact": 0,
+      "joint_exact": 0,
+      "received_before_submit": 0,
+      "injected_transcripts": 0,
+      "local_prefix_only": 0,
+      "receive_actions": 16,
+      "mean_backend_tokens": 4705.0,
+      "mean_wall_seconds": 2.72
+    },
+    {
+      "model": "Qwen3-4B Q4_K_M GGUF",
+      "condition": "ordinary_receive_tool",
+      "segment_length": 4,
+      "episodes": 8,
+      "receiver_exact": 0,
+      "joint_exact": 0,
+      "received_before_submit": 0,
+      "injected_transcripts": 0,
+      "local_prefix_only": 0,
+      "receive_actions": 15,
+      "mean_backend_tokens": 4564.0,
+      "mean_wall_seconds": 2.67
+    },
+    {
+      "model": "Qwen3-8B Q4_K_M GGUF",
+      "condition": "injected_successful_receive_transcript",
+      "segment_length": 2,
+      "episodes": 8,
+      "receiver_exact": 0,
+      "joint_exact": 0,
+      "received_before_submit": 0,
+      "injected_transcripts": 8,
+      "local_prefix_only": 1,
+      "receive_actions": 0,
+      "mean_backend_tokens": 1159.9,
+      "mean_wall_seconds": 1.16
+    },
+    {
+      "model": "Qwen3-8B Q4_K_M GGUF",
+      "condition": "injected_successful_receive_transcript",
+      "segment_length": 3,
+      "episodes": 8,
+      "receiver_exact": 0,
+      "joint_exact": 0,
+      "received_before_submit": 0,
+      "injected_transcripts": 8,
+      "local_prefix_only": 4,
+      "receive_actions": 0,
+      "mean_backend_tokens": 1168.5,
+      "mean_wall_seconds": 1.3
+    },
+    {
+      "model": "Qwen3-8B Q4_K_M GGUF",
+      "condition": "injected_successful_receive_transcript",
+      "segment_length": 4,
+      "episodes": 8,
+      "receiver_exact": 0,
+      "joint_exact": 0,
+      "received_before_submit": 0,
+      "injected_transcripts": 8,
+      "local_prefix_only": 5,
+      "receive_actions": 0,
+      "mean_backend_tokens": 1179.5,
+      "mean_wall_seconds": 1.44
+    },
+    {
+      "model": "Qwen3-8B Q4_K_M GGUF",
+      "condition": "ordinary_receive_tool",
+      "segment_length": 2,
+      "episodes": 8,
+      "receiver_exact": 0,
+      "joint_exact": 0,
+      "received_before_submit": 8,
+      "injected_transcripts": 0,
+      "local_prefix_only": 1,
+      "receive_actions": 16,
+      "mean_backend_tokens": 4669.1,
+      "mean_wall_seconds": 3.7
+    },
+    {
+      "model": "Qwen3-8B Q4_K_M GGUF",
+      "condition": "ordinary_receive_tool",
+      "segment_length": 3,
+      "episodes": 8,
+      "receiver_exact": 0,
+      "joint_exact": 0,
+      "received_before_submit": 7,
+      "injected_transcripts": 0,
+      "local_prefix_only": 2,
+      "receive_actions": 16,
+      "mean_backend_tokens": 4682.5,
+      "mean_wall_seconds": 3.59
+    },
+    {
+      "model": "Qwen3-8B Q4_K_M GGUF",
+      "condition": "ordinary_receive_tool",
+      "segment_length": 4,
+      "episodes": 8,
+      "receiver_exact": 0,
+      "joint_exact": 0,
+      "received_before_submit": 2,
+      "injected_transcripts": 0,
+      "local_prefix_only": 1,
+      "receive_actions": 16,
+      "mean_backend_tokens": 4688.2,
+      "mean_wall_seconds": 3.35
+    }
+  ],
+  "paired_transition_summary": [
+    {
+      "model": "Qwen3-4B Q4_K_M GGUF",
+      "paired_tasks": 24,
+      "both_exact": 0,
+      "injected_only_exact": 0,
+      "ordinary_only_exact": 0,
+      "neither_exact": 24
+    },
+    {
+      "model": "Qwen3-8B Q4_K_M GGUF",
+      "paired_tasks": 24,
+      "both_exact": 0,
+      "injected_only_exact": 0,
+      "ordinary_only_exact": 0,
+      "neither_exact": 24
+    }
+  ],
+  "paired_task_outcomes": [
+    {
+      "model": "Qwen3-4B Q4_K_M GGUF",
+      "task": "PSUM2-L02-S00.json",
+      "segment_length": 2,
+      "ordinary_exact": false,
+      "injected_exact": false
+    },
+    {
+      "model": "Qwen3-4B Q4_K_M GGUF",
+      "task": "PSUM2-L02-S01.json",
+      "segment_length": 2,
+      "ordinary_exact": false,
+      "injected_exact": false
+    },
+    {
+      "model": "Qwen3-4B Q4_K_M GGUF",
+      "task": "PSUM2-L02-S02.json",
+      "segment_length": 2,
+      "ordinary_exact": false,
+      "injected_exact": false
+    },
+    {
+      "model": "Qwen3-4B Q4_K_M GGUF",
+      "task": "PSUM2-L02-S03.json",
+      "segment_length": 2,
+      "ordinary_exact": false,
+      "injected_exact": false
+    },
+    {
+      "model": "Qwen3-4B Q4_K_M GGUF",
+      "task": "PSUM2-L02-S04.json",
+      "segment_length": 2,
+      "ordinary_exact": false,
+      "injected_exact": false
+    },
+    {
+      "model": "Qwen3-4B Q4_K_M GGUF",
+      "task": "PSUM2-L02-S05.json",
+      "segment_length": 2,
+      "ordinary_exact": false,
+      "injected_exact": false
+    },
+    {
+      "model": "Qwen3-4B Q4_K_M GGUF",
+      "task": "PSUM2-L02-S06.json",
+      "segment_length": 2,
+      "ordinary_exact": false,
+      "injected_exact": false
+    },
+    {
+      "model": "Qwen3-4B Q4_K_M GGUF",
+      "task": "PSUM2-L02-S07.json",
+      "segment_length": 2,
+      "ordinary_exact": false,
+      "injected_exact": false
+    },
+    {
+      "model": "Qwen3-4B Q4_K_M GGUF",
+      "task": "PSUM2-L03-S00.json",
+      "segment_length": 3,
+      "ordinary_exact": false,
+      "injected_exact": false
+    },
+    {
+      "model": "Qwen3-4B Q4_K_M GGUF",
+      "task": "PSUM2-L03-S01.json",
+      "segment_length": 3,
+      "ordinary_exact": false,
+      "injected_exact": false
+    },
+    {
+      "model": "Qwen3-4B Q4_K_M GGUF",
+      "task": "PSUM2-L03-S02.json",
+      "segment_length": 3,
+      "ordinary_exact": false,
+      "injected_exact": false
+    },
+    {
+      "model": "Qwen3-4B Q4_K_M GGUF",
+      "task": "PSUM2-L03-S03.json",
+      "segment_length": 3,
+      "ordinary_exact": false,
+      "injected_exact": false
+    },
+    {
+      "model": "Qwen3-4B Q4_K_M GGUF",
+      "task": "PSUM2-L03-S04.json",
+      "segment_length": 3,
+      "ordinary_exact": false,
+      "injected_exact": false
+    },
+    {
+      "model": "Qwen3-4B Q4_K_M GGUF",
+      "task": "PSUM2-L03-S05.json",
+      "segment_length": 3,
+      "ordinary_exact": false,
+      "injected_exact": false
+    },
+    {
+      "model": "Qwen3-4B Q4_K_M GGUF",
+      "task": "PSUM2-L03-S06.json",
+      "segment_length": 3,
+      "ordinary_exact": false,
+      "injected_exact": false
+    },
+    {
+      "model": "Qwen3-4B Q4_K_M GGUF",
+      "task": "PSUM2-L03-S07.json",
+      "segment_length": 3,
+      "ordinary_exact": false,
+      "injected_exact": false
+    },
+    {
+      "model": "Qwen3-4B Q4_K_M GGUF",
+      "task": "PSUM2-L04-S00.json",
+      "segment_length": 4,
+      "ordinary_exact": false,
+      "injected_exact": false
+    },
+    {
+      "model": "Qwen3-4B Q4_K_M GGUF",
+      "task": "PSUM2-L04-S01.json",
+      "segment_length": 4,
+      "ordinary_exact": false,
+      "injected_exact": false
+    },
+    {
+      "model": "Qwen3-4B Q4_K_M GGUF",
+      "task": "PSUM2-L04-S02.json",
+      "segment_length": 4,
+      "ordinary_exact": false,
+      "injected_exact": false
+    },
+    {
+      "model": "Qwen3-4B Q4_K_M GGUF",
+      "task": "PSUM2-L04-S03.json",
+      "segment_length": 4,
+      "ordinary_exact": false,
+      "injected_exact": false
+    },
+    {
+      "model": "Qwen3-4B Q4_K_M GGUF",
+      "task": "PSUM2-L04-S04.json",
+      "segment_length": 4,
+      "ordinary_exact": false,
+      "injected_exact": false
+    },
+    {
+      "model": "Qwen3-4B Q4_K_M GGUF",
+      "task": "PSUM2-L04-S05.json",
+      "segment_length": 4,
+      "ordinary_exact": false,
+      "injected_exact": false
+    },
+    {
+      "model": "Qwen3-4B Q4_K_M GGUF",
+      "task": "PSUM2-L04-S06.json",
+      "segment_length": 4,
+      "ordinary_exact": false,
+      "injected_exact": false
+    },
+    {
+      "model": "Qwen3-4B Q4_K_M GGUF",
+      "task": "PSUM2-L04-S07.json",
+      "segment_length": 4,
+      "ordinary_exact": false,
+      "injected_exact": false
+    },
+    {
+      "model": "Qwen3-8B Q4_K_M GGUF",
+      "task": "PSUM2-L02-S00.json",
+      "segment_length": 2,
+      "ordinary_exact": false,
+      "injected_exact": false
+    },
+    {
+      "model": "Qwen3-8B Q4_K_M GGUF",
+      "task": "PSUM2-L02-S01.json",
+      "segment_length": 2,
+      "ordinary_exact": false,
+      "injected_exact": false
+    },
+    {
+      "model": "Qwen3-8B Q4_K_M GGUF",
+      "task": "PSUM2-L02-S02.json",
+      "segment_length": 2,
+      "ordinary_exact": false,
+      "injected_exact": false
+    },
+    {
+      "model": "Qwen3-8B Q4_K_M GGUF",
+      "task": "PSUM2-L02-S03.json",
+      "segment_length": 2,
+      "ordinary_exact": false,
+      "injected_exact": false
+    },
+    {
+      "model": "Qwen3-8B Q4_K_M GGUF",
+      "task": "PSUM2-L02-S04.json",
+      "segment_length": 2,
+      "ordinary_exact": false,
+      "injected_exact": false
+    },
+    {
+      "model": "Qwen3-8B Q4_K_M GGUF",
+      "task": "PSUM2-L02-S05.json",
+      "segment_length": 2,
+      "ordinary_exact": false,
+      "injected_exact": false
+    },
+    {
+      "model": "Qwen3-8B Q4_K_M GGUF",
+      "task": "PSUM2-L02-S06.json",
+      "segment_length": 2,
+      "ordinary_exact": false,
+      "injected_exact": false
+    },
+    {
+      "model": "Qwen3-8B Q4_K_M GGUF",
+      "task": "PSUM2-L02-S07.json",
+      "segment_length": 2,
+      "ordinary_exact": false,
+      "injected_exact": false
+    },
+    {
+      "model": "Qwen3-8B Q4_K_M GGUF",
+      "task": "PSUM2-L03-S00.json",
+      "segment_length": 3,
+      "ordinary_exact": false,
+      "injected_exact": false
+    },
+    {
+      "model": "Qwen3-8B Q4_K_M GGUF",
+      "task": "PSUM2-L03-S01.json",
+      "segment_length": 3,
+      "ordinary_exact": false,
+      "injected_exact": false
+    },
+    {
+      "model": "Qwen3-8B Q4_K_M GGUF",
+      "task": "PSUM2-L03-S02.json",
+      "segment_length": 3,
+      "ordinary_exact": false,
+      "injected_exact": false
+    },
+    {
+      "model": "Qwen3-8B Q4_K_M GGUF",
+      "task": "PSUM2-L03-S03.json",
+      "segment_length": 3,
+      "ordinary_exact": false,
+      "injected_exact": false
+    },
+    {
+      "model": "Qwen3-8B Q4_K_M GGUF",
+      "task": "PSUM2-L03-S04.json",
+      "segment_length": 3,
+      "ordinary_exact": false,
+      "injected_exact": false
+    },
+    {
+      "model": "Qwen3-8B Q4_K_M GGUF",
+      "task": "PSUM2-L03-S05.json",
+      "segment_length": 3,
+      "ordinary_exact": false,
+      "injected_exact": false
+    },
+    {
+      "model": "Qwen3-8B Q4_K_M GGUF",
+      "task": "PSUM2-L03-S06.json",
+      "segment_length": 3,
+      "ordinary_exact": false,
+      "injected_exact": false
+    },
+    {
+      "model": "Qwen3-8B Q4_K_M GGUF",
+      "task": "PSUM2-L03-S07.json",
+      "segment_length": 3,
+      "ordinary_exact": false,
+      "injected_exact": false
+    },
+    {
+      "model": "Qwen3-8B Q4_K_M GGUF",
+      "task": "PSUM2-L04-S00.json",
+      "segment_length": 4,
+      "ordinary_exact": false,
+      "injected_exact": false
+    },
+    {
+      "model": "Qwen3-8B Q4_K_M GGUF",
+      "task": "PSUM2-L04-S01.json",
+      "segment_length": 4,
+      "ordinary_exact": false,
+      "injected_exact": false
+    },
+    {
+      "model": "Qwen3-8B Q4_K_M GGUF",
+      "task": "PSUM2-L04-S02.json",
+      "segment_length": 4,
+      "ordinary_exact": false,
+      "injected_exact": false
+    },
+    {
+      "model": "Qwen3-8B Q4_K_M GGUF",
+      "task": "PSUM2-L04-S03.json",
+      "segment_length": 4,
+      "ordinary_exact": false,
+      "injected_exact": false
+    },
+    {
+      "model": "Qwen3-8B Q4_K_M GGUF",
+      "task": "PSUM2-L04-S04.json",
+      "segment_length": 4,
+      "ordinary_exact": false,
+      "injected_exact": false
+    },
+    {
+      "model": "Qwen3-8B Q4_K_M GGUF",
+      "task": "PSUM2-L04-S05.json",
+      "segment_length": 4,
+      "ordinary_exact": false,
+      "injected_exact": false
+    },
+    {
+      "model": "Qwen3-8B Q4_K_M GGUF",
+      "task": "PSUM2-L04-S06.json",
+      "segment_length": 4,
+      "ordinary_exact": false,
+      "injected_exact": false
+    },
+    {
+      "model": "Qwen3-8B Q4_K_M GGUF",
+      "task": "PSUM2-L04-S07.json",
+      "segment_length": 4,
+      "ordinary_exact": false,
+      "injected_exact": false
+    }
+  ],
+  "raw_trace_files": [
+    ".cache/pilot_v0_12/Qwen3-4B/receiver_diagnostic_runs_20260927T111712Z.jsonl",
+    ".cache/pilot_v0_12/Qwen3-8B/receiver_diagnostic_runs_20260927T111906Z.jsonl"
+  ],
+  "public_run_rows": "research/data/PREFIXSUM_RECEIVER_DIAGNOSTIC_V0_12_RUNS.jsonl",
+  "limits": [
+    "reuses the same 24 v0.11 tasks; paired intervention evidence, not new task generalization",
+    "one greedy run per cell; decoding variance is unestimated",
+    "the injected context is an artificial diagnostic and includes a prior assistant tool call the model did not itself produce",
+    "only one PrefixSum task family and one local simulator/runtime",
+    "model checkpoint, scale, training, quantization, and tokenizer are not isolated"
+  ]
+}

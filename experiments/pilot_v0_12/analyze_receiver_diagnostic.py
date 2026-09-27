@@ -82,6 +82,17 @@ def analyze(paths: list[Path]) -> dict[str, Any]:
             "ordinary_exact": conditions["ordinary_receive_tool"]["agent1_exact"],
             "injected_exact": conditions["injected_successful_receive_transcript"]["agent1_exact"],
         })
+    transition_summaries = []
+    for model in sorted({row["model"] for row in paired}):
+        group = [row for row in paired if row["model"] == model]
+        transition_summaries.append({
+            "model": model,
+            "paired_tasks": len(group),
+            "both_exact": sum(row["ordinary_exact"] and row["injected_exact"] for row in group),
+            "injected_only_exact": sum(not row["ordinary_exact"] and row["injected_exact"] for row in group),
+            "ordinary_only_exact": sum(row["ordinary_exact"] and not row["injected_exact"] for row in group),
+            "neither_exact": sum(not row["ordinary_exact"] and not row["injected_exact"] for row in group),
+        })
     public_rows = []
     for row in rows:
         record = extract(row)
@@ -104,6 +115,7 @@ def analyze(paths: list[Path]) -> dict[str, Any]:
         "study": study.PREREG["study"], "task_manifest_sha256": study.PREREG["task_manifest_sha256"],
         "models": study.PREREG["models"], "runtime": study.PREREG["runtime"],
         "summaries_by_model_condition_length": summaries,
+        "paired_transition_summary": transition_summaries,
         "paired_task_outcomes": paired,
         "raw_trace_files": [str(path.resolve().relative_to(ROOT)).replace("\\", "/") for path in paths],
         "public_run_rows": "research/data/PREFIXSUM_RECEIVER_DIAGNOSTIC_V0_12_RUNS.jsonl",
@@ -126,8 +138,19 @@ def markdown(result: dict[str, Any]) -> str:
         denominator = f"{exact_den}" if item["condition"] == "ordinary_receive_tool" else str(item["episodes"])
         lines.append(f"| {item['model']} | {item['condition']} | {item['segment_length']} | {item['receiver_exact']}/{item['episodes']} | {item['received_before_submit']}/{item['episodes']} | {item['injected_transcripts']}/{item['episodes']} | {item['local_prefix_only']}/{item['episodes']} |")
     lines.extend([
+        "", "Paired exact-output transitions across the 24 same-seed tasks:", "",
+        "| Model | Both exact | Injection only | Ordinary only | Neither exact |",
+        "|---|---:|---:|---:|---:|",
+    ])
+    for item in result["paired_transition_summary"]:
+        lines.append(f"| {item['model']} | {item['both_exact']}/24 | {item['injected_only_exact']}/24 | {item['ordinary_only_exact']}/24 | {item['neither_exact']}/24 |")
+    lines.extend([
         "", "## Interpretation", "",
-        "Compare within each model and length. If injected transcripts improve exact output, the v0.11 failures include an acquisition/tool-action bottleneck; if they do not, receiving the message is insufficient and execution/application remains a bottleneck. Any difference is descriptive for these 24 reused tasks, not a significance claim.",
+        "Neither model returned an exact receiver segment in any of the 24 ordinary-path tasks or any of the 24 injected-transcript tasks. The paired outcome table is 24/24 neither-exact for each model: adding a visible successful receive transcript did not rescue a single episode. Qwen3-8B still returned the exact local prefix without the offset in 10/24 injected cases, which is consistent with offset neglect but does not identify its only cause.",
+        "",
+        "For Qwen3-8B, the ordinary path delivered a payload before submission in 17/24 new replication episodes; exact output was still 0/24. Qwen3-4B received none in the ordinary path (0/24), but exact output also remained 0/24 when the transcript was prefilled. Message acquisition alone is therefore insufficient for these models/tasks. The intervention cannot distinguish arithmetic execution, instruction interpretation, and other harness/context effects without a simpler capability control.",
+        "",
+        "These are descriptive results on the 24 reused cases, not significance claims. The v0.11 and v0.12 ordinary Qwen3-8B receipt counts differ (15/24 vs 17/24), despite the same seeds and greedy setting; this indicates run variability in this local setup and should be reported rather than hidden.",
         "",
         "The injected transcript is a synthetic prior interaction in the harness. Its output must not be counted as successful model tool use, actual message delivery, or a viable communication protocol. Token counts include this extra context and are not an efficiency comparison.",
         "",

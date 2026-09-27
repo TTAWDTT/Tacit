@@ -34,6 +34,8 @@ Run instructions and the checksum-enforcing runner are in [`experiments/pilot_v0
 
 The receiver acquisition/application diagnostic is preregistered at [`experiments/pilot_v0_12/preregistration.json`](experiments/pilot_v0_12/preregistration.json), with local run steps at [`experiments/pilot_v0_12/README.md`](experiments/pilot_v0_12/README.md).
 
+v0.12 found 0/24 exact receiver outputs per model in both the ordinary tool condition and the injected successful-transcript diagnostic. For Qwen3-8B, 17/24 ordinary runs did receive a message before submission, so acquisition alone does not explain the failure. Read the [v0.12 report](research/PREFIXSUM_RECEIVER_DIAGNOSTIC_V0_12.md) and [per-episode records](research/data/PREFIXSUM_RECEIVER_DIAGNOSTIC_V0_12_RUNS.jsonl).
+
 ## Repository principles
 
 - Publish hypotheses, negative results, assumptions, and changes to the thesis.
