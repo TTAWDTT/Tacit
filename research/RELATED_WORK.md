@@ -130,7 +130,13 @@ Uses collaborative games with private information and divides a fixed token budg
 
 [arXiv](https://arxiv.org/abs/2603.25268) · [code](https://github.com/csu-signal/CRAFT)
 
-Introduces complementary partial-observation views for constructing a shared 3D object and decomposes failures into grounding, belief modeling, and pragmatic communication. It is a more meaningful coordination target than exact sum, but has grounded spatial content and model/tooling requirements. Inspect its license and reproducibility before adopting; use its error decomposition as a design reference for distinguishing message encoding failures from reasoning and coordination failures.
+Introduces complementary private wall views for constructing a shared 3D object, with three directors broadcasting to a builder who chooses among oracle-verified moves. The public repository is MIT licensed and includes local-model support and 20 evaluation structures. This is a stronger candidate communication task than exact sum: the sender set collectively sees information no individual has, and the benchmark distinguishes grounding, belief modeling, pragmatic sufficiency, and task progress. Reproduce its natural-language condition first; a protocol comparison must hold roles, turns, candidate moves, model, and shared state fixed. Its oracle-assisted builder makes it a controlled communication test, not a fully autonomous end-to-end deployment.
+
+### Kriuk & Ng (2025), *Q-KVComm: Efficient Multi-Agent Communication Via Adaptive KV Cache Compression*
+
+[arXiv](https://arxiv.org/abs/2512.17914)
+
+Proposes quantized, compressed KV-cache transfer with a heterogeneous-model calibration step and reports 5–6× compression on three QA datasets. This is an important representation-transfer alternative to tokenized messages, but its transfer cost is not directly comparable to text-token count: report transmitted bytes, compatibility/calibration cost, receiver compute, task utility, and persistent model-specific state. Before treating it as a baseline, inspect the full method, implementation availability, and reproducibility; its abstract-level claims do not establish superiority on interactive hidden-information coordination.
 
 ### Sevestre & Dupoux (2025), *Frequency & Compositionality in Emergent Communication*
 
@@ -150,7 +156,7 @@ The appropriate abstraction is task-oriented rate-distortion / information bottl
 
 ## Search gaps / next reading pass
 
-- Read full papers and inspect code/data for the format-selection paper, ProtocolBench, LatentMAS, Interlat, and CondenseFlow.
+- Read full papers and inspect code/data for the format-selection paper, ProtocolBench, LatentMAS, Interlat, CondenseFlow, CRAFT, and Q-KVComm.
 - Review Lewis signaling games, referential games, iterated learning, and reproducibility critiques of emergent-language benchmarks.
 - Review rate-distortion, information bottleneck, communication complexity, interactive compression, and semantic/task-oriented communications.
 - Survey coding theory/error correction and protocol negotiation under noisy or adversarial channels.
