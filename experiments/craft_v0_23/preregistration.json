@@ -1,0 +1,55 @@
+{
+  "study": "CRAFT bounded-history natural-language baseline",
+  "version": "0.23",
+  "status": "frozen before scored inference",
+  "purpose": "Produce a three-complexity local natural-language reference with an explicit context-bounded shared history and correct failed-message accounting.",
+  "research_question": "Under a 16-line shared-history window, what progress, successful communication, and inference cost does Qwen3-8B achieve on simple, medium, and complex CRAFT structures?",
+  "source": {
+    "repository": "https://github.com/csu-signal/CRAFT",
+    "revision": "f174fa5ae80c20ce5ccc7bb7cbf4aeab69efe430",
+    "dataset": "data/structures_dataset_20.json",
+    "adapter": [
+      "Seed and sample D1, D2, D3 without replacement, once each per round.",
+      "Give every Director the same pre-round snapshot of the latest 16 conversation lines.",
+      "Extract the message region, remove formatting tags and one outer square-bracket envelope, and preserve all other public prose.",
+      "On backend exception, record the failed call, set no public message, and do not append it to history or Builder input.",
+      "Remove the upstream substring check that treats any error text containing '429' as an HTTP 429 and exits the process.",
+      "Set child console encoding to UTF-8."
+    ],
+    "other prompts, move oracle, and scorer": "upstream unchanged"
+  },
+  "model": {
+    "all_roles": "Qwen3-8B-Q4_K_M",
+    "artifact_revision": "7c41481f57cb95916b40956ab2f0b139b296d974",
+    "bytes": 5027783488,
+    "sha256": "d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785",
+    "runtime": "llama.cpp b11202; 99 GPU layers; one slot; context 4096; batch 1024; micro-batch 256; Director temperature 0.7/max_tokens 500; Builder temperature 0.1/max_tokens 250"
+  },
+  "design": {
+    "structure_indices": [0, 7, 2],
+    "expected_structure_levels": ["medium", "simple", "complex"],
+    "turn_limit_per_structure": 8,
+    "run_seed": 323,
+    "python_hash_seed": 323,
+    "history_window": "latest 16 shared conversation lines; no other memory or message is summarized",
+    "oracle_candidates": 5,
+    "builder_tools": false,
+    "maximum_scored_completions": 96,
+    "communication_condition": "CRAFT natural-language messages with fixed rolling conversation history"
+  },
+  "outcomes": {
+    "primary": [
+      "progress/completion and turns per structure",
+      "Director calls attempted, successful public messages, failed calls, and Builder-delivered messages, separately per turn",
+      "Builder-visible wire transcript token count per turn",
+      "llama.cpp prompt and generation token counts and service timing"
+    ],
+    "not_measured": [
+      "format comparison or language superiority",
+      "generalization beyond the three selected structures",
+      "communication efficiency frontier",
+      "scaling laws"
+    ]
+  },
+  "analysis": "Keep all three structures separate; report the unweighted mean descriptively. Failed model calls do not count as delivered messages and are not retried. Preserve partial traces and report any errors, early completion, truncation, or missing structure. A later protocol comparison must use this same history cap, structures, role assignment, parser, model, and runtime."
+}
