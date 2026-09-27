@@ -223,6 +223,19 @@ def _summarize(case_dir: Path, condition: str, task_name: str, seconds: float) -
         event for event in tool_calls
         if event.get("agent_id") == 1 and event.get("tool") == "receive_messages"
     ]
+    tool_results = [event for event in events if event.get("event") == "tool_result"]
+    successful_a0_sends = [
+        event for event in tool_results
+        if event.get("agent_id") == 0
+        and event.get("tool") == "send_message"
+        and event.get("result", {}).get("success") is True
+    ]
+    a1_received_payloads = [
+        event for event in tool_results
+        if event.get("agent_id") == 1
+        and event.get("tool") == "receive_messages"
+        and bool(event.get("result", {}).get("messages"))
+    ]
     self_sends = [
         event
         for event in tool_calls
@@ -247,6 +260,10 @@ def _summarize(case_dir: Path, condition: str, task_name: str, seconds: float) -
             for event in sends
         ),
         "agent1_send_actions": sum(event.get("agent_id") == 1 for event in sends),
+        "agent0_successful_sends": len(successful_a0_sends),
+        "agent1_received_payloads": sum(
+            len(event.get("result", {}).get("messages", [])) for event in a1_received_payloads
+        ),
         "agent0_send_before_submit": int(
             bool(agent0_sends)
             and (
@@ -259,6 +276,12 @@ def _summarize(case_dir: Path, condition: str, task_name: str, seconds: float) -
             bool(agent1_receives)
             and bool(agent1_submits)
             and min(e["timestamp"] for e in agent1_receives)
+            < min(e["timestamp"] for e in agent1_submits)
+        ),
+        "agent1_received_payload_before_submit": int(
+            bool(a1_received_payloads)
+            and bool(agent1_submits)
+            and min(e["timestamp"] for e in a1_received_payloads)
             < min(e["timestamp"] for e in agent1_submits)
         ),
         "receive_actions": sum(event.get("tool") == "receive_messages" for event in tool_calls),

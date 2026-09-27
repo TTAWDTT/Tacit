@@ -86,11 +86,54 @@ def load_rows() -> list[dict[str, Any]]:
         submissions = json.loads(row["submissions"])
         row["strict_correct"] = sum(bool(item.get("correct")) for item in submissions)
         row["episode_success"] = int(results["metrics"]["S_success_rate"] == 1.0)
+        events = [
+            json.loads(line)
+            for log_path in (ROOT / row["case_dir"] / "logs").glob("agent-*.jsonl")
+            for line in log_path.read_text(encoding="utf-8").splitlines()
+        ]
+        tool_calls = [event for event in events if event.get("event") == "tool_call"]
+        tool_results = [event for event in events if event.get("event") == "tool_result"]
+        row["agent0_send_to_1_actions"] = sum(
+            event.get("agent_id") == 0
+            and event.get("tool") == "send_message"
+            and event.get("parameters", {}).get("target_id") == 1
+            for event in tool_calls
+        )
+        row["agent1_send_actions"] = sum(
+            event.get("agent_id") == 1 and event.get("tool") == "send_message"
+            for event in tool_calls
+        )
+        successful_sends = [
+            event for event in tool_results
+            if event.get("agent_id") == 0
+            and event.get("tool") == "send_message"
+            and event.get("result", {}).get("success") is True
+        ]
+        row["agent0_successful_sends"] = len(successful_sends)
+        nonempty_receives = [
+            event for event in tool_results
+            if event.get("agent_id") == 1
+            and event.get("tool") == "receive_messages"
+            and bool(event.get("result", {}).get("messages"))
+        ]
+        a1_submits = [
+            event for event in tool_calls
+            if event.get("agent_id") == 1 and event.get("tool") == "submit_result"
+        ]
+        row["agent1_received_payload_before_submit"] = int(
+            bool(nonempty_receives) and bool(a1_submits)
+            and min(event["timestamp"] for event in nonempty_receives)
+            < min(event["timestamp"] for event in a1_submits)
+        )
         syntax, faithful, messages = message_adherence(row, task)
         row["syntax"] = syntax
         row["faithful"] = faithful
         row["format_messages"] = messages
-        for field in ("total_tokens", "message_payload_bytes", "message_count"):
+        for field in (
+            "total_tokens", "message_payload_bytes", "message_count",
+            "agent0_send_to_1_actions", "agent0_successful_sends",
+            "agent1_received_payload_before_submit",
+        ):
             row[field] = int(row[field])
         for field in (
             "agent0_send_to_1_actions",
@@ -124,7 +167,7 @@ def build_report(rows: list[dict[str, Any]]) -> str:
         "",
         "## Pooled results",
         "",
-        "| Condition | Strict agent success | Fully correct episodes | A0→A1 sends | A1 sent any | A0 sent before submit | A1 received before submit | Message syntax | Sender-value fidelity | Mean payload bytes | Mean backend tokens | Mean wall time (s) |",
+        "| Condition | Strict agent success | Fully correct episodes | A0→A1 send attempts | Delivered messages | A1 received payload before submit | A1 send attempts | Message syntax | Sender-value fidelity | Mean payload bytes | Mean backend tokens | Mean wall time (s) |",
         "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for name in CONDITIONS:
@@ -140,9 +183,9 @@ def build_report(rows: list[dict[str, Any]]) -> str:
         lines.append(
             f"| `{name}` | {strict}/{n_agents} | {episode_success}/{len(group)} | "
             f"{sum(row['agent0_send_to_1_actions'] for row in group)} | "
+            f"{sum(row['agent0_successful_sends'] for row in group)} | "
+            f"{sum(row['agent1_received_payload_before_submit'] for row in group)}/{len(group)} | "
             f"{sum(row['agent1_send_actions'] for row in group)} | "
-            f"{sum(row['agent0_send_before_submit'] for row in group)}/{len(group)} | "
-            f"{sum(row['agent1_receive_before_submit'] for row in group)}/{len(group)} | "
             f"{syntax_text} | {fidelity_text} | "
             f"{mean(group, 'message_payload_bytes'):.1f} | {mean(group, 'total_tokens'):.0f} | {mean(group, 'elapsed_seconds'):.2f} |"
         )
@@ -172,16 +215,18 @@ def build_report(rows: list[dict[str, Any]]) -> str:
             "## Interpretation",
             "",
             "- Compare each communicating arm with the no-communication control. Agent 0 can compute its local prefix segment without receiving Agent 1's values, but Agent 1 cannot recover its global offset from its own segment alone; therefore episode-level unanimity is the task-necessity outcome.",
-            "- Role execution is measured independently of task accuracy and wire syntax: Agent 0 must send to Agent 1 before submitting, and Agent 1 must receive before submitting and never send. If either role action is missed, message-format outcomes may be uninterpretable for the intended direction.",
+            "- Send attempts, successful delivery, and an Agent 1 receive call that returned a non-empty payload are distinct. `no_communication` still has send attempts because the intervention rejects the channel; it delivered zero messages. Agent 1's received-payload measure requires a non-empty receive result before its submit call.",
+            "- Agent 0 sent a message with the required syntax in most format arms, but subtotal value fidelity was 0/12 for concise English, compact-KV, JSON, and binary. In contrast, full-shard syntax and value fidelity were both 12/12. This localizes a major failure to subtotal calculation or value encoding, before attributing downstream failures to receiver decoding.",
+            "- Despite successful full-shard transmission, no episode was fully correct in any condition. The task therefore exposed a second bottleneck: correct receipt did not reliably produce Agent 1's offset-adjusted prefix list. In the audited compact-KV example, Agent 1 received `s=161` (the true sender shard sum was 168) and submitted only its local cumulative sums; the raw context shows the message was present. This is a sender aggregation and receiver execution failure, not transport loss.",
             "- The local adapter preserves the exact raw `send_message.content` string before the pinned Silo tool layer stores it. This avoids the upstream generic XML parser's integer/JSON coercion; it does not rewrite or normalize any model message.",
             "- For each segment length L and values in {1,...,50}, the exact subtotal has 49L+1 possible values. Any zero-error fixed-length encoding therefore needs at least ceil(log2(49L+1)) bits: 9, 10, and 11 bits at lengths 6, 15, and 30. This bound concerns the subtotal wire code, not model tokens, prompt cost, or the computation of the prefix arrays.",
-            "- Compare compact subtotal forms with `full_shard` to test whether transmitting a sufficient statistic preserves success while reducing payload bytes. Failures can arise from subtotal calculation, encoding/decoding, or prefix-list computation; the aggregate score alone cannot separate these stages.",
+            "- Compact-KV payloads averaged 5 bytes versus 64.2 bytes for full-shard payloads, but compact totals were never faithful in this run and did not yield episode success. This is only a wire-size comparison, not evidence of lower total cost or an efficiency-frontier gain.",
             "- One episode-condition run and twelve seeds provide exploratory evidence only. The two agent outputs in an episode are paired observations, not independent trials. No total-token budget is enforced and no efficiency frontier or scaling law is claimed.",
             "- Token counts are backend-reported. They are descriptive within this fixed setup and should not be compared directly across different model tokenizers or runtimes.",
             "",
             "## Next revision",
             "",
-            "If compact subtotal messages remain accurate and smaller than full-shard transfer, increase segment length and agent count while varying total communication budget. If errors occur, classify arithmetic aggregation, representation syntax, receiver decoding, and array construction separately before changing the protocol.",
+            "Before attempting another language comparison, repair the task execution bottleneck: provide a symbolic correctness check for the sender subtotal and an explicit receiver offset operation, then validate those mechanics with a non-LLM oracle and a small role-following control. Any follow-up should separately test raw subtotal calculation, wire decoding, and offset application; do not promote these results as a protocol ranking.",
             "",
             "Raw traces remain in ignored `.cache/pilot_v0_8/`; task files and checksums are public in `benchmarks/prefixsum_v0_2/tasks/`.",
         ]
