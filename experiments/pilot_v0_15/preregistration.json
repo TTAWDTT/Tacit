@@ -1,0 +1,47 @@
+{
+  "study": "prefixsum_receiver_output_contract_diagnostic_v0_15",
+  "status": "frozen_before_inference",
+  "question": "Does requiring an XML submit_result wrapper reduce exact receiver output relative to a direct JSON-array answer when task content, message transcript, model, and arithmetic prompt are held fixed?",
+  "motivation": "v0.13's direct JSON-array prompt produced 7/24 exact receiver outputs for Qwen3-8B. v0.14's XML tool contract produced 0/24 exact outputs in either prompt arm, although the verbose tool schema improved XML syntax compliance. The studies differed in multiple prompt details; v0.15 isolates the output contract in paired direct calls.",
+  "task_suite": "PrefixSum short-shard v0.3, paired reuse of the 24 v0.11 cases",
+  "task_manifest_sha256": "c6302480780c7bea1c54ebc00436c06d57e092b285204139a20311685e3f7d33",
+  "model": "Qwen3-8B Q4_K_M GGUF",
+  "model_repository_revision": "7c41481f57cb95916b40956ab2f0b139b296d974",
+  "model_file": "Qwen3-8B-Q4_K_M.gguf",
+  "model_file_size_bytes": 5027783488,
+  "model_file_sha256": "d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785",
+  "runtime": "llama.cpp b11202, commit fcb3074f2, Windows x64 CUDA 12.4; RTX 4060 8 GB; 99 GPU layers; context 8192; temperature 0; max 128 generated tokens",
+  "design": "Two paired output-contract conditions for all 24 cases (48 episodes), alternating order by task index. Same exact system prompt, user task text, shard, offset, prefilled successful receive transcript, model, backend, and decoding. Only the final response serialization instruction differs.",
+  "common_system_prompt": "You are an exact integer-arithmetic assistant. Use the prior successful receive_messages result and your private segment to compute the exact global inclusive prefix segment for Agent 1. Do not send or receive another message.",
+  "common_user_task": "Agent 0's segment comes first. Your private segment is x=[SHARD]. The already-received Agent 0 subtotal is s=OFFSET. For every i, compute the sum of x[0] through x[i], then add s. Return exactly your segment in order.",
+  "conditions": [
+    {
+      "name": "direct_json_array",
+      "output_instruction": "Return only a JSON array of integers, with no XML, prose, or Markdown."
+    },
+    {
+      "name": "xml_submit_result",
+      "output_instruction": "Return exactly one XML tool_call for submit_result, with the answer parameter containing a JSON array of integers. Include no other tool calls or prose."
+    }
+  ],
+  "prefilled_transcript": "Both conditions include the same engine-shaped prior assistant receive_messages call and successful tool result containing the exact message s=<subtotal>. This is synthetic context, not model-initiated tool use or simulator delivery.",
+  "primary_outcomes": [
+    "strict exact receiver answer by output contract and segment length",
+    "valid contract adherence by output condition, separate from mathematical correctness",
+    "paired task-level exactness changes"
+  ],
+  "secondary_outcomes": ["input/output tokens, latency, raw response, parsed answer"],
+  "frozen_predictions": [
+    "If the XML wrapper is an important execution burden, direct JSON will yield more exact answers on the paired cases.",
+    "If exactness remains similar, serialization alone does not explain the v0.13/v0.14 difference.",
+    "This is a task-output diagnostic, not a comparison of inter-agent message representations or a claim about a communication language."
+  ],
+  "analysis": "Strictly parse the full response under the assigned output contract; no array extraction from prose. For XML, require exactly one submit_result tool call and a JSON list of non-boolean integers. Report parse/adherence and exactness separately. With 24 paired inputs, report descriptive transition counts; no significance claim.",
+  "limits": [
+    "24 reused tasks from one arithmetic family",
+    "synthetic prior receive transcript",
+    "one greedy sample per task/condition",
+    "one local model checkpoint and runtime",
+    "the finding cannot be generalized to other tool APIs or message formats"
+  ]
+}

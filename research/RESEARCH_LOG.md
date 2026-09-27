@@ -20,6 +20,7 @@
 - v0.14 freezes that context diagnostic in `experiments/pilot_v0_14/preregistration.json`: Qwen3-8B gets identical task inputs, prior receive transcript, XML answer contract, and backend under either a concise receiver system prompt or the pinned verbose Silo multi-agent tool scaffold. This tests scaffold compatibility, not token length by itself or communication format quality.
 - All 48 v0.14 calls completed. Exact receiver answers were 0/24 in both arms. The verbose scaffold generated valid XML submit calls in 23/24, versus 4/24 with the concise prompt, with 4.3× mean input tokens; improved tool syntax did not yield a correct task answer. This directly reinforces the need to report syntax, semantic fidelity, success, and context cost separately.
 - Report: `research/PREFIXSUM_SCAFFOLD_CONTEXT_V0_14.md`; per-call data: `research/data/PREFIXSUM_SCAFFOLD_CONTEXT_V0_14_RUNS.jsonl`. Next preregister matched concise direct-JSON versus concise XML tool-output contracts, before any further interaction changes.
+- v0.15 preregisters that output-contract ablation on the same 24 direct receiver cases and Qwen3-8B: JSON array versus a single XML submit_result call, with identical system/task content and identical prefilled receipt history. No inter-agent representation is varied.
 
 ## 2026-09-27 — Initial scoping and public thesis
 
