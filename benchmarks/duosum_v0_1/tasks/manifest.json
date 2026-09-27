@@ -1,0 +1,222 @@
+{
+  "schema_version": "duosum-v0.1",
+  "agents": 2,
+  "seed_base": 2026092700,
+  "bit_widths": [
+    4,
+    8,
+    12,
+    16
+  ],
+  "repeats_per_width": 4,
+  "files": [
+    {
+      "file": "DUOSUM-B04-S00.json",
+      "sha256": "71ecab8ee028d61ce80c21a94120a503fa59fb7f8c518a826241d9e5f5e2e8f8",
+      "bits": 4,
+      "replicate": 0,
+      "split": "calibration",
+      "seed": 2026093100,
+      "input_values": [
+        5,
+        15
+      ],
+      "gold_sum": 20
+    },
+    {
+      "file": "DUOSUM-B04-S01.json",
+      "sha256": "37663734d00d00a6f727abfcf12d80d90b1eb81dd67cd51531e3ec7677e3cfee",
+      "bits": 4,
+      "replicate": 1,
+      "split": "heldout",
+      "seed": 2026093101,
+      "input_values": [
+        11,
+        14
+      ],
+      "gold_sum": 25
+    },
+    {
+      "file": "DUOSUM-B04-S02.json",
+      "sha256": "a5e90c48fc35b06e3f3df351c6013a16db49b2dc3e772aea20b534aa0742dc68",
+      "bits": 4,
+      "replicate": 2,
+      "split": "heldout",
+      "seed": 2026093102,
+      "input_values": [
+        8,
+        4
+      ],
+      "gold_sum": 12
+    },
+    {
+      "file": "DUOSUM-B04-S03.json",
+      "sha256": "d1a06da817c6e278cac1023cdbec73e8275aea75cfc1bc1c76f39c78e05f6745",
+      "bits": 4,
+      "replicate": 3,
+      "split": "heldout",
+      "seed": 2026093103,
+      "input_values": [
+        1,
+        1
+      ],
+      "gold_sum": 2
+    },
+    {
+      "file": "DUOSUM-B08-S00.json",
+      "sha256": "20987ddad42fdb808ae8f2ff1278c697e599367b4d46570c1b35f64eaa0cbf3a",
+      "bits": 8,
+      "replicate": 0,
+      "split": "calibration",
+      "seed": 2026093500,
+      "input_values": [
+        21,
+        215
+      ],
+      "gold_sum": 236
+    },
+    {
+      "file": "DUOSUM-B08-S01.json",
+      "sha256": "bf751e4e0735c9e79e9a9294203369e4ed948a6407ffb284ef81a7f549445ac1",
+      "bits": 8,
+      "replicate": 1,
+      "split": "heldout",
+      "seed": 2026093501,
+      "input_values": [
+        114,
+        231
+      ],
+      "gold_sum": 345
+    },
+    {
+      "file": "DUOSUM-B08-S02.json",
+      "sha256": "7fa34c9ce77080750abd574214e809841cc237d20d6189329b685bb06e6d6326",
+      "bits": 8,
+      "replicate": 2,
+      "split": "heldout",
+      "seed": 2026093502,
+      "input_values": [
+        1,
+        27
+      ],
+      "gold_sum": 28
+    },
+    {
+      "file": "DUOSUM-B08-S03.json",
+      "sha256": "97d6a90e59ce26289bc3278b872f166261d93fa0cb70c4459f18dde89cd95564",
+      "bits": 8,
+      "replicate": 3,
+      "split": "heldout",
+      "seed": 2026093503,
+      "input_values": [
+        197,
+        237
+      ],
+      "gold_sum": 434
+    },
+    {
+      "file": "DUOSUM-B12-S00.json",
+      "sha256": "67f4e8cb741f849262946aa89afeb03571d9b8396c0ad0cc6a8996052a55ad45",
+      "bits": 12,
+      "replicate": 0,
+      "split": "calibration",
+      "seed": 2026093900,
+      "input_values": [
+        723,
+        2547
+      ],
+      "gold_sum": 3270
+    },
+    {
+      "file": "DUOSUM-B12-S01.json",
+      "sha256": "69ac372f846192c55ba12b6000a449a65382f92cda63bd859c11ceaa4877f462",
+      "bits": 12,
+      "replicate": 1,
+      "split": "heldout",
+      "seed": 2026093901,
+      "input_values": [
+        3841,
+        560
+      ],
+      "gold_sum": 4401
+    },
+    {
+      "file": "DUOSUM-B12-S02.json",
+      "sha256": "27776c356a14debca43bae9fbe8c86b5323f756b042d3fa82db2457056db86a7",
+      "bits": 12,
+      "replicate": 2,
+      "split": "heldout",
+      "seed": 2026093902,
+      "input_values": [
+        2789,
+        2634
+      ],
+      "gold_sum": 5423
+    },
+    {
+      "file": "DUOSUM-B12-S03.json",
+      "sha256": "d2ac12ca26b2a040582f15406f26ac506673f4db4bcb350a698ee6df03303b8e",
+      "bits": 12,
+      "replicate": 3,
+      "split": "heldout",
+      "seed": 2026093903,
+      "input_values": [
+        1097,
+        682
+      ],
+      "gold_sum": 1779
+    },
+    {
+      "file": "DUOSUM-B16-S00.json",
+      "sha256": "b18a48426211fcdd1671b3648af0e7d56e8584b1f3a0c195beb916710318cda8",
+      "bits": 16,
+      "replicate": 0,
+      "split": "calibration",
+      "seed": 2026094300,
+      "input_values": [
+        62822,
+        54441
+      ],
+      "gold_sum": 117263
+    },
+    {
+      "file": "DUOSUM-B16-S01.json",
+      "sha256": "6c0240a74076c4d3ad700ce79ea905738ebee25bb61d70abd1f3c368976c0a4f",
+      "bits": 16,
+      "replicate": 1,
+      "split": "heldout",
+      "seed": 2026094301,
+      "input_values": [
+        45188,
+        4346
+      ],
+      "gold_sum": 49534
+    },
+    {
+      "file": "DUOSUM-B16-S02.json",
+      "sha256": "d31f364f1e8d8eadced5675fd6cebeb2fa66cccfdd1d1612ee8bb02df1d3b1dd",
+      "bits": 16,
+      "replicate": 2,
+      "split": "heldout",
+      "seed": 2026094302,
+      "input_values": [
+        34603,
+        54038
+      ],
+      "gold_sum": 88641
+    },
+    {
+      "file": "DUOSUM-B16-S03.json",
+      "sha256": "7a56b5f7dc4afcc2b19834493fb852fa5ecb9edfc9dd29e1757eb831677809eb",
+      "bits": 16,
+      "replicate": 3,
+      "split": "heldout",
+      "seed": 2026094303,
+      "input_values": [
+        23143,
+        46714
+      ],
+      "gold_sum": 69857
+    }
+  ]
+}

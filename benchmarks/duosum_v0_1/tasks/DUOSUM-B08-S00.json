@@ -1,0 +1,41 @@
+{
+  "case_id": "DUOSUM-B08-S00",
+  "case_name": "Two-Agent Hidden Sum",
+  "paradigm": "Synthetic exact hidden-information aggregation",
+  "task_description": "Two agents each hold one private positive integer. Determine the exact sum of both values. Every agent must submit the same integer answer. An agent knows its own value, but the other agent's value is private.",
+  "metadata": {
+    "num_agents": 2,
+    "is_segmented": false,
+    "input_bits": 8,
+    "input_domain": [
+      1,
+      255
+    ],
+    "replicate": 0,
+    "split": "calibration",
+    "generation_seed": 2026093500,
+    "communication_required": true
+  },
+  "agent_configs": [
+    {
+      "agent_id": 0,
+      "input_shard": 21,
+      "user_prompt": "Task: compute the exact sum of the two agents' private values.\nYou are Agent 0 of 2.\nYour private value is 21.\nThe other agent has its own private value; you do not know it. Communicate as needed, then every agent must submit the exact same total using submit_result(integer)."
+    },
+    {
+      "agent_id": 1,
+      "input_shard": 215,
+      "user_prompt": "Task: compute the exact sum of the two agents' private values.\nYou are Agent 1 of 2.\nYour private value is 215.\nThe other agent has its own private value; you do not know it. Communicate as needed, then every agent must submit the exact same total using submit_result(integer)."
+    }
+  ],
+  "expected_output": {
+    "type": "distributed",
+    "per_agent_values": [
+      236,
+      236
+    ],
+    "is_segmented": false,
+    "verification_logic": "len(agent_outputs) == num_agents and all(agent_outputs[i] == expected_output[i] for i in range(num_agents))",
+    "verification_logic_hint": "each agent submits the sum of both private integers"
+  }
+}
