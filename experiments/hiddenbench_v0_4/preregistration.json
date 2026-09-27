@@ -1,0 +1,46 @@
+{
+  "study": "HiddenBench Qwen3-14B full-information capability screen, reasoning mode",
+  "version": "0.4",
+  "status": "frozen before inference",
+  "motivation": "v0.2/v0.3 used reasoning off and temperature-zero greedy decoding. The Qwen3-14B model card recommends thinking mode for complex reasoning, temperature 0.6, top-k 20, top-p 0.95, and advises against greedy decoding in thinking mode. This follow-up tests the model's documented reasoning configuration before concluding the task/model is outside the local operating region.",
+  "sources": {
+    "benchmark": "https://github.com/Yassellee/HiddenBench_ICML",
+    "benchmark_revision": "3be6ca16973e4fb751ffc0dfb7eb11f2d28335d1",
+    "benchmark_sha256": "8684c1c8b02da49bb3a959c9ba352b3eb682c02653a3c508c47b8ed54f7a5df3",
+    "official_model_card": "https://huggingface.co/Qwen/Qwen3-14B-GGUF",
+    "model_revision": "530227a7d994db8eca5ab5ced2fb692b614357fd"
+  },
+  "model": {
+    "name": "Qwen3-14B-Q4_K_M",
+    "sha256": "500a8806e85ee9c83f3ae08420295592451379b4f8cf2d0f41c15dffeb6b81f0",
+    "runtime": "llama.cpp b11202; RTX 4060 Laptop GPU 8 GB; 24 GPU layers with CPU offload; one slot; 8192 context",
+    "reasoning": "on",
+    "reasoning_budget_tokens": 1024,
+    "sampling": {
+      "temperature": 0.6,
+      "top_k": 20,
+      "top_p": 0.95,
+      "min_p": 0.0,
+      "presence_penalty": 1.5,
+      "server_seed": 20260928,
+      "max_generated_tokens": 1536
+    }
+  },
+  "design": {
+    "tasks": ["evacuation_west_city", "evacuation_north_hill", "evacuation_east_town"],
+    "profile": "full",
+    "agents_per_task": 4,
+    "rounds": 0,
+    "planned_votes": 12,
+    "task_seed_rule": "20260927 + task_index * 10000",
+    "evaluation": "Mean accuracy of the three sets of four independent initial votes against task gold answers, using the official HiddenBench prompt, answer labels, and JSON vote schema.",
+    "gate": 0.8
+  },
+  "decision_rule": "If full-profile initial vote accuracy remains below 0.8, no communication-protocol ranking will be conducted on this checkpoint/task pair. If it reaches 0.8, a separately preregistered full episode study is needed before any protocol comparison.",
+  "limits": [
+    "Twelve stochastic votes over three related public tasks, despite fixed seeds.",
+    "This compares one documented inference configuration with prior greedy runs; it does not isolate reasoning mode from sampling settings or establish model scaling.",
+    "No discussion, hidden-profile run, or protocol comparison is included.",
+    "CPU/GPU offload latency is hardware-specific."
+  ]
+}
