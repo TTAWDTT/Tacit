@@ -1,0 +1,54 @@
+{
+  "study": "HiddenBench local capability calibration",
+  "version": "0.1",
+  "status": "frozen before inference",
+  "research_question": "Does local Qwen3-8B reach the individual-reasoning gate on the official full-profile controls, and how much does its group accuracy change after the official hidden-profile discussion on the three verification tasks?",
+  "sources": {
+    "paper": "https://arxiv.org/abs/2505.11556",
+    "code_repository": "https://github.com/Yassellee/HiddenBench_ICML",
+    "code_revision": "3be6ca16973e4fb751ffc0dfb7eb11f2d28335d1",
+    "license": "MIT",
+    "benchmark_file": "src/hiddenbench/data/benchmark_short.json",
+    "benchmark_sha256": "8684c1c8b02da49bb3a959c9ba352b3eb682c02653a3c508c47b8ed54f7a5df3"
+  },
+  "model": {
+    "name": "Qwen3-8B-Q4_K_M",
+    "artifact_revision": "7c41481f57cb95916b40956ab2f0b139b296d974",
+    "artifact_sha256": "d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785",
+    "provider": "OpenAI-compatible local llama.cpp API",
+    "runtime": "llama.cpp b11202; 99 GPU layers; one slot; context 4096; batch 1024; micro-batch 256",
+    "temperature": 0.0
+  },
+  "design": {
+    "tasks": [
+      "evacuation_west_city",
+      "evacuation_north_hill",
+      "evacuation_east_town"
+    ],
+    "agents_per_task": 4,
+    "profiles": ["full", "hidden"],
+    "rounds": 15,
+    "duplications": 1,
+    "task_seed": 20260927,
+    "max_workers": 1,
+    "extra_prompt": "",
+    "special_agent_ratio": 1.0,
+    "planned_completions": 408,
+    "planned_successful_completions": 408,
+    "retry_policy": "The upstream client retries failed API requests up to three times. Invalid vote responses can also trigger up to three vote-level attempts, each invoking that client. Thus 408 is the nominal number of successful responses, not a hard cap on server requests; count all attempts and completions from server logs and report any deviation.",
+    "capability_gate": "Report Full Profile pre-discussion average answer accuracy. If it is below 0.8, treat this as an individual capability/adapter limitation and do not rank communication protocols on this model/task sample."
+  },
+  "primary_outcomes": [
+    "Full Profile pre-discussion average and majority accuracy",
+    "Hidden Profile pre-discussion and post-discussion average and majority accuracy",
+    "per-task accuracy and completion counts",
+    "all decoded message and prompt token usage available from llama.cpp logs, cache-aware service timing, and serialized discussion wire-token counts"
+  ],
+  "analysis": "Use official HiddenBench scoring. Report each task and both aggregation rules; the three-task summary is descriptive. A high Full Profile score with low Hidden Profile pre-score validates the hidden-information split for this local setup. Any hidden-profile pre/post difference is a discussion effect only. Do not make protocol, generalization, scaling, efficiency-frontier, or universal necessity claims.",
+  "limits": [
+    "Three related tasks, one model, one task seed, one run per profile.",
+    "This calibration does not compare message encodings or enforce a fixed communication budget.",
+    "OpenAI-compatible llama.cpp usage and prompt KV-cache reuse must be accounted for separately from client input token estimates.",
+    "The JSON-mode adapter may fail or retry; report actual request attempts/completions and preserve partial traces."
+  ]
+}
