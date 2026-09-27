@@ -22,8 +22,13 @@ def tokenize(text: str) -> int:
         return len(json.load(response)["tokens"])
 
 
-def service_metrics(path: Path) -> dict:
-    text = path.read_text(encoding="utf-8", errors="replace")
+def service_metrics(path: Path, after_task_id: int) -> dict:
+    lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
+    lines = [
+        line for line in lines
+        if (match := re.search(r"\| task (\d+)\s+\|", line)) and int(match.group(1)) > after_task_id
+    ]
+    text = "\n".join(lines)
     prompt = re.findall(r"prompt eval time =\s*([\d.]+) ms /\s*(\d+) tokens", text)
     generated = re.findall(r"(?<!prompt )eval time =\s*([\d.]+) ms /\s*(\d+) tokens", text)
     totals = re.findall(r"total time =\s*([\d.]+) ms /\s*(\d+) tokens", text)
@@ -84,6 +89,8 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--raw-dir", required=True, type=Path)
     parser.add_argument("--server-log", required=True, type=Path)
+    parser.add_argument("--after-server-task-id", required=True, type=int,
+                        help="Ignore earlier completions from the same persistent llama-server process.")
     parser.add_argument("--output", required=True, type=Path)
     args = parser.parse_args()
     sys.path.insert(0, str(SOURCE))
@@ -93,7 +100,7 @@ def main() -> None:
     benchmark = load_benchmark(path=DATA)
     conditions = {profile: condition(profile, args.raw_dir, benchmark, score_results)
                   for profile in ("full", "hidden")}
-    service = service_metrics(args.server_log)
+    service = service_metrics(args.server_log, args.after_server_task_id)
     report = {
         "study": "HiddenBench Qwen3-14B natural-discussion baseline",
         "version": "0.5",
@@ -102,6 +109,7 @@ def main() -> None:
         "design": {
             "tasks": 3, "agents_per_task": 4, "rounds": 15,
             "profiles": ["full", "hidden"], "planned_successful_completions": 408,
+            "server_log_inference_start_task_id_exclusive": args.after_server_task_id,
         },
         "inference": {
             "reasoning": "on", "reasoning_budget_tokens": 1024,
