@@ -1,0 +1,53 @@
+{
+  "status": "fresh-seed role-explicit protocol frozen before any v0.8 model call",
+  "task_suite": "PrefixSum v0.2, adapted from Silo-Bench II-11",
+  "task_manifest_sha256": "f6e22454ab1a56b9606f9d668ce74828e80588ca97b5fc9ec8c75ca54341bc79",
+  "task_lengths": [6, 15, 30],
+  "replicates_per_length": 4,
+  "task_files": [
+    "PSUM2-L06-S00.json", "PSUM2-L06-S01.json", "PSUM2-L06-S02.json", "PSUM2-L06-S03.json",
+    "PSUM2-L15-S00.json", "PSUM2-L15-S01.json", "PSUM2-L15-S02.json", "PSUM2-L15-S03.json",
+    "PSUM2-L30-S00.json", "PSUM2-L30-S01.json", "PSUM2-L30-S02.json", "PSUM2-L30-S03.json"
+  ],
+  "task_split": "fresh deterministic cases not used in v0.7 audit; all held out under frozen v0.8 protocol",
+  "upstream_engine": "Silo-Bench P2P simulator",
+  "upstream_engine_commit": "e74127782ed1c42fff474249961f022c063d76f2",
+  "message_transport_adapter": "runner override preserves send_message.content as an exact raw string; other parameters use pinned upstream conversion, with out-of-signed-64-bit integers stored as decimal strings to keep JSON logging safe",
+  "model": "Qwen/Qwen3-4B-GGUF",
+  "model_revision": "bc640142c66e1fdd12af0bd68f40445458f3869b",
+  "model_file": "Qwen3-4B-Q4_K_M.gguf",
+  "model_file_size_bytes": 2497280256,
+  "model_file_sha256": "7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5",
+  "runtime": "llama.cpp b11202, commit fcb3074f2, Windows x64 CUDA 12.4",
+  "decoding": "greedy; --temp 0 --n-predict 256 --reasoning off; four rounds maximum",
+  "max_rounds": 4,
+  "protocol": "Silo-Bench point-to-point message tool",
+  "interaction_scaffold": "The private task prompt assigns Agent 0 as the sole sender and Agent 1 as the sole receiver. Agent 0 must send exactly one message addressed to Agent 1 before submitting its own segment. Agent 1 must not send; it must receive Agent 0's message before computing or submitting. Do not target yourself. Each agent submits only its own global prefix sums as a JSON list of integers, in order. Agent 0 computes local cumulative sums; Agent 1 adds Agent 0's exact subtotal to each local cumulative sum (or sums the received full shard first). Do not submit before your assigned send/receive step is complete.",
+  "conditions": {
+    "scaffold_only": "",
+    "concise_nl": "When Agent 0 sends its single message, communicate only the sum of all values in Agent 0's local segment as one short English sentence exactly of the form `The subtotal is 123.` Replace 123 with the integer sum.",
+    "compact_kv": "When Agent 0 sends its single message, encode only the sum of all values in its local segment as s=<integer>, with no other text.",
+    "json_schema": "When Agent 0 sends its single message, encode the sum of all values in its local segment as exactly one valid JSON object of the form {\"s\": 123}. Replace 123 with the sum. Do not use single quotes or add prose.",
+    "binary": "When Agent 0 sends its single message, encode only the sum of all values in its local segment as its base-2 digits, without a prefix, leading zeros, or prose. Example: decimal 13 is 1101 in base 2.",
+    "full_shard": "When Agent 0 sends its single message, copy its entire local segment as exactly one valid JSON list of integers in original order. Do not calculate or send a subtotal.",
+    "no_communication": ""
+  },
+  "intervention_control": "no_communication: Silo send_message action disabled; no interaction scaffold injected; role directions remain in task prompts",
+  "primary_outcomes": [
+    "strict per-agent exact prefix-list success and episode-level unanimous success",
+    "message direction and action order (Agent 0 sends before submit; Agent 1 receives before submit; Agent 1 does not send)",
+    "assigned message grammar syntax and decoded sender-value fidelity",
+    "for full_shard, exact JSON list syntax and equality to sender shard",
+    "message payload UTF-8 bytes",
+    "backend-reported input plus output token counts, latency, turns, sends, receives, invalid actions",
+    "outcomes by segment length"
+  ],
+  "theory_prediction": "For a segment length L with values in {1,...,50}, Agent 1's correct result depends on Agent 0 only through subtotal S. S has 49L+1 possible values, requiring at least ceil(log2(49L+1)) worst-case bits for an exact fixed-length code: 9, 10, and 11 bits for L=6, 15, and 30. If messages preserve their declared payload and role execution succeeds, compact subtotal forms should use fewer bytes than full-shard transfer. This predicts payload size, not model-mediated task success.",
+  "limitations": [
+    "Twelve synthetic two-agent tasks from one algorithmic family do not establish naturalistic collaboration transfer.",
+    "One greedy run per episode-condition is exploratory; agent outputs are paired within episodes.",
+    "No equal total-token budget is imposed; no efficiency frontier or scaling law will be claimed.",
+    "These fresh task seeds are public and are held out only from this frozen protocol, not a permanently secret test set.",
+    "Token totals are backend-specific and not comparable with other runtimes."
+  ]
+}

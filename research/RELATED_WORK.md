@@ -104,7 +104,7 @@ Representative framework where agents converse using flexible natural language a
 
 [arXiv](https://arxiv.org/abs/2603.01045) · [paper code and benchmark](https://github.com/jwyjohn/acl26-silo-bench)
 
-30 generated algorithmic tasks divide private data into agent-local shards; the suite varies task communication complexity and agent count (2–100) and includes peer-to-peer, broadcast, and shared-file-system baselines. Its reported communication-reasoning gap localizes failures to integration of distributed state, not merely information exchange. The upstream II-11 Prefix Sum generator is Unlicense, and the local P2P runner works with an OpenAI-compatible local endpoint. Our DuoSum pilot deliberately left this task family's integration behavior untested; v0.7 now adapts II-11 while holding model and simulator fixed and varying only message form/content policy.
+30 generated algorithmic tasks divide private data into agent-local shards; the suite varies task communication complexity and agent count (2–100) and includes peer-to-peer, broadcast, and shared-file-system baselines. Its reported communication-reasoning gap localizes failures to integration of distributed state, not merely information exchange. The upstream II-11 Prefix Sum generator is Unlicense, and the local P2P runner works with an OpenAI-compatible local endpoint. Our DuoSum pilot deliberately left this task family's integration behavior untested. A first v0.7 adaptation exposed both role reversal and an upstream XML parser that mutates message contents; the corrected v0.8 replication holds the model/simulator fixed, preserves the wire string, and uses fresh tasks.
 
 ### Eisenstein et al. (2026), *MT-PingEval: Evaluating Multi-Turn Collaboration with Private Information Games*
 
