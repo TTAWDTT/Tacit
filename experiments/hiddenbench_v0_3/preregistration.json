@@ -1,0 +1,42 @@
+{
+  "study": "HiddenBench full-information local capability screen",
+  "version": "0.3",
+  "status": "frozen before inference",
+  "motivation": "The Qwen3-8B v0.2 run scored 0.167 mean initial individual accuracy under full information, below the 0.8 eligibility gate. The project has a cached, previously runnable Qwen3-14B Q4_K_M checkpoint; screen it before deciding whether to spend on full multi-agent episodes.",
+  "question": "Does Qwen3-14B reach at least 0.8 mean individual accuracy on initial votes when all HiddenBench facts are visible?",
+  "sources": {
+    "benchmark_paper": "https://arxiv.org/abs/2505.11556",
+    "benchmark_repository": "https://github.com/Yassellee/HiddenBench_ICML",
+    "benchmark_revision": "3be6ca16973e4fb751ffc0dfb7eb11f2d28335d1",
+    "benchmark_file_sha256": "8684c1c8b02da49bb3a959c9ba352b3eb682c02653a3c508c47b8ed54f7a5df3",
+    "model_repository": "https://huggingface.co/Qwen/Qwen3-14B-GGUF",
+    "model_revision": "530227a7d994db8eca5ab5ced2fb692b614357fd"
+  },
+  "model": {
+    "name": "Qwen3-14B-Q4_K_M",
+    "file": "Qwen3-14B-Q4_K_M.gguf",
+    "size_bytes": 9001752960,
+    "sha256": "500a8806e85ee9c83f3ae08420295592451379b4f8cf2d0f41c15dffeb6b81f0",
+    "runtime": "llama.cpp b11202 on RTX 4060 Laptop GPU 8 GB; 24 GPU layers with CPU offload; one slot; context 8192; temperature 0; reasoning off"
+  },
+  "design": {
+    "tasks": ["evacuation_west_city", "evacuation_north_hill", "evacuation_east_town"],
+    "profile": "full",
+    "agents_per_task": 4,
+    "rounds": 0,
+    "votes_per_task": 4,
+    "planned_successful_completions": 12,
+    "base_seed": 20260927,
+    "seed_rule": "base_seed + task_index * 10000",
+    "temperature": 0.0,
+    "scoring": "Mean fraction of four initial agent votes matching each task's gold answer, averaged over the three tasks; report the total correct vote count and per-task values. This is the pre-discussion full-profile capability gate used in v0.1/v0.2."
+  },
+  "prediction": "A stronger same-family checkpoint may improve full-information vote accuracy relative to the Qwen3-8B v0.2 baseline (2/12); no minimum improvement is assumed beyond the 0.8 eligibility gate.",
+  "decision_rule": "If mean initial individual accuracy is below 0.8, do not run a communication-protocol comparison on this model/task pairing. If it reaches or exceeds 0.8, that only licenses a separately preregistered full HiddenBench calibration; it is not evidence of communication superiority.",
+  "limits": [
+    "Only 12 deterministic votes across three public verification tasks.",
+    "This is a model/task capability screen and a paired descriptive comparison with Qwen3-8B, not a causal scaling study.",
+    "No discussion, hidden-profile run, or protocol comparison is included.",
+    "CPU/GPU offload latency is hardware-specific."
+  ]
+}
