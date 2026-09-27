@@ -4,15 +4,17 @@
 
 ## First benchmark requirement
 
-Construct tasks with private information distributed across agents, where a single agent cannot observe all required facts. Establish communication necessity by evaluating (a) full communication, (b) no communication, and (c) a centralized oracle/upper bound. Begin with deterministic synthetic tasks to control ground truth, then test transfer to a realistic task if the measurement is sound.
+Start by reusing existing suites rather than creating another benchmark. Evaluate Silo-Bench's private data shards / algorithmic tasks for scaling and MT-PingEval's private-information games for multi-turn behavior, subject to artifact license and reproducibility checks. Establish communication necessity in each selected split with (a) full communication, (b) no communication, and (c) a centralized oracle/upper bound. Add a small deterministic synthetic task only if these suites do not permit clean message-format/budget interventions.
 
-Possible seed task families to investigate—not yet selected:
+Potential tasks to retain only if the existing suites leave a concrete gap:
 
 - Distributed constraint satisfaction: agents hold disjoint constraints; only joint aggregation identifies a valid assignment.
 - Multi-hop fact synthesis: agents receive non-overlapping evidence and must communicate provenance/conflicts to answer an unseen query.
 - Collaborative debugging: agents hold disjoint traces/spec fragments; success requires exchanging the critical interaction.
 
 Avoid tasks that can be solved from public context or common model knowledge alone.
+
+AutoForm's existing HotpotQA split-context setting already demonstrates distributed supporting facts and provides a direct replication target. Its paper reports Rouge-L/F1 and a `# Tokens` measure; this project should inspect and reproduce exact definitions rather than assume a missing cost measure. First extend the task/metric coverage; do not claim communication necessity is previously untested.
 
 ## Baseline families
 
@@ -28,7 +30,8 @@ Avoid tasks that can be solved from public context or common model knowledge alo
 ## Core controlled comparisons
 
 - Same underlying model weights and task episodes while varying only representation; then vary receiver model and model family.
-- Equal maximum message budget sweep (for example several byte and model-token caps) and equal-quality operating points.
+- Equal *total* communication budget sweep (input/output model tokens and serialized bytes, including instruction/codebook setup amortized over episode) and equal-quality operating points. Report native model-token counts as well as bytes because tokenizers differ.
+- Fix and report turns, wall time, tool calls, model calls, temperature, prompt, and maximum rounds. On MT-PingEval, compare one-shot against multiple turns at the same overall budget.
 - Hold task context, agent count, information partition, number of turns, decoding settings, and answer evaluator constant.
 - Separate content messages from instructions, schema definitions, codebook negotiation, shared prompt context, and hidden state transfer.
 - Measure decode success, semantic reconstruction, task completion, correctness, latency, generated and consumed tokens, bytes on the wire, setup cost, and retries.
