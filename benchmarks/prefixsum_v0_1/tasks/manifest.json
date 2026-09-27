@@ -1,0 +1,89 @@
+{
+  "suite": "PrefixSum v0.1",
+  "source_adaptation": "Silo-Bench II-11 Prefix Sum; Unlicense",
+  "seed_base": 2026092701,
+  "value_range": [
+    1,
+    50
+  ],
+  "segment_lengths": [
+    6,
+    15,
+    30
+  ],
+  "replicates_per_length": 4,
+  "files": [
+    {
+      "file": "PSUM-L06-S00.json",
+      "sha256": "dcf91c53e74abcf5436866890d96cc17ca468ce99ecf1f6d16503cbf25813654",
+      "seed": 2026093301,
+      "segment_length": 6
+    },
+    {
+      "file": "PSUM-L06-S01.json",
+      "sha256": "f65cca1258ab336496291949d36846caca7d98f897c09ef79be7e2a7b97044e5",
+      "seed": 2026093302,
+      "segment_length": 6
+    },
+    {
+      "file": "PSUM-L06-S02.json",
+      "sha256": "508d64fb2a6dc72897df52953477268f70db669e12f04c6cfabaf2355e19fabf",
+      "seed": 2026093303,
+      "segment_length": 6
+    },
+    {
+      "file": "PSUM-L06-S03.json",
+      "sha256": "6c1c9c9d9cad5fbadcb5f873cf6392b48d9a6054188f6a50fdacb92ad967a333",
+      "seed": 2026093304,
+      "segment_length": 6
+    },
+    {
+      "file": "PSUM-L15-S00.json",
+      "sha256": "3f6934629f85cd3274cb85f8de33a606b5f3ba2aff3daaab0234ceb717960d02",
+      "seed": 2026094201,
+      "segment_length": 15
+    },
+    {
+      "file": "PSUM-L15-S01.json",
+      "sha256": "7eb6f2b48cfa5a3aa9efe7533b9456ac192aa244a1d802b69ade7d4522f484b7",
+      "seed": 2026094202,
+      "segment_length": 15
+    },
+    {
+      "file": "PSUM-L15-S02.json",
+      "sha256": "df89ed1b0ae1762b2dda9766c3b158b7a83383acd22c13295a8d5a9b5a380092",
+      "seed": 2026094203,
+      "segment_length": 15
+    },
+    {
+      "file": "PSUM-L15-S03.json",
+      "sha256": "4cc81645dc350ae70176777ffe9407bc6f46cc10613e1ee592a299c7bc461efc",
+      "seed": 2026094204,
+      "segment_length": 15
+    },
+    {
+      "file": "PSUM-L30-S00.json",
+      "sha256": "ba26f93775c18587829b6dfff533a3b50d8e874faa31779357c8fd06c12fa132",
+      "seed": 2026095701,
+      "segment_length": 30
+    },
+    {
+      "file": "PSUM-L30-S01.json",
+      "sha256": "1d595c75c11f4238cc83db79616154fda54028d950e504fe3ad7ce2795d2c848",
+      "seed": 2026095702,
+      "segment_length": 30
+    },
+    {
+      "file": "PSUM-L30-S02.json",
+      "sha256": "f98b3008b60ae800a39b6f0130c7436027a428451edc4f69f493c6b5a2de4106",
+      "seed": 2026095703,
+      "segment_length": 30
+    },
+    {
+      "file": "PSUM-L30-S03.json",
+      "sha256": "bac111f61f313be42749e9288c3d3364924e3368f3e3f8789b07afceca00c8dd",
+      "seed": 2026095704,
+      "segment_length": 30
+    }
+  ]
+}

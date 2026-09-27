@@ -1,0 +1,68 @@
+{
+  "case_id": "PSUM-L06-S02",
+  "case_name": "Two-Agent Segmented Prefix Sum",
+  "paradigm": "Silo-Bench II-11 Prefix Sum adaptation",
+  "task_description": "Compute the global inclusive prefix sum of the two concatenated private segments. Agent 0's segment comes first, followed by Agent 1's segment. Each agent must submit only the prefix sums corresponding to its own segment, as a JSON list of integers. Agent 1 needs the total of Agent 0's segment before it can compute its first output.",
+  "metadata": {
+    "num_agents": 2,
+    "task_family": "prefix_sum",
+    "segment_length": 6,
+    "value_range": [
+      1,
+      50
+    ],
+    "replicate": 2,
+    "seed": 2026093303,
+    "split": "heldout",
+    "communication_required_for_joint_success": true
+  },
+  "agent_configs": [
+    {
+      "agent_id": 0,
+      "input_shard": [
+        25,
+        15,
+        36,
+        28,
+        14,
+        20
+      ],
+      "user_prompt": "Task: Compute the global inclusive prefix sum of the two concatenated private segments. Agent 0's segment comes first, followed by Agent 1's segment. Each agent must submit only the prefix sums corresponding to its own segment, as a JSON list of integers. Agent 1 needs the total of Agent 0's segment before it can compute its first output.\nYou are Agent 0 of 2.\nYour private segment (in global order) is: [25, 15, 36, 28, 14, 20]\nYour local segment length is 6.\nUse submit_result with your prefix-sum segment as a JSON list of integers, in the same order and length as your local data."
+    },
+    {
+      "agent_id": 1,
+      "input_shard": [
+        24,
+        28,
+        21,
+        34,
+        38,
+        22
+      ],
+      "user_prompt": "Task: Compute the global inclusive prefix sum of the two concatenated private segments. Agent 0's segment comes first, followed by Agent 1's segment. Each agent must submit only the prefix sums corresponding to its own segment, as a JSON list of integers. Agent 1 needs the total of Agent 0's segment before it can compute its first output.\nYou are Agent 1 of 2.\nYour private segment (in global order) is: [24, 28, 21, 34, 38, 22]\nYour local segment length is 6.\nUse submit_result with your prefix-sum segment as a JSON list of integers, in the same order and length as your local data."
+    }
+  ],
+  "expected_output": {
+    "type": "distributed",
+    "per_agent_values": [
+      [
+        25,
+        40,
+        76,
+        104,
+        118,
+        138
+      ],
+      [
+        162,
+        190,
+        211,
+        245,
+        283,
+        305
+      ]
+    ],
+    "is_segmented": true,
+    "verification_logic": "Each agent returns its exact global prefix-sum segment."
+  }
+}

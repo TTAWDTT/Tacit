@@ -104,13 +104,13 @@ Representative framework where agents converse using flexible natural language a
 
 [arXiv](https://arxiv.org/abs/2603.01045) · [paper code and benchmark](https://github.com/jwyjohn/acl26-silo-bench)
 
-30 generated algorithmic tasks divide private data into agent-local shards; the suite varies task communication complexity and agent count (2–100) and includes peer-to-peer, broadcast, and shared-file-system baselines. It directly addresses task necessity and scaling. It evaluates coordination protocols/topologies, however, so this project should first check whether message representation can be swapped while leaving these mechanics fixed. Upstream declares Unlicense. The official runner uses an OpenAI-compatible API base and may therefore permit local-server evaluation. Candidate first suite; inspect task license/data schemas and source before relying on it.
+30 generated algorithmic tasks divide private data into agent-local shards; the suite varies task communication complexity and agent count (2–100) and includes peer-to-peer, broadcast, and shared-file-system baselines. Its reported communication-reasoning gap localizes failures to integration of distributed state, not merely information exchange. The upstream II-11 Prefix Sum generator is Unlicense, and the local P2P runner works with an OpenAI-compatible local endpoint. Our DuoSum pilot deliberately left this task family's integration behavior untested; v0.7 now adapts II-11 while holding model and simulator fixed and varying only message form/content policy.
 
 ### Eisenstein et al. (2026), *MT-PingEval: Evaluating Multi-Turn Collaboration with Private Information Games*
 
 [arXiv](https://arxiv.org/abs/2602.24188)
 
-Uses collaborative games with private information and divides a fixed token budget over variable numbers of turns. The paper reports that interaction often fails to improve over a one-shot summary baseline despite remaining headroom. This is a strong complementary suite for interactive communication policies and turn/budget trade-offs. Reuse if licensing and execution artifacts allow; otherwise reproduce the task design without copying restricted assets.
+Uses collaborative games with private information and divides a fixed token budget over variable numbers of turns. The paper reports that interaction often fails to improve over a one-shot summary baseline despite remaining headroom, while humans achieve comparable success with more token-efficient, coherent dialogue. This is a strong complementary suite for interactive communication policies and turn/budget trade-offs. It motivates treating turn count and task success as protocol properties, while v0.7 isolates a deterministic sufficient statistic in an existing Unlicense task.
 
 ### Nath et al. (2026), *CRAFT: Grounded Multi-Agent Coordination Under Partial Information*
 

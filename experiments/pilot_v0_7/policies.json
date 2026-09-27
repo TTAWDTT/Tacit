@@ -1,0 +1,50 @@
+{
+  "status": "held-out protocol frozen before any v0.7 model call",
+  "task_suite": "PrefixSum v0.1, adapted from Silo-Bench II-11",
+  "task_manifest_sha256": "3aa46d96289c3ec50b54c49e705de563ed9372b013317647ff2e89cd3e663bc5",
+  "task_lengths": [6, 15, 30],
+  "replicates_per_length": 4,
+  "task_files": [
+    "PSUM-L06-S00.json", "PSUM-L06-S01.json", "PSUM-L06-S02.json", "PSUM-L06-S03.json",
+    "PSUM-L15-S00.json", "PSUM-L15-S01.json", "PSUM-L15-S02.json", "PSUM-L15-S03.json",
+    "PSUM-L30-S00.json", "PSUM-L30-S01.json", "PSUM-L30-S02.json", "PSUM-L30-S03.json"
+  ],
+  "task_split": "all generated cases held out; no prompt tuning on these seeds",
+  "upstream_engine": "Silo-Bench P2P simulator",
+  "upstream_engine_commit": "e74127782ed1c42fff474249961f022c063d76f2",
+  "model": "Qwen/Qwen3-4B-GGUF",
+  "model_revision": "bc640142c66e1fdd12af0bd68f40445458f3869b",
+  "model_file": "Qwen3-4B-Q4_K_M.gguf",
+  "model_file_sha256": "7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5",
+  "runtime": "llama.cpp b11202, commit fcb3074f2, Windows x64 CUDA 12.4",
+  "decoding": "greedy; --temp 0 --n-predict 256 --reasoning off; four rounds maximum",
+  "max_rounds": 4,
+  "protocol": "Silo-Bench point-to-point message tool",
+  "interaction_scaffold": "Coordination rules: agent IDs are zero-based. Agent 0 sends the needed information to Agent 1; Agent 1 receives it and computes its segment. Do not target yourself. Each agent must submit a JSON list of integers containing only the global prefix sums for its own segment, in order. Agent 0 computes its local cumulative sums. Agent 1 adds Agent 0's segment total to every local cumulative sum; if the received message contains a full segment, sum it first. Submit the list with submit_result as soon as it is correct. Do not repeat messages or poll after receiving the needed information.",
+  "conditions": {
+    "scaffold_only": "",
+    "concise_nl": "When sending a message, communicate only the sum of all values in your local segment as one short English sentence exactly of the form `The subtotal is 123.` Replace 123 with your integer sum. Do not include the full segment or unrelated numbers.",
+    "compact_kv": "When sending a message, encode only the sum of all values in your local segment as s=<integer>, with no other text.",
+    "json_schema": "When sending a message, encode the sum of all values in your local segment as exactly one valid JSON object of the form {\"s\": 123}. Replace 123 with your sum. Do not use single quotes or add prose.",
+    "binary": "When sending a message, encode only the sum of all values in your local segment as its base-2 digits, without a prefix, leading zeros, or prose. Example: decimal 13 is 1101 in base 2.",
+    "full_shard": "When sending a message, copy your entire local segment as exactly one valid JSON list of integers, in its original order. Do not calculate or send a subtotal.",
+    "no_communication": ""
+  },
+  "intervention_control": "no_communication: Silo send_message action disabled; no interaction scaffold injected",
+  "primary_outcomes": [
+    "strict per-agent exact prefix-list success and episode-level unanimous success",
+    "assigned message grammar syntax and decoded sender value fidelity",
+    "for full_shard, exact list syntax and equality to sender shard",
+    "message payload UTF-8 bytes",
+    "backend-reported input plus output token counts, latency, turns, sends, receives, and invalid actions",
+    "outcomes by segment length"
+  ],
+  "theory_prediction": "For a segment length L with values in {1,...,50}, Agent 1's correct result depends on Agent 0 only through the subtotal S. S ranges from L to 50L, so a zero-error code requires at least ceil(log2(49L+1)) worst-case bits: 9, 10, and 11 bits for L=6, 15, and 30. If prompt-directed compact-KV/binary messages faithfully transmit S, they should use fewer payload bytes than transmitting the full shard. Whether they preserve end-task success is empirical; full-shard transfer could win if sender aggregation or receiver decoding is unreliable.",
+  "limitations": [
+    "Twelve synthetic two-agent tasks from one algorithmic family do not establish transfer to naturalistic collaboration.",
+    "One greedy run per episode-condition provides descriptive evidence only; the two agent outputs per episode are not independent samples.",
+    "No equal total-model-token budget is imposed; no efficiency frontier or scaling law will be claimed.",
+    "All cases are generated from disclosed seeds and should be treated as a held-out split relative to this frozen protocol, not as a permanently secret test set.",
+    "Model tokens are backend-specific and should not be compared directly with v0.5 or v0.6 totals."
+  ]
+}
