@@ -1,0 +1,100 @@
+{
+  "study": "local_model_scale_hybrid_diagnostic_v0_10",
+  "comparison_baseline": "paired Qwen3-4B v0.9 on the same 12 tasks",
+  "model": "Qwen3-8B Q4_K_M GGUF",
+  "model_repository_revision": "7c41481f57cb95916b40956ab2f0b139b296d974",
+  "model_file_sha256": "d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785",
+  "task_manifest_sha256": "f6e22454ab1a56b9606f9d668ce74828e80588ca97b5fc9ec8c75ca54341bc79",
+  "runtime": "llama.cpp b11202, commit fcb3074f2, Windows x64 CUDA 12.4",
+  "variants": [
+    {
+      "variant": "oracle_sender_qwen_receiver",
+      "episodes": 12,
+      "agent0_exact": 12,
+      "agent1_exact": 0,
+      "fully_correct_episodes": 0,
+      "agent1_received_before_submit": 12,
+      "agent1_exact_given_received": 0,
+      "agent1_local_prefix_only": 7,
+      "agent1_followed_wire_value": 0,
+      "message_syntax": 12,
+      "subtotal_value_fidelity": 12,
+      "delivered_messages": 12,
+      "mean_backend_tokens": 5105.7,
+      "mean_payload_bytes": 5.0,
+      "mean_wall_seconds": 5.48
+    },
+    {
+      "variant": "qwen_sender_oracle_receiver",
+      "episodes": 12,
+      "agent0_exact": 4,
+      "agent1_exact": 1,
+      "fully_correct_episodes": 0,
+      "agent1_received_before_submit": 12,
+      "agent1_exact_given_received": 1,
+      "agent1_local_prefix_only": 0,
+      "agent1_followed_wire_value": 11,
+      "message_syntax": 11,
+      "subtotal_value_fidelity": 1,
+      "delivered_messages": 12,
+      "mean_backend_tokens": 2507.5,
+      "mean_payload_bytes": 6.3,
+      "mean_wall_seconds": 4.39
+    }
+  ],
+  "qwen3_4b_baseline": [
+    {
+      "variant": "oracle_sender_qwen_receiver",
+      "episodes": 12,
+      "agent0_exact": 12,
+      "agent1_exact": 0,
+      "fully_correct_episodes": 0,
+      "delivered_messages": 12,
+      "agent1_received_before_submit": 11,
+      "agent1_exact_given_received": 0,
+      "agent1_local_prefix_only": 4,
+      "agent1_matches_wire_offset": 0,
+      "compact_kv_syntax": 12,
+      "subtotal_value_fidelity": 12,
+      "oracle_receiver_applied_wire_value": null,
+      "mean_backend_tokens": 5121.3,
+      "mean_payload_bytes": 5.0,
+      "mean_wall_seconds": 4.04,
+      "agent1_output_categories": {
+        "exact_local_prefix_only": 4,
+        "other_incorrect_array": 7,
+        "no_submission": 1
+      }
+    },
+    {
+      "variant": "qwen_sender_oracle_receiver",
+      "episodes": 12,
+      "agent0_exact": 3,
+      "agent1_exact": 0,
+      "fully_correct_episodes": 0,
+      "delivered_messages": 12,
+      "agent1_received_before_submit": 12,
+      "agent1_exact_given_received": 0,
+      "agent1_local_prefix_only": 0,
+      "agent1_matches_wire_offset": 12,
+      "compact_kv_syntax": 12,
+      "subtotal_value_fidelity": 0,
+      "oracle_receiver_applied_wire_value": 12,
+      "mean_backend_tokens": 2507.2,
+      "mean_payload_bytes": 5.0,
+      "mean_wall_seconds": 2.99,
+      "agent1_output_categories": {
+        "other_incorrect_array": 12
+      }
+    }
+  ],
+  "limits": [
+    "same 12 task seeds as v0.8/v0.9; no new held-out evidence",
+    "one greedy inference per task and role variant",
+    "within-family scale comparison also changes weight revision; it is not a causal parameter-count intervention in isolation",
+    "oracle agents are deterministic controls, not model results",
+    "if full GPU offload does not fit, report and pin any offload fallback before inference"
+  ],
+  "raw_trace_file": ".cache/pilot_v0_10/scale_hybrid_runs_20260927T104604Z.jsonl",
+  "public_run_rows": "research/data/PREFIXSUM_MODEL_SCALE_V0_10_RUNS.jsonl"
+}

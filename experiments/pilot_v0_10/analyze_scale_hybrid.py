@@ -16,6 +16,7 @@ from analyze_prefixsum import message_adherence
 ROOT = study.ROOT
 REPORT_JSON = ROOT / "research" / "PREFIXSUM_MODEL_SCALE_V0_10.json"
 REPORT_MD = ROOT / "research" / "PREFIXSUM_MODEL_SCALE_V0_10.md"
+RUN_ROWS = ROOT / "research" / "data" / "PREFIXSUM_MODEL_SCALE_V0_10_RUNS.jsonl"
 
 
 def local_prefix(values: list[int]) -> list[int]:
@@ -91,6 +92,48 @@ def analyze(path: Path) -> dict[str, Any]:
             }
         )
     baseline = json.loads((ROOT / "research" / "PREFIXSUM_HYBRID_DIAGNOSTIC_V0_9.json").read_text(encoding="utf-8"))
+    RUN_ROWS.parent.mkdir(parents=True, exist_ok=True)
+    public_rows = []
+    for row in rows:
+        run_dir = ROOT / row["case_dir"]
+        task = runner.read_json(runner.TASKS / row["task"])
+        messages = []
+        for message_path in sorted(run_dir.glob("rounds/round-*/env/messages/*.json")):
+            match = re.search(r"round-(\d+)", message_path.as_posix())
+            message = json.loads(message_path.read_text(encoding="utf-8"))
+            messages.append(
+                {
+                    "round": int(match.group(1)) if match else None,
+                    "sender_id": message.get("sender_id"),
+                    "recipient_id": message.get("recipient_id"),
+                    "content": message.get("content"),
+                }
+            )
+        public_rows.append(
+            {
+                "variant": row["variant"],
+                "task": row["task"],
+                "seed": task["metadata"]["seed"],
+                "segment_length": task["metadata"]["segment_length"],
+                "success_rate": row["success_rate"],
+                "submissions": json.loads(row["submissions"]),
+                "messages": messages,
+                "send_actions": row["send_actions"],
+                "agent0_send_to_1_actions": row["agent0_send_to_1_actions"],
+                "agent0_successful_sends": row["agent0_successful_sends"],
+                "agent1_received_payload_before_submit": row["agent1_received_payload_before_submit"],
+                "message_payload_bytes": row["message_payload_bytes"],
+                "input_tokens": row["input_tokens"],
+                "output_tokens": row["output_tokens"],
+                "elapsed_seconds": row["elapsed_seconds"],
+                "rounds": row["rounds"],
+            }
+        )
+    RUN_ROWS.write_text(
+        "".join(json.dumps(row, ensure_ascii=False) + "\n" for row in public_rows),
+        encoding="utf-8",
+        newline="\n",
+    )
     return {
         "study": "local_model_scale_hybrid_diagnostic_v0_10",
         "comparison_baseline": "paired Qwen3-4B v0.9 on the same 12 tasks",
@@ -103,6 +146,7 @@ def analyze(path: Path) -> dict[str, Any]:
         "qwen3_4b_baseline": baseline["variants"],
         "limits": study.PREREG["limits"],
         "raw_trace_file": f".cache/pilot_v0_10/{path.name}",
+        "public_run_rows": "research/data/PREFIXSUM_MODEL_SCALE_V0_10_RUNS.jsonl",
     }
 
 
@@ -141,9 +185,13 @@ def markdown(result: dict[str, Any]) -> str:
         [
             "## Interpretation",
             "",
+            f"At the receiver, Qwen3-8B returned 0 exact global segments after receiving the correct oracle subtotal in {v8['oracle_sender_qwen_receiver']['agent1_received_before_submit']}/12 episodes; {v8['oracle_sender_qwen_receiver']['agent1_local_prefix_only']}/12 outputs were exactly the local prefix alone. Qwen3-4B was also 0 exact in its 11 received-message cases. This run shows no receiver-side gain from the tested local scale increase.",
+            "",
+            f"At the sender, Qwen3-8B produced a faithful subtotal in {v8['qwen_sender_oracle_receiver']['subtotal_value_fidelity']}/12 and an exact local prefix list in {v8['qwen_sender_oracle_receiver']['agent0_exact']}/12, versus 0/12 and {v4['qwen_sender_oracle_receiver']['agent0_exact']}/12 for Qwen3-4B. The oracle receiver applied the received wire value to its exact local prefix in {v8['qwen_sender_oracle_receiver']['agent1_followed_wire_value']}/12 cases. One correct wire subtotal did not coincide with a correct Agent 0 answer, so neither hybrid arm produced a fully correct episode.",
+            "",
             "Compare role-specific accuracy and message fidelity with the preregistered prediction; do not interpret token or latency differences as protocol efficiency. A model-size comparison also changes the checkpoint and its training, so it cannot isolate parameter count alone. One greedy draw on 12 reused cases supports only a local diagnostic.",
             "",
-            f"Raw local traces: `{result['raw_trace_file']}`. Aggregate data: [JSON](PREFIXSUM_MODEL_SCALE_V0_10.json).",
+            f"Per-cell summaries and exact wire messages are available as [JSONL run rows](data/PREFIXSUM_MODEL_SCALE_V0_10_RUNS.jsonl). Full local tool/model traces: `{result['raw_trace_file']}`. Aggregate data: [JSON](PREFIXSUM_MODEL_SCALE_V0_10.json).",
             "",
         ]
     )

@@ -41,3 +41,9 @@ python experiments/pilot_v0_10/run_scale_hybrid.py
 ```
 
 The runner checks the pinned GGUF size and checksum, task manifest, and upstream engine commit before model inference. If the full GPU offload does not load on the local 8GB card, stop before inference, record and commit the fallback settings, then continue with a documented deviation. Raw traces stay in ignored `.cache/pilot_v0_10/`; the analyzer runs after completion and can later rebuild the public report without model calls.
+
+## Outcome
+
+The pinned model loaded with the preregistered 99 GPU layers and 8192 context. Across 24 hybrid episodes, the oracle-sender/Qwen-receiver arm had correct input messages in 12/12 and Qwen received before submit in 12/12, but exact receiver output remained 0/12 (7/12 were exactly local-only prefixes). In the Qwen-sender/oracle-receiver arm, 11/12 messages had valid compact-KV syntax, only 1/12 carried the correct subtotal, and Agent 0's prefix output was exact in 4/12. The oracle receiver followed the transmitted offset in 11/12; the single correct subtotal did not occur with a correct Agent 0 output. Neither arm yielded a fully correct episode.
+
+Relative to the paired Qwen3-4B v0.9 run, the 8B model had no receiver-side exactness gain and only a one-case increase in sender subtotal fidelity (0/12 to 1/12) and Agent 0 exactness (3/12 to 4/12). This is too small and too narrow to claim a meaningful scale effect. See the [report](../../research/PREFIXSUM_MODEL_SCALE_V0_10.md) and committed per-cell [run rows](../../research/data/PREFIXSUM_MODEL_SCALE_V0_10_RUNS.jsonl).
