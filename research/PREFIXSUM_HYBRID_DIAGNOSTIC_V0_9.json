@@ -1,0 +1,62 @@
+{
+  "study": "paired_hybrid_role_diagnostic_v0_9",
+  "model_revision": "bc640142c66e1fdd12af0bd68f40445458f3869b",
+  "model_file_sha256": "7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5",
+  "task_manifest_sha256": "f6e22454ab1a56b9606f9d668ce74828e80588ca97b5fc9ec8c75ca54341bc79",
+  "upstream_engine_commit": "e74127782ed1c42fff474249961f022c063d76f2",
+  "runtime": "llama.cpp b11202, commit fcb3074f2, Windows x64 CUDA 12.4",
+  "condition": "compact_kv",
+  "variants": [
+    {
+      "variant": "oracle_sender_qwen_receiver",
+      "episodes": 12,
+      "agent0_exact": 12,
+      "agent1_exact": 0,
+      "fully_correct_episodes": 0,
+      "delivered_messages": 12,
+      "agent1_received_before_submit": 11,
+      "agent1_exact_given_received": 0,
+      "agent1_local_prefix_only": 4,
+      "agent1_matches_wire_offset": 0,
+      "compact_kv_syntax": 12,
+      "subtotal_value_fidelity": 12,
+      "oracle_receiver_applied_wire_value": null,
+      "mean_backend_tokens": 5121.3,
+      "mean_payload_bytes": 5.0,
+      "mean_wall_seconds": 4.04,
+      "agent1_output_categories": {
+        "exact_local_prefix_only": 4,
+        "other_incorrect_array": 7,
+        "no_submission": 1
+      }
+    },
+    {
+      "variant": "qwen_sender_oracle_receiver",
+      "episodes": 12,
+      "agent0_exact": 3,
+      "agent1_exact": 0,
+      "fully_correct_episodes": 0,
+      "delivered_messages": 12,
+      "agent1_received_before_submit": 12,
+      "agent1_exact_given_received": 0,
+      "agent1_local_prefix_only": 0,
+      "agent1_matches_wire_offset": 12,
+      "compact_kv_syntax": 12,
+      "subtotal_value_fidelity": 0,
+      "oracle_receiver_applied_wire_value": 12,
+      "mean_backend_tokens": 2507.2,
+      "mean_payload_bytes": 5.0,
+      "mean_wall_seconds": 2.99,
+      "agent1_output_categories": {
+        "other_incorrect_array": 12
+      }
+    }
+  ],
+  "limits": [
+    "one greedy Qwen inference per task and variant",
+    "same cases as v0.8, so this is paired diagnosis rather than new held-out evidence",
+    "oracle responses are deterministic controls and are excluded from model token counts",
+    "different role prompts and conversation histories preclude an efficiency ranking"
+  ],
+  "raw_trace_file": ".cache/pilot_v0_9/hybrid_runs_20260927T100450Z.jsonl"
+}

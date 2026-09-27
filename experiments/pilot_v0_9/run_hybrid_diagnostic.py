@@ -146,6 +146,10 @@ def main() -> None:
     }
     REPORT.write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8", newline="\n")
     print(json.dumps(summary, indent=2), flush=True)
+    subprocess.run(
+        [sys.executable, str(HERE / "analyze_hybrid_diagnostic.py"), "--runs", str(trace_index)],
+        check=True,
+    )
 
 
 if __name__ == "__main__":

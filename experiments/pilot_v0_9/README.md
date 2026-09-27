@@ -30,3 +30,16 @@ python experiments/pilot_v0_9/run_hybrid_diagnostic.py
 ```
 
 The runner writes raw traces under ignored `.cache/pilot_v0_9/` and writes its aggregate only after all 24 cells complete. The preregistration is committed before model calls.
+
+Rebuild the aggregate later from an existing trace file without model calls:
+
+```powershell
+$env:PYTHONPATH = '.cache/python-packages'
+python experiments/pilot_v0_9/analyze_hybrid_diagnostic.py
+```
+
+## Outcome
+
+Oracle Agent 0 supplied the correct subtotal and exact Agent 0 result in all 12 tasks. Qwen Agent 1 received the payload before submitting in 11/12, yet returned the exact global segment in 0/11; four outputs matched only its local prefix sums, seven were other incorrect arrays, and one task had no Agent 1 submission. This isolates receiver-side failure after the right message was available.
+
+With Qwen as Agent 0, all 12 messages were syntactically compact-KV and delivered, but 0/12 subtotals were correct; Agent 0's own prefix list was exact in 3/12. The oracle receiver then returned the prefix segment implied by each actual wire value in 12/12, confirming its arithmetic and decode path. No episode was jointly correct in either hybrid arm. The [report](../../research/PREFIXSUM_HYBRID_DIAGNOSTIC_V0_9.md) and [machine-readable summary](../../research/PREFIXSUM_HYBRID_DIAGNOSTIC_V0_9.json) preserve the results.
