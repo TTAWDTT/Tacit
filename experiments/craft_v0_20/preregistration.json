@@ -1,0 +1,57 @@
+{
+  "study": "CRAFT single-slot local inference feasibility",
+  "version": "0.20",
+  "status": "frozen before scored inference",
+  "purpose": "Test whether smaller llama.cpp batching and one server slot make a long CRAFT prompt tractable on the available 8 GB GPU. Not a language comparison.",
+  "question": "With one inference slot and smaller prompt batches, can the pinned Qwen3-8B CRAFT runner complete two turns, deliver the three distinct Director messages, and make nonzero progress?",
+  "source": {
+    "repository": "https://github.com/csu-signal/CRAFT",
+    "commit": "f174fa5ae80c20ce5ccc7bb7cbf4aeab69efe430",
+    "adapter": [
+      "Sample D1, D2, D3 without replacement and seed the Python scheduler.",
+      "Preserve non-instruction bracketed Director prose in the parser fallback.",
+      "Set child process console encoding to UTF-8."
+    ],
+    "prompts_and_task_logic": "upstream unchanged"
+  },
+  "model": {
+    "all_roles": "Qwen3-8B-Q4_K_M",
+    "artifact_revision": "7c41481f57cb95916b40956ab2f0b139b296d974",
+    "bytes": 5027783488,
+    "sha256": "d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785",
+    "runtime": "llama.cpp b11202; 99 GPU layers; 8192 context; 1 parallel slot; logical batch 512; physical micro-batch 128; reasoning off; Director temperature 0.7/max_tokens 500; Builder temperature 0.1/max_tokens 250"
+  },
+  "design": {
+    "structure_indices": [0],
+    "turn_limit": 2,
+    "run_seed": 320,
+    "python_hash_seed": 320,
+    "oracle_candidates": 5,
+    "builder_tools": false,
+    "maximum_scored_completions": 8,
+    "communication_condition": "upstream CRAFT natural-language prompts and messages with bracket-preserving parser fallback",
+    "status_relative_to_v0_19": "same structure/model/task, fresh scheduling seed, different server memory settings; separate run"
+  },
+  "outcomes": {
+    "primary": [
+      "whether each requested completion finishes, with wall time",
+      "per turn: generated Director posts, parsed messages, and Builder-delivered messages, reported separately",
+      "upstream overall_progress after each completed turn"
+    ],
+    "secondary": [
+      "move execution and parser/backend errors",
+      "GPU memory/utilization snapshots at request stalls, if any"
+    ],
+    "not_measured": [
+      "communication token efficiency",
+      "frontier or scaling law",
+      "language superiority",
+      "generalization beyond structure 0"
+    ]
+  },
+  "predictions": [
+    "At least one Director completion will finish within ten minutes of request start.",
+    "If two turns complete, each will deliver at least two of the three Director messages."
+  ],
+  "analysis": "If the first request again stalls for five continuous minutes with no increase in prompt-processed or decoded-token counts, stop before issuing further calls and report a runtime failure. Otherwise complete the fixed two-turn budget. Report all partial and complete attempts."
+}
