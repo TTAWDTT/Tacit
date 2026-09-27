@@ -32,6 +32,8 @@ The v0.11 calibration freezes 24 fresh held-out tasks at segment lengths 2, 3, a
 
 Run instructions and the checksum-enforcing runner are in [`experiments/pilot_v0_11/README.md`](experiments/pilot_v0_11/README.md).
 
+The receiver acquisition/application diagnostic is preregistered at [`experiments/pilot_v0_12/preregistration.json`](experiments/pilot_v0_12/preregistration.json), with local run steps at [`experiments/pilot_v0_12/README.md`](experiments/pilot_v0_12/README.md).
+
 ## Repository principles
 
 - Publish hypotheses, negative results, assumptions, and changes to the thesis.
