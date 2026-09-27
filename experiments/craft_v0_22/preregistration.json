@@ -1,0 +1,62 @@
+{
+  "study": "CRAFT natural-language multi-structure baseline",
+  "version": "0.22",
+  "status": "frozen before scored inference",
+  "purpose": "Establish a reproducible natural-language reference on three difficulty levels before designing or comparing alternative communication protocols.",
+  "research_question": "What progress, message traffic, and inference cost does the pinned local model achieve under CRAFT's natural-language communication setup across simple, medium, and complex hidden-information structures?",
+  "source": {
+    "repository": "https://github.com/csu-signal/CRAFT",
+    "revision": "f174fa5ae80c20ce5ccc7bb7cbf4aeab69efe430",
+    "structure_dataset": "data/structures_dataset_20.json",
+    "adapter": [
+      "Seed and sample D1, D2, D3 without replacement: exactly one message call per role per turn.",
+      "All Directors observe the same pre-round conversation; the Builder receives all three extracted messages.",
+      "Parser extracts the message region, removes one outer square-bracket envelope and formatting tags, and otherwise preserves the generated prose exactly.",
+      "Child process console encoding is UTF-8."
+    ],
+    "other_prompts_task_logic_and_scorer": "upstream unchanged"
+  },
+  "model": {
+    "all_roles": "Qwen3-8B-Q4_K_M",
+    "artifact_revision": "7c41481f57cb95916b40956ab2f0b139b296d974",
+    "bytes": 5027783488,
+    "sha256": "d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785",
+    "runtime": "llama.cpp b11202; 99 GPU layers; one slot; context 4096; logical batch 1024; physical micro-batch 256; Director temperature 0.7/max_tokens 500; Builder temperature 0.1/max_tokens 250"
+  },
+  "design": {
+    "structure_indices": [0, 7, 2],
+    "expected_structures": [
+      {"index": 0, "id": "structure_001", "complexity": "medium"},
+      {"index": 7, "id": "structure_008", "complexity": "simple"},
+      {"index": 2, "id": "structure_003", "complexity": "complex"}
+    ],
+    "turn_limit_per_structure": 8,
+    "run_seed": 322,
+    "python_hash_seed": 322,
+    "oracle_candidates": 5,
+    "builder_tools": false,
+    "communication_condition": "pinned CRAFT natural-language speaker prompts and extracted public messages",
+    "maximum_scored_completions": 96,
+    "pairing": "Reference task manifest for any later format study; no alternative condition is included here."
+  },
+  "outcomes": {
+    "primary": [
+      "final progress and completion per structure",
+      "generated, parsed, and Builder-delivered Director messages per turn",
+      "Builder-visible transcript Qwen-token count per turn",
+      "per-turn progress trajectory"
+    ],
+    "secondary": [
+      "selected move and oracle membership",
+      "llama.cpp prompt/generation token counts and service timing",
+      "message-format residuals after the fixed parser"
+    ],
+    "not_measured": [
+      "communication efficiency frontier",
+      "causal language-format effect",
+      "generalization beyond these three structures",
+      "scaling laws"
+    ]
+  },
+  "analysis": "Report every structure and attempted turn. Keep per-structure metrics separate and give their unweighted mean only as a descriptive summary. Include errors and truncation. Do not claim superiority or statistical significance. A later comparison must reuse the same structures, role schedule, parser, model/runtime, move oracle, and turn limit, with its own preregistration."
+}
