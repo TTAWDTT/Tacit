@@ -44,7 +44,13 @@ def analyze(paths: list[Path]) -> dict[str, Any]:
         local = sum(bool(task["local_prefix"]["exact"]) for task in tasks)
         offset = sum(bool(task["offset_vector"]["exact"]) for task in tasks)
         combined = sum(bool(task["combined_receiver"]["exact"]) for task in tasks)
-        transitions.append({"model": model, "tasks": len(tasks), "local_prefix_exact": local, "offset_vector_exact": offset, "combined_receiver_exact": combined})
+        both = [task for task in tasks if task["local_prefix"]["exact"] and task["offset_vector"]["exact"]]
+        transitions.append({
+            "model": model, "tasks": len(tasks), "local_prefix_exact": local,
+            "offset_vector_exact": offset, "combined_receiver_exact": combined,
+            "both_substeps_exact": len(both),
+            "combined_exact_given_both_substeps": sum(bool(task["combined_receiver"]["exact"]) for task in both),
+        })
     RUN_ROWS.parent.mkdir(parents=True, exist_ok=True)
     RUN_ROWS.write_text("".join(json.dumps(row, ensure_ascii=False) + "\n" for row in rows), encoding="utf-8", newline="\n")
     return {
@@ -71,14 +77,18 @@ def markdown(result: dict[str, Any]) -> str:
         lines.append(f"| {item['model']} | {item['condition']} | {item['segment_length']} | {item['parse_success']}/{item['episodes']} | {item['exact']}/{item['episodes']} | {item['mean_input_tokens']} | {item['mean_output_tokens']} |")
     lines.extend([
         "", "## Paired totals across all 24 cases", "",
-        "| Model | Local prefix exact | Offset-vector exact | Combined receiver exact |",
-        "|---|---:|---:|---:|",
+        "| Model | Local prefix exact | Offset-vector exact | Combined receiver exact | Both substeps exact | Combined exact on those inputs |",
+        "|---|---:|---:|---:|---:|---:|",
     ])
     for item in result["paired_task_totals_by_model"]:
-        lines.append(f"| {item['model']} | {item['local_prefix_exact']}/24 | {item['offset_vector_exact']}/24 | {item['combined_receiver_exact']}/24 |")
+        lines.append(f"| {item['model']} | {item['local_prefix_exact']}/24 | {item['offset_vector_exact']}/24 | {item['combined_receiver_exact']}/24 | {item['both_substeps_exact']}/24 | {item['combined_exact_given_both_substeps']}/{item['both_substeps_exact']} |")
     lines.extend([
         "", "## Interpretation", "",
-        "Use differences between these arithmetic controls to locate the failing operation. High local-prefix and offset-vector accuracy with low combined accuracy would implicate composition; low offset-vector accuracy despite supplied prefixes would show that scalar application itself remains difficult. High direct accuracy would point back toward multi-agent interaction or harness context. These controls cannot establish message-format efficiency or generalization beyond this task family.",
+        "Qwen3-4B was exact on 20/24 local-prefix controls and 12/24 offset-vector controls, but 0/24 combined receiver controls. Qwen3-8B was exact on 23/24, 19/24, and 7/24 respectively. Among inputs where each model's separate local-prefix and offset-vector runs were both exact, the combined prompt was still exact on 0/10 (4B) and 5/18 (8B). This points to both offset arithmetic and task composition as unresolved execution bottlenecks; it does not isolate a single cause.",
+        "",
+        "Unlike the simulator-based receiver conditions, the direct combined prompt produced 7/24 exact outputs for Qwen3-8B. That contrast suggests harness/context contributes to the gap, alongside the arithmetic/composition failures seen in direct calls. It is not a causal estimate because the direct prompt and simulator context differ substantially.",
+        "",
+        "These controls cannot establish message-format efficiency or generalization beyond this task family.",
         "",
         "This is a narrow diagnostic on reused task inputs with one greedy output each. Models and checkpoints are not a causal size comparison.",
         "",

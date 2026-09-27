@@ -1,0 +1,253 @@
+{
+  "study": "prefixsum_receiver_arithmetic_ladder_v0_13",
+  "task_manifest_sha256": "c6302480780c7bea1c54ebc00436c06d57e092b285204139a20311685e3f7d33",
+  "models": [
+    {
+      "model": "Qwen3-4B Q4_K_M GGUF",
+      "model_repository_revision": "bc640142c66e1fdd12af0bd68f40445458f3869b",
+      "model_file": "Qwen3-4B-Q4_K_M.gguf",
+      "model_file_size_bytes": 2497280256,
+      "model_file_sha256": "7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5"
+    },
+    {
+      "model": "Qwen3-8B Q4_K_M GGUF",
+      "model_repository_revision": "7c41481f57cb95916b40956ab2f0b139b296d974",
+      "model_file": "Qwen3-8B-Q4_K_M.gguf",
+      "model_file_size_bytes": 5027783488,
+      "model_file_sha256": "d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785"
+    }
+  ],
+  "runtime": "llama.cpp b11202, commit fcb3074f2, Windows x64 CUDA 12.4; RTX 4060 8 GB; 99 GPU layers requested; context 8192; temperature 0; max 128 generated tokens",
+  "summaries_by_model_condition_length": [
+    {
+      "model": "Qwen3-4B Q4_K_M GGUF",
+      "condition": "combined_receiver",
+      "segment_length": 2,
+      "episodes": 8,
+      "parse_success": 7,
+      "exact": 0,
+      "mean_input_tokens": 107.6,
+      "mean_output_tokens": 25.6,
+      "mean_wall_seconds": 0.63
+    },
+    {
+      "model": "Qwen3-4B Q4_K_M GGUF",
+      "condition": "combined_receiver",
+      "segment_length": 3,
+      "episodes": 8,
+      "parse_success": 8,
+      "exact": 0,
+      "mean_input_tokens": 111.2,
+      "mean_output_tokens": 14.9,
+      "mean_wall_seconds": 0.49
+    },
+    {
+      "model": "Qwen3-4B Q4_K_M GGUF",
+      "condition": "combined_receiver",
+      "segment_length": 4,
+      "episodes": 8,
+      "parse_success": 8,
+      "exact": 0,
+      "mean_input_tokens": 115.9,
+      "mean_output_tokens": 19.6,
+      "mean_wall_seconds": 0.55
+    },
+    {
+      "model": "Qwen3-4B Q4_K_M GGUF",
+      "condition": "local_prefix",
+      "segment_length": 2,
+      "episodes": 8,
+      "parse_success": 8,
+      "exact": 7,
+      "mean_input_tokens": 86.6,
+      "mean_output_tokens": 8.9,
+      "mean_wall_seconds": 0.41
+    },
+    {
+      "model": "Qwen3-4B Q4_K_M GGUF",
+      "condition": "local_prefix",
+      "segment_length": 3,
+      "episodes": 8,
+      "parse_success": 8,
+      "exact": 8,
+      "mean_input_tokens": 90.1,
+      "mean_output_tokens": 12.9,
+      "mean_wall_seconds": 0.45
+    },
+    {
+      "model": "Qwen3-4B Q4_K_M GGUF",
+      "condition": "local_prefix",
+      "segment_length": 4,
+      "episodes": 8,
+      "parse_success": 8,
+      "exact": 5,
+      "mean_input_tokens": 94.5,
+      "mean_output_tokens": 18.0,
+      "mean_wall_seconds": 0.53
+    },
+    {
+      "model": "Qwen3-4B Q4_K_M GGUF",
+      "condition": "offset_vector",
+      "segment_length": 2,
+      "episodes": 8,
+      "parse_success": 7,
+      "exact": 4,
+      "mean_input_tokens": 88.8,
+      "mean_output_tokens": 10.6,
+      "mean_wall_seconds": 0.43
+    },
+    {
+      "model": "Qwen3-4B Q4_K_M GGUF",
+      "condition": "offset_vector",
+      "segment_length": 3,
+      "episodes": 8,
+      "parse_success": 6,
+      "exact": 4,
+      "mean_input_tokens": 93.0,
+      "mean_output_tokens": 17.2,
+      "mean_wall_seconds": 0.52
+    },
+    {
+      "model": "Qwen3-4B Q4_K_M GGUF",
+      "condition": "offset_vector",
+      "segment_length": 4,
+      "episodes": 8,
+      "parse_success": 5,
+      "exact": 4,
+      "mean_input_tokens": 98.2,
+      "mean_output_tokens": 24.5,
+      "mean_wall_seconds": 0.62
+    },
+    {
+      "model": "Qwen3-8B Q4_K_M GGUF",
+      "condition": "combined_receiver",
+      "segment_length": 2,
+      "episodes": 8,
+      "parse_success": 8,
+      "exact": 4,
+      "mean_input_tokens": 107.6,
+      "mean_output_tokens": 9.9,
+      "mean_wall_seconds": 0.52
+    },
+    {
+      "model": "Qwen3-8B Q4_K_M GGUF",
+      "condition": "combined_receiver",
+      "segment_length": 3,
+      "episodes": 8,
+      "parse_success": 8,
+      "exact": 2,
+      "mean_input_tokens": 111.2,
+      "mean_output_tokens": 15.6,
+      "mean_wall_seconds": 0.65
+    },
+    {
+      "model": "Qwen3-8B Q4_K_M GGUF",
+      "condition": "combined_receiver",
+      "segment_length": 4,
+      "episodes": 8,
+      "parse_success": 8,
+      "exact": 1,
+      "mean_input_tokens": 115.9,
+      "mean_output_tokens": 20.9,
+      "mean_wall_seconds": 0.77
+    },
+    {
+      "model": "Qwen3-8B Q4_K_M GGUF",
+      "condition": "local_prefix",
+      "segment_length": 2,
+      "episodes": 8,
+      "parse_success": 8,
+      "exact": 7,
+      "mean_input_tokens": 86.6,
+      "mean_output_tokens": 8.9,
+      "mean_wall_seconds": 0.49
+    },
+    {
+      "model": "Qwen3-8B Q4_K_M GGUF",
+      "condition": "local_prefix",
+      "segment_length": 3,
+      "episodes": 8,
+      "parse_success": 8,
+      "exact": 8,
+      "mean_input_tokens": 90.1,
+      "mean_output_tokens": 12.9,
+      "mean_wall_seconds": 0.57
+    },
+    {
+      "model": "Qwen3-8B Q4_K_M GGUF",
+      "condition": "local_prefix",
+      "segment_length": 4,
+      "episodes": 8,
+      "parse_success": 8,
+      "exact": 8,
+      "mean_input_tokens": 94.5,
+      "mean_output_tokens": 17.9,
+      "mean_wall_seconds": 0.69
+    },
+    {
+      "model": "Qwen3-8B Q4_K_M GGUF",
+      "condition": "offset_vector",
+      "segment_length": 2,
+      "episodes": 8,
+      "parse_success": 8,
+      "exact": 5,
+      "mean_input_tokens": 88.8,
+      "mean_output_tokens": 9.6,
+      "mean_wall_seconds": 0.5
+    },
+    {
+      "model": "Qwen3-8B Q4_K_M GGUF",
+      "condition": "offset_vector",
+      "segment_length": 3,
+      "episodes": 8,
+      "parse_success": 8,
+      "exact": 6,
+      "mean_input_tokens": 93.0,
+      "mean_output_tokens": 15.2,
+      "mean_wall_seconds": 0.64
+    },
+    {
+      "model": "Qwen3-8B Q4_K_M GGUF",
+      "condition": "offset_vector",
+      "segment_length": 4,
+      "episodes": 8,
+      "parse_success": 8,
+      "exact": 8,
+      "mean_input_tokens": 98.2,
+      "mean_output_tokens": 20.8,
+      "mean_wall_seconds": 0.77
+    }
+  ],
+  "paired_task_totals_by_model": [
+    {
+      "model": "Qwen3-4B Q4_K_M GGUF",
+      "tasks": 24,
+      "local_prefix_exact": 20,
+      "offset_vector_exact": 12,
+      "combined_receiver_exact": 0,
+      "both_substeps_exact": 10,
+      "combined_exact_given_both_substeps": 0
+    },
+    {
+      "model": "Qwen3-8B Q4_K_M GGUF",
+      "tasks": 24,
+      "local_prefix_exact": 23,
+      "offset_vector_exact": 19,
+      "combined_receiver_exact": 7,
+      "both_substeps_exact": 18,
+      "combined_exact_given_both_substeps": 5
+    }
+  ],
+  "raw_trace_files": [
+    ".cache/pilot_v0_13/Qwen3-4B/arithmetic_ladder_runs_20260927T112927Z.jsonl",
+    ".cache/pilot_v0_13/Qwen3-8B/arithmetic_ladder_runs_20260927T113033Z.jsonl"
+  ],
+  "public_run_rows": "research/data/PREFIXSUM_ARITHMETIC_LADDER_V0_13_RUNS.jsonl",
+  "limits": [
+    "reused task inputs; this is a diagnostic ladder, not new held-out generalization evidence",
+    "direct single-agent completions differ from the multi-agent simulator prompt and context",
+    "one greedy run per input; no decoding variance estimate",
+    "checkpoint, scale, tokenizer, quantization and training differ together",
+    "only one arithmetic task family; no protocol or language comparison"
+  ]
+}
