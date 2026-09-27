@@ -7,6 +7,7 @@
 - Froze four hybrid conditions (4B/8B × oracle-sender/model-receiver and model-sender/oracle-receiver), one greedy episode per task and condition (96 total), compact-KV wire representation, pinned revisions and GGUF hashes, runtime, metrics, predictions, and limits in `experiments/pilot_v0_11/preregistration.json` before model calls.
 - Candidate gate: only a length where both model roles are reliably exact can support a later preregistered protocol comparison. This calibration cannot establish protocol superiority, scaling laws, or broad task-family capability.
 - Next: implement checksum-enforcing runner and analysis; commit/push them before inference, then run the pinned local models and publish raw per-episode outputs plus error analysis.
+- Added the one-model-at-a-time runner and report generator. Each model run verifies the task manifest, Silo-Bench commit, and selected GGUF hash before issuing the preregistered unscored warmup; exact per-episode outputs are retained for publication. Server settings are pinned to the previously verified 99 GPU layers and 8192 context on the local RTX 4060.
 
 ## 2026-09-27 — Initial scoping and public thesis
 

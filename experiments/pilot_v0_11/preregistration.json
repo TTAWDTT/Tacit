@@ -12,6 +12,7 @@
   "message_condition": "compact_kv: sender sends only s=<exact subtotal>",
   "engine": "Silo-Bench pinned upstream engine commit e74127782ed1c42fff474249961f022c063d76f2",
   "runtime": "llama.cpp b11202, commit fcb3074f2, Windows x64 CUDA 12.4, server at 127.0.0.1:8000",
+  "local_hardware_and_server": "NVIDIA RTX 4060 8 GB, context size 8192, 99 GPU layers requested, temperature 0, 256-token generation cap; run one model server at a time. If either model cannot load these pinned settings, stop before scored inference and preregister a documented settings amendment.",
   "decoding": "temperature 0, reasoning off, max 4 interaction rounds, context size 8192",
   "warmup": "One unscored 'Reply with OK' backend request per model before scored episodes, matching the inherited v0.8 runner. Warmup is excluded from outcomes.",
   "conditions": [
