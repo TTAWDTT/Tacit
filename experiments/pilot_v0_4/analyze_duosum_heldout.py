@@ -35,6 +35,37 @@ def parse_semantic_integer(answer: Any) -> int | None:
     return stated if left + right == stated else None
 
 
+def message_format_adherence(row: dict[str, Any], task: dict[str, Any]) -> tuple[int, int]:
+    """Count messages that follow the assigned wire representation exactly."""
+    condition = row["condition"]
+    if condition in {"scaffold_only", "no_communication"}:
+        return (0, 0)
+    values = {int(agent["agent_id"]): int(agent["input_shard"]) for agent in task["agent_configs"]}
+    messages = []
+    for path in sorted((ROOT / row["case_dir"]).glob("rounds/*/env/messages/*.json")):
+        messages.append(json.loads(path.read_text(encoding="utf-8")))
+    matches = 0
+    for message in messages:
+        value = values[int(message["sender_id"])]
+        content = str(message["content"]).strip()
+        if condition == "concise_nl":
+            matched = re.fullmatch(rf"My private value is {value}", content) is not None
+        elif condition == "compact_kv":
+            matched = content == f"v={value}"
+        elif condition == "json_schema":
+            try:
+                decoded = json.loads(content)
+            except json.JSONDecodeError:
+                decoded = None
+            matched = decoded == {"v": value}
+        elif condition == "binary":
+            matched = re.fullmatch(r"[01]+", content) is not None and int(content, 2) == value
+        else:
+            matched = False
+        matches += int(matched)
+    return matches, len(messages)
+
+
 def load_rows() -> list[dict[str, Any]]:
     rows = list(csv.DictReader(RAW.open(newline="", encoding="utf-8")))
     for row in rows:
@@ -51,6 +82,9 @@ def load_rows() -> list[dict[str, Any]]:
             and not isinstance(item.get("answer"), bool)
             for item in submissions
         )
+        matched_messages, total_messages = message_format_adherence(row, task)
+        row["format_matched_messages"] = matched_messages
+        row["format_total_messages"] = total_messages
         for field in (
             "total_tokens",
             "message_payload_bytes",
@@ -93,8 +127,8 @@ def build_report(rows: list[dict[str, Any]]) -> str:
         "",
         "Each episode has two agent submissions. *Strict success* is the Silo evaluator's exact integer check. *Semantic exactness* is a separate post-hoc diagnostic that accepts either the exact integer or a mathematically verified string `a + b = c`; it does not overwrite the benchmark's strict score.",
         "",
-        "| Condition | Strict agent success | Semantic exactness | Integer-only submissions | Mean total model tokens | Mean message payload bytes | Mean messages | Mean wall time (s) |",
-        "|---|---:|---:|---:|---:|---:|---:|---:|",
+        "| Condition | Strict agent success | Semantic exactness | Format adherence | Integer-only submissions | Mean total model tokens | Mean payload bytes | Mean messages | Mean wall time (s) |",
+        "|---|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for condition in conditions:
         group = by_condition[condition]
@@ -102,8 +136,11 @@ def build_report(rows: list[dict[str, Any]]) -> str:
         strict = sum(row["strict_correct"] for row in group) / agent_count
         semantic = sum(row["semantic_correct"] for row in group) / agent_count
         numeric = sum(row["numeric_submissions"] for row in group) / agent_count
+        format_messages = sum(row["format_matched_messages"] for row in group)
+        total_format_messages = sum(row["format_total_messages"] for row in group)
+        adherence = f"{format_messages}/{total_format_messages}" if total_format_messages else "n/a"
         lines.append(
-            f"| `{condition}` | {strict:.3f} | {semantic:.3f} | {numeric:.3f} | "
+            f"| `{condition}` | {strict:.3f} | {semantic:.3f} | {adherence} | {numeric:.3f} | "
             f"{mean(group, 'total_tokens'):.1f} | {mean(group, 'message_payload_bytes'):.1f} | "
             f"{mean(group, 'message_count'):.2f} | {mean(group, 'elapsed_seconds'):.2f} |"
         )
@@ -137,10 +174,12 @@ def build_report(rows: list[dict[str, Any]]) -> str:
             "## Interpretation",
             "",
             "- The no-communication condition is evaluated on all four episodes; compare its observed strict and semantic rates with each communicating condition rather than assuming the intervention worked.",
+            "- Format adherence is the number of transmitted messages matching the assigned representation exactly. It is not applicable to the unformatted scaffold and no-communication controls.",
             "- Strict success uses the benchmark's exact integer tool contract. Semantic exactness separately accepts only a verified integer or a simple arithmetic string whose stated operands and result are mutually consistent. It does not change the benchmark score.",
             "- The shared bare-integer instruction did not resolve terminal answer formatting: strict success was 0/8 for scaffold, concise-NL, compact-KV, JSON, and no-communication, and 1/8 for binary. This is an observed interface/model failure, not evidence that the communication messages themselves caused the score gap.",
             "- Semantic exactness was 7/8 for scaffold, 4/8 concise-NL, 5/8 compact-KV, 5/8 JSON, 6/8 binary, and 0/8 no-communication. The one-run-per-cell sample is too small to rank formats; it does show that communication was necessary in these four episodes and that the exact-sum task can reveal information transfer.",
-            "- Binary had the shortest mean message payload (6.5 UTF-8 bytes) but did not dominate semantic exactness or total model tokens. This is a descriptive point, not an efficiency frontier: budgets were not matched and setup/context costs are not captured by payload bytes.",
+            "- The binary condition transmitted decimal strings in all four episodes (0/8 messages matched base-2 encoding); the JSON condition used single-quoted Python-dict strings (0/8 valid JSON messages). Their outcomes and payload lengths cannot be attributed to successful binary or JSON encoding. Compact key-value exactly matched its format/value in 9/10 messages; concise-NL did so in 9/13. Some repeated messages carried the other agent's value, so syntax adherence alone is insufficient: semantic fidelity must also be tracked.",
+            "- The binary arm's 6.5-byte mean payload is therefore a misleading format label: it reflects short decimal messages, not binary coding. Format adherence is a prerequisite for interpreting a representation comparison.",
             "- Payload bytes, model tokens, repeated context, tool calls, and end-to-end latency are separate measures. This run does not impose equal-byte or equal-token budgets and cannot define a communication-efficiency frontier.",
             "- The four episodes provide only one observation per input width. They are insufficient to estimate a scaling law or stable condition effect.",
             "- The lower bound in `docs/THEORY.md` is in binary wire bits; it is not directly comparable with model tokens or UTF-8 bytes.",

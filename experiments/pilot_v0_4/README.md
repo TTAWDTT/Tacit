@@ -2,7 +2,9 @@
 
 This version carries the interaction calibration to four held-out episodes, one at each input width. It adds a common, format-neutral instruction requiring a bare integer in `submit_result`, but the held-out traces show that the instruction does not reliably control the answer form. The cases, model, engine, prompt, and weight hashes are pinned in [`policies.json`](policies.json).
 
-Conditions share the same interaction scaffold and integer-answer instruction: no message-format hint, concise NL, compact key-value, JSON, base-2 digits, and no communication. This is a small protocol diagnostic, not a clean estimate of representation effects: all arms achieved zero strict success, and the one-agent binary success does not support a comparative claim. No claim of general superiority follows from four episodes.
+Conditions share the same interaction scaffold and integer-answer instruction: no message-format hint, concise NL, compact key-value, JSON, base-2 digits, and no communication. This is a small protocol diagnostic, not a clean estimate of representation effects: strict success was 0/8 in five arms and 1/8 in binary, with representation adherence failures described below. No claim of general superiority follows from four episodes.
+
+Trace audit added after the first analysis found that the model sent decimal strings in every `binary` episode and single-quoted Python-dict strings in every `json_schema` episode. Those two arms therefore did not instantiate their assigned formats; their outcomes and payload sizes are not evidence about binary or valid JSON communication. Compact-KV messages exactly matched their assigned format and value in 9/10 messages; concise-NL did so in 9/13. Some repeats carried the other agent's value, showing that syntax adherence alone is not semantic fidelity. The analyzer reports message-level adherence alongside task outcomes.
 
 ## Run locally
 
