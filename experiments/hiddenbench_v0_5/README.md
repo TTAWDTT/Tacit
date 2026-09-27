@@ -4,7 +4,9 @@ This is the first full multi-agent HiddenBench baseline after Qwen3-14B passed t
 
 The run uses Qwen3-14B Q4_K_M with the v0.4 thinking-mode settings: reasoning on, reasoning budget 1,024, temperature 0.6, top-k 20, top-p 0.95, min-p 0, presence penalty 1.5, 24 GPU layers, and 8,192 context. The seed schedule matches the official task-index offsets. Each task runs in its own upstream CLI process, with raw JSON saved before the next task.
 
-The 408 planned responses could require roughly 8.8 hours at the v0.4 observed mean service time; actual cost depends on generated message lengths and cache behavior. Failed API requests and invalid-vote retries can increase request count. Raw traces remain under ignored `.cache/pilot_hiddenbench_v0_5/`.
+The 408 planned responses were initially estimated at roughly 8.8 hours from the v0.4 short-screen service time. In v0.5, each of the three full-profile tasks took about 72 minutes for 68 successful outputs, implying roughly 7.2 hours for six comparable task/profile cells before retries; actual cost depends on generated message lengths and cache behavior. Failed API requests and invalid-vote retries can increase request count. Raw traces remain under ignored `.cache/pilot_hiddenbench_v0_5/`.
+
+The completed full-profile capability gate is recorded in [the interim result](FULL_PROFILE_INTERIM.md). The hidden-profile runs are still in progress; no communication-protocol comparison has been made.
 
 Start the local service:
 
