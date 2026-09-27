@@ -1,0 +1,217 @@
+{
+  "study": "HiddenBench local capability calibration",
+  "version": "0.2",
+  "model": "Qwen3-8B-Q4_K_M",
+  "source_revision": "3be6ca16973e4fb751ffc0dfb7eb11f2d28335d1",
+  "design": {
+    "tasks": 3,
+    "agents_per_task": 4,
+    "rounds": 15,
+    "profiles": [
+      "full",
+      "hidden"
+    ],
+    "planned_successful_completions": 408,
+    "context_tokens": 8192
+  },
+  "conditions": {
+    "full": {
+      "profile": "full",
+      "official_hiddenbench_scores": {
+        "profile": "full",
+        "model": "Qwen3-8B-Q4_K_M",
+        "num_runs": 3,
+        "num_tasks": 3,
+        "average_accuracy": {
+          "pre": 0.16666666666666666,
+          "post": 0.3333333333333333,
+          "pre_sem": 0.16666666666666666,
+          "post_sem": 0.3333333333333333,
+          "improvement": 0.16666666666666666
+        },
+        "majority_accuracy": {
+          "pre": 0.0,
+          "post": 0.3333333333333333,
+          "pre_sem": 0.0,
+          "post_sem": 0.3333333333333333,
+          "improvement": 0.3333333333333333
+        },
+        "by_task": [
+          {
+            "scenario": "evacuation_east_town",
+            "num_runs": 1,
+            "pre_average_accuracy": 0.5,
+            "post_average_accuracy": 1.0,
+            "pre_majority_accuracy": 0.0,
+            "post_majority_accuracy": 1.0
+          },
+          {
+            "scenario": "evacuation_north_hill",
+            "num_runs": 1,
+            "pre_average_accuracy": 0.0,
+            "post_average_accuracy": 0.0,
+            "pre_majority_accuracy": 0.0,
+            "post_majority_accuracy": 0.0
+          },
+          {
+            "scenario": "evacuation_west_city",
+            "num_runs": 1,
+            "pre_average_accuracy": 0.0,
+            "post_average_accuracy": 0.0,
+            "pre_majority_accuracy": 0.0,
+            "post_majority_accuracy": 0.0
+          }
+        ]
+      },
+      "per_task": [
+        {
+          "task": "evacuation_west_city",
+          "seed": 20260927,
+          "messages": 60,
+          "discussion_wire_tokens": 2731,
+          "discussion_wire_utf8_bytes": 13703,
+          "initial_accuracy": 0.0,
+          "final_accuracy": 0.0,
+          "initial_majority_correct": 0.0,
+          "final_majority_correct": 0.0
+        },
+        {
+          "task": "evacuation_north_hill",
+          "seed": 20270927,
+          "messages": 60,
+          "discussion_wire_tokens": 3162,
+          "discussion_wire_utf8_bytes": 16036,
+          "initial_accuracy": 0.0,
+          "final_accuracy": 0.0,
+          "initial_majority_correct": 0.0,
+          "final_majority_correct": 0.0
+        },
+        {
+          "task": "evacuation_east_town",
+          "seed": 20280927,
+          "messages": 60,
+          "discussion_wire_tokens": 3415,
+          "discussion_wire_utf8_bytes": 17453,
+          "initial_accuracy": 0.5,
+          "final_accuracy": 1.0,
+          "initial_majority_correct": 0.0,
+          "final_majority_correct": 1.0
+        }
+      ],
+      "discussion_transport": {
+        "messages": 180,
+        "serialized_wire_tokens": 9308,
+        "serialized_wire_utf8_bytes": 47192,
+        "mean_tokens_per_message": 51.711
+      }
+    },
+    "hidden": {
+      "profile": "hidden",
+      "official_hiddenbench_scores": {
+        "profile": "hidden",
+        "model": "Qwen3-8B-Q4_K_M",
+        "num_runs": 3,
+        "num_tasks": 3,
+        "average_accuracy": {
+          "pre": 0.0,
+          "post": 0.0,
+          "pre_sem": 0.0,
+          "post_sem": 0.0,
+          "improvement": 0.0
+        },
+        "majority_accuracy": {
+          "pre": 0.0,
+          "post": 0.0,
+          "pre_sem": 0.0,
+          "post_sem": 0.0,
+          "improvement": 0.0
+        },
+        "by_task": [
+          {
+            "scenario": "evacuation_east_town",
+            "num_runs": 1,
+            "pre_average_accuracy": 0.0,
+            "post_average_accuracy": 0.0,
+            "pre_majority_accuracy": 0.0,
+            "post_majority_accuracy": 0.0
+          },
+          {
+            "scenario": "evacuation_north_hill",
+            "num_runs": 1,
+            "pre_average_accuracy": 0.0,
+            "post_average_accuracy": 0.0,
+            "pre_majority_accuracy": 0.0,
+            "post_majority_accuracy": 0.0
+          },
+          {
+            "scenario": "evacuation_west_city",
+            "num_runs": 1,
+            "pre_average_accuracy": 0.0,
+            "post_average_accuracy": 0.0,
+            "pre_majority_accuracy": 0.0,
+            "post_majority_accuracy": 0.0
+          }
+        ]
+      },
+      "per_task": [
+        {
+          "task": "evacuation_west_city",
+          "seed": 20260927,
+          "messages": 60,
+          "discussion_wire_tokens": 2500,
+          "discussion_wire_utf8_bytes": 13634,
+          "initial_accuracy": 0.0,
+          "final_accuracy": 0.0,
+          "initial_majority_correct": 0.0,
+          "final_majority_correct": 0.0
+        },
+        {
+          "task": "evacuation_north_hill",
+          "seed": 20270927,
+          "messages": 60,
+          "discussion_wire_tokens": 2371,
+          "discussion_wire_utf8_bytes": 11592,
+          "initial_accuracy": 0.0,
+          "final_accuracy": 0.0,
+          "initial_majority_correct": 0.0,
+          "final_majority_correct": 0.0
+        },
+        {
+          "task": "evacuation_east_town",
+          "seed": 20280927,
+          "messages": 60,
+          "discussion_wire_tokens": 2469,
+          "discussion_wire_utf8_bytes": 11791,
+          "initial_accuracy": 0.0,
+          "final_accuracy": 0.0,
+          "initial_majority_correct": 0.0,
+          "final_majority_correct": 0.0
+        }
+      ],
+      "discussion_transport": {
+        "messages": 180,
+        "serialized_wire_tokens": 7340,
+        "serialized_wire_utf8_bytes": 37017,
+        "mean_tokens_per_message": 40.778
+      }
+    }
+  },
+  "service": {
+    "server_requests": 408,
+    "server_completions": 408,
+    "prompt_eval_tokens_reported": 112019,
+    "generated_tokens": 18075,
+    "summed_service_ms": 468376.69,
+    "mean_service_ms_per_request": 1147.982,
+    "max_context_tokens_seen": 4676,
+    "truncated_completions": 0,
+    "prompt_eval_events": 408,
+    "total_time_events": 408
+  },
+  "capability_gate": {
+    "threshold": 0.8,
+    "full_profile_initial_average_accuracy": 0.16666666666666666,
+    "passed": false
+  },
+  "interpretation": "Local capability calibration only. Three verification tasks, one seed schedule, and one model do not support protocol, generalization, scaling, or frontier claims."
+}

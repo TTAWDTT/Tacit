@@ -7,3 +7,5 @@ The experiment repeats the same three official verification tasks, profiles, see
 Raw results and per-task logs remain under ignored `.cache/pilot_hiddenbench_v0_2/`. Publish only aggregate metrics; do not expose task-private facts, prompts, rationales, or transcripts.
 
 Run `experiments/hiddenbench_v0_2/run_hiddenbench_v0_2.py --prepare-only` to verify the source, model, data, and idle 8,192-context server. Omit the flag to run full then hidden profiles.
+
+The completed v0.2 calibration failed its preregistered full-profile gate (initial average accuracy 0.167 against a 0.8 threshold). It therefore does not support protocol ranking. See the sanitized [results](RESULTS.json) and [analysis](../../research/HIDDENBENCH_LOCAL_CALIBRATION_V0_2.md); raw conversations remain local.
