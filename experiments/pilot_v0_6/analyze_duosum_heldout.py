@@ -63,6 +63,19 @@ def load_rows() -> list[dict[str, Any]]:
         row["syntax_valid_messages"] = syntax_messages
         row["faithful_messages"] = faithful_messages
         row["format_total_messages"] = total_messages
+        sender_values = {int(agent["agent_id"]): int(agent["input_shard"]) for agent in task["agent_configs"]}
+        bare_decimal_matches = 0
+        bare_decimal_total = 0
+        for path in sorted((ROOT / row["case_dir"]).glob("rounds/*/env/messages/*.json")):
+            message = json.loads(path.read_text(encoding="utf-8"))
+            content = str(message["content"]).strip()
+            if content.isdecimal():
+                bare_decimal_total += 1
+                bare_decimal_matches += int(
+                    int(content) == sender_values[int(message["sender_id"])]
+                )
+        row["bare_decimal_matches"] = bare_decimal_matches
+        row["bare_decimal_total"] = bare_decimal_total
         for field in (
             "total_tokens",
             "message_payload_bytes",
@@ -106,8 +119,8 @@ def build_report(rows: list[dict[str, Any]]) -> str:
         "",
         "Each episode has two agent submissions. *Strict success* is the Silo evaluator's exact integer check. *Semantic exactness* is a separate post-hoc diagnostic that accepts either the exact integer or a mathematically verified string `a + b = c`; it does not overwrite the benchmark's strict score.",
         "",
-        "| Condition | Strict agent success | Semantic exactness | Syntax-valid messages | Sender-value fidelity | Integer-only submissions | Mean total model tokens | Mean payload bytes | Mean messages | Mean wall time (s) |",
-        "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
+        "| Condition | Strict agent success | Semantic exactness | Assigned-grammar syntax | Grammar-decoded value fidelity | Bare-decimal value matches | Integer-only submissions | Mean total model tokens | Mean payload bytes | Mean messages | Mean wall time (s) |",
+        "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for condition in conditions:
         group = by_condition[condition]
@@ -120,8 +133,11 @@ def build_report(rows: list[dict[str, Any]]) -> str:
         total_format_messages = sum(row["format_total_messages"] for row in group)
         syntax_rate = f"{syntax_messages}/{total_format_messages}" if total_format_messages else "n/a"
         fidelity_rate = f"{faithful_messages}/{total_format_messages}" if total_format_messages else "n/a"
+        bare_total = sum(row["bare_decimal_total"] for row in group)
+        bare_match = sum(row["bare_decimal_matches"] for row in group)
+        bare_rate = f"{bare_match}/{bare_total}" if bare_total else "n/a"
         lines.append(
-            f"| `{condition}` | {strict:.3f} | {semantic:.3f} | {syntax_rate} | {fidelity_rate} | {numeric:.3f} | "
+            f"| `{condition}` | {strict:.3f} | {semantic:.3f} | {syntax_rate} | {fidelity_rate} | {bare_rate} | {numeric:.3f} | "
             f"{mean(group, 'total_tokens'):.1f} | {mean(group, 'message_payload_bytes'):.1f} | "
             f"{mean(group, 'message_count'):.2f} | {mean(group, 'elapsed_seconds'):.2f} |"
         )
@@ -149,6 +165,44 @@ def build_report(rows: list[dict[str, Any]]) -> str:
                 f"{mean(group, 'message_count'):.1f} |"
             )
 
+    v05_strict = {
+        "scaffold_only": 4,
+        "concise_nl": 3,
+        "compact_kv": 0,
+        "json_schema": 3,
+        "binary": 5,
+        "autoform": 4,
+        "no_communication": 1,
+    }
+    v05_semantic = {
+        "scaffold_only": 15,
+        "concise_nl": 11,
+        "compact_kv": 10,
+        "json_schema": 4,
+        "binary": 13,
+        "autoform": 12,
+        "no_communication": 1,
+    }
+    lines.extend(
+        [
+            "",
+            "## Paired comparison with v0.5",
+            "",
+            "The eight held-out task files and seven conditions are the same as v0.5. Each column counts correct agent outputs out of 16; the two agents within one episode are not independent samples. This is a descriptive paired replication across two model setups, not an isolated model-scale effect.",
+            "",
+            "| Condition | v0.5 strict | v0.6 strict | Difference | v0.5 semantic | v0.6 semantic |",
+            "|---|---:|---:|---:|---:|---:|",
+        ]
+    )
+    for condition in conditions:
+        group = by_condition[condition]
+        current_strict = sum(row["strict_correct"] for row in group)
+        current_semantic = sum(row["semantic_correct"] for row in group)
+        lines.append(
+            f"| `{condition}` | {v05_strict[condition]}/16 | {current_strict}/16 | "
+            f"{current_strict - v05_strict[condition]:+d} | {v05_semantic[condition]}/16 | {current_semantic}/16 |"
+        )
+
     total_agents = 2 * len(by_condition["scaffold_only"])
     semantic_rates = {
         name: sum(row["semantic_correct"] for row in by_condition[name])
@@ -169,19 +223,22 @@ def build_report(rows: list[dict[str, Any]]) -> str:
             "## Interpretation",
             "",
             "- Compare communicating conditions with the observed no-communication control; do not assume the intervention worked from its label.",
-            "- Syntax validity and sender-value fidelity are separate: the first asks whether a fixed-format message parses; the second asks whether it decodes to that sender's private value. They are not applicable to the unformatted scaffold, adaptive AutoForm, and no-communication controls.",
+            "- Assigned-grammar syntax and grammar-decoded value fidelity apply to fixed-format arms. The separate bare-decimal column records whether a decimal-only message equals its sender's private value; it does not count as compliance with a sentence or schema instruction.",
             "- Strict success uses the benchmark's exact integer tool contract. Semantic exactness separately accepts only a verified integer or a simple arithmetic string whose stated operands and result are mutually consistent. It does not change the benchmark score.",
-            f"- No-communication semantic success was {no_comm_semantic}/{total_agents} agent outputs. Communicating arms ranged from {min(communicating_semantic)}/{total_agents} to {max(communicating_semantic)}/{total_agents}; the control failed on most cases but one local guess was correct, so it is not a logical proof by itself.",
+            f"- No-communication semantic success was {no_comm_semantic}/{total_agents} agent outputs. Communicating arms ranged from {min(communicating_semantic)}/{total_agents} to {max(communicating_semantic)}/{total_agents}. The zero control score is consistent with communication being necessary on these cases, but eight episodes are not a proof for the full task family.",
+            f"- The concise-NL instruction specified a plain-English sentence, but the raw audit shows decimal-only payloads in {sum(row['bare_decimal_total'] for row in by_condition['concise_nl'])}/{sum(row['format_total_messages'] for row in by_condition['concise_nl'])} messages. Those numerals matched their senders' private values in {sum(row['bare_decimal_matches'] for row in by_condition['concise_nl'])}/{sum(row['bare_decimal_total'] for row in by_condition['concise_nl'])}; this is effective decimal shorthand, not adherence to the assigned NL form.",
             f"- Compact-KV messages decoded to the sender's value in {kv_faithful}/{kv_messages} messages, yet semantic task success was {semantic_rates['compact_kv']}/{total_agents}. This separates reliable serialization from downstream reasoning/submission failures.",
-            f"- The example-assisted binary arm encoded the sender's value correctly in only {binary_faithful}/{binary_messages} messages; JSON syntax was valid in {json_syntax}/{json_messages} messages. Outcomes from those arms therefore mix intended-format use with fallback/nonconforming messages.",
+            f"- The example-assisted binary arm encoded the sender's value correctly in only {binary_faithful}/{binary_messages} messages; JSON syntax was valid in {json_syntax}/{json_messages} messages. Raw audit found all 16 JSON messages were single-quoted Python-style mappings, so the 16/16 strict task success reflects receiver tolerance of that payload rather than valid-JSON adherence.",
+            "- Within this run, concise-NL's actual decimal-only payload averaged 6 bytes and reached 14/16 strict successes; compact-KV averaged 10 bytes and reached 15/16; the invalid-JSON mapping averaged 20 bytes and reached 16/16. This is a small descriptive trade-off, not a matched-budget frontier, and the first and third arms did not follow their assigned grammars.",
             f"- AutoForm semantic success was {semantic_rates['autoform']}/{total_agents}, compared with {semantic_rates['scaffold_only']}/{total_agents} for the unformatted scaffold. This small run shows no evidence that format self-selection improves task success for this model/task.",
             "- Payload bytes, model tokens, repeated context, tool calls, and end-to-end latency are separate measures. This run does not impose equal-byte or equal-token budgets and cannot define a communication-efficiency frontier.",
-            "- Paired with v0.5, this is a second-model replication, but model size, quantization, backend, and chat template all change together. It cannot isolate scale or establish a general condition effect.",
+            "- Relative to v0.5, strict success increased for scaffold (+3 agents), concise NL (+11), compact KV (+15), JSON (+13), and AutoForm (+7); binary fell by 2 and no-communication fell by 1. This paired pattern is exploratory: model size, quantization, backend, and chat template all change together, so it cannot isolate scale or establish a general condition effect.",
+            "- Token totals are reported as returned by each backend. Do not compare v0.5 and v0.6 model-token totals as a cross-model efficiency result because the model tokenizer and inference backend changed.",
             "- The lower bound in `docs/THEORY.md` is in binary wire bits; it is not directly comparable with model tokens or UTF-8 bytes.",
             "",
             "## Next revision",
             "",
-            "Interpret outcomes jointly with format adherence. If fixed formats are followed and communication improves semantic task success, expand to a second receiver model and richer task family before matched-budget sweeps. If adherence remains poor, treat instruction-following as a bottleneck and avoid attributing outcomes to the intended representation.",
+            "Next, evaluate a typed parser/decoder as an explicit system condition against prompt-only formatting, then replicate across a richer task family and additional sender/receiver pairs. Account for parser cost, malformed-message recovery, and wire size. Do not call the invalid JSON arm JSON adherence or compare backend token totals directly across v0.5/v0.6.",
             "",
             "Raw prompts, tool traces, and model responses remain in the ignored `.cache/pilot_v0_6/`; this public summary contains aggregate measurements and selected anonymized outcomes only.",
         ]
