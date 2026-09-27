@@ -1,0 +1,37 @@
+{
+  "study": "CRAFT oracle communication-necessity ablation",
+  "version": "0.24",
+  "status": "frozen before inference",
+  "question": "With oracle-verified local-progress actions available, what changes when Director messages are removed, and can a no-message oracle policy complete the tasks?",
+  "source": {
+    "repository": "https://github.com/csu-signal/CRAFT",
+    "revision": "f174fa5ae80c20ce5ccc7bb7cbf4aeab69efe430",
+    "dataset": "data/structures_dataset_20.json",
+    "adapter": "v0.23 recent-16-line history, parser, failed-call omission, UTF-8, distinct Director scheduling where applicable"
+  },
+  "model": {
+    "all_roles": "Qwen3-8B-Q4_K_M",
+    "artifact_revision": "7c41481f57cb95916b40956ab2f0b139b296d974",
+    "sha256": "d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785",
+    "runtime": "llama.cpp b11202; 99 GPU layers; one slot; context 4096; batch 1024; micro-batch 256; Director temperature 0.7/max_tokens 500; Builder temperature 0.1/max_tokens 250"
+  },
+  "design": {
+    "structure_indices": [0, 7, 2],
+    "run_seed": 323,
+    "conditions": [
+      {"name": "natural_language_team", "director_messages": true, "builder_model": true, "oracle_candidates": 5, "max_turns": 20},
+      {"name": "zero_message_llm_builder", "director_messages": false, "builder_model": true, "oracle_candidates": 5, "max_turns": 20},
+      {"name": "zero_message_random_oracle_policy", "director_messages": false, "builder_model": false, "oracle_candidates": 5, "candidate_policy": "uniform random from candidates using a separate fixed RNG", "max_turns": 20}
+    ],
+    "initialization": "Upstream partComplete=True; record exact realized starting board and partialCompletionCategory per structure.",
+    "maximum_llama_completions": 300
+  },
+  "primary_outcomes": [
+    "per-structure completion and final progress",
+    "per-turn progress delta, executed move, oracle adherence, candidate count, and failed/clarification action",
+    "messages attempted, successfully parsed, delivered, and Builder-visible wire tokens",
+    "model calls, prompt/completion tokens, and service timing"
+  ],
+  "analysis": "Descriptive paired comparison across the same three structures and one seed. A completed oracle-policy episode falsifies strict communication necessity for that instance under this oracle. A failed oracle policy does not establish necessity. A zero-message LLM result estimates message removal under the given model, prompt, and oracle, not protocol superiority. No superiority, generalization, scaling, or frontier claim.",
+  "prediction": "The random oracle policy makes local progress but may not complete within 20 turns because local progress is not globally optimal. If it completes, revise the benchmark's communication-necessity claim. If it fails, strengthen no-message policies and repeat paired seeds before asserting necessity."
+}
