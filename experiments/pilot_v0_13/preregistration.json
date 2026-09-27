@@ -1,0 +1,68 @@
+{
+  "study": "prefixsum_receiver_arithmetic_ladder_v0_13",
+  "status": "frozen_before_inference",
+  "question": "Can these local models perform each arithmetic suboperation in the receiver task when tested directly without simulator tool orchestration?",
+  "motivation": "In v0.12, preloading the correct receive transcript did not produce an exact receiver output for either model. Separate local-prefix computation, vector-offset addition, and the combined transformation before attributing failure to communication or protocol design.",
+  "task_suite": "PrefixSum short-shard v0.3, paired reuse of 24 v0.11 cases; no new held-out task-family claim",
+  "task_manifest_sha256": "c6302480780c7bea1c54ebc00436c06d57e092b285204139a20311685e3f7d33",
+  "segment_lengths": [2, 3, 4],
+  "replicates_per_length": 8,
+  "design": "For each Qwen model, run three direct arithmetic conditions for all 24 task cases (72 episodes/model, 144 total). No multi-agent simulator, tools, or messages are used. Alternate condition order by task index. One greedy completion per task and condition.",
+  "conditions": [
+    {
+      "name": "local_prefix",
+      "task": "Given the Agent 1 shard x, compute p_i=sum(x_1..x_i), the local inclusive prefix vector. Return only a JSON array of integers.",
+      "expected": "local inclusive prefix of Agent 1's shard"
+    },
+    {
+      "name": "offset_vector",
+      "task": "Given the exact precomputed local prefix vector p and correct offset s=sum(Agent 0 shard), return q_i=p_i+s for every element. Return only a JSON array of integers.",
+      "expected": "Agent 1 local prefix vector shifted by the exact Agent 0 subtotal"
+    },
+    {
+      "name": "combined_receiver",
+      "task": "Given Agent 1 shard x and correct offset s=sum(Agent 0 shard), compute p_i=sum(x_1..x_i) and return q_i=p_i+s. Return only a JSON array of integers.",
+      "expected": "Agent 1 exact global prefix segment"
+    }
+  ],
+  "models": [
+    {
+      "model": "Qwen3-4B Q4_K_M GGUF",
+      "model_repository_revision": "bc640142c66e1fdd12af0bd68f40445458f3869b",
+      "model_file": "Qwen3-4B-Q4_K_M.gguf",
+      "model_file_size_bytes": 2497280256,
+      "model_file_sha256": "7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5"
+    },
+    {
+      "model": "Qwen3-8B Q4_K_M GGUF",
+      "model_repository_revision": "7c41481f57cb95916b40956ab2f0b139b296d974",
+      "model_file": "Qwen3-8B-Q4_K_M.gguf",
+      "model_file_size_bytes": 5027783488,
+      "model_file_sha256": "d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785"
+    }
+  ],
+  "runtime": "llama.cpp b11202, commit fcb3074f2, Windows x64 CUDA 12.4; RTX 4060 8 GB; 99 GPU layers requested; context 8192; temperature 0; max 128 generated tokens",
+  "warmup": "One unscored 'Reply with OK' request per model, excluded from outcomes.",
+  "primary_outcomes": [
+    "strict exact integer-array match by model, arithmetic condition, and length",
+    "strict JSON-array parse success separately from mathematical exactness",
+    "paired per-task changes between local_prefix, offset_vector, and combined_receiver"
+  ],
+  "secondary_outcomes": [
+    "raw response, backend input/output tokens, and wall time",
+    "common error categories: malformed output, wrong length, local-prefix-only, incorrect elementwise shift, other arithmetic error"
+  ],
+  "frozen_predictions": [
+    "If offset_vector exactness is high but combined_receiver exactness is low, composing prefix accumulation and shifting is a receiver execution bottleneck.",
+    "If offset_vector exactness remains low even with the prefix vector supplied, arithmetic application/output is an independent bottleneck and communication-format comparisons remain premature.",
+    "If all direct arithmetic conditions are high while simulator receivers fail, the dominant gap is more likely interaction/task orchestration; this inference remains limited to the tested harness and models."
+  ],
+  "analysis": "Report exact counts and denominators per length/condition/model. Require the full raw response to parse as a JSON list of non-boolean integers; do not extract embedded arrays from prose. No significance test is planned for 8 cases per length.",
+  "limits": [
+    "reused task inputs; this is a diagnostic ladder, not new held-out generalization evidence",
+    "direct single-agent completions differ from the multi-agent simulator prompt and context",
+    "one greedy run per input; no decoding variance estimate",
+    "checkpoint, scale, tokenizer, quantization and training differ together",
+    "only one arithmetic task family; no protocol or language comparison"
+  ]
+}
