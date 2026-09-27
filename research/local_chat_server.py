@@ -7,6 +7,7 @@ request at a time and reports model-token usage measured by the loaded tokenizer
 from __future__ import annotations
 
 import os
+import time
 import uuid
 from typing import Any
 
