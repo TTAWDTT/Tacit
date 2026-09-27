@@ -46,6 +46,24 @@ Finds that compositionality and generalization are not interchangeable: composit
 
 Argues that conclusions about compositionality depend on the evaluation dataset and supports its role for generalization under a suitable split. Implication: benchmark splits must test unseen primitive combinations, not only random held-out examples.
 
+### Kharitonov & Baroni (2020), *Emergent Language Generalization and Acquisition Speed are not tied to Compositionality*
+
+[ACL Anthology](https://aclanthology.org/2020.blackboxnlp-1.2/)
+
+Finds task-dependent cases where non-compositional protocols generalize or are acquired as well as, or better than, compositional ones. Alongside the Chaabouni/Auersperger results, this means compositionality is a proposed mechanism and transfer property to measure—not a quality score that can stand in for task success.
+
+### Lee (2024), *One-to-Many Communication and Compositionality in Emergent Communication*
+
+[ACL Anthology](https://aclanthology.org/2024.emnlp-main.1157/)
+
+Moves beyond one-speaker/one-listener games and studies broadcasts to multiple listeners who coordinate. Relevant because agent systems often broadcast across role-diverse receivers; a protocol may need to optimize for a receiver population, not one decoder.
+
+### Carmeli et al. (2024), *Concept-Best-Matching: Evaluating Compositionality in Emergent Communication*
+
+[ACL Anthology](https://aclanthology.org/2024.findings-acl.189/)
+
+Proposes a direct best-match mapping between emerged symbols and concepts to make compositionality evaluation more interpretable. Potential metric for future learned-code experiments, in addition to novel-combination transfer and decoder training.
+
 ## Protocol and system layers
 
 ### Agent2Agent (A2A) Protocol v1
@@ -85,6 +103,12 @@ Representative framework where agents converse using flexible natural language a
 [arXiv](https://arxiv.org/abs/2602.24188)
 
 Uses collaborative games with private information and divides a fixed token budget over variable numbers of turns. The paper reports that interaction often fails to improve over a one-shot summary baseline despite remaining headroom. This is a strong complementary suite for interactive communication policies and turn/budget trade-offs. Reuse if licensing and execution artifacts allow; otherwise reproduce the task design without copying restricted assets.
+
+### Sevestre & Dupoux (2025), *Frequency & Compositionality in Emergent Communication*
+
+[ACL Anthology](https://aclanthology.org/2025.emnlp-main.1387/)
+
+In referential games, finds that limited exposure—not frequency itself—can induce compositional structure. If a learned LLM protocol is evaluated, report exposure/training-data frequency and held-out primitives; an apparently systematic code may reflect sparse examples rather than a general compositional bias.
 
 ### Avsian & Heck (2024), *SNEAK: Evaluating Strategic Communication and Information Leakage in Large Language Models*
 

@@ -1,7 +1,9 @@
 {
   "status": "pilot protocol; freeze before first model run",
   "task_suite": "Silo-Bench upstream snapshot; 3 two-agent Level-I tasks",
+  "task_suite_commit": "e74127782ed1c42fff474249961f022c063d76f2",
   "model": "Qwen/Qwen3-1.7B",
+  "model_revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
   "decoding": "greedy; local Transformers; 320 token response cap",
   "protocol": "Silo-Bench P2P message tool; same engine and task files in all arms",
   "conditions": {
