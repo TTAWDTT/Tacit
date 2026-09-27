@@ -1,0 +1,85 @@
+{
+  "study": "prefixsum_receiver_output_contract_diagnostic_v0_15",
+  "task_manifest_sha256": "c6302480780c7bea1c54ebc00436c06d57e092b285204139a20311685e3f7d33",
+  "model": "Qwen3-8B Q4_K_M GGUF",
+  "runtime": "llama.cpp b11202, commit fcb3074f2, Windows x64 CUDA 12.4; RTX 4060 8 GB; 99 GPU layers; context 8192; temperature 0; max 128 generated tokens",
+  "summaries_by_condition_length": [
+    {
+      "condition": "direct_json_array",
+      "segment_length": 2,
+      "episodes": 8,
+      "valid_contract": 8,
+      "exact": 2,
+      "mean_input_tokens": 212.6,
+      "mean_output_tokens": 10.2,
+      "mean_wall_seconds": 0.53
+    },
+    {
+      "condition": "direct_json_array",
+      "segment_length": 3,
+      "episodes": 8,
+      "valid_contract": 7,
+      "exact": 3,
+      "mean_input_tokens": 216.4,
+      "mean_output_tokens": 16.4,
+      "mean_wall_seconds": 0.67
+    },
+    {
+      "condition": "direct_json_array",
+      "segment_length": 4,
+      "episodes": 8,
+      "valid_contract": 8,
+      "exact": 4,
+      "mean_input_tokens": 221.2,
+      "mean_output_tokens": 19.9,
+      "mean_wall_seconds": 0.75
+    },
+    {
+      "condition": "xml_submit_result",
+      "segment_length": 2,
+      "episodes": 8,
+      "valid_contract": 7,
+      "exact": 4,
+      "mean_input_tokens": 224.6,
+      "mean_output_tokens": 41.1,
+      "mean_wall_seconds": 1.23
+    },
+    {
+      "condition": "xml_submit_result",
+      "segment_length": 3,
+      "episodes": 8,
+      "valid_contract": 7,
+      "exact": 3,
+      "mean_input_tokens": 228.4,
+      "mean_output_tokens": 46.1,
+      "mean_wall_seconds": 1.35
+    },
+    {
+      "condition": "xml_submit_result",
+      "segment_length": 4,
+      "episodes": 8,
+      "valid_contract": 8,
+      "exact": 5,
+      "mean_input_tokens": 233.2,
+      "mean_output_tokens": 50.8,
+      "mean_wall_seconds": 1.47
+    }
+  ],
+  "paired_transitions": {
+    "both_exact": 6,
+    "json_only": 3,
+    "xml_only": 6,
+    "neither_exact": 9
+  },
+  "raw_trace_files": [
+    ".cache/pilot_v0_15/Qwen3-8B/output_contract_runs_20260927T114455Z.jsonl"
+  ],
+  "public_run_rows": "research/data/PREFIXSUM_OUTPUT_CONTRACT_V0_15_RUNS.jsonl",
+  "limits": [
+    "24 reused tasks from one arithmetic family",
+    "synthetic prior receive transcript",
+    "one greedy sample per task/condition",
+    "one local model checkpoint and runtime",
+    "the finding cannot be generalized to other tool APIs or message formats"
+  ]
+}
