@@ -81,3 +81,30 @@ This gives the next benchmark family an exact communication reference point.
 **Scope.** This is a worst-case deterministic binary-wire bound for exact outputs, not a lower bound in LLM tokens. It does not cover shared learned dictionaries, side information, lossy answers, or randomized protocols with error. Token cost, UTF-8 bytes, repeated prompt context, and inference cost remain separately measured. For uniformly distributed independent inputs, the transcript must distinguish all \(M^2\) input pairs, giving transcript entropy \(2\log_2 M\); under a prefix-free binary transcript, expected length is at least that entropy.
 
 **Experimental prediction.** Use powers-of-two input domains with width \(b\in\{4,8,12,16\}\), and vary the number of bits required to describe each hidden input while fixing two agents and exact-sum distortion. A lossless wire protocol cannot go below \(2b\) bits total without shared input-dependent side information. Text formats may still differ substantially in bytes, model tokens, and decoder compute; any apparent sub-bound wire result signals an accounting-boundary or correctness error. This task tests whether a model-mediated protocol approaches a known communication floor, not whether new notation can beat it.
+
+## 8. Necessary role gates for end-to-end communication
+
+PrefixSum makes a distinction between conveying the sufficient statistic and executing the receiver's transformation explicit. For one episode define:
+
+- \(A\): Agent 0 emits its exact required local output.
+- \(M\): Agent 1 receives the correct sender subtotal before submitting.
+- \(R\): Agent 1 emits its exact global prefix segment.
+- \(J\): both agents' outputs are exact in the same episode.
+
+For the fixed two-agent task and scorer, joint success requires all three component events:
+
+\[
+J = A \cap M \cap R.
+\]
+
+Consequently, without any independence assumption,
+
+\[
+P(J) \leq \min\{P(A),\;P(M),\;P(M)P(R\mid M)\}.
+\]
+
+The last term is simply \(P(M\cap R)\); it makes the receiver gate explicit. A hybrid with an oracle receiver measures the sender-side conjunction \(A\cap M\) under the chosen channel, while a hybrid with an oracle sender measures model receiver execution conditional on an oracle source and observed delivery. Neither hybrid alone estimates end-to-end success for two learned agents. Direct arithmetic calls go further by removing the simulator and tool scaffold, so they diagnose suboperations but do not estimate \(P(R\mid M)\) in a deployed exchange.
+
+**Falsifiable eligibility prediction.** On the preregistered PrefixSum cells, if the estimated exact receiver rate conditional on a correct message is zero, then the observed sample provides no end-to-end headroom for a representation-only gain under that same receiver/interface; the bottleneck must first be changed or measured more precisely. If \(P(R\mid M)>0\), a communication format can still improve end-to-end utility by improving message acquisition/fidelity or receiver use, but a claim of efficiency must report each component and the joint result. This is a task-local screening condition, not a theorem that a protocol cannot affect receiver behavior: different representations can change \(P(R\mid M)\).
+
+**Evidence status.** In v0.12, Qwen3-8B had 0 exact receiver outputs among 17/24 new ordinary-path receipts; the synthetic prefilled transcript also yielded 0/24. The v0.13 direct combined prompt yielded 7/24 exact outputs, so interface/context changes the receiver distribution and cannot be collapsed into a model-only ability parameter. These small deterministic-run samples are noisy diagnostics, not population probability estimates. v0.16 tests a larger local model before this gate is treated as a property of the task family.

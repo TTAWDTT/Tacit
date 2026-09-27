@@ -24,6 +24,7 @@
 - Full report and raw calls: `research/PREFIXSUM_OUTPUT_CONTRACT_V0_15.md` and `research/data/PREFIXSUM_OUTPUT_CONTRACT_V0_15_RUNS.jsonl`. Next assess whether a larger fully local model fits available hardware, since the 8B receiver still has only partial direct-task success.
 - v0.15 preregisters that output-contract ablation on the same 24 direct receiver cases and Qwen3-8B: JSON array versus a single XML submit_result call, with identical system/task content and identical prefilled receipt history. No inter-agent representation is varied.
 - Official Qwen3-14B GGUF research: the Qwen repository documents Q4_K_M and llama.cpp use; the pinned file is 9,001,752,960 bytes with SHA-256 `500a8806e85ee9c83f3ae08420295592451379b4f8cf2d0f41c15dffeb6b81f0`. v0.16 preregisters a local CPU/GPU-offloaded receiver follow-up before inference; only a hardware feasibility check is underway.
+- Formalized the PrefixSum necessary-role gate in `docs/THEORY.md` §8: exact joint success requires exact sender output, correct pre-submit message receipt, and exact receiver output, yielding a probability upper bound without an independence assumption. The bound predicts when message-format gains have no observed end-to-end headroom under a fixed receiver/interface, while explicitly allowing a representation to alter receiver behavior.
 
 ## 2026-09-27 — Initial scoping and public thesis
 

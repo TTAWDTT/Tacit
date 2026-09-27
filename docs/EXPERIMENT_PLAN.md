@@ -144,3 +144,5 @@ The v0.15 runner strictly validates the entire response under each contract. Usa
 The Qwen3-14B follow-up is preregistered at [`experiments/pilot_v0_16/preregistration.json`](../experiments/pilot_v0_16/preregistration.json). It combines direct arithmetic controls with a real oracle-sender/model-receiver engine condition; the simulator condition contains no injected receipt.
 
 The official [Qwen3-14B GGUF repository](https://huggingface.co/Qwen/Qwen3-14B-GGUF) documents Q4_K_M and llama.cpp use. The pinned asset is about 9 GB; v0.16 requests 24 GPU layers with CPU offload and 8192 context on the RTX 4060 laptop GPU. The runner stops before inference if the model hash or local engine/task pins do not match. Detailed setup is in [`experiments/pilot_v0_16/README.md`](../experiments/pilot_v0_16/README.md).
+
+The matching role-gate formalization is in [`docs/THEORY.md`](THEORY.md), §8: end-to-end success requires exact sender output, correct pre-submit receipt, and exact receiver output. Its bound supplies a screening prediction for when receiver representation comparisons have observable headroom, without assuming the components are independent.
