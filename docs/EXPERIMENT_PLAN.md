@@ -118,3 +118,5 @@ Run instructions and analysis output paths are documented in [`experiments/pilot
 **Next gate:** build a preregistered receiver capability ladder: ask whether the same models can (a) emit local prefixes, (b) add a supplied scalar offset to an already-computed local-prefix vector, and (c) solve the combined receiver task. This is necessary to learn whether task arithmetic/output execution, message interpretation, or the orchestration dominates. Do not resume protocol ranking unless a model completes the receiver task reliably with the correct information supplied.
 
 The receiver arithmetic ladder is preregistered at [`experiments/pilot_v0_13/preregistration.json`](../experiments/pilot_v0_13/preregistration.json). It uses direct single-agent calls on the same 24 cases, with no message tools; it separates arithmetic operations from simulator orchestration and does not add a new task-family or language claim.
+
+Run steps and output paths are in [`experiments/pilot_v0_13/README.md`](../experiments/pilot_v0_13/README.md). The analyzer requires full-response JSON parsing and publishes prompts, answers, expected arrays, and cost fields per episode.
