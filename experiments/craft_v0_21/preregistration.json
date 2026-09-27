@@ -1,0 +1,55 @@
+{
+  "study": "CRAFT reduced-context local inference feasibility",
+  "version": "0.21",
+  "status": "frozen before scored inference",
+  "purpose": "Test whether reducing llama.cpp context allocation allows the same 8B CRAFT request to finish on the available GPU. No language comparison.",
+  "question": "Can the pinned Qwen3-8B CRAFT setup complete two turns and deliver the Director messages when the server reserves a 4,096-token single-slot context instead of 8,192?",
+  "prior_observation": "v0.20 processed one 512-token prompt batch in 222.30 s then stopped reporting progress for over five minutes; no model response completed.",
+  "source": {
+    "repository": "https://github.com/csu-signal/CRAFT",
+    "revision": "f174fa5ae80c20ce5ccc7bb7cbf4aeab69efe430",
+    "patches": [
+      "seeded distinct-role scheduling",
+      "preserve non-instruction bracketed Director prose",
+      "UTF-8 child console I/O"
+    ],
+    "all task prompts and environment logic": "upstream unchanged"
+  },
+  "model": {
+    "all_roles": "Qwen3-8B-Q4_K_M",
+    "artifact_revision": "7c41481f57cb95916b40956ab2f0b139b296d974",
+    "bytes": 5027783488,
+    "sha256": "d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785",
+    "runtime": "llama.cpp b11202; 99 GPU layers; context 4,096; one parallel slot; logical batch 1,024; physical micro-batch 256; reasoning off; upstream Director/Builder sampling settings"
+  },
+  "design": {
+    "structure_indices": [0],
+    "turn_limit": 2,
+    "run_seed": 321,
+    "python_hash_seed": 321,
+    "oracle_candidate_limit": 5,
+    "builder_tools": false,
+    "maximum_scored_completions": 8,
+    "communication_condition": "CRAFT upstream natural-language prompts and messages with bracket-preserving parser fallback",
+    "context_policy": "No prompt truncation or summarization. If the request exceeds available context, record the backend error and stop."
+  },
+  "outcomes": {
+    "primary": [
+      "request completion status and wall time",
+      "generated, parsed, and Builder-delivered messages per turn",
+      "upstream progress per completed turn"
+    ],
+    "not_measured": [
+      "token-cost frontier",
+      "communication quality ranking",
+      "generalization",
+      "scaling law"
+    ]
+  },
+  "predictions": [
+    "The first Director response will complete in under ten minutes.",
+    "If the task completes both turns, at least two of three messages will be delivered in each turn."
+  ],
+  "stop_rule": "Stop before issuing another completion if one request has no increase in prompt-processed tokens or decoded tokens for five continuous minutes. Report partial state as a runtime failure, not a task result.",
+  "analysis": "Publish all complete and partial attempts, with each failure reason. No protocol comparison is triggered by this feasibility run."
+}
