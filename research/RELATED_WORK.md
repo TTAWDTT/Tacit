@@ -12,6 +12,14 @@ The closest prior work found so far. AutoForm adds a prompt inviting an LLM to c
 
 This establishes a real positive and negative prior, not an empty baseline. The distinct gap to test is the operating frontier under explicit equal budgets, multiple rounds, failure/recovery and current local/open receivers, with total setup/instruction/decoding cost. The paper's tables label the measure “# Tokens”; do not assume it is a complete end-to-end cost measure. The released implementation lists OpenAI and Google API keys in its setup, so exact replication has a different access/cost profile from an open local run. Next: inspect the full prompting, data and token-count implementation before finalizing comparisons.
 
+Full-paper review confirms that AutoForm is a strong baseline to instantiate directly: its multi-agent prompt invites code, pseudocode, JSON, tables, logical operators, and equations rather than prescribing one format. Its HotpotQA split-context experiment is explicitly communication-dependent and shows model-pair-dependent outcomes. Therefore this project must distinguish a format-selection prompt from a fixed encoding and evaluate adherence as well as task quality. A local small-model run that ignores a format instruction is evidence about instruction adherence, not about the representational efficiency of the requested format.
+
+### Xia et al. (2024), *FOFO: A Benchmark to Evaluate LLMs' Format-Following Capability*, ACL
+
+[ACL Anthology](https://aclanthology.org/2024.acl-long.40/)
+
+FOFO reports that open-weight models lag closed models in complex format adherence, that adherence and content quality can vary independently, and that format proficiency differs by domain. This makes format adherence a necessary measurement axis in communication experiments. In DuoSum v0.4, the local Qwen3-1.7B used valid compact-key-value syntax in 10/10 messages and concise-NL syntax in 13/13, but only 9/10 and 9/13 respectively carried the sender's own value. One binary-arm message had binary-digit syntax but none of eight decoded to the sender's value; none of eight JSON messages parsed as JSON. Those arms cannot support claims about correct binary or JSON performance.
+
 ## Latent and hidden-state transfer
 
 ### Zou et al. (2025), *Latent Collaboration in Multi-Agent Systems* (LatentMAS)
@@ -103,6 +111,12 @@ Representative framework where agents converse using flexible natural language a
 [arXiv](https://arxiv.org/abs/2602.24188)
 
 Uses collaborative games with private information and divides a fixed token budget over variable numbers of turns. The paper reports that interaction often fails to improve over a one-shot summary baseline despite remaining headroom. This is a strong complementary suite for interactive communication policies and turn/budget trade-offs. Reuse if licensing and execution artifacts allow; otherwise reproduce the task design without copying restricted assets.
+
+### Nath et al. (2026), *CRAFT: Grounded Multi-Agent Coordination Under Partial Information*
+
+[arXiv](https://arxiv.org/abs/2603.25268) · [code](https://github.com/csu-signal/CRAFT)
+
+Introduces complementary partial-observation views for constructing a shared 3D object and decomposes failures into grounding, belief modeling, and pragmatic communication. It is a more meaningful coordination target than exact sum, but has grounded spatial content and model/tooling requirements. Inspect its license and reproducibility before adopting; use its error decomposition as a design reference for distinguishing message encoding failures from reasoning and coordination failures.
 
 ### Sevestre & Dupoux (2025), *Frequency & Compositionality in Emergent Communication*
 

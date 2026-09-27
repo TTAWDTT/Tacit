@@ -12,6 +12,8 @@ python benchmarks/duosum_v0_1/generate.py
 
 The generator writes task JSON and a SHA-256 manifest under `tasks/`. It asserts that each agent's local value differs from the gold sum. For an experiment, the runner also checks the manifest, per-file hashes, pinned engine commit, and pinned model weights.
 
+`grading.py` provides deterministic diagnostics without replacing the upstream benchmark score: it classifies raw answer serialization, accepts only exact integers or arithmetically verified `a+b=c` answers for semantic scoring, and decodes the fixed message formats used in pilots. Reports keep syntax validity separate from whether the decoded value matches the sender's private value.
+
 ## Theory connection
 
 For two agents with private inputs from a domain of size `M`, both required to output their exact sum, a deterministic binary point-to-point protocol needs at least `2 log2(M)` bits in the worst case. If `M` is a power of two, sending one fixed-width input from each agent attains the bound. See [`docs/THEORY.md`](../../docs/THEORY.md) for assumptions, proof, and the distinction between wire bits and model tokens.

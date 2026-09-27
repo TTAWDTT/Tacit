@@ -1,0 +1,54 @@
+{
+  "status": "held-out protocol frozen before any v0.5 model call",
+  "task_suite": "DuoSum v0.1, two-agent exact hidden sum",
+  "task_manifest_sha256": "85a369cea98aca72ca1357b718824cc35162c11494d44a1b70df2d4a4e52f182",
+  "task_split": "heldout; replicates 2 and 3 at each of 4, 8, 12, and 16 input bits",
+  "task_files": [
+    "DUOSUM-B04-S02.json",
+    "DUOSUM-B04-S03.json",
+    "DUOSUM-B08-S02.json",
+    "DUOSUM-B08-S03.json",
+    "DUOSUM-B12-S02.json",
+    "DUOSUM-B12-S03.json",
+    "DUOSUM-B16-S02.json",
+    "DUOSUM-B16-S03.json"
+  ],
+  "upstream_engine": "Silo-Bench P2P simulator",
+  "upstream_engine_commit": "e74127782ed1c42fff474249961f022c063d76f2",
+  "model": "Qwen/Qwen3-1.7B",
+  "model_revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+  "model_shards_sha256": {
+    "model-00001-of-00002.safetensors": "169ad53ec313c3a34b06c0809216e4fc072cce444a5d4ff2b59690d064130ed5",
+    "model-00002-of-00002.safetensors": "912becff8d60672aa8628ef08c05898d9adf17c2ad4ae3caf99b065622fdeff9"
+  },
+  "decoding": "greedy; local Transformers; 256 token response cap; four rounds maximum",
+  "protocol": "Silo-Bench point-to-point message tool",
+  "interaction_scaffold": "Coordination rules: agent IDs are zero-based. With two agents, if you are agent 0 send to agent 1; if you are agent 1 send to agent 0. Never target yourself. Send the private information needed for the task. When a received message makes the exact answer known, call submit_result with that answer immediately. The answer argument must be one bare integer value, not a quoted number, equation, units, or prose. Do not repeat messages or poll again after receiving the needed information. Every agent must submit the same final answer.",
+  "conditions": {
+    "scaffold_only": "",
+    "concise_nl": "When sending a message, use one short plain-English sentence containing only your exact private integer. Omit greetings and explanations.",
+    "compact_kv": "When sending a message, encode only your private integer as v=<integer>, with no other text.",
+    "json_schema": "When sending a message, encode your private integer as exactly one valid JSON object of the form {\"v\": 13}. Replace 13 with your own value. Example: if your private value is 13, send {\"v\": 13}. Do not use single quotes or add prose.",
+    "binary": "When sending a message, encode your private integer as its base-2 digits only, without a prefix, leading zeros, or prose. Example: decimal 13 is 1101 in base 2. The receiver must interpret the complete message as one binary integer.",
+    "autoform": "To enhance clarity and eliminate ambiguities inherent in natural language, consider employing more structured and concise forms of communication. Suitable formats include code, pseudocode, JSON, markdown tables, logical operators, or mathematical equations. Choose a representation that your partner can decode reliably.",
+    "no_communication": ""
+  },
+  "intervention_control": "no_communication: Silo send_message action disabled; no interaction scaffold injected",
+  "primary_outcomes": [
+    "upstream strict per-agent success",
+    "deterministic semantic answer correctness, without rewriting the submitted answer",
+    "message representation adherence and decoded sender-value fidelity where a fixed format is assigned",
+    "total input plus output model tokens",
+    "message payload UTF-8 bytes",
+    "latency, message/turn/tool counts, and repeated or invalid actions"
+  ],
+  "semantic_answer_rule": "Accept an exact integer, a decimal-integer string, or a full a+b=c expression only when a+b=c arithmetically and c equals the task gold answer. Keep this diagnostic separate from upstream scoring and retain the raw submission.",
+  "representation_adherence_rule": "For concise_nl, compact_kv, json_schema, and binary, decode each message only under its assigned grammar and count syntax validity separately from equality to that sender's private value. For autoform, do not impose one fixed syntax; report end-task correctness and retain traces.",
+  "prediction": "If format instruction adherence, rather than intrinsic message-code efficiency, caused the v0.4 failures, few-shot JSON and explicit decimal-to-binary examples should increase exact encoding adherence. They need not improve end-task success or total cost.",
+  "limitations": [
+    "Eight held-out episodes and one small model do not establish a stable scaling law, cross-model transfer, or general superiority.",
+    "AutoForm is an invitation to choose a format, not one fixed encoding; its prompt tokens are included in model input usage.",
+    "No equal-byte/equal-token budget is imposed; no efficiency frontier will be claimed from this run.",
+    "DuoSum is a low-complexity communication-necessity probe, not a representative long-horizon collaboration suite."
+  ]
+}

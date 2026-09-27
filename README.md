@@ -20,7 +20,7 @@ This project does **not** assume a new language is better. A 2024 EMNLP study al
 
 ## Current status
 
-The initial thesis, working theory, literature map, and a small local pilot specification are public. No project-specific language syntax or superiority claim has been adopted. See [the thesis](docs/THESIS.md), [working theory](docs/THEORY.md), [related work](research/RELATED_WORK.md), and [experiment plan](docs/EXPERIMENT_PLAN.md).
+The initial thesis, working theory, literature map, and local communication-necessity pilots are public. DuoSum v0.4 found real no-communication failures, but also showed that the 1.7B model often ignores representation instructions; an early interpretation treated short payloads from the binary-labeled arm as evidence about binary coding, and a raw-trace audit corrected it. No project-specific language syntax or superiority claim has been adopted. The frozen v0.5 study adds an AutoForm baseline and separates message syntax from sender-value fidelity. See [the thesis](docs/THESIS.md), [working theory](docs/THEORY.md), [related work](research/RELATED_WORK.md), [experiment plan](docs/EXPERIMENT_PLAN.md), and [v0.5 protocol](experiments/pilot_v0_5/README.md).
 
 ## Scope
 

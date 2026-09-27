@@ -1,4 +1,4 @@
-"""Analyze held-out DuoSum results; keep semantic and tool success separate."""
+"""Analyze v0.5 DuoSum outcomes, serialization, and fixed-format fidelity."""
 
 from __future__ import annotations
 
@@ -15,17 +15,18 @@ sys.path.insert(0, str(ROOT))
 from benchmarks.duosum_v0_1.grading import answer_is_correct, decode_message
 
 
-RAW = ROOT / ".cache" / "pilot_v0_4" / "pilot_summary.csv"
+RAW = ROOT / ".cache" / "pilot_v0_5" / "pilot_summary.csv"
 TASKS = ROOT / "benchmarks" / "duosum_v0_1" / "tasks"
 MANIFEST = json.loads((TASKS / "manifest.json").read_text(encoding="utf-8"))
 MANIFEST_BY_FILE = {entry["file"]: entry for entry in MANIFEST["files"]}
-REPORT = ROOT / "research" / "DUOSUM_PILOT_V0_4.md"
+POLICIES = json.loads((ROOT / "experiments" / "pilot_v0_5" / "policies.json").read_text(encoding="utf-8"))
+REPORT = ROOT / "research" / "DUOSUM_PILOT_V0_5.md"
 
 
 def message_format_adherence(row: dict[str, Any], task: dict[str, Any]) -> tuple[int, int, int]:
     """Count syntactically valid messages and decoded sender-value matches."""
     condition = row["condition"]
-    if condition in {"scaffold_only", "no_communication"}:
+    if condition in {"scaffold_only", "autoform", "no_communication"}:
         return (0, 0, 0)
     values = {int(agent["agent_id"]): int(agent["input_shard"]) for agent in task["agent_configs"]}
     messages = []
@@ -93,12 +94,13 @@ def build_report(rows: list[dict[str, Any]]) -> str:
         "compact_kv",
         "json_schema",
         "binary",
+        "autoform",
         "no_communication",
     ]
     lines = [
-        "# DuoSum v0.4 held-out calibration",
+        "# DuoSum v0.5 held-out comparison",
         "",
-        "**Status:** four held-out episodes, one greedy run per condition and width. This is an exploratory held-out check, not a confirmatory comparison.",
+        f"**Status:** {len({row['task'] for row in rows})} held-out episodes, one greedy run per condition and episode, one local model. This is exploratory; it is not a confirmatory superiority comparison.",
         "",
         "## Pooled outcomes",
         "",
@@ -152,22 +154,18 @@ def build_report(rows: list[dict[str, Any]]) -> str:
             "",
             "## Interpretation",
             "",
-            "- The no-communication condition is evaluated on all four episodes; compare its observed strict and semantic rates with each communicating condition rather than assuming the intervention worked.",
-            "- Syntax validity and sender-value fidelity are separate: the first asks whether a fixed-format message parses; the second asks whether it decodes to that sender's private value. They are not applicable to the unformatted scaffold and no-communication controls.",
+            "- Compare communicating conditions with the observed no-communication control; do not assume the intervention worked from its label.",
+            "- Syntax validity and sender-value fidelity are separate: the first asks whether a fixed-format message parses; the second asks whether it decodes to that sender's private value. They are not applicable to the unformatted scaffold, adaptive AutoForm, and no-communication controls.",
             "- Strict success uses the benchmark's exact integer tool contract. Semantic exactness separately accepts only a verified integer or a simple arithmetic string whose stated operands and result are mutually consistent. It does not change the benchmark score.",
-            "- The shared bare-integer instruction did not resolve terminal answer formatting: strict success was 0/8 for scaffold, concise-NL, compact-KV, JSON, and no-communication, and 1/8 for binary. This is an observed interface/model failure, not evidence that the communication messages themselves caused the score gap.",
-            "- Semantic exactness was 7/8 for scaffold, 4/8 concise-NL, 5/8 compact-KV, 5/8 JSON, 6/8 binary, and 0/8 no-communication. The one-run-per-cell sample is too small to rank formats; it does show that communication was necessary in these four episodes and that the exact-sum task can reveal information transfer.",
-            "- The binary condition transmitted decimal strings in all four episodes: only 1/8 had binary-digit syntax, and 0/8 decoded to the sender's value. The JSON condition used single-quoted Python-dict strings (0/8 valid JSON messages). Their outcomes and payload lengths cannot be attributed to successful binary or JSON encoding. Compact key-value syntax was valid in 10/10 messages but sender-value fidelity was 9/10; concise-NL syntax was valid in 13/13 but sender-value fidelity was 9/13. Some repeated messages carried the other agent's value, so syntax adherence alone is insufficient.",
-            "- The binary arm's 6.5-byte mean payload is therefore a misleading format label: it reflects short decimal messages, not correct binary coding. Format adherence is a prerequisite for interpreting a representation comparison.",
             "- Payload bytes, model tokens, repeated context, tool calls, and end-to-end latency are separate measures. This run does not impose equal-byte or equal-token budgets and cannot define a communication-efficiency frontier.",
-            "- The four episodes provide only one observation per input width. They are insufficient to estimate a scaling law or stable condition effect.",
+            "- This single-model, one-run-per-cell study is insufficient to estimate cross-model transfer, a scaling law, or a robust condition effect.",
             "- The lower bound in `docs/THEORY.md` is in binary wire bits; it is not directly comparable with model tokens or UTF-8 bytes.",
             "",
             "## Next revision",
             "",
-            "Before scaling samples or sweeping budgets, separate two effects: (1) message decoding and answer inference, and (2) final answer serialization. Freeze a format-neutral, deterministic answer normalizer/evaluator that accepts an integer or a strictly verified arithmetic expression, report its score alongside Silo's strict score, and preserve the submitted raw answer. Then repeat paired held-out episodes across more seeds and model sizes. Only after reliable task success should equal-byte/equal-token sweeps estimate a communication-efficiency frontier.",
+            "Interpret outcomes jointly with format adherence. If fixed formats are followed and communication improves semantic task success, expand to a second receiver model and richer task family before matched-budget sweeps. If adherence remains poor, treat instruction-following as a bottleneck and avoid attributing outcomes to the intended representation.",
             "",
-            "Raw prompts, tool traces, and model responses remain in the ignored `.cache/pilot_v0_4/`; this public summary contains aggregate measurements and selected anonymized outcomes only.",
+            "Raw prompts, tool traces, and model responses remain in the ignored `.cache/pilot_v0_5/`; this public summary contains aggregate measurements and selected anonymized outcomes only.",
         ]
     )
     return "\n".join(lines) + "\n"
