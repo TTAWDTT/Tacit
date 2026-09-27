@@ -1,0 +1,45 @@
+{
+  "study": "paired_hybrid_role_diagnostic_v0_9",
+  "status": "frozen_before_inference",
+  "question": "Does Qwen3-4B fail mainly at computing/sending a sufficient statistic, or at using a correct statistic to construct its global prefix segment?",
+  "tasks": "All 12 held-out cases in benchmarks/prefixsum_v0_2/tasks/manifest.json, paired across both variants; no new task examples are claimed.",
+  "task_manifest_sha256": "f6e22454ab1a56b9606f9d668ce74828e80588ca97b5fc9ec8c75ca54341bc79",
+  "conditions": [
+    {
+      "name": "oracle_sender_qwen_receiver",
+      "oracle_agent_id": 0,
+      "qwen_agent_id": 1,
+      "primary_measure": "Qwen Agent 1 exact prefix segment after receiving the correct oracle subtotal"
+    },
+    {
+      "name": "qwen_sender_oracle_receiver",
+      "oracle_agent_id": 1,
+      "qwen_agent_id": 0,
+      "primary_measure": "Qwen Agent 0 exact local prefix segment and exact subtotal message; oracle Agent 1 decodes the actual message"
+    }
+  ],
+  "message_condition": "compact_kv",
+  "model": "Qwen3-4B Q4_K_M",
+  "model_revision": "bc640142c66e1fdd12af0bd68f40445458f3869b",
+  "model_file_sha256": "7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5",
+  "runtime": "llama.cpp b11202, commit fcb3074f2, Windows x64 CUDA 12.4",
+  "decoding": "temperature 0, reasoning off, max 4 interaction rounds",
+  "frozen_predictions": [
+    "Oracle sender should submit the exact Agent 0 segment and deliver the true subtotal in all 12 tasks; Qwen receiver exactness measures receiver-side use of that information.",
+    "Oracle receiver should submit the exact Agent 1 segment whenever it receives a valid, correct subtotal; Qwen sender exactness and value fidelity measure sender-side computation and message formation.",
+    "If both isolated Qwen roles succeed but the v0.8 paired model does not, investigate interaction, turn order, and context effects before a new protocol claim."
+  ],
+  "metrics": [
+    "exact Agent 0 and Agent 1 outputs",
+    "fully correct episodes",
+    "message syntax and subtotal value fidelity",
+    "successful delivery and non-empty receipt before submit",
+    "backend tokens, wall time, and rounds"
+  ],
+  "limits": [
+    "one greedy Qwen inference per task and variant",
+    "same cases as v0.8, so this is paired diagnosis rather than new held-out evidence",
+    "oracle responses are deterministic controls and are excluded from model token counts",
+    "different role prompts and conversation histories preclude an efficiency ranking"
+  ]
+}

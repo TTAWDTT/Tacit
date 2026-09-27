@@ -74,13 +74,14 @@ def oracle_call_llm(**kwargs: Any) -> dict[str, Any]:
         else:
             offset_match = re.fullmatch(r"s=(\d+)", str(received[0].get("content", "")))
             if not offset_match or int(received[0].get("from", -1)) != 0:
-                raise ValueError(f"Unexpected oracle wire message: {received[0]}")
-            offset = int(offset_match.group(1))
-            prefix = []
-            running = offset
-            for value in shard:
-                running += value
-                prefix.append(running)
+                prefix = []
+            else:
+                offset = int(offset_match.group(1))
+                prefix = []
+                running = offset
+                for value in shard:
+                    running += value
+                    prefix.append(running)
             content = (
                 "<tool_call><tool>submit_result</tool><parameters>"
                 f"<answer>{json.dumps(prefix)}</answer>"
