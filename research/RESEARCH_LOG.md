@@ -11,6 +11,7 @@
 - Completed all 96 frozen hybrid episodes under the pinned local settings. With an oracle receiver, model-sender joint exact counts by L=2/3/4 were 5/8, 1/8, 1/8 for 4B and 7/8, 3/8, 3/8 for 8B. The receiver arm used a faithful oracle subtotal in every task; Qwen3-4B received no payload before submission (0/24), while Qwen3-8B received it in 15/24 but returned an exact global segment in 0/15 received cases. Shorter inputs support sender-side performance at L=2 but do not establish a two-model operating region.
 - The outcome does not support any protocol ranking. Next isolate receiver acquisition from application by pairing the receive-tool path with a preregistered direct-context injection of the same correct subtotal, keeping model/task/scorer fixed. The goal is to determine whether failures arise in tool interaction or offset integration before considering protocol comparisons.
 - Public report: `research/PREFIXSUM_SHORT_SHARD_V0_11.md`; per-episode messages and submissions: `research/data/PREFIXSUM_SHORT_SHARD_V0_11_RUNS.jsonl`. Raw engine traces and model calls remain in the ignored project cache.
+- The next v0.12 question follows the tool-reliability literature's separation of invocation from result interpretation: paired ordinary tool delivery against an explicitly artificial successful-receive transcript, with model/task/scorer held fixed. This diagnostic is frozen in `experiments/pilot_v0_12/preregistration.json`; it is designed to locate a receiver bottleneck, not to test a new language.
 
 ## 2026-09-27 — Initial scoping and public thesis
 

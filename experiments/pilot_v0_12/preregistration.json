@@ -1,0 +1,65 @@
+{
+  "study": "prefixsum_receiver_acquisition_vs_application_v0_12",
+  "status": "frozen_before_inference",
+  "question": "Does a model receiver apply the correct compact-KV subtotal more reliably when a successful receive_messages transcript is already present in its context, compared with the ordinary receive-tool path?",
+  "motivation": "In v0.11 Qwen3-4B never received a payload before submission, while Qwen3-8B received a correct oracle message in 15/24 episodes but was exact in 0/15. Separate acquisition from application before drawing conclusions about the receiver or message representation.",
+  "task_suite": "PrefixSum short-shard calibration v0.3, paired reuse of the 24 v0.11 cases",
+  "task_manifest_sha256": "c6302480780c7bea1c54ebc00436c06d57e092b285204139a20311685e3f7d33",
+  "segment_lengths": [2, 3, 4],
+  "replicates_per_length": 8,
+  "design": "For each of Qwen3-4B and Qwen3-8B, run both the ordinary receive-tool path and the injected-success-transcript diagnostic on all 24 tasks (96 episodes total). Alternate condition order by task index. Agent 0 is a deterministic oracle sender in both conditions. One greedy run per model/task/condition.",
+  "conditions": [
+    {
+      "name": "ordinary_receive_tool",
+      "intervention": "Use the v0.11 role prompt and simulator unchanged. Agent 1 must call receive_messages and use the result returned by the normal message environment.",
+      "baseline": "paired behavioral replication of v0.11 receiver arm"
+    },
+    {
+      "name": "injected_successful_receive_transcript",
+      "intervention": "Before the first model call, append to Agent 1's context the same assistant receive_messages tool call and successful tool-result transcript the pinned engine records after a receive. The transcript contains the deterministic oracle's correct compact-KV message s=<subtotal>. Keep the private shard, role prompt, representation instruction, model, decoder, simulator, and scorer fixed. The oracle sender still acts normally; the transcript injection is an explicit capability diagnostic, not a deployable communication result.",
+      "interpretation_limit": "This intervention bypasses model-initiated acquisition and changes conversation history. A gain diagnoses a receiver action/availability bottleneck; it does not prove a production runtime should inject messages or establish any representation's superiority."
+    }
+  ],
+  "models": [
+    {
+      "model": "Qwen3-4B Q4_K_M GGUF",
+      "model_repository_revision": "bc640142c66e1fdd12af0bd68f40445458f3869b",
+      "model_file": "Qwen3-4B-Q4_K_M.gguf",
+      "model_file_size_bytes": 2497280256,
+      "model_file_sha256": "7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5"
+    },
+    {
+      "model": "Qwen3-8B Q4_K_M GGUF",
+      "model_repository_revision": "7c41481f57cb95916b40956ab2f0b139b296d974",
+      "model_file": "Qwen3-8B-Q4_K_M.gguf",
+      "model_file_size_bytes": 5027783488,
+      "model_file_sha256": "d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785"
+    }
+  ],
+  "runtime": "llama.cpp b11202, commit fcb3074f2, Windows x64 CUDA 12.4; RTX 4060 8 GB; 99 GPU layers requested; context 8192; temperature 0; 256-token generation cap",
+  "warmup": "One unscored 'Reply with OK' request per model, excluded from outcomes.",
+  "primary_outcomes": [
+    "Agent 1 exact global prefix segment by model, condition, and segment length",
+    "Agent 1 exactness conditional on actual normal payload receipt in the ordinary tool condition",
+    "Agent 1 exactness in the injected-transcript condition, with injection status reported separately from actual simulator receipt",
+    "joint exact episode success, reported only as a secondary outcome because the intervention bypasses agent-initiated receipt"
+  ],
+  "secondary_outcomes": [
+    "receive_messages actions and payloads, submissions, exact/local-only outputs",
+    "backend tokens, wall time, rounds, and message bytes",
+    "descriptive paired task-level outcome changes; no significance claim"
+  ],
+  "frozen_predictions": [
+    "If receiver acquisition is a major bottleneck, the injected successful transcript should increase exact outputs relative to the ordinary tool path, especially for 4B and on short segments.",
+    "If exact receiver output remains near zero after transcript injection, message acquisition alone is insufficient; prioritize output execution/arithmetic or harness/task interaction diagnostics.",
+    "Neither outcome ranks message formats or supports a claim that compact-KV is better than natural language."
+  ],
+  "analysis": "Report exact counts and denominators separately by length, model, and condition. Do not count the synthetic transcript as a simulator-delivered message or as successful model tool use. Do not compare token totals across models as a cost ranking. Avoid pooling oracle actions into model outcomes.",
+  "limits": [
+    "reuses the same 24 v0.11 tasks; paired intervention evidence, not new task generalization",
+    "one greedy run per cell; decoding variance is unestimated",
+    "the injected context is an artificial diagnostic and includes a prior assistant tool call the model did not itself produce",
+    "only one PrefixSum task family and one local simulator/runtime",
+    "model checkpoint, scale, training, quantization, and tokenizer are not isolated"
+  ]
+}

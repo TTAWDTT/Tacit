@@ -98,6 +98,12 @@ Studies the communication graph/topology and information/error propagation. Topo
 
 Representative framework where agents converse using flexible natural language and code. Useful workflow baseline, but framework success is not evidence that conversational text is an efficient semantic code.
 
+### Huang et al. (2026), *When Agents Fail to Act: A Diagnostic Framework for Tool Invocation Reliability in Multi-Agent LLM Systems*
+
+[arXiv](https://arxiv.org/abs/2601.16280)
+
+The preprint separates tool reliability into stages including initialization, parameter handling, execution, and result interpretation. Its abstract reports tool-initialization failures as a bottleneck for smaller models. This supports measuring message acquisition and subsequent semantic application as distinct stages in v0.11/v0.12; it does not explain our results, since the benchmark and model families differ.
+
 ## Communication-dependent task suites
 
 ### Zhang et al. (2026), *Silo-Bench: A Scalable Environment for Evaluating Distributed Coordination in Multi-Agent LLM Systems*
