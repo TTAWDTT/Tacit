@@ -42,6 +42,8 @@ v0.13 direct-call results: Qwen3-4B exact counts were 20/24 local prefixes, 12/2
 
 The next preregistered diagnostic compares a concise receiver system prompt with the pinned Silo multi-agent tool scaffold on those same direct 8B receiver tasks: [`experiments/pilot_v0_14/preregistration.json`](experiments/pilot_v0_14/preregistration.json).
 
+The runner and report workflow are documented at [`experiments/pilot_v0_14/README.md`](experiments/pilot_v0_14/README.md).
+
 ## Repository principles
 
 - Publish hypotheses, negative results, assumptions, and changes to the thesis.
