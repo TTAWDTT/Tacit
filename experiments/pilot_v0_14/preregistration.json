@@ -1,0 +1,46 @@
+{
+  "study": "prefixsum_agent_scaffold_context_diagnostic_v0_14",
+  "status": "frozen_before_inference",
+  "question": "Does the verbose multi-agent tool scaffold reduce Qwen3-8B accuracy on the same direct receiver arithmetic task when the correct incoming message is already present in context?",
+  "motivation": "v0.13 direct prompts yielded 7/24 exact combined receiver outputs for Qwen3-8B, while v0.12 simulator/injected-context conditions yielded 0/24. Those studies changed multiple context and runtime factors. v0.14 holds the direct-call runtime, data, tool-result history, user task, output XML contract, and model fixed while changing only the system scaffold.",
+  "task_suite": "PrefixSum short-shard v0.3, paired reuse of the 24 v0.11 cases",
+  "task_manifest_sha256": "c6302480780c7bea1c54ebc00436c06d57e092b285204139a20311685e3f7d33",
+  "model": "Qwen3-8B Q4_K_M GGUF",
+  "model_repository_revision": "7c41481f57cb95916b40956ab2f0b139b296d974",
+  "model_file": "Qwen3-8B-Q4_K_M.gguf",
+  "model_file_size_bytes": 5027783488,
+  "model_file_sha256": "d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785",
+  "runtime": "llama.cpp b11202, commit fcb3074f2, Windows x64 CUDA 12.4; RTX 4060 8 GB; 99 GPU layers; context 8192; temperature 0; max 128 generated tokens",
+  "design": "Two paired direct-call conditions for all 24 cases (48 episodes), alternating condition order by task index. Both conditions have the same user task, same shard and offset, same prefilled successful receive_messages assistant/tool-result transcript, same XML submit_result contract, and same inference backend. Only the system prompt scaffold differs.",
+  "conditions": [
+    {
+      "name": "concise_receiver_system",
+      "system_prompt": "You are Agent 1 of 2, the receiver. The correct message has already been received in the conversation history. Do not send or receive another message. Compute the global prefix segment for your private shard using the received subtotal. Return exactly one submit_result XML tool call; its answer must be a JSON array of integers."
+    },
+    {
+      "name": "verbose_silo_msg_system",
+      "system_prompt_source": "Pinned Silo-Bench src/utils/prompts.py generate_system_prompt(protocol='msg', agent_id=1, num_agents=2)",
+      "system_prompt_source_sha256": "bb6cc29e3421ccfb2b389eb117fd675e17577b88a2f77ee8760e69f8d762f04e",
+      "upstream_engine_commit": "e74127782ed1c42fff474249961f022c063d76f2",
+      "task_scaffold": "Append the pinned v0.8 interaction scaffold and compact-KV instruction used in the v0.11 experiments. The shared user task states that the successful receive transcript already appears in context and asks for one exact submit_result call."
+    }
+  ],
+  "primary_outcomes": [
+    "strict exact Agent 1 global prefix output by task and system-prompt condition",
+    "valid submit_result XML plus valid JSON integer-list answer, separated from exactness",
+    "paired task-level condition differences"
+  ],
+  "secondary_outcomes": ["input/output tokens, latency, tool-call tags, and raw response"],
+  "frozen_predictions": [
+    "If the verbose multi-agent scaffold is a material contributor to the v0.12/v0.13 gap, the concise system condition will have more exact outputs on the same direct receiver tasks.",
+    "If the exactness difference is small, prompt-system scaffolding alone is insufficient to explain the simulator gap; inspect remaining runtime orchestration and model arithmetic.",
+    "This comparison does not rank communication formats or evaluate model-initiated message exchange."
+  ],
+  "analysis": "Report exact counts, parse rates, task-paired discordances, and token counts. No significance claim is planned with 24 paired cases. Do not treat the prefilled tool transcript as model tool use or actual simulator delivery.",
+  "limits": [
+    "24 reused task instances from one task family",
+    "the verbose system condition contains tool-operation instructions absent from the concise condition; the intervention tests scaffold compatibility, not token length alone",
+    "direct inference with a prefilled tool transcript is not a deployed multi-agent episode",
+    "one greedy sample per condition/task and one model checkpoint"
+  ]
+}

@@ -40,6 +40,8 @@ The v0.13 arithmetic ladder is preregistered at [`experiments/pilot_v0_13/prereg
 
 v0.13 direct-call results: Qwen3-4B exact counts were 20/24 local prefixes, 12/24 vector-offset additions, and 0/24 combined receiver tasks; Qwen3-8B scored 23/24, 19/24, and 7/24. This identifies arithmetic and composition as unresolved, while the difference between direct 8B success and simulator 8B success suggests the interaction context also matters. See the [report](research/PREFIXSUM_ARITHMETIC_LADDER_V0_13.md) and [raw responses](research/data/PREFIXSUM_ARITHMETIC_LADDER_V0_13_RUNS.jsonl).
 
+The next preregistered diagnostic compares a concise receiver system prompt with the pinned Silo multi-agent tool scaffold on those same direct 8B receiver tasks: [`experiments/pilot_v0_14/preregistration.json`](experiments/pilot_v0_14/preregistration.json).
+
 ## Repository principles
 
 - Publish hypotheses, negative results, assumptions, and changes to the thesis.
