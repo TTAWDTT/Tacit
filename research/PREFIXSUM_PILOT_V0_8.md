@@ -42,6 +42,11 @@ Strict agent success is exact equality of the returned integer list to that agen
 | 30 | `full_shard` | 0/8 | 0/4 | 114.0 | 8370 |
 | 30 | `no_communication` | 0/8 | 0/4 | 0.0 | 9142 |
 
+## Deterministic engine and scorer control (not an LLM result)
+
+A deterministic two-agent oracle completed 12/12 episodes, delivered 12/12 messages, and sent the correct subtotal in 12/12 cases. Mean completion was 4.0 rounds. It made zero model-backend calls and used the same pinned task manifest, Silo engine commit, message tools, parser adapter, and scorer. This shows the benchmark mechanics can support exact success; it does not measure an LLM protocol.
+
+
 ## Interpretation
 
 - Compare each communicating arm with the no-communication control. Agent 0 can compute its local prefix segment without receiving Agent 1's values, but Agent 1 cannot recover its global offset from its own segment alone; therefore episode-level unanimity is the task-necessity outcome.
@@ -56,6 +61,6 @@ Strict agent success is exact equality of the returned integer list to that agen
 
 ## Next revision
 
-Before attempting another language comparison, repair the task execution bottleneck: provide a symbolic correctness check for the sender subtotal and an explicit receiver offset operation, then validate those mechanics with a non-LLM oracle and a small role-following control. Any follow-up should separately test raw subtotal calculation, wire decoding, and offset application; do not promote these results as a protocol ranking.
+The deterministic oracle has now verified the task, message transport, and scorer end to end. The next diagnostic is a paired hybrid: oracle Agent 0 with an LLM receiver isolates offset decoding/application; LLM Agent 0 with an oracle receiver isolates sender aggregation and message formation. This can localize the model-side failure before a new task or protocol is proposed. Continue to treat the current run as no protocol ranking.
 
 Raw traces remain in ignored `.cache/pilot_v0_8/`; task files and checksums are public in `benchmarks/prefixsum_v0_2/tasks/`.

@@ -152,6 +152,8 @@ def mean(rows: list[dict[str, Any]], key: str) -> float:
 
 
 def build_report(rows: list[dict[str, Any]]) -> str:
+    oracle_path = ROOT / "research" / "PREFIXSUM_ORACLE_CONTROL_V0_1.json"
+    oracle = json.loads(oracle_path.read_text(encoding="utf-8")) if oracle_path.exists() else None
     by_condition: dict[str, list[dict[str, Any]]] = defaultdict(list)
     by_length: dict[tuple[int, str], list[dict[str, Any]]] = defaultdict(list)
     for row in rows:
@@ -209,6 +211,17 @@ def build_report(rows: list[dict[str, Any]]) -> str:
                 f"{mean(group, 'message_payload_bytes'):.1f} | {mean(group, 'total_tokens'):.0f} |"
             )
 
+    if oracle:
+        lines.extend(
+            [
+                "",
+                "## Deterministic engine and scorer control (not an LLM result)",
+                "",
+                f"A deterministic two-agent oracle completed {oracle['fully_correct_episodes']}/{oracle['episodes']} episodes, delivered {oracle['delivered_messages']}/{oracle['episodes']} messages, and sent the correct subtotal in {oracle['faithful_subtotal_messages']}/{oracle['episodes']} cases. Mean completion was {oracle['mean_rounds']:.1f} rounds. It made zero model-backend calls and used the same pinned task manifest, Silo engine commit, message tools, parser adapter, and scorer. This shows the benchmark mechanics can support exact success; it does not measure an LLM protocol.",
+                "",
+            ]
+        )
+
     lines.extend(
         [
             "",
@@ -226,7 +239,7 @@ def build_report(rows: list[dict[str, Any]]) -> str:
             "",
             "## Next revision",
             "",
-            "Before attempting another language comparison, repair the task execution bottleneck: provide a symbolic correctness check for the sender subtotal and an explicit receiver offset operation, then validate those mechanics with a non-LLM oracle and a small role-following control. Any follow-up should separately test raw subtotal calculation, wire decoding, and offset application; do not promote these results as a protocol ranking.",
+            "The deterministic oracle has now verified the task, message transport, and scorer end to end. The next diagnostic is a paired hybrid: oracle Agent 0 with an LLM receiver isolates offset decoding/application; LLM Agent 0 with an oracle receiver isolates sender aggregation and message formation. This can localize the model-side failure before a new task or protocol is proposed. Continue to treat the current run as no protocol ranking.",
             "",
             "Raw traces remain in ignored `.cache/pilot_v0_8/`; task files and checksums are public in `benchmarks/prefixsum_v0_2/tasks/`.",
         ]

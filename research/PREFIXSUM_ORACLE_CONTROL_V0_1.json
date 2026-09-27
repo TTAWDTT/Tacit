@@ -1,0 +1,12 @@
+{
+  "control": "deterministic_oracle_no_model_calls",
+  "episodes": 12,
+  "fully_correct_episodes": 12,
+  "delivered_messages": 12,
+  "faithful_subtotal_messages": 12,
+  "mean_rounds": 4.0,
+  "model_backend_input_tokens": 0,
+  "model_backend_output_tokens": 0,
+  "task_manifest_sha256": "f6e22454ab1a56b9606f9d668ce74828e80588ca97b5fc9ec8c75ca54341bc79",
+  "upstream_engine_commit": "e74127782ed1c42fff474249961f022c063d76f2"
+}
