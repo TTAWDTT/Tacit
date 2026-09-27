@@ -164,7 +164,13 @@ def main() -> None:
     parser.add_argument(
         "--conditions",
         nargs="+",
-        default=["unconstrained", "autoform_prompt", "json_schema", "no_communication"],
+        default=[
+            "unconstrained",
+            "concise_nl",
+            "autoform_prompt",
+            "json_schema",
+            "no_communication",
+        ],
         choices=[*POLICIES["conditions"], "no_communication"],
     )
     parser.add_argument("--tasks", nargs="+", default=TASK_FILES)
