@@ -52,7 +52,7 @@ def make_condition_tree(name: str, no_directors: bool, random_oracle: bool) -> P
         code = replace_once(
             code,
             "        try:\n            prompt = self.create_builder_prompt(director_discussion, current_state, available_blocks, oracle_moves=oracle_moves,  )\n",
-            "        try:\n            if oracle_moves:\n                return dict(_TACTIC_ORACLE_RNG.choice(oracle_moves))\n            prompt = self.create_builder_prompt(director_discussion, current_state, available_blocks, oracle_moves=oracle_moves,  )\n",
+            "        try:\n            if oracle_moves is not None:\n                if oracle_moves:\n                    return dict(_TACTIC_ORACLE_RNG.choice(oracle_moves))\n                return {\"action\": \"clarify\", \"clarification\": \"No oracle candidates available.\"}\n            prompt = self.create_builder_prompt(director_discussion, current_state, available_blocks, oracle_moves=oracle_moves,  )\n",
             "random oracle policy insertion",
         )
         builder.write_text(code, encoding="utf-8")
