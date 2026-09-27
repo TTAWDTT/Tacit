@@ -1,6 +1,8 @@
 # Local model weights, upstream checkouts, environments, and experiment outputs
 .cache/
 .venv/
+__pycache__/
+*.py[cod]
 outputs/
 results/
 configs/config.yaml
