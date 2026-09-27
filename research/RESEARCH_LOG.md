@@ -8,6 +8,9 @@
 - Candidate gate: only a length where both model roles are reliably exact can support a later preregistered protocol comparison. This calibration cannot establish protocol superiority, scaling laws, or broad task-family capability.
 - Next: implement checksum-enforcing runner and analysis; commit/push them before inference, then run the pinned local models and publish raw per-episode outputs plus error analysis.
 - Added the one-model-at-a-time runner and report generator. Each model run verifies the task manifest, Silo-Bench commit, and selected GGUF hash before issuing the preregistered unscored warmup; exact per-episode outputs are retained for publication. Server settings are pinned to the previously verified 99 GPU layers and 8192 context on the local RTX 4060.
+- Completed all 96 frozen hybrid episodes under the pinned local settings. With an oracle receiver, model-sender joint exact counts by L=2/3/4 were 5/8, 1/8, 1/8 for 4B and 7/8, 3/8, 3/8 for 8B. The receiver arm used a faithful oracle subtotal in every task; Qwen3-4B received no payload before submission (0/24), while Qwen3-8B received it in 15/24 but returned an exact global segment in 0/15 received cases. Shorter inputs support sender-side performance at L=2 but do not establish a two-model operating region.
+- The outcome does not support any protocol ranking. Next isolate receiver acquisition from application by pairing the receive-tool path with a preregistered direct-context injection of the same correct subtotal, keeping model/task/scorer fixed. The goal is to determine whether failures arise in tool interaction or offset integration before considering protocol comparisons.
+- Public report: `research/PREFIXSUM_SHORT_SHARD_V0_11.md`; per-episode messages and submissions: `research/data/PREFIXSUM_SHORT_SHARD_V0_11_RUNS.jsonl`. Raw engine traces and model calls remain in the ignored project cache.
 
 ## 2026-09-27 — Initial scoping and public thesis
 

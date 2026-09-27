@@ -115,25 +115,53 @@ def analyze(paths: list[Path]) -> dict[str, Any]:
         "study": study.PREREG["study"], "task_manifest_sha256": study.PREREG["task_manifest_sha256"],
         "models": study.PREREG["conditions"], "runtime": study.PREREG["runtime"],
         "summaries_by_role_and_length": summaries,
-        "raw_trace_files": [str(path.relative_to(ROOT)) for path in paths],
+        "raw_trace_files": [str(path.resolve().relative_to(ROOT)) for path in paths],
         "public_run_rows": "research/data/PREFIXSUM_SHORT_SHARD_V0_11_RUNS.jsonl",
         "limits": study.PREREG["limits"],
     }
 
 
 def markdown(result: dict[str, Any]) -> str:
+    summaries = result["summaries_by_role_and_length"]
+    sender = [item for item in summaries if item["variant"] == "qwen_sender_oracle_receiver"]
+    receiver = [item for item in summaries if item["variant"] == "oracle_sender_qwen_receiver"]
     lines = [
         "# PrefixSum v0.11 short-shard role-capability calibration", "",
         "This preregistered study measures sender/receiver capability at held-out segment lengths 2, 3, and 4 under one compact-KV message condition. It does not rank protocols.", "",
         f"Task manifest SHA-256: `{result['task_manifest_sha256']}`. Runtime: {result['runtime']}.", "",
-        "Each cell below has 8 episodes. Receiver exactness is reported conditional on a correct oracle message being received before submit. Sender-arm Agent 0 exactness and subtotal fidelity are separate outcomes.", "",
-        "| Model | Role condition | L | A0 exact | A1 exact given receive | Subtotal faithful | Joint exact |",
-        "|---|---|---:|---:|---:|---:|---:|",
+        "Each cell has 8 episodes. Oracle outputs are excluded from model capability counts. In the receiver arm, the oracle sender emits the correct subtotal; a receive counts only if Agent 1 gets a nonempty payload before submitting.", "",
+        "## Model sender + oracle receiver", "",
+        "| Model | L | Qwen Agent 0 exact | Subtotal faithful | Joint exact | Message syntax |",
+        "|---|---:|---:|---:|---:|---:|",
     ]
-    for item in result["summaries_by_role_and_length"]:
-        recv = f"{item['receiver_exact_given_received']}/{item['receiver_received_before_submit']}" if item["variant"] == "oracle_sender_qwen_receiver" else "n/a"
-        lines.append(f"| {item['model']} | {item['variant']} | {item['segment_length']} | {item['agent0_exact']}/{item['episodes']} | {recv} | {item['subtotal_fidelity']}/{item['episodes']} | {item['joint_exact']}/{item['episodes']} |")
-    lines.extend(["", "## Interpretation", "", "Read the length-specific counts as capability diagnostics. Oracle behavior is only a control; it is excluded from model performance. Eight cases per cell and one greedy run do not support significance claims or decoding-variance estimates. A length where both model roles execute consistently can motivate a separately preregistered protocol comparison; it does not establish that compact-KV or any new language is superior.", "", f"Per-episode submissions and exact wire messages: [JSONL run rows]({Path('data/PREFIXSUM_SHORT_SHARD_V0_11_RUNS.jsonl').as_posix()}).", ""])
+    for item in sender:
+        lines.append(f"| {item['model']} | {item['segment_length']} | {item['agent0_exact']}/{item['episodes']} | {item['subtotal_fidelity']}/{item['episodes']} | {item['joint_exact']}/{item['episodes']} | {item['message_syntax']}/{item['episodes']} |")
+    lines.extend([
+        "", "## Model receiver + oracle sender", "",
+        "| Model | L | Correct oracle messages received before submit | Qwen exact given receive | Qwen local-prefix-only output |",
+        "|---|---:|---:|---:|---:|",
+    ])
+    for item in receiver:
+        lines.append(f"| {item['model']} | {item['segment_length']} | {item['receiver_received_before_submit']}/{item['episodes']} | {item['receiver_exact_given_received']}/{item['receiver_received_before_submit']} | {item['receiver_local_prefix_only']}/{item['episodes']} |")
+    recv_totals = {}
+    for model in {item["model"] for item in receiver}:
+        rows = [item for item in receiver if item["model"] == model]
+        recv_totals[model] = (sum(i["receiver_received_before_submit"] for i in rows), sum(i["receiver_exact_given_received"] for i in rows))
+    four = next((v for k, v in recv_totals.items() if "4B" in k), (0, 0))
+    eight = next((v for k, v in recv_totals.items() if "8B" in k), (0, 0))
+    lines.extend([
+        "", "## Interpretation", "",
+        f"Short shards exposed a sender-side operating region, but not a two-model communication region. At L=2, the model sender plus oracle receiver completed {next(i['joint_exact'] for i in sender if '4B' in i['model'])}/8 Qwen3-4B episodes and {next(i['joint_exact'] for i in sender if '8B' in i['model'])}/8 Qwen3-8B episodes. Sender subtotal fidelity and Agent 0's own output are separate: a faithful message alone is not a joint success.",
+        "",
+        f"On the receiver side, Qwen3-4B received no payload before submission in {sum(i['episodes'] for i in receiver if '4B' in i['model'])} episodes. Qwen3-8B received the correct oracle message in {eight[0]}/24 episodes, but returned an exact global segment in {eight[1]}/{eight[0]} received-message cases. Thus shorter inputs did not resolve receiver-side tool use/integration in this setup. The receiver result combines model behavior with the pinned simulator and interaction loop; it does not isolate arithmetic alone.",
+        "",
+        "No tested length supports a protocol comparison yet because the model receiver never completed the task, despite correct oracle inputs in the cases where it received them. Next, isolate message acquisition from message application with a preregistered direct-context control, keeping the current task suite and exact-output scorer. Do not interpret these outcomes as evidence that compact-KV is more efficient or that a new language is needed.",
+        "",
+        "Eight cases per cell and one greedy run do not support significance claims or decoding-variance estimates. This is one task family, one local engine, and two checkpoint/quantization configurations.",
+        "",
+        f"Per-episode submissions and exact wire messages: [JSONL run rows]({Path('data/PREFIXSUM_SHORT_SHARD_V0_11_RUNS.jsonl').as_posix()}).",
+        "",
+    ])
     return "\n".join(lines)
 
 
