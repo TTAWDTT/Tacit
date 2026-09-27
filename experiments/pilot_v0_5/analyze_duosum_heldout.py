@@ -131,7 +131,7 @@ def build_report(rows: list[dict[str, Any]]) -> str:
             "",
             "## Per-width results",
             "",
-            "Rates are over the two agent submissions in the single episode at that width. Payload bytes count only UTF-8 message content, excluding simulator JSON and repeated prompt context.",
+            "Rates are over four agent submissions from two episodes at each width. Payload bytes count only UTF-8 message content, excluding simulator JSON and repeated prompt context.",
             "",
             "| Input width | Condition | Strict success | Semantic exactness | Total model tokens | Payload bytes | Messages |",
             "|---:|---|---:|---:|---:|---:|---:|",
@@ -149,6 +149,20 @@ def build_report(rows: list[dict[str, Any]]) -> str:
                 f"{mean(group, 'message_count'):.1f} |"
             )
 
+    total_agents = 2 * len(by_condition["scaffold_only"])
+    semantic_rates = {
+        name: sum(row["semantic_correct"] for row in by_condition[name])
+        for name in conditions
+    }
+    no_comm_semantic = semantic_rates["no_communication"]
+    communicating_semantic = [semantic_rates[name] for name in conditions if name != "no_communication"]
+    binary_messages = sum(row["format_total_messages"] for row in by_condition["binary"])
+    binary_faithful = sum(row["faithful_messages"] for row in by_condition["binary"])
+    json_messages = sum(row["format_total_messages"] for row in by_condition["json_schema"])
+    json_syntax = sum(row["syntax_valid_messages"] for row in by_condition["json_schema"])
+    kv_messages = sum(row["format_total_messages"] for row in by_condition["compact_kv"])
+    kv_faithful = sum(row["faithful_messages"] for row in by_condition["compact_kv"])
+
     lines.extend(
         [
             "",
@@ -157,6 +171,10 @@ def build_report(rows: list[dict[str, Any]]) -> str:
             "- Compare communicating conditions with the observed no-communication control; do not assume the intervention worked from its label.",
             "- Syntax validity and sender-value fidelity are separate: the first asks whether a fixed-format message parses; the second asks whether it decodes to that sender's private value. They are not applicable to the unformatted scaffold, adaptive AutoForm, and no-communication controls.",
             "- Strict success uses the benchmark's exact integer tool contract. Semantic exactness separately accepts only a verified integer or a simple arithmetic string whose stated operands and result are mutually consistent. It does not change the benchmark score.",
+            f"- No-communication semantic success was {no_comm_semantic}/{total_agents} agent outputs. Communicating arms ranged from {min(communicating_semantic)}/{total_agents} to {max(communicating_semantic)}/{total_agents}; the control failed on most cases but one local guess was correct, so it is not a logical proof by itself.",
+            f"- Compact-KV messages decoded to the sender's value in {kv_faithful}/{kv_messages} messages, yet semantic task success was {semantic_rates['compact_kv']}/{total_agents}. This separates reliable serialization from downstream reasoning/submission failures.",
+            f"- The example-assisted binary arm encoded the sender's value correctly in only {binary_faithful}/{binary_messages} messages; JSON syntax was valid in {json_syntax}/{json_messages} messages. Outcomes from those arms therefore mix intended-format use with fallback/nonconforming messages.",
+            f"- AutoForm semantic success was {semantic_rates['autoform']}/{total_agents}, compared with {semantic_rates['scaffold_only']}/{total_agents} for the unformatted scaffold. This small run shows no evidence that format self-selection improves task success for this model/task.",
             "- Payload bytes, model tokens, repeated context, tool calls, and end-to-end latency are separate measures. This run does not impose equal-byte or equal-token budgets and cannot define a communication-efficiency frontier.",
             "- This single-model, one-run-per-cell study is insufficient to estimate cross-model transfer, a scaling law, or a robust condition effect.",
             "- The lower bound in `docs/THEORY.md` is in binary wire bits; it is not directly comparable with model tokens or UTF-8 bytes.",
