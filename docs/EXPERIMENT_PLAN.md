@@ -1,6 +1,6 @@
 # Initial experiment plan
 
-**Status:** design sketch only. No result has been collected. Freeze concrete versions, prompts, splits, and analysis before any confirmatory run.
+**Status:** design plus exploratory diagnostics from Silo-Bench v0.1 and interaction calibration v0.2. No confirmatory evidence has been collected. Freeze each concrete protocol before its first model run.
 
 ## First benchmark requirement
 
@@ -51,3 +51,10 @@ Use repeated seeds/episodes, paired comparisons on the same examples, bootstrap 
 ## Local feasibility
 
 The machine currently exposes an RTX 4060 with 8 GiB VRAM and about 32 GiB system RAM. Start with small open instruction models and deterministic symbolic environments. Do not assume full fine-tuning or large multi-agent models fit. API-backed models may be an optional later replication, not required for core reproducibility.
+# Research update: exact-sum benchmark candidate
+
+The first Silo-Bench run showed that task names and formats do not guarantee communication necessity. A next benchmark candidate is two-agent exact sum: each agent receives a private positive integer and both must submit the total. Neither private value alone determines the answer. Use varying input widths and multiple deterministic seeds, with a no-communication control on every task. This isolates the communication channel from long-chain reasoning, but is intentionally a low-complexity calibration task, not the final benchmark.
+
+For two private integers from a domain of size \(M\), exact sum requires at least \(2\log_2M\) bits of worst-case deterministic binary communication when both agents must output the sum; for power-of-two domains, sending each input once attains the bound. This gives a known wire-bit floor. Model-token, payload-byte, repeated-context, decoder, and setup costs remain separate and are not directly bounded by that proposition. The task is a probe of protocol overhead and receiver fidelity, not a claim that sum aggregation is representative of all agent work.
+
+Promotion gate: generate exact task JSON from a pinned seed; verify per-agent observation does not determine the sum; verify every model condition against the exact answer; measure how often communication is actually used and whether the no-communication control fails; then add more complex task families before any language claim.

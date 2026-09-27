@@ -67,3 +67,17 @@ If (c_B\le c_L), no finite reuse horizon repays setup under this cost measure. T
 ## 6. Conditions required for a stronger theorem
 
 A useful optimality or lower-bound claim needs an explicit task distribution, side-information model, receiver class, distortion function, channel (including who pays for the decoder), and interaction limit. It must also state whether encoder/decoder knowledge is shared for free or has setup cost. Without these assumptions, "most efficient language" is underspecified. The project will not claim a universal optimum from finite benchmark evidence.
+
+## 7. A tight lower bound for a two-agent hidden-sum task
+
+This gives the next benchmark family an exact communication reference point.
+
+**Model.** Agent A privately holds \(x\in\{0,\ldots,M-1\}\); agent B privately holds \(y\in\{0,\ldots,M-1\}\). Both must output the exact integer \(x+y\). They have no shared input-dependent advice, no free preprocessing, and communicate over a noiseless binary point-to-point channel. Count all transmitted bits in both directions. The protocol is deterministic and must be correct on every input pair.
+
+**Proposition.** Every such protocol has worst-case communication at least \(2\log_2 M\) bits. For \(M=2^b\), this bound is tight: each agent sends its own \(b\)-bit input once, so both can compute the sum with \(2b\) total transmitted bits.
+
+**Proof.** A deterministic protocol transcript induces a combinatorial rectangle \(A\times B\) of input pairs. This rectangle property and the corresponding monochromatic-leaf lower bound are standard in communication complexity ([Roughgarden, *Communication Complexity*, §4](https://timroughgarden.org/w15/l/w15.pdf)). At a leaf, correctness requires every pair in \(A\times B\) to have the same sum. If \(A\) contained two distinct values \(x_1\ne x_2\), fixing any \(y\in B\) would give different sums \(x_1+y\ne x_2+y\), a contradiction; hence \(|A|=1\). Symmetrically, \(|B|=1\). Therefore each of the \(M^2\) input pairs reaches a distinct leaf. A binary protocol tree with \(M^2\) leaves has a path of length at least \(\log_2(M^2)=2\log_2M\). Sending each \(b\)-bit input once gives the matching upper bound when \(M=2^b\). \(\square\)
+
+**Scope.** This is a worst-case deterministic binary-wire bound for exact outputs, not a lower bound in LLM tokens. It does not cover shared learned dictionaries, side information, lossy answers, or randomized protocols with error. Token cost, UTF-8 bytes, repeated prompt context, and inference cost remain separately measured. For uniformly distributed independent inputs, the transcript must distinguish all \(M^2\) input pairs, giving transcript entropy \(2\log_2 M\); under a prefix-free binary transcript, expected length is at least that entropy.
+
+**Experimental prediction.** Use powers-of-two input domains with width \(b\in\{4,8,12,16\}\), and vary the number of bits required to describe each hidden input while fixing two agents and exact-sum distortion. A lossless wire protocol cannot go below \(2b\) bits total without shared input-dependent side information. Text formats may still differ substantially in bytes, model tokens, and decoder compute; any apparent sub-bound wire result signals an accounting-boundary or correctness error. This task tests whether a model-mediated protocol approaches a known communication floor, not whether new notation can beat it.
