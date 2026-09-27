@@ -1,0 +1,44 @@
+{
+  "study": "HiddenBench Qwen3-14B reasoning-mode capability screen",
+  "version": "0.4",
+  "benchmark_revision": "3be6ca16973e4fb751ffc0dfb7eb11f2d28335d1",
+  "model": "Qwen3-14B-Q4_K_M",
+  "inference": {
+    "reasoning": "on",
+    "reasoning_budget_tokens": 1024,
+    "temperature": 0.6,
+    "top_k": 20,
+    "top_p": 0.95,
+    "min_p": 0.0,
+    "presence_penalty": 1.5,
+    "fixed_server_seed": 20260928,
+    "gpu_layers": 24,
+    "context_tokens": 8192
+  },
+  "runtime": {
+    "planned_votes": 12,
+    "server_requests": 12,
+    "completed_requests": 12,
+    "prompt_eval_tokens_reported": 3481,
+    "generated_tokens": 7284,
+    "summed_service_ms": 930024.38,
+    "mean_service_ms_per_completion": 77502.032,
+    "truncated_completions": 0
+  },
+  "tasks": [
+    {"task": "evacuation_west_city", "correct_votes": 4, "votes": 4, "accuracy": 1.0},
+    {"task": "evacuation_north_hill", "correct_votes": 4, "votes": 4, "accuracy": 1.0},
+    {"task": "evacuation_east_town", "correct_votes": 4, "votes": 4, "accuracy": 1.0}
+  ],
+  "correct_votes": 12,
+  "votes": 12,
+  "mean_individual_accuracy": 1.0,
+  "eligibility_threshold": 0.8,
+  "passed": true,
+  "prior_greedy_reference": {
+    "qwen3_14b_correct_votes": 4,
+    "qwen3_14b_votes": 12,
+    "accuracy": 0.3333333333333333,
+    "warning": "Reasoning mode and sampling settings changed together; this is not a causal estimate for either factor alone."
+  }
+}
