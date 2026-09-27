@@ -9,7 +9,12 @@ from __future__ import annotations
 import os
 import time
 import uuid
+from pathlib import Path
 from typing import Any
+
+os.environ.setdefault(
+    "CUDA_CACHE_PATH", str(Path(__file__).resolve().parents[1] / ".cache" / "cuda")
+)
 
 import torch
 from fastapi import FastAPI, HTTPException, Request
