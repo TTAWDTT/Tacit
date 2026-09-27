@@ -13,7 +13,7 @@ Download the pinned Q4_K_M GGUF and Windows CUDA 12.4 llama.cpp b11202 release a
   --model .cache/models/Qwen3-4B-Q4_K_M.gguf `
   --alias Qwen3-4B-Q4_K_M `
   --host 127.0.0.1 --port 8000 --n-gpu-layers 99 --ctx-size 8192 `
-  --temp 0 --chat-template-kwargs '{"enable_thinking":false}'
+  --temp 0 --n-predict 256 --chat-template-kwargs '{"enable_thinking":false}'
 ```
 
 Then run the frozen episodes:
