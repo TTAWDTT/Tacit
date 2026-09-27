@@ -1,0 +1,6 @@
+# Local model weights, upstream checkouts, environments, and experiment outputs
+.cache/
+.venv/
+outputs/
+results/
+configs/config.yaml
