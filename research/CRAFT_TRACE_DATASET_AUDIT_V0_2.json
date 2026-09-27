@@ -1,0 +1,131 @@
+{
+  "dataset_rows": 5946,
+  "games": 300,
+  "aligned_turns": 5930,
+  "missing_snapshots": 0,
+  "unaligned_snapshots": 16,
+  "generated_post_histogram": {
+    "3": 5930
+  },
+  "builder_transcript_message_histogram": {
+    "1": 697,
+    "2": 3955,
+    "3": 1278
+  },
+  "generated_minus_builder_histogram": {
+    "0": 1278,
+    "1": 3955,
+    "2": 697
+  },
+  "turns_with_at_least_one_collapsed_post": 4652,
+  "collapsed_posts": 5349,
+  "generated_posts_in_aligned_turns": 17790,
+  "collapsed_share_of_aligned_generated_posts": 0.300675,
+  "per_model": {
+    "claude-sonnet-4-6": {
+      "aligned_turns": 400,
+      "turns_with_collapsed_posts": 309,
+      "collapsed_posts": 351,
+      "mean_generated_posts": 3.0,
+      "mean_builder_transcript_messages": 2.1225
+    },
+    "deepseek-v2-lite": {
+      "aligned_turns": 400,
+      "turns_with_collapsed_posts": 324,
+      "collapsed_posts": 383,
+      "mean_generated_posts": 3.0,
+      "mean_builder_transcript_messages": 2.0425
+    },
+    "gemini-2.5-flash": {
+      "aligned_turns": 400,
+      "turns_with_collapsed_posts": 299,
+      "collapsed_posts": 342,
+      "mean_generated_posts": 3.0,
+      "mean_builder_transcript_messages": 2.145
+    },
+    "gemini-3-flash-preview": {
+      "aligned_turns": 381,
+      "turns_with_collapsed_posts": 304,
+      "collapsed_posts": 356,
+      "mean_generated_posts": 3.0,
+      "mean_builder_transcript_messages": 2.0656
+    },
+    "gemini-3.1-flash-lite-preview": {
+      "aligned_turns": 400,
+      "turns_with_collapsed_posts": 301,
+      "collapsed_posts": 349,
+      "mean_generated_posts": 3.0,
+      "mean_builder_transcript_messages": 2.1275
+    },
+    "gemma-9b": {
+      "aligned_turns": 400,
+      "turns_with_collapsed_posts": 316,
+      "collapsed_posts": 367,
+      "mean_generated_posts": 3.0,
+      "mean_builder_transcript_messages": 2.0825
+    },
+    "gpt-4.1-mini": {
+      "aligned_turns": 399,
+      "turns_with_collapsed_posts": 330,
+      "collapsed_posts": 385,
+      "mean_generated_posts": 3.0,
+      "mean_builder_transcript_messages": 2.0351
+    },
+    "gpt-4o": {
+      "aligned_turns": 396,
+      "turns_with_collapsed_posts": 311,
+      "collapsed_posts": 359,
+      "mean_generated_posts": 3.0,
+      "mean_builder_transcript_messages": 2.0934
+    },
+    "gpt-4o-mini": {
+      "aligned_turns": 400,
+      "turns_with_collapsed_posts": 318,
+      "collapsed_posts": 352,
+      "mean_generated_posts": 3.0,
+      "mean_builder_transcript_messages": 2.12
+    },
+    "llama-8b": {
+      "aligned_turns": 395,
+      "turns_with_collapsed_posts": 312,
+      "collapsed_posts": 359,
+      "mean_generated_posts": 3.0,
+      "mean_builder_transcript_messages": 2.0911
+    },
+    "mistral-7b": {
+      "aligned_turns": 384,
+      "turns_with_collapsed_posts": 283,
+      "collapsed_posts": 321,
+      "mean_generated_posts": 3.0,
+      "mean_builder_transcript_messages": 2.1641
+    },
+    "qwen-14b": {
+      "aligned_turns": 389,
+      "turns_with_collapsed_posts": 309,
+      "collapsed_posts": 355,
+      "mean_generated_posts": 3.0,
+      "mean_builder_transcript_messages": 2.0874
+    },
+    "qwen-32b": {
+      "aligned_turns": 400,
+      "turns_with_collapsed_posts": 304,
+      "collapsed_posts": 348,
+      "mean_generated_posts": 3.0,
+      "mean_builder_transcript_messages": 2.13
+    },
+    "qwen-72b": {
+      "aligned_turns": 398,
+      "turns_with_collapsed_posts": 324,
+      "collapsed_posts": 369,
+      "mean_generated_posts": 3.0,
+      "mean_builder_transcript_messages": 2.0729
+    },
+    "qwen-7b": {
+      "aligned_turns": 388,
+      "turns_with_collapsed_posts": 308,
+      "collapsed_posts": 353,
+      "mean_generated_posts": 3.0,
+      "mean_builder_transcript_messages": 2.0902
+    }
+  }
+}

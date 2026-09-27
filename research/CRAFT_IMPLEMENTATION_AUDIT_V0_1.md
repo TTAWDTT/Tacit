@@ -1,6 +1,6 @@
 # CRAFT implementation audit v0.1
 
-This is a static source audit, not an execution result. The inspected upstream snapshot is `csu-signal/CRAFT` commit `f174fa5ae80c20ce5ccc7bb7cbf4aeab69efe430`, checked out under the ignored project cache. CRAFT remains a candidate benchmark; no Tacit model call has used it.
+The source-and-trace analysis is extended by the full public dataset audit in [v0.2](CRAFT_TRACE_DATASET_AUDIT_V0_2.md). The inspected upstream snapshot is `csu-signal/CRAFT` commit `f174fa5ae80c20ce5ccc7bb7cbf4aeab69efe430`, checked out under the ignored project cache. CRAFT remains a candidate benchmark; no Tacit model call has used it.
 
 ## Why it is a strong candidate
 
