@@ -17,3 +17,5 @@ Start-Process -WindowStyle Hidden `
 ```
 
 Run `python experiments/hiddenbench_v0_3/run_capability_screen.py --prepare-only` to verify inputs and the idle local server. The default run performs 12 planned completions. A result below 0.8 means do not compare communication protocols on these tasks/model settings.
+
+The screen completed at 4/12 (0.333) and failed the gate. See the sanitized [results](RESULTS.json) and [report](../../research/HIDDENBENCH_QWEN14B_SCREEN_V0_3.md). The run does not establish a scaling effect.

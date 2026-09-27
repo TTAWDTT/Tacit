@@ -1,0 +1,33 @@
+{
+  "study": "HiddenBench Qwen3-14B full-information capability screen",
+  "version": "0.3",
+  "model": "Qwen3-14B-Q4_K_M",
+  "benchmark_revision": "3be6ca16973e4fb751ffc0dfb7eb11f2d28335d1",
+  "runtime": {
+    "context_tokens": 8192,
+    "gpu_layers": 24,
+    "planned_successful_completions": 12,
+    "server_requests": 12,
+    "completed_requests": 12,
+    "generated_tokens": 597,
+    "summed_service_ms": 72686.9,
+    "truncated_completions": 0
+  },
+  "tasks": [
+    {"task": "evacuation_west_city", "correct_votes": 0, "votes": 4, "accuracy": 0.0},
+    {"task": "evacuation_north_hill", "correct_votes": 0, "votes": 4, "accuracy": 0.0},
+    {"task": "evacuation_east_town", "correct_votes": 4, "votes": 4, "accuracy": 1.0}
+  ],
+  "correct_votes": 4,
+  "votes": 12,
+  "mean_individual_accuracy": 0.3333333333333333,
+  "eligibility_threshold": 0.8,
+  "passed": false,
+  "paired_reference": {
+    "qwen3_8b_v0_2_full_profile_initial_accuracy": 0.16666666666666666,
+    "qwen3_8b_correct_votes": 2,
+    "qwen3_14b_correct_votes": 4,
+    "interpretation": "Descriptive same-family checkpoint comparison on only three tasks and one seed schedule; not a causal scaling estimate."
+  },
+  "interpretation": "The Qwen3-14B checkpoint does not meet the full-information gate. Do not compare communication protocols on this model/task setup."
+}
