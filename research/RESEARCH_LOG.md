@@ -21,6 +21,13 @@
 - This is a specialization of established communication-complexity information arguments, not a new theorem claim; see Assadi's [Index communication lecture notes](https://sepehrassadi.info/courses/cs761-w25/Lectures/lec6.pdf). No empirical results are inferred from the bound, and bits are not equated to model tokens.
 - Updated the [working formalization](PROBLEM_FORMALIZATION.md), [`INDEX_m` design](INDEX_PROTOCOL_DESIGN.md), and README. No model was loaded or inference run. Next: audit the future runner's bit/byte/token accounting against these assumptions before making scaling claims.
 
+## 2026-09-29 — Add a versioned cost-accounting CLI
+
+- The cost contract was previously prose plus an illustrative record, while experiment runners emitted incompatible ad hoc token fields. Added a standard-library-only [`tools/cost_report.py`](../tools/cost_report.py) and concrete `tlu.costs.v1` JSONL contract in [`docs/COST_ACCOUNTING.md`](../docs/COST_ACCOUNTING.md).
+- The CLI validates protocol identifiers and per-episode records; groups results by policy/code/decoder; keeps payload bytes, wire bytes, broadcast delivery bytes, receiver-tokenizer payload counts, complete inference token use by model and stage, runtime, resource peaks, and setup amortization separate. Missing values are exposed with coverage and completeness; it refuses duplicate episode IDs per condition and inconsistent repeated setup-artifact metadata.
+- Python syntax compilation and CLI help rendering succeeded, and `git diff --check` is clean. No model was loaded, no inference ran, and no synthetic functional test was added or run; the aggregator has not yet been exercised on a measurement JSONL fixture. The public README now links the tool and explicitly says no protocol-comparison result uses it yet.
+- Next: use this contract in the first preregistered communication experiment and preserve a private payload ledger so UTF-8 byte counts can be independently audited against serialized messages.
+
 ## 2026-09-29 — Lower-resource HiddenBench capability screen preregistered
 
 - The current workspace was synced at `0d11945`. The 1.7B Hugging Face checkpoint is already cached as two float16-loadable safetensors shards totaling 4,063,515,592 bytes. Both shard hashes match the preregistered model revision; no model download was started. A local `llama-server` was absent, but an existing Python process (PID 8704; about 1.1 GiB working set) and 48% GPU utilization were observed, so this was not treated as an idle-machine state and the v0.9 launcher/preflight was not started.

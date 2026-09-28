@@ -28,6 +28,8 @@ The separate HiddenBench line passed full-information capability screens, includ
 
 The theory now includes exact and bounded-error `INDEX_m` communication lower bounds plus a two-coordinate success frontier for channel and inference budgets. The [synthetic task generator](experiments/index_v0_1/README.md) has five passing offline integrity tests. It remains a narrow, model-free benchmark artifact; no LLM or language comparison has run on it. Recent work on selective communication also led us to separate message scheduling/selection from message representation in every future comparison; the [working formalization](research/PROBLEM_FORMALIZATION.md) states the controls and falsifiable prediction. The first v0.9 idle preflight was rejected at 31.7% mean host CPU, so no model was loaded for that attempt.
 
+The research workspace now includes a dependency-free [cost accounting CLI](tools/cost_report.py) and versioned [`tlu.costs.v1` record contract](docs/COST_ACCOUNTING.md) for keeping delivered channel cost separate from full model-inference and setup cost. No protocol-comparison results have yet been produced with this schema.
+
 ## Scope
 
 The first phase is a reproducible research platform and small local experiments. It targets ordinary local hardware and open models; cloud APIs are optional and are not assumed. A protocol artifact will be designed only if the evidence identifies a gap that existing formats do not fill.

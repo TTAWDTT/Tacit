@@ -2,6 +2,8 @@
 
 **Status:** Measurement contract for future protocol experiments. Do not mix channel bandwidth with model inference work or combine them into a scalar unless prices and weights are preregistered.
 
+The versioned JSONL contract is `tlu.costs.v1`. The standard-library aggregator at [`tools/cost_report.py`](../tools/cost_report.py) validates records and emits protocol-grouped summaries without model access. Run it with `python tools/cost_report.py path/to/episodes.jsonl --output path/to/report.json`. Missing optional metrics remain marked incomplete; the tool does not silently convert them to zero.
+
 ## Keep three budgets distinct
 
 ### 1. Channel budget
@@ -28,24 +30,30 @@ Every run record should be sufficient to reconstruct the aggregates and frontier
 
 ```json
 {
+  "schema_version": "tlu.costs.v1",
   "episode_id": "task-seed-condition",
   "protocol": {"policy_id": "...", "code_id": "...", "decoder_id": "..."},
   "outcome": {"joint_success": false, "answer_score": 0.0},
   "transmissions": [
     {"round": 1, "sender": "A", "recipients": ["B"], "payload_utf8_bytes": 0,
-     "sender_tokenizer": "...", "sender_tokens": 0, "recipient_tokens": {"B": 0}}
+     "framing_utf8_bytes": 0,
+     "recipient_tokens": {"B": {"tokenizer": "model-or-tokenizer-revision", "tokens": 0}}}
   ],
   "model_calls": [
-    {"agent": "A", "stage": "communicate", "input_tokens": 0, "output_tokens": 0,
+    {"agent": "A", "stage": "communicate", "model": "model-revision",
+     "tokenizer": "model-or-tokenizer-revision", "input_tokens": 0, "output_tokens": 0,
      "service_seconds": 0.0, "retry": false, "truncated": false}
   ],
   "runtime": {"wall_seconds": 0.0, "tool_seconds": null, "process_cpu_seconds": null,
               "process_gpu_seconds": null, "peak_rss_bytes": null, "peak_vram_bytes": null},
-  "setup": {"one_time_bytes": 0, "one_time_tokens": 0, "reuse_horizon": 1}
+  "setup": [{"artifact_id": "shared-decoder-v1", "one_time_bytes": 0,
+             "one_time_tokens": {"model-or-tokenizer-revision": 0}, "reuse_horizon": 100}]
 }
 ```
 
-Unknown measures must be `null` or omitted with an explicit reason; do not fill them with zero. Preserve raw payloads privately as appropriate, with a sanitized aggregate suitable for public release.
+The arrays `transmissions`, `model_calls`, and `setup` are required; use an empty array when none occurred. Payload byte count is required for each transmission; report framing as `0` only when there truly are no framing bytes. Token counts, latency, runtime, and one-time costs may be `null` when unknown. The aggregator reports observed totals, coverage, and completeness per measure. Resource peaks are summarized with maxima rather than sums. Setup artifacts are deduplicated by `artifact_id` and their byte/token costs are amortized only by the declared `reuse_horizon`.
+
+Preserve raw payloads privately as appropriate, with a sanitized aggregate suitable for public release. The schema records sizes and token counts but does not independently reconstruct payload bytes from message contents, so retain an auditable private payload ledger or deterministic serializer when verification requires it.
 
 ## Comparisons to publish
 
@@ -56,4 +64,3 @@ Unknown measures must be `null` or omitted with an explicit reason; do not fill 
 5. **Setup horizon:** per-episode and amortized cost at the preregistered reuse horizon, including decoder and repair costs.
 
 Keep a vector-valued Pareto frontier unless a deployment scenario supplies defensible exchange rates among bytes, latency, compute, and quality. An intervention may reduce communication bandwidth while increasing prompt tokens or decoding compute; the record should make that tradeoff visible.
-
