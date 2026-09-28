@@ -2,6 +2,8 @@
 
 This preregistered pilot tests one necessary prerequisite for protocol research: can one pinned local model read a tiny random bit vector and exact index, then pass the vector through a role-separated structured message? The message is plain JSON, an existing baseline. This is not a new-language proposal or a comparison of communication formats.
 
+This frozen pilot predates `tlu.costs.v3` and writes v2 UTF-8 records for its text-only messages. The aggregator retains v2 compatibility. New pilots use v3, including when their messages remain text, so text and serialized latent channels share one encoding-neutral record contract.
+
 ## Frozen design
 
 The pilot selects episodes 0 and 1 at `m=4` and `m=8` from the public v0.2 task shard (seed `20260929`, SHA-256 pinned in [`preregistration.json`](preregistration.json)). It first makes at most four full-information model requests. Communication is attempted only if all four full-information answers are correct and untruncated. If eligible, each task gets one sender request and one receiver request, for a maximum of 12 model requests total. There are no retries. The sender sees only the vector; the receiver sees only the index and the exact sender output. The caller scores results against the private evaluator record after the request returns.
