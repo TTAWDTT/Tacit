@@ -61,6 +61,8 @@ def _load_analyzer(version: str) -> list[dict[str, Any]]:
 
 def _sanitize(rows_by_version: dict[str, list[dict[str, Any]]]) -> list[dict[str, Any]]:
     expected_task_sets: dict[str, set[str]] = {}
+    expected_manifests: dict[str, set[str]] = {}
+    expected_engine_commits: dict[str, set[str]] = {}
     sanitized: list[dict[str, Any]] = []
     for version, rows in rows_by_version.items():
         keyed: dict[tuple[str, str], dict[str, Any]] = {}
@@ -77,8 +79,15 @@ def _sanitize(rows_by_version: dict[str, list[dict[str, Any]]]) -> list[dict[str
             seen_conditions[task].add(condition)
         expected_task_sets[version] = tasks
         model_revisions = {str(row["model_revision"]) for row in rows}
-        if len(tasks) != 8 or len(model_revisions) != 1:
-            raise ValueError(f"expected eight tasks and one pinned model revision in {version}")
+        expected_manifests[version] = {str(row["task_manifest_sha256"]) for row in rows}
+        expected_engine_commits[version] = {str(row["upstream_engine_commit"]) for row in rows}
+        if (
+            len(tasks) != 8
+            or len(model_revisions) != 1
+            or len(expected_manifests[version]) != 1
+            or len(expected_engine_commits[version]) != 1
+        ):
+            raise ValueError(f"expected eight tasks and single pinned model/benchmark/engine revisions in {version}")
         for task in sorted(tasks):
             if seen_conditions[task] != set(CONDITIONS):
                 raise ValueError(f"incomplete conditions for {version} {task}")
@@ -93,6 +102,8 @@ def _sanitize(rows_by_version: dict[str, list[dict[str, Any]]]) -> list[dict[str
                     "task_id": task,
                     "condition_id": condition,
                     "model_revision": str(row["model_revision"]),
+                    "task_manifest_sha256": str(row["task_manifest_sha256"]),
+                    "engine_commit": str(row["upstream_engine_commit"]),
                     "strict_correct_agents": strict,
                     "joint_strict_success": strict == 2,
                     "semantic_correct_agents": semantic,
@@ -106,8 +117,10 @@ def _sanitize(rows_by_version: dict[str, list[dict[str, Any]]]) -> list[dict[str
     if (
         len(expected_task_sets) != 2
         or expected_task_sets["pilot_v0_5"] != expected_task_sets["pilot_v0_6"]
+        or expected_manifests["pilot_v0_5"] != expected_manifests["pilot_v0_6"]
+        or expected_engine_commits["pilot_v0_5"] != expected_engine_commits["pilot_v0_6"]
     ):
-        raise ValueError("v0.5 and v0.6 must contain the same task IDs")
+        raise ValueError("v0.5 and v0.6 must contain the same task IDs, task manifest, and engine commit")
     return sanitized
 
 
@@ -154,7 +167,7 @@ def _report(sanitized: list[dict[str, Any]]) -> str:
     lines = [
         "# DuoSum v0.5/v0.6 paired reanalysis",
         "",
-        "This analysis uses the eight shared task IDs per run and resamples at the task level, keeping the two submissions in an episode together. It is descriptive: eight tasks provide very low precision, and the two model runs differ in size, quantization, backend, and chat template. No format-superiority claim follows.",
+        "This analysis uses the eight shared task IDs per run and resamples at the task level, keeping the two submissions in an episode together. The public ledger records the task-manifest SHA-256, upstream engine commit, and pinned model revision for lineage; the original condition policies are [v0.5](../experiments/pilot_v0_5/policies.json) and [v0.6](../experiments/pilot_v0_6/policies.json). It is descriptive: eight tasks provide very low precision, and the two model runs differ in size, quantization, backend, and chat template. No format-superiority claim follows.",
         "",
         "Rebuild the sanitized episode ledger and this report from the local ignored run traces with `python research/analyze_duosum_paired.py`; the script makes no model requests.",
         "",

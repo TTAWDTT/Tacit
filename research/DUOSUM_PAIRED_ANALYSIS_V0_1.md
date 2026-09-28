@@ -1,6 +1,6 @@
 # DuoSum v0.5/v0.6 paired reanalysis
 
-This analysis uses the eight shared task IDs per run and resamples at the task level, keeping the two submissions in an episode together. It is descriptive: eight tasks provide very low precision, and the two model runs differ in size, quantization, backend, and chat template. No format-superiority claim follows.
+This analysis uses the eight shared task IDs per run and resamples at the task level, keeping the two submissions in an episode together. The public ledger records the task-manifest SHA-256, upstream engine commit, and pinned model revision for lineage; the original condition policies are [v0.5](../experiments/pilot_v0_5/policies.json) and [v0.6](../experiments/pilot_v0_6/policies.json). It is descriptive: eight tasks provide very low precision, and the two model runs differ in size, quantization, backend, and chat template. No format-superiority claim follows.
 
 Rebuild the sanitized episode ledger and this report from the local ignored run traces with `python research/analyze_duosum_paired.py`; the script makes no model requests.
 

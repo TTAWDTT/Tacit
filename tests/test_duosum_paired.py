@@ -29,6 +29,8 @@ class DuoSumPairedTests(unittest.TestCase):
                         "strict_correct": 2,
                         "semantic_correct": 2,
                         "model_revision": "test-model",
+                        "task_manifest_sha256": "test-manifest",
+                        "upstream_engine_commit": "test-engine",
                         "message_payload_bytes": 5,
                         "simulator_message_file_bytes": 13,
                         "total_tokens": 100,
