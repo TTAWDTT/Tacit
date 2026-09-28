@@ -94,6 +94,20 @@ The Latent Thought Condenser uses learned semantic probes to compress KV caches 
 
 This audit replaces the receiver-bound latent payload with controlled alternatives and separates message presence, example-specific content, and additional value from another agent. Its Qwen3-4B/8B results show that aggregate task effects can mix positive and negative components and vary by model/task. This is a direct methodological warning: latent payload capacity, probe readability, or end-task accuracy alone do not establish successful communication. For every channel, include same-shape true-message, other-example/mismatched-message, zero/neutral-message, and no-message controls where task semantics permit; report receiver sensitivity and whether example-specific information provides marginal utility. The paper's reported values are task- and model-specific, not a universal latent-channel verdict.
 
+## Causal influence and communication selection
+
+### Jaques et al. (2019), *Social Influence as Intrinsic Motivation for Multi-Agent Deep Reinforcement Learning*
+
+[ICML 2019 paper (PMLR)](https://proceedings.mlr.press/v97/jaques19a.html) · [arXiv](https://arxiv.org/abs/1810.08647)
+
+This pre-LLM MARL work defines social influence through counterfactual changes to another agent's action distribution and uses influence as an intrinsic reward. In sequential social dilemmas, the paper reports learned explicit-message protocols and correlates influence received through messages with environmental reward. Its discussion cautions that the utility interpretation may rely on repeated interaction: a speaker that sends unreliable information can lose influence over time, a pressure absent in one-shot settings. This establishes causal action influence as a prior concept and separates it from guaranteed task benefit; it does not study frozen LLM agents, natural-language codecs, heterogeneous model transfer, or a communication-cost frontier.
+
+### Ding et al. (2020), *Learning Individually Inferred Communication for Multi-Agent Cooperation* (I2C), NeurIPS
+
+[NeurIPS paper](https://papers.nips.cc/paper_files/paper/2020/hash/fb2fcd534b0ff3bbed73cc51df620323-Abstract.html) · [arXiv full text](https://arxiv.org/abs/2006.06455) · [official code](https://github.com/PKU-AI-Edge/I2C)
+
+I2C infers whether one agent's action changes another agent's policy, learns which neighbor to contact, and regularizes the receiver policy to use messages. It reports lower communication overhead and improved results in cooperative navigation, predator-prey, and traffic-junction MARL tasks. This is a strong communication-policy precedent, but it is trained CTDE with a joint action-value function; it selects sender/recipient links and does not compare textual message representations. It motivates a matched message-selection/sparsification control and confirms the factorization rule: hold topology/policy fixed for codec comparisons, and hold encoding fixed for policy comparisons.
+
 ### Zhao et al. (2026), *Are Agents Listening to Each Other? Measuring What Drives Agent Actions in LLM-Based Multi-Agent Systems*
 
 [Wiley article](https://onlinelibrary.wiley.com/doi/10.1111/exsy.70392) · [official code/data](https://github.com/oldblack45/listening-agents)
@@ -101,6 +115,8 @@ This audit replaces the receiver-bound latent payload with controlled alternativ
 This black-box study perturbs one incoming message at a realized decision point while preserving pragmatic features, compares next-action distributions, subtracts a same-input sampling-noise floor, and classifies the whole incoming bundle as single-driver, mixed-driver, or no-driver. The paper abstract reports 793 complete operator-specific conditions from 426 retained decision points and says the no-driver share changes from 38.7% to 75.3% under a held-out, bundle-size-aware calibration. The repository README instead advertises 849 decision points and “~40%”; these are different report/version denominators and must not be merged into one estimate. The authors explicitly limit the estimand to local one-step action sensitivity, not long-horizon influence. Its fixed-co-context intervention and noise control are a useful design reference; its label rates are calibration-sensitive and its sensitivity score does not say whether the changed action improves the task. The repository's reproduction path expects an OpenAI-compatible endpoint and agent/judge model calls, so this project records the method but does not launch that reproduction under the current resource/API constraints.
 
 Together, claim grounding and action attribution motivate a three-layer audit for future protocol comparisons: (1) semantic validity, sender evidence, receiver novelty, and task relevance; (2) recipient sensitivity/use under controlled message substitutions at fixed decision context; and (3) terminal task utility and the complete channel/inference cost. A message can pass layer 1 without affecting a decision, pass layer 2 while steering toward a worse action, or improve a local action without improving terminal utility. Calibrate sensitivity thresholds on held-out identity/noise controls, keep co-incoming messages fixed, and report the continuous action-distribution effect alongside any discrete regime label.
+
+The project's novelty cannot be “causal influence matters” or “causal influence can reduce communication”: both are established in MARL. The narrower open question is whether directly communicating frozen or lightly adapted LLM endpoints can use a stable representation to improve task utility per complete communication/inference cost, with semantic transfer across held-out tasks and heterogeneous receivers, beyond strong format and message-selection baselines.
 
 ## Emergent communication and language structure
 
