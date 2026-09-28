@@ -6,7 +6,7 @@ The run uses Qwen3-14B Q4_K_M with the v0.4 thinking-mode settings: reasoning on
 
 The 408 planned responses were initially estimated at roughly 8.8 hours from the v0.4 short-screen service time. In v0.5, each of the three full-profile tasks took about 72 minutes for 68 successful outputs, implying roughly 7.2 hours for six comparable task/profile cells before retries; actual cost depends on generated message lengths and cache behavior. Failed API requests and invalid-vote retries can increase request count. Raw traces remain under ignored `.cache/pilot_hiddenbench_v0_5/`.
 
-The completed full-profile capability gate is recorded in [the interim result](FULL_PROFILE_INTERIM.md). The hidden-profile runs are still in progress; no communication-protocol comparison has been made.
+The full-profile capability gate and interrupted hidden-profile run are recorded in [the interim report](FULL_PROFILE_INTERIM.md) and [pause report](RUN_PAUSE_REPORT.md). The hidden-profile run stopped after West City completed and 37 North Hill responses had been generated; the in-progress North Hill task did not persist a result file. No communication-protocol comparison has been made. Do not restart the full six-cell run on a resource-constrained laptop without first setting an explicit CPU-thread limit and confirming the device remains responsive.
 
 Start the local service:
 
