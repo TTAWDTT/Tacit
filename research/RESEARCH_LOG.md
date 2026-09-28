@@ -1,5 +1,12 @@
 # Research log
 
+## 2026-09-28 — AutoForm baseline audit after HiddenBench v0.8
+
+- Published the sanitized preregistered HiddenBench v0.8 capability result: four of four full-information votes passed on Qwen3-8B, but that one task/seed screen says nothing about hidden-information communication or protocol ranking. Runtime used 35.6% mean GPU and 59.3% mean host CPU, with a 91.9% CPU peak; no further model inference was run in this turn.
+- Audited the full AutoForm paper and pinned official source. The paper's explicit split-supporting-fact HotpotQA table reports GPT-4/GPT-4 F1 0.65→0.69 at 151→100 tokens, versus GPT-3.5/GPT-3.5 F1 0.62→0.53 at 369.3→286.6 tokens. Quality/cost therefore moves differently by receiver capability. The often-cited 72.7% reduction belongs to another pairing/table setting.
+- Code review: the checked-out HotpotQA runner distributes shuffled context passages among two critics (the loader interprets `cnt_agents: 3` as one solver plus two critics), matching the paper's described pair. The AutoForm prompt invites an ad-hoc structured/concise format without parser-enforced syntax. The repository separately includes JSON and KQML arms. It exposes API prompt/completion counters, but I have not traced the table's exact token aggregation yet. This calls for distinct prompt-selected, optimized-NL, and fixed-schema baselines, plus explicit adherence and semantic-transfer measures. Full audit and design implications: [`AUTOFORM_BASELINE_AUDIT.md`](AUTOFORM_BASELINE_AUDIT.md).
+- Revised the experiment plan accordingly. No new language has been designed from this observation, and no local model request was issued. Next independent work: audit benchmark options and cost/compute instrumentation, then freeze a minimal pilot only if preflight shows the machine has a responsive resource envelope.
+
 ## 2026-09-27 — Short-shard role calibration v0.11 preregistered
 
 - v0.8–v0.10 found no joint successes on segment lengths 6/15/30, even with correct oracle messages; v0.10 gave no receiver improvement at Qwen3-8B and only a one-case sender change. Before comparing encodings, test whether either model role can execute this task at a shorter length.
