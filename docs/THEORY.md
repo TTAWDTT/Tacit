@@ -226,3 +226,24 @@ J^*(n,b,q)=1-\frac{1}{2^n\sum_iq_i}\min_{\substack{\mathcal C\subseteq\{0,1\}^n\
 \]
 
 This reduction turns an encoder/decoder search into finite binary quantizer design. It supplies an oracle frontier for validating finite-budget studies. It assumes the optimal codebook is already shared and ignores codebook search/storage/setup; these must be added to any operational system comparison. [`private_query_v0_2`](../experiments/private_query_v0_2/README.md) enumerates the exact n=2..4 frontiers under uniform and skewed query distributions and freezes full training-prior protocols for cross-prior evaluation. Changing (q\) changes the distortion objective and can change the optimal protocol even though the source distribution and bit budget remain fixed. Since multiple codebooks can tie on the training prior but differ on transfer, report the selection rule or the tied-optimum range rather than only one cherry-picked code.
+
+## 10. Exact one-way coding floor for private record matching
+
+This section formalizes the model-free calibration task in [`private_match_v0_1`](../experiments/private_match_v0_1/README.md). It gives a task-specific exact baseline, not a general lower bound for LLM communication.
+
+**Model.** A record has d categorical features, each drawn from a shared vocabulary of size V; the record space is \(\mathcal{X}=[V]^d\), with \(V^d\) possible records. The receiver privately sees an ordered table \(S=(x_1,\ldots,x_n)\) of distinct records, where \(2\le n\le V^d\). The sender sees one target record \(X\in S\), but not S, its ordering, or the candidate IDs. The table is generated independently of a uniform target index \(J\in\{1,\ldots,n\}\), and \(X=x_J\). The sender sends one noiseless binary message; the receiver must return the ID of the row equal to X. The feature vocabulary and schema are shared for free in this idealized bound; their setup and serialization costs are outside the payload floor and must be charged operationally.
+
+**Proposition (exact worst-case one-way payload).** Any deterministic zero-error encoder that does not depend on the receiver's table requires at least \(V^d\) distinct messages, hence at least
+
+\[
+\left\lceil\log_2(V^d)\right\rceil
+=\left\lceil d\log_2 V\right\rceil
+\]
+
+fixed-length bits in the worst case. This is achievable by sending a fixed shared rank/code for the complete target tuple, so the bound is exact.
+
+**Proof.** Take any two distinct records (x\ne x') in \(\mathcal{X}\). Since (2\le n\le |\mathcal{X}|\), some valid receiver table contains both. If the encoder mapped them to the same message, the receiver would observe the same table and message in two cases, but the required row IDs differ. A single decoder output cannot be correct in both cases. Thus the encoder must be injective on all \(|\mathcal{X}|=V^d\) possible records and needs at least that many messages. Conversely, a shared enumeration of \([V]^d\) assigns a distinct rank to every record; sending its rank uses \(\lceil\log_2(V^d)\rceil\) bits and lets the receiver match it against its table. \(\square\)
+
+The no-message Bayes accuracy under the stated uniform target-index prior is exactly \(1/n\), while a centralized receiver given the target record scores 1.0. The achievable rank-code floor assumes the vocabulary ordering is already shared. A compact variable-length or learned code can improve *average* bytes under a nonuniform record distribution, or trade exactness for expected task utility, but cannot beat this worst-case zero-error payload floor without changing the side-information boundary, adding setup, or allowing error. LLM tokens are not bits; every experimental result must also report actual serialized payload bytes, receiver-tokenizer use, complete inference cost, and task success.
+
+**Falsifiable implementation check.** On fresh tasks, compare the fixed-width rank code, optimized natural language, JSON, delimited tuples, and any learned code under exact-answer scoring. If a purported zero-error one-way protocol transmits fewer than \(\lceil d\log_2V\rceil\) payload bits on a worst-case-valid task while still covering all possible tuples, either its shared state, task distribution, error rate, or measured channel boundary differs from this model. Report that difference explicitly. This task calibrates encoding efficiency and receiver use; it does not test multi-turn dialogue or broad reasoning.
