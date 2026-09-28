@@ -45,3 +45,7 @@ On a task that first passes no-message/centralized-oracle communication-need che
 Log raw sent/delivered bytes, whether transport changed the bytes, receiver-decoded semantic fields, final task result, and the full per-agent inference ledger. Pair seeds and episodes. Count every clarification token in the same total channel cap; count repeated history in inference tokens and measure wall time. TopSim or syntax validity alone cannot establish recovery.
 
 **Current decision:** keep adaptive feedback/repair as a later policy and robustness baseline. First stabilize a task and receiver condition where message semantics and end-task scoring are reliable. If such a study is run, compare at equal total bidirectional budget and explicitly state which noise model the protocol addresses.
+
+## Exact physical-channel control
+
+The model-free [private-query noisy-channel frontier v0.5](../experiments/private_query_v0_5/README.md) now exhausts all deterministic four-bit RAC receiver maps through two message bits under a binary symmetric channel. It reproduces the noiseless exact frontier, reaches chance at flip probability 1/2, and shows that the absolute value of an extra bit shrinks as physical channel noise increases. This is an exact finite source-and-channel control only: it neither models the common integrity-preserving LLM text path nor substitutes for semantic-decoding and task-execution corruption studies.

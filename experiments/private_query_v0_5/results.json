@@ -1,0 +1,812 @@
+{
+  "decoder_maps_allow_duplicate_reconstructions": true,
+  "method": "exhaustive decoder-map enumeration; exact Bayes-optimal deterministic sender for each source vector",
+  "model_calls": 0,
+  "receiver_query_is_private_to_sender": true,
+  "results": [
+    {
+      "binary_symmetric_channel_flip_probability": "0/1",
+      "channel_transition_probability_denominator": 1,
+      "decoder_maps_enumerated": 16,
+      "example_optimal_decoder_map_by_received_word": [
+        0
+      ],
+      "frozen_optimal_protocol_transfer": {
+        "success_max_fraction": "1/2",
+        "success_mean_fraction": "1/2",
+        "success_min_fraction": "1/2"
+      },
+      "frozen_transfer_query_prior": "skewed_first_coordinate_7_to_1",
+      "message_budget_bits": 0,
+      "n_source_bits": 4,
+      "optimal_decoder_map_count": 16,
+      "query_weights": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "receiver_query_prior": "uniform",
+      "training_prior_optimal_success_fraction": "1/2",
+      "training_prior_optimal_success_probability": 0.5,
+      "transfer_query_weights": [
+        7,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "binary_symmetric_channel_flip_probability": "0/1",
+      "channel_transition_probability_denominator": 1,
+      "decoder_maps_enumerated": 16,
+      "example_optimal_decoder_map_by_received_word": [
+        0
+      ],
+      "frozen_optimal_protocol_transfer": {
+        "success_max_fraction": "1/2",
+        "success_mean_fraction": "1/2",
+        "success_min_fraction": "1/2"
+      },
+      "frozen_transfer_query_prior": "uniform",
+      "message_budget_bits": 0,
+      "n_source_bits": 4,
+      "optimal_decoder_map_count": 16,
+      "query_weights": [
+        7,
+        1,
+        1,
+        1
+      ],
+      "receiver_query_prior": "skewed_first_coordinate_7_to_1",
+      "training_prior_optimal_success_fraction": "1/2",
+      "training_prior_optimal_success_probability": 0.5,
+      "transfer_query_weights": [
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "binary_symmetric_channel_flip_probability": "0/1",
+      "channel_transition_probability_denominator": 1,
+      "decoder_maps_enumerated": 256,
+      "example_optimal_decoder_map_by_received_word": [
+        0,
+        7
+      ],
+      "frozen_optimal_protocol_transfer": {
+        "success_max_fraction": "29/40",
+        "success_mean_fraction": "11/16",
+        "success_min_fraction": "23/40"
+      },
+      "frozen_transfer_query_prior": "skewed_first_coordinate_7_to_1",
+      "message_budget_bits": 1,
+      "n_source_bits": 4,
+      "optimal_decoder_map_count": 80,
+      "query_weights": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "receiver_query_prior": "uniform",
+      "training_prior_optimal_success_fraction": "11/16",
+      "training_prior_optimal_success_probability": 0.6875,
+      "transfer_query_weights": [
+        7,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "binary_symmetric_channel_flip_probability": "0/1",
+      "channel_transition_probability_denominator": 1,
+      "decoder_maps_enumerated": 256,
+      "example_optimal_decoder_map_by_received_word": [
+        0,
+        1
+      ],
+      "frozen_optimal_protocol_transfer": {
+        "success_max_fraction": "5/8",
+        "success_mean_fraction": "5/8",
+        "success_min_fraction": "5/8"
+      },
+      "frozen_transfer_query_prior": "uniform",
+      "message_budget_bits": 1,
+      "n_source_bits": 4,
+      "optimal_decoder_map_count": 128,
+      "query_weights": [
+        7,
+        1,
+        1,
+        1
+      ],
+      "receiver_query_prior": "skewed_first_coordinate_7_to_1",
+      "training_prior_optimal_success_fraction": "17/20",
+      "training_prior_optimal_success_probability": 0.85,
+      "transfer_query_weights": [
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "binary_symmetric_channel_flip_probability": "0/1",
+      "channel_transition_probability_denominator": 1,
+      "decoder_maps_enumerated": 65536,
+      "example_optimal_decoder_map_by_received_word": [
+        0,
+        1,
+        14,
+        15
+      ],
+      "frozen_optimal_protocol_transfer": {
+        "success_max_fraction": "37/40",
+        "success_mean_fraction": "13/16",
+        "success_min_fraction": "31/40"
+      },
+      "frozen_transfer_query_prior": "skewed_first_coordinate_7_to_1",
+      "message_budget_bits": 2,
+      "n_source_bits": 4,
+      "optimal_decoder_map_count": 960,
+      "query_weights": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "receiver_query_prior": "uniform",
+      "training_prior_optimal_success_fraction": "13/16",
+      "training_prior_optimal_success_probability": 0.8125,
+      "transfer_query_weights": [
+        7,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "binary_symmetric_channel_flip_probability": "0/1",
+      "channel_transition_probability_denominator": 1,
+      "decoder_maps_enumerated": 65536,
+      "example_optimal_decoder_map_by_received_word": [
+        0,
+        1,
+        14,
+        15
+      ],
+      "frozen_optimal_protocol_transfer": {
+        "success_max_fraction": "13/16",
+        "success_mean_fraction": "13/16",
+        "success_min_fraction": "13/16"
+      },
+      "frozen_transfer_query_prior": "uniform",
+      "message_budget_bits": 2,
+      "n_source_bits": 4,
+      "optimal_decoder_map_count": 384,
+      "query_weights": [
+        7,
+        1,
+        1,
+        1
+      ],
+      "receiver_query_prior": "skewed_first_coordinate_7_to_1",
+      "training_prior_optimal_success_fraction": "37/40",
+      "training_prior_optimal_success_probability": 0.925,
+      "transfer_query_weights": [
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "binary_symmetric_channel_flip_probability": "1/8",
+      "channel_transition_probability_denominator": 1,
+      "decoder_maps_enumerated": 16,
+      "example_optimal_decoder_map_by_received_word": [
+        0
+      ],
+      "frozen_optimal_protocol_transfer": {
+        "success_max_fraction": "1/2",
+        "success_mean_fraction": "1/2",
+        "success_min_fraction": "1/2"
+      },
+      "frozen_transfer_query_prior": "skewed_first_coordinate_7_to_1",
+      "message_budget_bits": 0,
+      "n_source_bits": 4,
+      "optimal_decoder_map_count": 16,
+      "query_weights": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "receiver_query_prior": "uniform",
+      "training_prior_optimal_success_fraction": "1/2",
+      "training_prior_optimal_success_probability": 0.5,
+      "transfer_query_weights": [
+        7,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "binary_symmetric_channel_flip_probability": "1/8",
+      "channel_transition_probability_denominator": 1,
+      "decoder_maps_enumerated": 16,
+      "example_optimal_decoder_map_by_received_word": [
+        0
+      ],
+      "frozen_optimal_protocol_transfer": {
+        "success_max_fraction": "1/2",
+        "success_mean_fraction": "1/2",
+        "success_min_fraction": "1/2"
+      },
+      "frozen_transfer_query_prior": "uniform",
+      "message_budget_bits": 0,
+      "n_source_bits": 4,
+      "optimal_decoder_map_count": 16,
+      "query_weights": [
+        7,
+        1,
+        1,
+        1
+      ],
+      "receiver_query_prior": "skewed_first_coordinate_7_to_1",
+      "training_prior_optimal_success_fraction": "1/2",
+      "training_prior_optimal_success_probability": 0.5,
+      "transfer_query_weights": [
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "binary_symmetric_channel_flip_probability": "1/8",
+      "channel_transition_probability_denominator": 8,
+      "decoder_maps_enumerated": 256,
+      "example_optimal_decoder_map_by_received_word": [
+        0,
+        7
+      ],
+      "frozen_optimal_protocol_transfer": {
+        "success_max_fraction": "107/160",
+        "success_mean_fraction": "41/64",
+        "success_min_fraction": "89/160"
+      },
+      "frozen_transfer_query_prior": "skewed_first_coordinate_7_to_1",
+      "message_budget_bits": 1,
+      "n_source_bits": 4,
+      "optimal_decoder_map_count": 80,
+      "query_weights": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "receiver_query_prior": "uniform",
+      "training_prior_optimal_success_fraction": "41/64",
+      "training_prior_optimal_success_probability": 0.640625,
+      "transfer_query_weights": [
+        7,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "binary_symmetric_channel_flip_probability": "1/8",
+      "channel_transition_probability_denominator": 8,
+      "decoder_maps_enumerated": 256,
+      "example_optimal_decoder_map_by_received_word": [
+        0,
+        1
+      ],
+      "frozen_optimal_protocol_transfer": {
+        "success_max_fraction": "19/32",
+        "success_mean_fraction": "19/32",
+        "success_min_fraction": "19/32"
+      },
+      "frozen_transfer_query_prior": "uniform",
+      "message_budget_bits": 1,
+      "n_source_bits": 4,
+      "optimal_decoder_map_count": 128,
+      "query_weights": [
+        7,
+        1,
+        1,
+        1
+      ],
+      "receiver_query_prior": "skewed_first_coordinate_7_to_1",
+      "training_prior_optimal_success_fraction": "61/80",
+      "training_prior_optimal_success_probability": 0.7625,
+      "transfer_query_weights": [
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "binary_symmetric_channel_flip_probability": "1/8",
+      "channel_transition_probability_denominator": 64,
+      "decoder_maps_enumerated": 65536,
+      "example_optimal_decoder_map_by_received_word": [
+        0,
+        1,
+        14,
+        15
+      ],
+      "frozen_optimal_protocol_transfer": {
+        "success_max_fraction": "131/160",
+        "success_mean_fraction": "47/64",
+        "success_min_fraction": "113/160"
+      },
+      "frozen_transfer_query_prior": "skewed_first_coordinate_7_to_1",
+      "message_budget_bits": 2,
+      "n_source_bits": 4,
+      "optimal_decoder_map_count": 128,
+      "query_weights": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "receiver_query_prior": "uniform",
+      "training_prior_optimal_success_fraction": "47/64",
+      "training_prior_optimal_success_probability": 0.734375,
+      "transfer_query_weights": [
+        7,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "binary_symmetric_channel_flip_probability": "1/8",
+      "channel_transition_probability_denominator": 64,
+      "decoder_maps_enumerated": 65536,
+      "example_optimal_decoder_map_by_received_word": [
+        0,
+        1,
+        14,
+        15
+      ],
+      "frozen_optimal_protocol_transfer": {
+        "success_max_fraction": "47/64",
+        "success_mean_fraction": "47/64",
+        "success_min_fraction": "47/64"
+      },
+      "frozen_transfer_query_prior": "uniform",
+      "message_budget_bits": 2,
+      "n_source_bits": 4,
+      "optimal_decoder_map_count": 32,
+      "query_weights": [
+        7,
+        1,
+        1,
+        1
+      ],
+      "receiver_query_prior": "skewed_first_coordinate_7_to_1",
+      "training_prior_optimal_success_fraction": "131/160",
+      "training_prior_optimal_success_probability": 0.81875,
+      "transfer_query_weights": [
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "binary_symmetric_channel_flip_probability": "1/4",
+      "channel_transition_probability_denominator": 1,
+      "decoder_maps_enumerated": 16,
+      "example_optimal_decoder_map_by_received_word": [
+        0
+      ],
+      "frozen_optimal_protocol_transfer": {
+        "success_max_fraction": "1/2",
+        "success_mean_fraction": "1/2",
+        "success_min_fraction": "1/2"
+      },
+      "frozen_transfer_query_prior": "skewed_first_coordinate_7_to_1",
+      "message_budget_bits": 0,
+      "n_source_bits": 4,
+      "optimal_decoder_map_count": 16,
+      "query_weights": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "receiver_query_prior": "uniform",
+      "training_prior_optimal_success_fraction": "1/2",
+      "training_prior_optimal_success_probability": 0.5,
+      "transfer_query_weights": [
+        7,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "binary_symmetric_channel_flip_probability": "1/4",
+      "channel_transition_probability_denominator": 1,
+      "decoder_maps_enumerated": 16,
+      "example_optimal_decoder_map_by_received_word": [
+        0
+      ],
+      "frozen_optimal_protocol_transfer": {
+        "success_max_fraction": "1/2",
+        "success_mean_fraction": "1/2",
+        "success_min_fraction": "1/2"
+      },
+      "frozen_transfer_query_prior": "uniform",
+      "message_budget_bits": 0,
+      "n_source_bits": 4,
+      "optimal_decoder_map_count": 16,
+      "query_weights": [
+        7,
+        1,
+        1,
+        1
+      ],
+      "receiver_query_prior": "skewed_first_coordinate_7_to_1",
+      "training_prior_optimal_success_fraction": "1/2",
+      "training_prior_optimal_success_probability": 0.5,
+      "transfer_query_weights": [
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "binary_symmetric_channel_flip_probability": "1/4",
+      "channel_transition_probability_denominator": 4,
+      "decoder_maps_enumerated": 256,
+      "example_optimal_decoder_map_by_received_word": [
+        0,
+        7
+      ],
+      "frozen_optimal_protocol_transfer": {
+        "success_max_fraction": "49/80",
+        "success_mean_fraction": "19/32",
+        "success_min_fraction": "43/80"
+      },
+      "frozen_transfer_query_prior": "skewed_first_coordinate_7_to_1",
+      "message_budget_bits": 1,
+      "n_source_bits": 4,
+      "optimal_decoder_map_count": 80,
+      "query_weights": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "receiver_query_prior": "uniform",
+      "training_prior_optimal_success_fraction": "19/32",
+      "training_prior_optimal_success_probability": 0.59375,
+      "transfer_query_weights": [
+        7,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "binary_symmetric_channel_flip_probability": "1/4",
+      "channel_transition_probability_denominator": 4,
+      "decoder_maps_enumerated": 256,
+      "example_optimal_decoder_map_by_received_word": [
+        0,
+        1
+      ],
+      "frozen_optimal_protocol_transfer": {
+        "success_max_fraction": "9/16",
+        "success_mean_fraction": "9/16",
+        "success_min_fraction": "9/16"
+      },
+      "frozen_transfer_query_prior": "uniform",
+      "message_budget_bits": 1,
+      "n_source_bits": 4,
+      "optimal_decoder_map_count": 128,
+      "query_weights": [
+        7,
+        1,
+        1,
+        1
+      ],
+      "receiver_query_prior": "skewed_first_coordinate_7_to_1",
+      "training_prior_optimal_success_fraction": "27/40",
+      "training_prior_optimal_success_probability": 0.675,
+      "transfer_query_weights": [
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "binary_symmetric_channel_flip_probability": "1/4",
+      "channel_transition_probability_denominator": 16,
+      "decoder_maps_enumerated": 65536,
+      "example_optimal_decoder_map_by_received_word": [
+        0,
+        1,
+        14,
+        15
+      ],
+      "frozen_optimal_protocol_transfer": {
+        "success_max_fraction": "57/80",
+        "success_mean_fraction": "21/32",
+        "success_min_fraction": "51/80"
+      },
+      "frozen_transfer_query_prior": "skewed_first_coordinate_7_to_1",
+      "message_budget_bits": 2,
+      "n_source_bits": 4,
+      "optimal_decoder_map_count": 128,
+      "query_weights": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "receiver_query_prior": "uniform",
+      "training_prior_optimal_success_fraction": "21/32",
+      "training_prior_optimal_success_probability": 0.65625,
+      "transfer_query_weights": [
+        7,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "binary_symmetric_channel_flip_probability": "1/4",
+      "channel_transition_probability_denominator": 16,
+      "decoder_maps_enumerated": 65536,
+      "example_optimal_decoder_map_by_received_word": [
+        0,
+        1,
+        14,
+        15
+      ],
+      "frozen_optimal_protocol_transfer": {
+        "success_max_fraction": "21/32",
+        "success_mean_fraction": "21/32",
+        "success_min_fraction": "21/32"
+      },
+      "frozen_transfer_query_prior": "uniform",
+      "message_budget_bits": 2,
+      "n_source_bits": 4,
+      "optimal_decoder_map_count": 32,
+      "query_weights": [
+        7,
+        1,
+        1,
+        1
+      ],
+      "receiver_query_prior": "skewed_first_coordinate_7_to_1",
+      "training_prior_optimal_success_fraction": "57/80",
+      "training_prior_optimal_success_probability": 0.7125,
+      "transfer_query_weights": [
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "binary_symmetric_channel_flip_probability": "1/2",
+      "channel_transition_probability_denominator": 1,
+      "decoder_maps_enumerated": 16,
+      "example_optimal_decoder_map_by_received_word": [
+        0
+      ],
+      "frozen_optimal_protocol_transfer": {
+        "success_max_fraction": "1/2",
+        "success_mean_fraction": "1/2",
+        "success_min_fraction": "1/2"
+      },
+      "frozen_transfer_query_prior": "skewed_first_coordinate_7_to_1",
+      "message_budget_bits": 0,
+      "n_source_bits": 4,
+      "optimal_decoder_map_count": 16,
+      "query_weights": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "receiver_query_prior": "uniform",
+      "training_prior_optimal_success_fraction": "1/2",
+      "training_prior_optimal_success_probability": 0.5,
+      "transfer_query_weights": [
+        7,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "binary_symmetric_channel_flip_probability": "1/2",
+      "channel_transition_probability_denominator": 1,
+      "decoder_maps_enumerated": 16,
+      "example_optimal_decoder_map_by_received_word": [
+        0
+      ],
+      "frozen_optimal_protocol_transfer": {
+        "success_max_fraction": "1/2",
+        "success_mean_fraction": "1/2",
+        "success_min_fraction": "1/2"
+      },
+      "frozen_transfer_query_prior": "uniform",
+      "message_budget_bits": 0,
+      "n_source_bits": 4,
+      "optimal_decoder_map_count": 16,
+      "query_weights": [
+        7,
+        1,
+        1,
+        1
+      ],
+      "receiver_query_prior": "skewed_first_coordinate_7_to_1",
+      "training_prior_optimal_success_fraction": "1/2",
+      "training_prior_optimal_success_probability": 0.5,
+      "transfer_query_weights": [
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "binary_symmetric_channel_flip_probability": "1/2",
+      "channel_transition_probability_denominator": 2,
+      "decoder_maps_enumerated": 256,
+      "example_optimal_decoder_map_by_received_word": [
+        0,
+        0
+      ],
+      "frozen_optimal_protocol_transfer": {
+        "success_max_fraction": "1/2",
+        "success_mean_fraction": "1/2",
+        "success_min_fraction": "1/2"
+      },
+      "frozen_transfer_query_prior": "skewed_first_coordinate_7_to_1",
+      "message_budget_bits": 1,
+      "n_source_bits": 4,
+      "optimal_decoder_map_count": 256,
+      "query_weights": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "receiver_query_prior": "uniform",
+      "training_prior_optimal_success_fraction": "1/2",
+      "training_prior_optimal_success_probability": 0.5,
+      "transfer_query_weights": [
+        7,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "binary_symmetric_channel_flip_probability": "1/2",
+      "channel_transition_probability_denominator": 2,
+      "decoder_maps_enumerated": 256,
+      "example_optimal_decoder_map_by_received_word": [
+        0,
+        0
+      ],
+      "frozen_optimal_protocol_transfer": {
+        "success_max_fraction": "1/2",
+        "success_mean_fraction": "1/2",
+        "success_min_fraction": "1/2"
+      },
+      "frozen_transfer_query_prior": "uniform",
+      "message_budget_bits": 1,
+      "n_source_bits": 4,
+      "optimal_decoder_map_count": 256,
+      "query_weights": [
+        7,
+        1,
+        1,
+        1
+      ],
+      "receiver_query_prior": "skewed_first_coordinate_7_to_1",
+      "training_prior_optimal_success_fraction": "1/2",
+      "training_prior_optimal_success_probability": 0.5,
+      "transfer_query_weights": [
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "binary_symmetric_channel_flip_probability": "1/2",
+      "channel_transition_probability_denominator": 4,
+      "decoder_maps_enumerated": 65536,
+      "example_optimal_decoder_map_by_received_word": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "frozen_optimal_protocol_transfer": {
+        "success_max_fraction": "1/2",
+        "success_mean_fraction": "1/2",
+        "success_min_fraction": "1/2"
+      },
+      "frozen_transfer_query_prior": "skewed_first_coordinate_7_to_1",
+      "message_budget_bits": 2,
+      "n_source_bits": 4,
+      "optimal_decoder_map_count": 65536,
+      "query_weights": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "receiver_query_prior": "uniform",
+      "training_prior_optimal_success_fraction": "1/2",
+      "training_prior_optimal_success_probability": 0.5,
+      "transfer_query_weights": [
+        7,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "binary_symmetric_channel_flip_probability": "1/2",
+      "channel_transition_probability_denominator": 4,
+      "decoder_maps_enumerated": 65536,
+      "example_optimal_decoder_map_by_received_word": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "frozen_optimal_protocol_transfer": {
+        "success_max_fraction": "1/2",
+        "success_mean_fraction": "1/2",
+        "success_min_fraction": "1/2"
+      },
+      "frozen_transfer_query_prior": "uniform",
+      "message_budget_bits": 2,
+      "n_source_bits": 4,
+      "optimal_decoder_map_count": 65536,
+      "query_weights": [
+        7,
+        1,
+        1,
+        1
+      ],
+      "receiver_query_prior": "skewed_first_coordinate_7_to_1",
+      "training_prior_optimal_success_fraction": "1/2",
+      "training_prior_optimal_success_probability": 0.5,
+      "transfer_query_weights": [
+        1,
+        1,
+        1,
+        1
+      ]
+    }
+  ],
+  "schema": "tlu.private_query.noisy_frontier.v0_5",
+  "shared_code_discovery_storage_and_setup_cost_included": false,
+  "source_distribution": "uniform over all 4-bit vectors",
+  "study": "private_query_noisy_channel_frontier_v0_5"
+}

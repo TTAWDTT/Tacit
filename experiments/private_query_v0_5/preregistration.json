@@ -1,0 +1,39 @@
+{
+  "study": "private_query_noisy_channel_frontier_v0_5",
+  "status": "frozen_before_exact_enumeration",
+  "date": "2026-09-29",
+  "task": {
+    "family": "classical one-way random access code",
+    "source": "uniform four-bit vector",
+    "receiver_query_priors": {
+      "uniform": [1, 1, 1, 1],
+      "skewed_first_coordinate_7_to_1": [7, 1, 1, 1]
+    },
+    "query_private_to_sender": true
+  },
+  "protocol_space": {
+    "budgets_bits": [0, 1, 2],
+    "sender": "all deterministic source-to-channel-input mappings; optimized exactly for its declared training query prior",
+    "receiver": "all deterministic received-word-to-four-bit-reconstruction mappings, including duplicate reconstruction outputs",
+    "channel": "binary symmetric channel with independent bit flips",
+    "flip_probabilities": ["0/1", "1/8", "1/4", "1/2"],
+    "source_and_query_expectation": "exact"
+  },
+  "primary_outcomes": [
+    "optimal exact average queried-bit accuracy for each query prior, channel budget, and flip probability",
+    "frozen optimal protocol accuracy on the other query prior, with min/mean/max across tied optimal indexed decoders",
+    "number of decoder maps exhaustively enumerated and number attaining each optimum"
+  ],
+  "predictions": [
+    "At flip probability 0, the computed frontier must reproduce the exact noiseless n=4 private-query frontier from v0.2.",
+    "At flip probability 1/2, all communication budgets and receiver query priors must reduce to chance accuracy 1/2 under the uniform source.",
+    "For each fixed noise rate, adding a transmitted bit cannot lower the optimum because an optimal protocol can ignore the extra bit."
+  ],
+  "analysis_limits": [
+    "This is a physical bit-flip channel control, not a model of intact text being misunderstood by an LLM.",
+    "Only deterministic finite protocols are enumerated; setup, decoder storage, model inference, and transport framing costs are excluded.",
+    "The task is an established random access code, not a novel benchmark or language contribution.",
+    "Results are exact for the stated finite task and do not establish LLM capability or protocol superiority."
+  ],
+  "model_calls": 0
+}
