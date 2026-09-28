@@ -22,7 +22,7 @@ Use native tokenizer counts for each model and the serialized bytes for cross-mo
 
 ### 3. Runtime and setup cost
 
-Record end-to-end wall latency, critical-path latency when calls run concurrently, summed model-service time, tool/parser/decoder time where observable, retries and repair turns, and local process CPU/GPU time or sampled use when available. Report host and device memory peaks. Distinguish process-level measures from total-machine samples; background activity can contaminate the latter.
+Record end-to-end wall latency, `critical_path_seconds` when calls run concurrently, summed model-service time, tool/parser/decoder time where observable, retries and repair turns, and local process CPU/GPU time or sampled use when available. Report host and device memory peaks. Distinguish process-level measures from total-machine samples; background activity can contaminate the latter. The aggregator summarizes `critical_path_seconds` as an episode-level runtime metric when present; leave it null when the critical path cannot be measured.
 
 If a method requires protocol search, codebook construction, decoder training, calibration, or negotiation, report those costs separately and amortize them only over a declared reuse horizon (H). State whether the setup artifact is shared for free, sent once, or repeated in each prompt. For hosted models, report billed input and output units/cost separately when available.
 
@@ -52,14 +52,14 @@ Every run record should be sufficient to reconstruct the aggregates and frontier
      "billing": {"input_units": null, "output_units": null, "unit_label": null,
                  "input_cost": null, "output_cost": null, "currency": null}}
   ],
-  "runtime": {"wall_seconds": 0.0, "tool_seconds": null, "process_cpu_seconds": null,
+  "runtime": {"wall_seconds": 0.0, "critical_path_seconds": null, "tool_seconds": null, "process_cpu_seconds": null,
               "process_gpu_seconds": null, "peak_rss_bytes": null, "peak_vram_bytes": null},
   "setup": [{"artifact_id": "shared-decoder-v1", "one_time_bytes": 0,
              "one_time_tokens": {"model-or-tokenizer-revision": 0}, "reuse_horizon": 100}]
 }
 ```
 
-The arrays `transmissions`, `model_calls`, and `setup` are required; use an empty array when none occurred. Payload byte count is required for each transmission; report framing as `0` only when there truly are no framing bytes. Token counts, latency, runtime, billing, and one-time costs may be `null` when unknown. The `stratum` fields keep experiment, task/split/parameters, scorer, and agent model population fixed; the aggregator groups by the full stratum and protocol IDs so it cannot silently pool different task lengths or model pairings. The aggregator reports observed totals, coverage, and completeness per measure. Resource peaks are summarized with maxima rather than sums. Billing is grouped by currency and billed-unit label; unreported billing is counted separately. Setup artifacts are deduplicated by `artifact_id` within each group and their byte/token costs are amortized only by the declared `reuse_horizon`.
+The arrays `transmissions`, `model_calls`, and `setup` are required; use an empty array when none occurred. Payload and framing byte counts are required for each `tlu.costs.v2` transmission; report framing as `0` only when there truly are no framing bytes. Token counts, latency, runtime, billing, and one-time costs may be `null` when unknown. The `stratum` fields keep experiment, task/split/parameters, scorer, and agent model population fixed; the aggregator groups by the full stratum and protocol IDs so it cannot silently pool different task lengths or model pairings. The aggregator reports observed totals, coverage, and completeness per measure. Resource peaks are summarized with maxima rather than sums. Billing is grouped by currency and billed-unit label; unreported billing is counted separately. Setup artifacts are deduplicated by `artifact_id` within each group and their byte/token costs are amortized only by the declared `reuse_horizon`.
 
 Preserve raw payloads privately as appropriate, with a sanitized aggregate suitable for public release. The schema records sizes and token counts but does not independently reconstruct payload bytes from message contents, so retain an auditable private payload ledger or deterministic serializer when verification requires it.
 

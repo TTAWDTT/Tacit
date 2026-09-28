@@ -23,6 +23,7 @@ CONDITION_FIELDS = ("policy_id", "code_id", "decoder_id")
 STRATUM_FIELDS = ("experiment_id", "task_id", "split", "scorer_id", "model_population_id")
 RUNTIME_METRICS = (
     "wall_seconds",
+    "critical_path_seconds",
     "tool_seconds",
     "process_cpu_seconds",
     "process_gpu_seconds",
@@ -154,6 +155,8 @@ def _validate_record(record: Any, line_number: int) -> dict[str, Any]:
         if len(set(recipients)) != len(recipients):
             raise RecordError(f"{where}.recipients: duplicates are not allowed")
         _required_integer(transmission.get("payload_utf8_bytes"), f"{where}.payload_utf8_bytes")
+        if input_version == SCHEMA_VERSION and "framing_utf8_bytes" not in transmission:
+            raise RecordError(f"{where}.framing_utf8_bytes: required for tlu.costs.v2; use 0 only when no framing bytes were transmitted")
         if "framing_utf8_bytes" in transmission:
             _number(transmission["framing_utf8_bytes"], f"{where}.framing_utf8_bytes", integer=True)
 
