@@ -17,6 +17,7 @@ import sys
 
 sys.path.insert(0, str(MODULE_PATH.parent))
 import compare_codecs as codecs
+import scaling_sweep
 
 
 class PrivateMatchTaskTests(unittest.TestCase):
@@ -142,6 +143,22 @@ class PrivateMatchTaskTests(unittest.TestCase):
         dictionary_stream = codecs._compress_stream(messages, dictionary)
         decoder = zlib.decompressobj(zdict=dictionary)
         self.assertEqual(decoder.decompress(dictionary_stream) + decoder.flush(), expected)
+
+    def test_scaling_sweep_separates_schema_cost_from_candidate_count(self):
+        report = scaling_sweep.run_scaling_sweep(
+            episodes=4, seed=3100, feature_counts=(2,), vocabulary_sizes=(4,),
+            candidate_counts=(2, 8),
+        )
+        low_n, high_n = report["cells"]
+        self.assertEqual(low_n["ideal_zero_error_rank_bits"], 4)
+        self.assertEqual(high_n["ideal_zero_error_rank_bits"], 4)
+        self.assertEqual(low_n["no_message_bayes_accuracy"], 0.5)
+        self.assertEqual(high_n["no_message_bayes_accuracy"], 0.125)
+        self.assertLess(low_n["mean_receiver_role_input_bytes"], high_n["mean_receiver_role_input_bytes"])
+        self.assertEqual(
+            low_n["codec_results"]["fixed_width_mixed_radix_rank"]["payload_bytes"]["mean"],
+            high_n["codec_results"]["fixed_width_mixed_radix_rank"]["payload_bytes"]["mean"],
+        )
 
     def test_codecs_support_values_wider_than_four_digits(self):
         sender, receiver, gold = module.generate_episode(

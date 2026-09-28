@@ -36,6 +36,14 @@ The report gives exact match accuracy, mean/median/p95/max UTF-8 or binary paylo
 
 Each encoder receives only the sender view; each decoder receives only the receiver view. The scorer is called after decoding. A task-sequence SHA-256 identifies the exact generated role inputs and scorer references used in the aggregate. The mixed-radix arm assumes a shared feature order and vocabulary, just like the theoretical bound; shared-state setup is not included in its payload count. The zlib preset dictionary is not assumed to arrive free: both its raw size and its effect on the comparison horizon are shown. The v0.2 result is frozen in [the compression frontier report](../../research/PRIVATE_MATCH_CODEC_FRONTIER_V0_2.md).
 
+## Model-free scaling sweep
+
+The scaling runner varies record width, vocabulary size, and receiver candidate count on 32 fresh tasks per valid configuration. Its defaults cover feature counts 1/2/4/8, vocabulary sizes 2/4/16/256, and candidate counts 2/8/32/128; impossible tables are recorded as skipped. Run it with:
+
+    python experiments/private_match_v0_1/scaling_sweep.py --output .cache/private_match_v0_1/scaling_sweep.json --episodes 32 --seed 9000
+
+It reports the exact rank-bit floor and packed bytes, every codec/compression arm, no-message Bayes reference, and compact JSON byte size of each agent's task view. These are separate axes: candidate count grows receiver context and reduces no-message accuracy while sender-only schema encodings keep the same payload length. Task-view bytes are not model tokens. The frozen sweep and interpretation are in [PRIVATE_MATCH_SCALING_V0_1.md](../../research/PRIVATE_MATCH_SCALING_V0_1.md).
+
 ## Research role and limits
 
 The motivating [MT-PingEval paper](https://arxiv.org/abs/2602.24188) uses private personal-record tables and automatically generated instances. It reports that multi-turn accuracy gains can largely follow a random guess-and-check baseline. Private Match v0.1 deliberately uses a fixed one-way sender-to-receiver schedule first, so it can calibrate semantic payload representation without crediting extra turns or lucky guesses. It is a deliberately small task family: exact tuple matching does not test broad scientific reasoning, planning, long-horizon coordination, or natural-language grounding.
