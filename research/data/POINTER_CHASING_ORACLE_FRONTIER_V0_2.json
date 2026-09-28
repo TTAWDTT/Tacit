@@ -1,0 +1,1197 @@
+{
+  "schema_version": "tlu.pointer-chasing-oracle-frontier.v2",
+  "model_calls": 0,
+  "points": [
+    {
+      "size": 2,
+      "depth": 1,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "sequential_speaker_turns": 1,
+        "directed_transmissions": 1,
+        "aggregate_payload_bits": 1,
+        "aggregate_payload_bytes_ascii": 1
+      },
+      "full_map_exchange": {
+        "simultaneous_batches": 1,
+        "sequential_speaker_turns": 0,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 4,
+        "aggregate_payload_bytes_ascii": 4
+      },
+      "parity_assisted_skip_final_pointer": {
+        "eligible": false,
+        "sequential_speaker_turns": null,
+        "directed_transmissions": null,
+        "aggregate_payload_bits": null,
+        "aggregate_payload_bytes_ascii": null
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 2,
+      "depth": 2,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "sequential_speaker_turns": 2,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 2,
+        "aggregate_payload_bytes_ascii": 2
+      },
+      "full_map_exchange": {
+        "simultaneous_batches": 1,
+        "sequential_speaker_turns": 0,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 4,
+        "aggregate_payload_bytes_ascii": 4
+      },
+      "parity_assisted_skip_final_pointer": {
+        "eligible": false,
+        "sequential_speaker_turns": null,
+        "directed_transmissions": null,
+        "aggregate_payload_bits": null,
+        "aggregate_payload_bytes_ascii": null
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 2,
+      "depth": 3,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "sequential_speaker_turns": 3,
+        "directed_transmissions": 3,
+        "aggregate_payload_bits": 3,
+        "aggregate_payload_bytes_ascii": 3
+      },
+      "full_map_exchange": {
+        "simultaneous_batches": 1,
+        "sequential_speaker_turns": 0,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 4,
+        "aggregate_payload_bytes_ascii": 4
+      },
+      "parity_assisted_skip_final_pointer": {
+        "eligible": true,
+        "sequential_speaker_turns": 2,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 6,
+        "aggregate_payload_bytes_ascii": 6
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 2,
+      "depth": 4,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "sequential_speaker_turns": 4,
+        "directed_transmissions": 4,
+        "aggregate_payload_bits": 4,
+        "aggregate_payload_bytes_ascii": 4
+      },
+      "full_map_exchange": {
+        "simultaneous_batches": 1,
+        "sequential_speaker_turns": 0,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 4,
+        "aggregate_payload_bytes_ascii": 4
+      },
+      "parity_assisted_skip_final_pointer": {
+        "eligible": true,
+        "sequential_speaker_turns": 3,
+        "directed_transmissions": 3,
+        "aggregate_payload_bits": 7,
+        "aggregate_payload_bytes_ascii": 7
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 2,
+      "depth": 8,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "sequential_speaker_turns": 8,
+        "directed_transmissions": 8,
+        "aggregate_payload_bits": 8,
+        "aggregate_payload_bytes_ascii": 8
+      },
+      "full_map_exchange": {
+        "simultaneous_batches": 1,
+        "sequential_speaker_turns": 0,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 4,
+        "aggregate_payload_bytes_ascii": 4
+      },
+      "parity_assisted_skip_final_pointer": {
+        "eligible": true,
+        "sequential_speaker_turns": 7,
+        "directed_transmissions": 7,
+        "aggregate_payload_bits": 11,
+        "aggregate_payload_bytes_ascii": 11
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 2,
+      "depth": 16,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "sequential_speaker_turns": 16,
+        "directed_transmissions": 16,
+        "aggregate_payload_bits": 16,
+        "aggregate_payload_bytes_ascii": 16
+      },
+      "full_map_exchange": {
+        "simultaneous_batches": 1,
+        "sequential_speaker_turns": 0,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 4,
+        "aggregate_payload_bytes_ascii": 4
+      },
+      "parity_assisted_skip_final_pointer": {
+        "eligible": true,
+        "sequential_speaker_turns": 15,
+        "directed_transmissions": 15,
+        "aggregate_payload_bits": 19,
+        "aggregate_payload_bytes_ascii": 19
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 2,
+      "depth": 32,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "sequential_speaker_turns": 32,
+        "directed_transmissions": 32,
+        "aggregate_payload_bits": 32,
+        "aggregate_payload_bytes_ascii": 32
+      },
+      "full_map_exchange": {
+        "simultaneous_batches": 1,
+        "sequential_speaker_turns": 0,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 4,
+        "aggregate_payload_bytes_ascii": 4
+      },
+      "parity_assisted_skip_final_pointer": {
+        "eligible": true,
+        "sequential_speaker_turns": 31,
+        "directed_transmissions": 31,
+        "aggregate_payload_bits": 35,
+        "aggregate_payload_bytes_ascii": 35
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 4,
+      "depth": 1,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "sequential_speaker_turns": 1,
+        "directed_transmissions": 1,
+        "aggregate_payload_bits": 2,
+        "aggregate_payload_bytes_ascii": 2
+      },
+      "full_map_exchange": {
+        "simultaneous_batches": 1,
+        "sequential_speaker_turns": 0,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 16,
+        "aggregate_payload_bytes_ascii": 16
+      },
+      "parity_assisted_skip_final_pointer": {
+        "eligible": false,
+        "sequential_speaker_turns": null,
+        "directed_transmissions": null,
+        "aggregate_payload_bits": null,
+        "aggregate_payload_bytes_ascii": null
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 4,
+      "depth": 2,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "sequential_speaker_turns": 2,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 4,
+        "aggregate_payload_bytes_ascii": 4
+      },
+      "full_map_exchange": {
+        "simultaneous_batches": 1,
+        "sequential_speaker_turns": 0,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 16,
+        "aggregate_payload_bytes_ascii": 16
+      },
+      "parity_assisted_skip_final_pointer": {
+        "eligible": false,
+        "sequential_speaker_turns": null,
+        "directed_transmissions": null,
+        "aggregate_payload_bits": null,
+        "aggregate_payload_bytes_ascii": null
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 4,
+      "depth": 3,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "sequential_speaker_turns": 3,
+        "directed_transmissions": 3,
+        "aggregate_payload_bits": 6,
+        "aggregate_payload_bytes_ascii": 6
+      },
+      "full_map_exchange": {
+        "simultaneous_batches": 1,
+        "sequential_speaker_turns": 0,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 16,
+        "aggregate_payload_bytes_ascii": 16
+      },
+      "parity_assisted_skip_final_pointer": {
+        "eligible": true,
+        "sequential_speaker_turns": 2,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 12,
+        "aggregate_payload_bytes_ascii": 12
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 4,
+      "depth": 4,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "sequential_speaker_turns": 4,
+        "directed_transmissions": 4,
+        "aggregate_payload_bits": 8,
+        "aggregate_payload_bytes_ascii": 8
+      },
+      "full_map_exchange": {
+        "simultaneous_batches": 1,
+        "sequential_speaker_turns": 0,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 16,
+        "aggregate_payload_bytes_ascii": 16
+      },
+      "parity_assisted_skip_final_pointer": {
+        "eligible": true,
+        "sequential_speaker_turns": 3,
+        "directed_transmissions": 3,
+        "aggregate_payload_bits": 14,
+        "aggregate_payload_bytes_ascii": 14
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 4,
+      "depth": 8,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "sequential_speaker_turns": 8,
+        "directed_transmissions": 8,
+        "aggregate_payload_bits": 16,
+        "aggregate_payload_bytes_ascii": 16
+      },
+      "full_map_exchange": {
+        "simultaneous_batches": 1,
+        "sequential_speaker_turns": 0,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 16,
+        "aggregate_payload_bytes_ascii": 16
+      },
+      "parity_assisted_skip_final_pointer": {
+        "eligible": true,
+        "sequential_speaker_turns": 7,
+        "directed_transmissions": 7,
+        "aggregate_payload_bits": 22,
+        "aggregate_payload_bytes_ascii": 22
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 4,
+      "depth": 16,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "sequential_speaker_turns": 16,
+        "directed_transmissions": 16,
+        "aggregate_payload_bits": 32,
+        "aggregate_payload_bytes_ascii": 32
+      },
+      "full_map_exchange": {
+        "simultaneous_batches": 1,
+        "sequential_speaker_turns": 0,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 16,
+        "aggregate_payload_bytes_ascii": 16
+      },
+      "parity_assisted_skip_final_pointer": {
+        "eligible": true,
+        "sequential_speaker_turns": 15,
+        "directed_transmissions": 15,
+        "aggregate_payload_bits": 38,
+        "aggregate_payload_bytes_ascii": 38
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 4,
+      "depth": 32,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "sequential_speaker_turns": 32,
+        "directed_transmissions": 32,
+        "aggregate_payload_bits": 64,
+        "aggregate_payload_bytes_ascii": 64
+      },
+      "full_map_exchange": {
+        "simultaneous_batches": 1,
+        "sequential_speaker_turns": 0,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 16,
+        "aggregate_payload_bytes_ascii": 16
+      },
+      "parity_assisted_skip_final_pointer": {
+        "eligible": true,
+        "sequential_speaker_turns": 31,
+        "directed_transmissions": 31,
+        "aggregate_payload_bits": 70,
+        "aggregate_payload_bytes_ascii": 70
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 8,
+      "depth": 1,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "sequential_speaker_turns": 1,
+        "directed_transmissions": 1,
+        "aggregate_payload_bits": 3,
+        "aggregate_payload_bytes_ascii": 3
+      },
+      "full_map_exchange": {
+        "simultaneous_batches": 1,
+        "sequential_speaker_turns": 0,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 48,
+        "aggregate_payload_bytes_ascii": 48
+      },
+      "parity_assisted_skip_final_pointer": {
+        "eligible": false,
+        "sequential_speaker_turns": null,
+        "directed_transmissions": null,
+        "aggregate_payload_bits": null,
+        "aggregate_payload_bytes_ascii": null
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 8,
+      "depth": 2,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "sequential_speaker_turns": 2,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 6,
+        "aggregate_payload_bytes_ascii": 6
+      },
+      "full_map_exchange": {
+        "simultaneous_batches": 1,
+        "sequential_speaker_turns": 0,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 48,
+        "aggregate_payload_bytes_ascii": 48
+      },
+      "parity_assisted_skip_final_pointer": {
+        "eligible": false,
+        "sequential_speaker_turns": null,
+        "directed_transmissions": null,
+        "aggregate_payload_bits": null,
+        "aggregate_payload_bytes_ascii": null
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 8,
+      "depth": 3,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "sequential_speaker_turns": 3,
+        "directed_transmissions": 3,
+        "aggregate_payload_bits": 9,
+        "aggregate_payload_bytes_ascii": 9
+      },
+      "full_map_exchange": {
+        "simultaneous_batches": 1,
+        "sequential_speaker_turns": 0,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 48,
+        "aggregate_payload_bytes_ascii": 48
+      },
+      "parity_assisted_skip_final_pointer": {
+        "eligible": true,
+        "sequential_speaker_turns": 2,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 22,
+        "aggregate_payload_bytes_ascii": 22
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 8,
+      "depth": 4,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "sequential_speaker_turns": 4,
+        "directed_transmissions": 4,
+        "aggregate_payload_bits": 12,
+        "aggregate_payload_bytes_ascii": 12
+      },
+      "full_map_exchange": {
+        "simultaneous_batches": 1,
+        "sequential_speaker_turns": 0,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 48,
+        "aggregate_payload_bytes_ascii": 48
+      },
+      "parity_assisted_skip_final_pointer": {
+        "eligible": true,
+        "sequential_speaker_turns": 3,
+        "directed_transmissions": 3,
+        "aggregate_payload_bits": 25,
+        "aggregate_payload_bytes_ascii": 25
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 8,
+      "depth": 8,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "sequential_speaker_turns": 8,
+        "directed_transmissions": 8,
+        "aggregate_payload_bits": 24,
+        "aggregate_payload_bytes_ascii": 24
+      },
+      "full_map_exchange": {
+        "simultaneous_batches": 1,
+        "sequential_speaker_turns": 0,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 48,
+        "aggregate_payload_bytes_ascii": 48
+      },
+      "parity_assisted_skip_final_pointer": {
+        "eligible": true,
+        "sequential_speaker_turns": 7,
+        "directed_transmissions": 7,
+        "aggregate_payload_bits": 37,
+        "aggregate_payload_bytes_ascii": 37
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 8,
+      "depth": 16,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "sequential_speaker_turns": 16,
+        "directed_transmissions": 16,
+        "aggregate_payload_bits": 48,
+        "aggregate_payload_bytes_ascii": 48
+      },
+      "full_map_exchange": {
+        "simultaneous_batches": 1,
+        "sequential_speaker_turns": 0,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 48,
+        "aggregate_payload_bytes_ascii": 48
+      },
+      "parity_assisted_skip_final_pointer": {
+        "eligible": true,
+        "sequential_speaker_turns": 15,
+        "directed_transmissions": 15,
+        "aggregate_payload_bits": 61,
+        "aggregate_payload_bytes_ascii": 61
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 8,
+      "depth": 32,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "sequential_speaker_turns": 32,
+        "directed_transmissions": 32,
+        "aggregate_payload_bits": 96,
+        "aggregate_payload_bytes_ascii": 96
+      },
+      "full_map_exchange": {
+        "simultaneous_batches": 1,
+        "sequential_speaker_turns": 0,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 48,
+        "aggregate_payload_bytes_ascii": 48
+      },
+      "parity_assisted_skip_final_pointer": {
+        "eligible": true,
+        "sequential_speaker_turns": 31,
+        "directed_transmissions": 31,
+        "aggregate_payload_bits": 109,
+        "aggregate_payload_bytes_ascii": 109
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 16,
+      "depth": 1,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "sequential_speaker_turns": 1,
+        "directed_transmissions": 1,
+        "aggregate_payload_bits": 4,
+        "aggregate_payload_bytes_ascii": 4
+      },
+      "full_map_exchange": {
+        "simultaneous_batches": 1,
+        "sequential_speaker_turns": 0,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 128,
+        "aggregate_payload_bytes_ascii": 128
+      },
+      "parity_assisted_skip_final_pointer": {
+        "eligible": false,
+        "sequential_speaker_turns": null,
+        "directed_transmissions": null,
+        "aggregate_payload_bits": null,
+        "aggregate_payload_bytes_ascii": null
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 16,
+      "depth": 2,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "sequential_speaker_turns": 2,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 8,
+        "aggregate_payload_bytes_ascii": 8
+      },
+      "full_map_exchange": {
+        "simultaneous_batches": 1,
+        "sequential_speaker_turns": 0,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 128,
+        "aggregate_payload_bytes_ascii": 128
+      },
+      "parity_assisted_skip_final_pointer": {
+        "eligible": false,
+        "sequential_speaker_turns": null,
+        "directed_transmissions": null,
+        "aggregate_payload_bits": null,
+        "aggregate_payload_bytes_ascii": null
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 16,
+      "depth": 3,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "sequential_speaker_turns": 3,
+        "directed_transmissions": 3,
+        "aggregate_payload_bits": 12,
+        "aggregate_payload_bytes_ascii": 12
+      },
+      "full_map_exchange": {
+        "simultaneous_batches": 1,
+        "sequential_speaker_turns": 0,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 128,
+        "aggregate_payload_bytes_ascii": 128
+      },
+      "parity_assisted_skip_final_pointer": {
+        "eligible": true,
+        "sequential_speaker_turns": 2,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 40,
+        "aggregate_payload_bytes_ascii": 40
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 16,
+      "depth": 4,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "sequential_speaker_turns": 4,
+        "directed_transmissions": 4,
+        "aggregate_payload_bits": 16,
+        "aggregate_payload_bytes_ascii": 16
+      },
+      "full_map_exchange": {
+        "simultaneous_batches": 1,
+        "sequential_speaker_turns": 0,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 128,
+        "aggregate_payload_bytes_ascii": 128
+      },
+      "parity_assisted_skip_final_pointer": {
+        "eligible": true,
+        "sequential_speaker_turns": 3,
+        "directed_transmissions": 3,
+        "aggregate_payload_bits": 44,
+        "aggregate_payload_bytes_ascii": 44
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 16,
+      "depth": 8,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "sequential_speaker_turns": 8,
+        "directed_transmissions": 8,
+        "aggregate_payload_bits": 32,
+        "aggregate_payload_bytes_ascii": 32
+      },
+      "full_map_exchange": {
+        "simultaneous_batches": 1,
+        "sequential_speaker_turns": 0,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 128,
+        "aggregate_payload_bytes_ascii": 128
+      },
+      "parity_assisted_skip_final_pointer": {
+        "eligible": true,
+        "sequential_speaker_turns": 7,
+        "directed_transmissions": 7,
+        "aggregate_payload_bits": 60,
+        "aggregate_payload_bytes_ascii": 60
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 16,
+      "depth": 16,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "sequential_speaker_turns": 16,
+        "directed_transmissions": 16,
+        "aggregate_payload_bits": 64,
+        "aggregate_payload_bytes_ascii": 64
+      },
+      "full_map_exchange": {
+        "simultaneous_batches": 1,
+        "sequential_speaker_turns": 0,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 128,
+        "aggregate_payload_bytes_ascii": 128
+      },
+      "parity_assisted_skip_final_pointer": {
+        "eligible": true,
+        "sequential_speaker_turns": 15,
+        "directed_transmissions": 15,
+        "aggregate_payload_bits": 92,
+        "aggregate_payload_bytes_ascii": 92
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 16,
+      "depth": 32,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "sequential_speaker_turns": 32,
+        "directed_transmissions": 32,
+        "aggregate_payload_bits": 128,
+        "aggregate_payload_bytes_ascii": 128
+      },
+      "full_map_exchange": {
+        "simultaneous_batches": 1,
+        "sequential_speaker_turns": 0,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 128,
+        "aggregate_payload_bytes_ascii": 128
+      },
+      "parity_assisted_skip_final_pointer": {
+        "eligible": true,
+        "sequential_speaker_turns": 31,
+        "directed_transmissions": 31,
+        "aggregate_payload_bits": 156,
+        "aggregate_payload_bytes_ascii": 156
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 32,
+      "depth": 1,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "sequential_speaker_turns": 1,
+        "directed_transmissions": 1,
+        "aggregate_payload_bits": 5,
+        "aggregate_payload_bytes_ascii": 5
+      },
+      "full_map_exchange": {
+        "simultaneous_batches": 1,
+        "sequential_speaker_turns": 0,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 320,
+        "aggregate_payload_bytes_ascii": 320
+      },
+      "parity_assisted_skip_final_pointer": {
+        "eligible": false,
+        "sequential_speaker_turns": null,
+        "directed_transmissions": null,
+        "aggregate_payload_bits": null,
+        "aggregate_payload_bytes_ascii": null
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 32,
+      "depth": 2,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "sequential_speaker_turns": 2,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 10,
+        "aggregate_payload_bytes_ascii": 10
+      },
+      "full_map_exchange": {
+        "simultaneous_batches": 1,
+        "sequential_speaker_turns": 0,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 320,
+        "aggregate_payload_bytes_ascii": 320
+      },
+      "parity_assisted_skip_final_pointer": {
+        "eligible": false,
+        "sequential_speaker_turns": null,
+        "directed_transmissions": null,
+        "aggregate_payload_bits": null,
+        "aggregate_payload_bytes_ascii": null
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 32,
+      "depth": 3,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "sequential_speaker_turns": 3,
+        "directed_transmissions": 3,
+        "aggregate_payload_bits": 15,
+        "aggregate_payload_bytes_ascii": 15
+      },
+      "full_map_exchange": {
+        "simultaneous_batches": 1,
+        "sequential_speaker_turns": 0,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 320,
+        "aggregate_payload_bytes_ascii": 320
+      },
+      "parity_assisted_skip_final_pointer": {
+        "eligible": true,
+        "sequential_speaker_turns": 2,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 74,
+        "aggregate_payload_bytes_ascii": 74
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 32,
+      "depth": 4,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "sequential_speaker_turns": 4,
+        "directed_transmissions": 4,
+        "aggregate_payload_bits": 20,
+        "aggregate_payload_bytes_ascii": 20
+      },
+      "full_map_exchange": {
+        "simultaneous_batches": 1,
+        "sequential_speaker_turns": 0,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 320,
+        "aggregate_payload_bytes_ascii": 320
+      },
+      "parity_assisted_skip_final_pointer": {
+        "eligible": true,
+        "sequential_speaker_turns": 3,
+        "directed_transmissions": 3,
+        "aggregate_payload_bits": 79,
+        "aggregate_payload_bytes_ascii": 79
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 32,
+      "depth": 8,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "sequential_speaker_turns": 8,
+        "directed_transmissions": 8,
+        "aggregate_payload_bits": 40,
+        "aggregate_payload_bytes_ascii": 40
+      },
+      "full_map_exchange": {
+        "simultaneous_batches": 1,
+        "sequential_speaker_turns": 0,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 320,
+        "aggregate_payload_bytes_ascii": 320
+      },
+      "parity_assisted_skip_final_pointer": {
+        "eligible": true,
+        "sequential_speaker_turns": 7,
+        "directed_transmissions": 7,
+        "aggregate_payload_bits": 99,
+        "aggregate_payload_bytes_ascii": 99
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 32,
+      "depth": 16,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "sequential_speaker_turns": 16,
+        "directed_transmissions": 16,
+        "aggregate_payload_bits": 80,
+        "aggregate_payload_bytes_ascii": 80
+      },
+      "full_map_exchange": {
+        "simultaneous_batches": 1,
+        "sequential_speaker_turns": 0,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 320,
+        "aggregate_payload_bytes_ascii": 320
+      },
+      "parity_assisted_skip_final_pointer": {
+        "eligible": true,
+        "sequential_speaker_turns": 15,
+        "directed_transmissions": 15,
+        "aggregate_payload_bits": 139,
+        "aggregate_payload_bytes_ascii": 139
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 32,
+      "depth": 32,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "sequential_speaker_turns": 32,
+        "directed_transmissions": 32,
+        "aggregate_payload_bits": 160,
+        "aggregate_payload_bytes_ascii": 160
+      },
+      "full_map_exchange": {
+        "simultaneous_batches": 1,
+        "sequential_speaker_turns": 0,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 320,
+        "aggregate_payload_bytes_ascii": 320
+      },
+      "parity_assisted_skip_final_pointer": {
+        "eligible": true,
+        "sequential_speaker_turns": 31,
+        "directed_transmissions": 31,
+        "aggregate_payload_bits": 219,
+        "aggregate_payload_bytes_ascii": 219
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    }
+  ],
+  "interpretation": "Exact analytic oracle costs; not a measured LLM or deployed transport frontier."
+}

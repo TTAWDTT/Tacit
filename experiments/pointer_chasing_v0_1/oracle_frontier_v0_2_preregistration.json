@@ -1,0 +1,58 @@
+{
+  "experiment_id": "pointer-chasing-oracle-frontier-v0.2",
+  "status": "preregistered-analytic-control",
+  "supersedes_for_new_analyses": "oracle_frontier_preregistration.json",
+  "research_question": "How do exact pointer relay, full-map exchange, and parity-assisted final-round skipping trade aggregate payload bits against interaction turns under bilateral answer output?",
+  "scope": "Model-free analytic oracle controls only. No stochastic performance estimates, LLM claims, or deployed transport measurements.",
+  "task": {
+    "generator": "experiments/pointer_chasing_v0_1/generate_tasks.py",
+    "answer": "parity of p_k",
+    "output_requirement": "Both agents independently compute and submit the same exact answer.",
+    "eligible_depth_for_parity_assisted_protocol": "k >= 3"
+  },
+  "protocols": {
+    "pointer_relay": {
+      "schedule": "k sequential one-way messages, alternating sender, one pointer per message",
+      "payload_code": "fixed-width binary offset, ceil(log2(n)) ASCII bits",
+      "success": "zero error",
+      "turns": "k"
+    },
+    "full_map_simultaneous": {
+      "schedule": "one synchronous batch with one directed message from each agent to the other",
+      "payload_code": "all n map values as fixed-width binary offsets, ceil(log2(n)) ASCII bits each",
+      "success": "zero error after each agent receives the other complete map; both then calculate locally",
+      "turns": "one simultaneous batch; not a sequential-speaker round count"
+    },
+    "parity_assisted_skip_final_pointer": {
+      "schedule": "For k >= 3, Alice sends her n-bit function-parity table with p1; Bob sends his n-bit function-parity table with p2; alternate pointers through p_(k-1). Both use the shared parity table of the final map owner to compute parity(p_k).",
+      "round_convention": "k-1 sequential speaker turns, Alice first; one directed message per turn",
+      "payload_code": "n parity bits per function plus k-1 fixed-width pointer offsets of ceil(log2(n)) ASCII bits",
+      "success": "zero error",
+      "source_relation": "Explicit deterministic schedule instantiating the parity-table / skip-final-round idea noted by Mao, Yang, and Zhang (ITCS 2025). The reported paper paragraph gives an O(n) protocol for its stated parameter regime but does not spell out this serialization.",
+      "turns": "k-1"
+    }
+  },
+  "cost_contract": {
+    "report_separately": ["sequential speaker turns", "simultaneous batches", "directed transmissions", "aggregate abstract payload bits", "aggregate unframed ASCII payload bytes"],
+    "excluded": ["transport framing", "prompt and schema", "recipient tokenizer units", "inference compute", "setup and codebook costs"],
+    "ascii_bytes_equal_bit_characters": true
+  },
+  "analysis": {
+    "formula_pointer_relay_bits": "k * ceil(log2(n))",
+    "formula_full_map_exchange_bits": "2 * n * ceil(log2(n))",
+    "formula_parity_assisted_bits_for_k_ge_3": "2*n + (k-1)*ceil(log2(n))",
+    "claim_boundary": "These are exact oracle payload formulae. They do not establish an LLM frontier or a practical communication-language advantage."
+  },
+  "interpretation_limits": [
+    "The full-map exchange reveals all private information and uses one simultaneous two-direction batch.",
+    "Its simultaneous batch convention differs from the sequential-speaker convention in the cited pointer-chasing lower-bound theorem.",
+    "The parity-assisted protocol is a concrete exact construction; do not overstate the source paper's brief observation as describing this exact serialization.",
+    "The parity-assisted control is intentionally undefined for k < 3.",
+    "All controls omit framing, prompts, tokenizer units, latency, and model inference."
+  ],
+  "resource_policy": {
+    "model_calls": 0,
+    "local_work": "small deterministic arithmetic and serialization only",
+    "do_not_start_model_inference": true
+  }
+}

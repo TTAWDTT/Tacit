@@ -73,6 +73,79 @@ def full_map_exchange(episode: dict) -> dict:
     }
 
 
+def parity_assisted_protocol(episode: dict) -> dict:
+    """Exact sequential (k-1)-turn protocol for k >= 3.
+
+    Each agent includes its n-bit function-parity table in its first pointer
+    message. The agents then exchange the first k-1 pointers. Both know p_(k-1)
+    and the parity table of the final map owner, so both derive parity(p_k)
+    without a final pointer message.
+    """
+    validate_episode(episode)
+    size, depth = episode["size"], episode["depth"]
+    if depth < 3:
+        raise ValueError("parity-assisted (k-1)-turn control requires depth k >= 3")
+    width = (size - 1).bit_length()
+    functions = {
+        "agent_a": episode["agent_a_view"]["function_values_1_based"],
+        "agent_b": episode["agent_b_view"]["function_values_1_based"],
+    }
+    parity_tables = {role: "".join(str(value % 2) for value in values) for role, values in functions.items()}
+    known_at_a = {"agent_a": parity_tables["agent_a"]}
+    known_at_b = {"agent_b": parity_tables["agent_b"]}
+    pointer = 1
+    messages = []
+    for step in range(1, depth):
+        sender = "agent_a" if step % 2 else "agent_b"
+        function = functions[sender]
+        pointer = function[pointer - 1]
+        pointer_payload = encode_pointer(pointer, size)
+        pointer = decode_pointer(pointer_payload, size)
+        parity_payload = parity_tables[sender] if step <= 2 else ""
+        if parity_payload:
+            # The sender knows its own table; the receiver learns it in this message.
+            known_at_a[sender] = parity_payload
+            known_at_b[sender] = parity_payload
+        messages.append({
+            "step": step,
+            "sender": sender,
+            "parity_table_bits": parity_payload,
+            "pointer_bits": pointer_payload,
+            "payload_bits": parity_payload + pointer_payload,
+        })
+
+    final_owner = "agent_a" if depth % 2 else "agent_b"
+    if final_owner not in known_at_a or final_owner not in known_at_b:
+        raise AssertionError("the final map owner's parity table was not shared")
+    answer_a = int(known_at_a[final_owner][pointer - 1])
+    answer_b = int(known_at_b[final_owner][pointer - 1])
+    if answer_a != answer_b:
+        raise AssertionError("agents computed different answers from the shared final parity table")
+    if answer_a != episode["gold_bit"]:
+        raise AssertionError("parity-assisted protocol disagrees with the task answer")
+    payload_bits = sum(len(message["payload_bits"]) for message in messages)
+    expected_bits = 2 * size + (depth - 1) * width
+    if payload_bits != expected_bits:
+        raise AssertionError("parity-assisted transcript does not match its exact bit formula")
+    return {
+        "policy_id": "parity-assisted-skip-final-pointer-v1",
+        "answer_bit": answer_a,
+        "agent_answers": {"agent_a": answer_a, "agent_b": answer_b},
+        "both_agents_independently_compute_answer": True,
+        "sequential_speaker_turns": depth - 1,
+        "directed_transmissions": depth - 1,
+        "bits_per_function_value": width,
+        "parity_table_bits_per_agent": size,
+        "messages": messages,
+        "aggregate_payload_bits": payload_bits,
+        "aggregate_payload_bytes_ascii": payload_bits,
+        "framing_bytes_included": False,
+        "transport_envelope_included": False,
+        "recipient_tokenizer_tokens": None,
+        "inference_cost": None,
+    }
+
+
 def oracle_frontier_point(size: int, depth: int) -> dict:
     """Return exact analytic costs for two zero-error oracle controls."""
     if type(size) is not int or size < 2 or size % 2:
@@ -82,22 +155,31 @@ def oracle_frontier_point(size: int, depth: int) -> dict:
     width = (size - 1).bit_length()
     relay_bits = depth * width
     full_map_bits = 2 * size * width
+    parity_assisted = None if depth < 3 else 2 * size + (depth - 1) * width
     return {
         "size": size,
         "depth": depth,
         "zero_error": True,
         "both_agents_independently_compute_answer": True,
         "pointer_relay": {
-            "synchronous_batches": depth,
+            "sequential_speaker_turns": depth,
             "directed_transmissions": depth,
             "aggregate_payload_bits": relay_bits,
             "aggregate_payload_bytes_ascii": relay_bits,
         },
         "full_map_exchange": {
-            "synchronous_batches": 1,
+            "simultaneous_batches": 1,
+            "sequential_speaker_turns": 0,
             "directed_transmissions": 2,
             "aggregate_payload_bits": full_map_bits,
             "aggregate_payload_bytes_ascii": full_map_bits,
+        },
+        "parity_assisted_skip_final_pointer": {
+            "eligible": depth >= 3,
+            "sequential_speaker_turns": depth - 1 if depth >= 3 else None,
+            "directed_transmissions": depth - 1 if depth >= 3 else None,
+            "aggregate_payload_bits": parity_assisted,
+            "aggregate_payload_bytes_ascii": parity_assisted,
         },
         "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
         "excluded_costs": ["transport framing", "prompt and schema", "tokenization", "inference", "setup"],
@@ -111,7 +193,7 @@ def main() -> None:
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
     report = {
-        "schema_version": "tlu.pointer-chasing-oracle-frontier.v1",
+        "schema_version": "tlu.pointer-chasing-oracle-frontier.v2",
         "model_calls": 0,
         "points": [oracle_frontier_point(n, k) for n in args.sizes for k in args.depths],
         "interpretation": "Exact analytic oracle costs; not a measured LLM or deployed transport frontier.",

@@ -18,7 +18,7 @@ from generate_tasks import (  # noqa: E402
     score_episode,
     validate_episode,
 )
-from protocol_baselines import full_map_exchange, oracle_frontier_point  # noqa: E402
+from protocol_baselines import full_map_exchange, oracle_frontier_point, parity_assisted_protocol  # noqa: E402
 
 
 class PointerChasingTaskTest(unittest.TestCase):
@@ -75,10 +75,34 @@ class PointerChasingTaskTest(unittest.TestCase):
 
     def test_oracle_frontier_uses_separate_round_and_bandwidth_axes(self):
         point = oracle_frontier_point(8, 3)
-        self.assertEqual(point["pointer_relay"]["synchronous_batches"], 3)
+        self.assertEqual(point["pointer_relay"]["sequential_speaker_turns"], 3)
         self.assertEqual(point["pointer_relay"]["aggregate_payload_bits"], 9)
-        self.assertEqual(point["full_map_exchange"]["synchronous_batches"], 1)
+        self.assertEqual(point["full_map_exchange"]["simultaneous_batches"], 1)
+        self.assertEqual(point["full_map_exchange"]["sequential_speaker_turns"], 0)
         self.assertEqual(point["full_map_exchange"]["aggregate_payload_bits"], 48)
+
+    def test_parity_assisted_protocol_matches_exact_answers_and_bit_formula(self):
+        for size in (2, 4, 8, 16):
+            width = (size - 1).bit_length()
+            for depth in (3, 4, 5, 7):
+                for seed in range(3):
+                    episode = generate_episode(seed + 100, "pilot", size, depth, 0)
+                    result = parity_assisted_protocol(episode)
+                    expected_bits = 2 * size + (depth - 1) * width
+                    self.assertEqual(result["agent_answers"], {
+                        "agent_a": episode["gold_bit"], "agent_b": episode["gold_bit"]
+                    })
+                    self.assertEqual(result["sequential_speaker_turns"], depth - 1)
+                    self.assertEqual(result["aggregate_payload_bits"], expected_bits)
+                    self.assertEqual(sum(len(message["payload_bits"]) for message in result["messages"]), expected_bits)
+
+    def test_parity_assisted_control_has_explicit_small_depth_boundary(self):
+        episode = generate_episode(7, "pilot", 4, 2, 0)
+        with self.assertRaises(ValueError):
+            parity_assisted_protocol(episode)
+        point = oracle_frontier_point(8, 3)
+        self.assertEqual(point["parity_assisted_skip_final_pointer"]["sequential_speaker_turns"], 2)
+        self.assertEqual(point["parity_assisted_skip_final_pointer"]["aggregate_payload_bits"], 22)
 
     def test_pointer_codec_rejects_invalid_codes(self):
         with self.assertRaises(ValueError):

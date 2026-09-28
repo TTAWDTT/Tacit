@@ -1,5 +1,14 @@
 # Research log
 
+## 2026-09-29 — Implement the parity-assisted pointer-chasing control
+
+- **Observation:** the frozen v0.1 frontier's full-map exchange used `2n ceil(log2 n)` bits in one simultaneous batch, but the cited ITCS 2025 paper also notes that sharing both maps' coordinate-wise output parities lets the final pointer's parity be computed without sending that last pointer.
+- **Source check:** re-read Mao, Yang, and Zhang's Definition 1, Theorem 2, communication-round definition, and §1.1 upper-bound discussion. The source explicitly states the parity-table/skip-final-round idea and identifies the lower-bound model as Alice-first `(k−1)` rounds. Its short paragraph does not pin a serialization or detailed bilateral transcript.
+- **Formalization:** for `k>=3`, added a concrete Alice-first sequential protocol: the first two pointer messages include the sender's `n`-bit parity table, then pointer values are exchanged through `p_(k−1)`. Both endpoints know that pointer and the final function owner's parity table. Exact total is `2n+(k−1)ceil(log2(n))` ASCII bit characters over `k−1` sequential turns.
+- **Prediction:** relative to the direct relay, the parity protocol saves one sequential turn at an exact payload premium of `2n−ceil(log2(n))` bits. Against full-map exchange, the parity protocol is cheaper when `k < 1+2n(1−1/ceil(log2(n)))`. These are arithmetic properties of oracle schedules, not LLM success predictions.
+- **Experiment/artifact:** preserved the published v0.1 preregistration and data; added a separately versioned v0.2 preregistration, report, and analytic grid. The deterministic implementation computes from locally held maps and exchanged parity tables/pointers. Tests cover `n` in `{2,4,8,16}`, `k` in `{3,4,5,7}`, and three generated seeds per cell.
+- **Results/limits:** all 17 pointer-chasing offline checks pass; the project accounting regression suite remains separate. The observed exactness is an implementation correctness check, not a statistical experiment. All costs are unframed ASCII payload; no model inference was run. The paper's theorem remains an imported bound and is neither reproduced nor generalized here.
+
 ## 2026-09-29 — Add a bilateral oracle bandwidth/round control
 
 - **Observation:** pointer-chasing theory gives a clean `k`-step relay upper bound and a `(k−1)`-round lower bound, but our benchmark requires both agents to return the answer and our existing oracle reports only abstract relay bits. Treating a different round convention as equivalent could overstate what the analytic comparison says.
