@@ -10,7 +10,7 @@ This is a benchmark candidate, not a claim that pointer chasing is a realistic p
 
 ## Task definition
 
-For even `n >= 2` and depth `k >= 1`, two agents receive independent private functions `f_A, f_B : [n] -> [n]`, sampled uniformly from all such functions. Let `p_0 = 1`; for each step `r = 1,...,k`, set `p_r = f_A(p_{r-1})` when `r` is odd and `p_r = f_B(p_{r-1})` when `r` is even. The required answer is the parity bit `p_k mod 2`.
+For even `n >= 2` and depth `k >= 1`, two agents receive independent private functions `f_A, f_B : [n] -> [n]`, sampled uniformly from all such functions. Let `p_0 = 1`; for each step `r = 1,...,k`, set `p_r = f_A(p_{r-1})` when `r` is odd and `p_r = f_B(p_{r-1})` when `r` is even. The required answer is the parity bit `p_k mod 2`. Both agents must independently submit the same correct bit after the communication episode; the primary score is joint exactness.
 
 Each agent sees only its own function; the shared prompt contains `n`, `k`, the recurrence, and the answer rule. Inputs, seeds, and answer keys are generated locally and deterministically from a recorded seed. This definition matches the pointer-chasing function used by Mao, Yang, and Zhang (ITCS 2025), including its uniform input distribution and parity output.
 
@@ -28,7 +28,7 @@ Before any format comparison, a future runner must separately establish:
 2. **Full-information capability:** one model instance given both functions reaches a preregistered threshold at that `n,k`.
 3. **Transport/oracle control:** deterministic agents using the same message API solve the `k`-round pointer protocol exactly and their payload-byte counts match the serializer.
 4. **No-message controls:** report participant accuracy and a task-prior/random baseline over held-out seeds. Do not assume exactly 50% for every participant-conditioned view without deriving it for the chosen finite distribution.
-5. **Round-policy intervention:** compare `k`-round pointer relay with at most `k-1` exchanges while matching total channel-byte cap. Keep answer turns explicit and apply the same termination/evaluator rules. Record unused turns, invalid messages, and retries.
+5. **Round-policy intervention:** compare `k`-round pointer relay with at most `k-1` exchanges while matching total channel-byte cap. Both agents submit a final answer after the exchange schedule; score their individual and joint exactness. Apply the same termination/evaluator rules and record unused turns, invalid messages, and retries.
 
 Only if the local model passes controls 1-4 should a round-policy pilot be considered. Only after it passes should message representations be compared within each fixed schedule: optimized concise natural language, strict structured data, compact typed symbols, and any learned codebook. Charge schemas/codebooks and report inference tokens, channel bytes, latency, and setup separately. Cross-model transfer requires a held-out receiver and must not be inferred from same-model self-play.
 
@@ -40,7 +40,7 @@ Only if the local model passes controls 1-4 should a round-policy pilot be consi
 
 ## Decision
 
-Keep this as the leading **round-complexity control**, alongside the existing one-way `INDEX_m` control and reused Silo-Bench tasks. Its model-free generator, scorer, fixed-width pointer codec, and oracle relay are implemented in [`experiments/pointer_chasing_v0_1/`](../experiments/pointer_chasing_v0_1/README.md). Do not launch a model capability screen until the repository's frozen resource preflight and experiment-specific capability criteria permit it. Offline generator/oracle checks are not an inference eligibility bypass.
+Keep this as the leading **round-complexity control**, alongside the existing one-way `INDEX_m` control and reused Silo-Bench tasks. Its model-free generator, bilateral scorer, fixed-width binary pointer codec, and oracle relay are implemented in [`experiments/pointer_chasing_v0_1/`](../experiments/pointer_chasing_v0_1/README.md). Do not launch a model capability screen until the repository's frozen resource preflight and experiment-specific capability criteria permit it. Offline generator/oracle checks are not an inference eligibility bypass.
 
 ## Sources
 

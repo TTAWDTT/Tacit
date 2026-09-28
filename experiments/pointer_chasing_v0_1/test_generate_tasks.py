@@ -75,8 +75,21 @@ class PointerChasingTaskTest(unittest.TestCase):
         self.assertIsNone(parse_exact_bit("answer: 1"))
         self.assertIsNone(parse_exact_bit("10"))
         episode = generate_episode(19, "pilot", 8, 3, 0)
-        self.assertTrue(score_episode(episode, str(episode["gold_bit"]))["exact"])
-        self.assertFalse(score_episode(episode, str(1 - episode["gold_bit"]))["exact"])
+        correct = str(episode["gold_bit"])
+        wrong = str(1 - episode["gold_bit"])
+        self.assertTrue(score_episode(episode, {"agent_a": correct, "agent_b": correct})["joint_exact"])
+        one_wrong = score_episode(episode, {"agent_a": correct, "agent_b": wrong})
+        self.assertTrue(one_wrong["exact_a"])
+        self.assertFalse(one_wrong["exact_b"])
+        self.assertFalse(one_wrong["joint_exact"])
+
+    def test_depth_one_requires_sharing_the_answer(self):
+        episode = generate_episode(28, "pilot", 8, 1, 0)
+        correct = str(episode["gold_bit"])
+        wrong = str(1 - episode["gold_bit"])
+        score = score_episode(episode, {"agent_a": correct, "agent_b": wrong})
+        self.assertTrue(score["exact_a"])
+        self.assertFalse(score["joint_exact"])
 
     def test_malformed_episodes_and_parameters_are_rejected(self):
         with self.assertRaises(ValueError):
@@ -87,6 +100,9 @@ class PointerChasingTaskTest(unittest.TestCase):
             generate_episode(1, "pilot", 8, 2, -1)
         with self.assertRaises(ValueError):
             generate_shard("pilot", 1, [8, 8], [2], 1)
+        episode = generate_episode(1, "pilot", 8, 2, 0)
+        with self.assertRaises(ValueError):
+            score_episode(episode, {"agent_a": str(episode["gold_bit"])})
         episode = generate_episode(1, "pilot", 8, 2, 0)
         episode["agent_b_view"]["gold_bit"] = episode["gold_bit"]
         with self.assertRaises(ValueError):

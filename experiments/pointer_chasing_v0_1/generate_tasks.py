@@ -161,14 +161,22 @@ def parse_exact_bit(output: str) -> int | None:
     return None
 
 
-def score_episode(episode: dict, output: str) -> dict:
+def score_episode(episode: dict, outputs: dict[str, str]) -> dict:
     validate_episode(episode)
-    prediction = parse_exact_bit(output)
+    if set(outputs) != {"agent_a", "agent_b"}:
+        raise ValueError("both agents must submit exactly one final answer")
+    prediction_a = parse_exact_bit(outputs["agent_a"])
+    prediction_b = parse_exact_bit(outputs["agent_b"])
+    exact_a = prediction_a is not None and prediction_a == episode["gold_bit"]
+    exact_b = prediction_b is not None and prediction_b == episode["gold_bit"]
     return {
         "episode_id": episode["episode_id"],
-        "prediction": prediction,
+        "prediction_a": prediction_a,
+        "prediction_b": prediction_b,
         "gold_bit": episode["gold_bit"],
-        "exact": prediction is not None and prediction == episode["gold_bit"],
+        "exact_a": exact_a,
+        "exact_b": exact_b,
+        "joint_exact": exact_a and exact_b,
     }
 
 

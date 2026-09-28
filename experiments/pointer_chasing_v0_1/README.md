@@ -2,7 +2,7 @@
 
 This model-free artifact generates deterministic two-party pointer-chasing episodes from the standard communication-complexity task. It loads no model and performs no inference. The task definition and theoretical scope are documented in [`research/INTERACTIVE_POINTER_CHASING_DESIGN.md`](../../research/INTERACTIVE_POINTER_CHASING_DESIGN.md).
 
-Each evaluator-side JSONL record contains independent private function maps for Agent A and Agent B plus the gold answer. An eventual runner must construct each prompt from only that agent's view and the shared task definition; it must never pass the complete record or gold bit to either agent.
+Each evaluator-side JSONL record contains independent private function maps for Agent A and Agent B plus the gold answer. An eventual runner must construct each prompt from only that agent's view and the shared task definition; it must never pass the complete record or gold bit to either agent. Both agents must submit a final bit after communicating, and the primary task score is joint exactness: both final answers must be correct. This prevents the last pointer holder from solving the task alone without sharing the result.
 
 Generate a small local pilot shard:
 
@@ -12,7 +12,7 @@ python experiments/pointer_chasing_v0_1/generate_tasks.py `
   --episodes-per-condition 4 --output .cache/pointer_chasing_v0_1/pilot.jsonl
 ```
 
-Seeds are derived with SHA-256 from the master seed, split, size, depth, and episode index. The validator checks the task version, exact schema, role-view shape, function range, and independently recomputed answer. The scorer accepts only an exact `0` or `1` final answer. `oracle_relay(episode)` executes the k-message pointer relay using fixed-width binary offsets of `ceil(log2(n))` bits per pointer and checks each decode. Its reported payload bit count excludes transport framing and is not a `tlu.costs.v3` wire-cost record.
+Seeds are derived with SHA-256 from the master seed, split, size, depth, and episode index. The validator checks the task version, exact schema, role-view shape, function range, and independently recomputed answer. The scorer accepts only exact `0` or `1` outputs from both agents and separately reports individual and joint exactness. `oracle_relay(episode)` executes the k-message pointer relay using fixed-width binary offsets of `ceil(log2(n))` bits per pointer and checks each decode. Its reported payload bit count excludes transport framing and is not a `tlu.costs.v3` wire-cost record.
 
 Run the offline integrity checks with:
 

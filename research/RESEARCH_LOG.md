@@ -3,8 +3,9 @@
 ## 2026-09-29 — Implement the model-free pointer-chasing task control
 
 - Converted the literature-grounded task definition into [`experiments/pointer_chasing_v0_1/`](../experiments/pointer_chasing_v0_1/README.md): deterministic hash-derived episode seeds, independent one-based random function maps, role-isolated views, an independently recomputed exact scorer, fixed-width binary pointer encoding, and a `k`-message oracle relay.
-- Added eight offline integrity tests covering exact hand-computed traces, deterministic split/condition streams, role leakage rejection, fixed-width codec validity, oracle answer parity, and strict scoring. All eight pass; an 8-episode CLI shard was generated successfully. The generated shard is under ignored `.cache/` and is not published.
+- Added offline integrity tests covering exact hand-computed traces, deterministic split/condition streams, role leakage rejection, fixed-width codec validity, oracle answer parity, and strict scoring. All nine pass; CLI shards of 8 and 12 episodes were generated successfully. The generated shards are under ignored `.cache/` and are not published.
 - This was a CPU-only task-plumbing check: no model was loaded, no inference was run, and no model-resource gate was relaxed. The oracle's `k * ceil(log2(n))` payload bits exclude framing and must not be represented as measured wire bytes. The model pilot remains ineligible pending the frozen resource and capability gates.
+- A protocol-semantics audit caught a critical evaluator issue before any model study: scoring only one designated output can make shallow pointer-chasing instances trivial because one map owner may already know the answer. The benchmark now requires both agents to submit the same exact result and reports joint exactness as primary; an explicit depth-one test protects this invariant. This aligns the artifact with the shared-output protocol setting behind the cited round lower bound.
 
 ## 2026-09-29 — Add a theory-grounded candidate for round complexity
 
