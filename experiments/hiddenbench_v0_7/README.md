@@ -2,6 +2,8 @@
 
 This four-vote screen asks whether the cached 8B checkpoint can solve the West City task with full information, using the official Qwen3 thinking-mode sampling settings. It does not compare communication protocols. The preregistration is frozen in [`preregistration.json`](preregistration.json).
 
+**Observed status:** the 2026-09-28 run was automatically stopped after GPU utilization reached 97% and 95% in consecutive samples. No vote was persisted or scored. See the sanitized [resource-stop report](../../research/HIDDENBENCH_QWEN8B_V0_7_RESOURCE_STOP.md) and [JSON summary](../../research/HIDDENBENCH_QWEN8B_V0_7_RESOURCE_STOP.json). The result cannot be used as evidence about model capability.
+
 The runner uses the pinned HiddenBench `collect_initial_votes` function, official task and prompts, official answer labels, and official model-data checksums. Private raw assignments and rationales stay in ignored `.cache/`; only sanitized aggregate accuracy and resource summaries may be published.
 
 ## Resource safeguards

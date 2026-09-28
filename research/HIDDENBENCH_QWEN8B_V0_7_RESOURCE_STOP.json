@@ -1,0 +1,61 @@
+{
+  "study": "HiddenBench Qwen3-8B reasoning-mode capability screen",
+  "version": "0.7",
+  "status": "incomplete_resource_stop",
+  "run_date": "2026-09-28",
+  "design": {
+    "task": "evacuation_west_city",
+    "profile": "full",
+    "seed": 20260927,
+    "planned_votes": 4
+  },
+  "model": {
+    "name": "Qwen3-8B-Q4_K_M",
+    "gpu_layers": 99,
+    "context_tokens": 8192,
+    "reasoning": "on",
+    "temperature": 0.6,
+    "top_k": 20,
+    "top_p": 0.95,
+    "reasoning_budget_tokens": 1024,
+    "max_generated_tokens": 1536
+  },
+  "launch_gate": {
+    "host_cpu_percent": 16.5,
+    "gpu_utilization_percent": 39
+  },
+  "stop_samples": [
+    {
+      "host_cpu_percent": 20.52,
+      "gpu_utilization_percent": 97,
+      "gpu_memory_used_mib": 6527,
+      "gpu_memory_total_mib": 8188,
+      "server_cpu_cores": 0.593,
+      "server_working_set_mib": 4921.8
+    },
+    {
+      "host_cpu_percent": 20.21,
+      "gpu_utilization_percent": 95,
+      "gpu_memory_used_mib": 6527,
+      "gpu_memory_total_mib": 8188,
+      "server_cpu_cores": 0.927,
+      "server_working_set_mib": 5151.0
+    }
+  ],
+  "request_accounting": {
+    "requests_started": 2,
+    "requests_completed": 1,
+    "completed_request_prompt_tokens": 612,
+    "completed_request_generated_tokens": 1021,
+    "completed_request_service_ms": 23545.87,
+    "scored_votes": 0,
+    "result_persisted": false
+  },
+  "cleanup": {
+    "runner_process_stopped": true,
+    "llama_server_stopped": true,
+    "gpu_memory_after_shutdown_mib": 699
+  },
+  "interpretation": "No capability score is available. The automatic GPU guard fired as preregistered; no model or communication conclusion is supported.",
+  "raw_prompts_facts_and_responses_published": false
+}
