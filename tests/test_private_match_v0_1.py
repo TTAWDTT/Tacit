@@ -4,6 +4,7 @@ import importlib.util
 import json
 import tempfile
 import unittest
+import zlib
 from pathlib import Path
 
 
@@ -123,6 +124,24 @@ class PrivateMatchTaskTests(unittest.TestCase):
             report["results"]["fixed_width_mixed_radix_rank"]["payload_bytes"]["mean"], 1
         )
         self.assertFalse(report["results"]["compact_json"]["llm_tokens_measured"])
+        compression = report["results"]["fixed_width_mixed_radix_rank"]["zlib_level_9"]
+        self.assertGreater(
+            compression["persistent_stream_bytes_per_message"],
+            report["results"]["fixed_width_mixed_radix_rank"]["payload_bytes"]["mean"],
+        )
+        dictionary = compression["shared_dictionary"]
+        self.assertLess(dictionary["net_savings_vs_no_dictionary_at_this_horizon"], 0)
+        self.assertTrue(report["compression_runtime"]["dictionary_wire_bytes_reported_separately"])
+
+    def test_persistent_zlib_stream_round_trips_messages_with_and_without_dictionary(self):
+        messages = [b"record A", b"record B", b"record C"]
+        plain_stream = codecs._compress_stream(messages)
+        expected = b"\n".join(messages) + b"\n"
+        self.assertEqual(zlib.decompress(plain_stream), expected)
+        dictionary = codecs._shared_compression_dictionary(2, 4)
+        dictionary_stream = codecs._compress_stream(messages, dictionary)
+        decoder = zlib.decompressobj(zdict=dictionary)
+        self.assertEqual(decoder.decompress(dictionary_stream) + decoder.flush(), expected)
 
     def test_codecs_support_values_wider_than_four_digits(self):
         sender, receiver, gold = module.generate_episode(

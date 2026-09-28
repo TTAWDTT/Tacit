@@ -12,6 +12,7 @@ import json
 import math
 import re
 import statistics
+import zlib
 from pathlib import Path
 from typing import Any, Callable
 
@@ -138,6 +139,37 @@ def _summarize(values: list[int]) -> dict[str, float | int]:
     }
 
 
+def _shared_compression_dictionary(feature_count: int, vocabulary_size: int) -> bytes:
+    pieces = [
+        "Match the candidate with this record",
+        "record",
+        " is ",
+        "; ",
+        '"',
+        '":"',
+    ]
+    for index in range(feature_count):
+        pieces.extend((f"f{index}", f"f{index} is"))
+    pieces.extend(f"v{value:04d}" for value in range(vocabulary_size))
+    return " ".join(pieces).encode("utf-8")
+
+
+def _compress_stream(messages: list[bytes], dictionary: bytes | None = None) -> bytes:
+    kwargs: dict[str, Any] = {}
+    if dictionary is not None:
+        kwargs["zdict"] = dictionary
+    compressor = zlib.compressobj(level=9, **kwargs)
+    output = []
+    for message in messages:
+        # Newline is an in-stream record separator; Z_SYNC_FLUSH makes every
+        # completed record visible to a streaming decoder without ending the
+        # shared compression context.
+        output.append(compressor.compress(message + b"\n"))
+        output.append(compressor.flush(zlib.Z_SYNC_FLUSH))
+    output.append(compressor.flush(zlib.Z_FINISH))
+    return b"".join(output)
+
+
 def run_comparison(
     *, episodes: int, seed: int, candidate_count: int,
     feature_count: int, vocabulary_size: int,
@@ -159,6 +191,7 @@ def run_comparison(
     aggregate["fixed_width_mixed_radix_rank"] = {
         "correct": 0, "payload_bytes": [], "payload_bits": [], "serialization": "packed binary bytes"
     }
+    messages_by_arm: dict[str, list[bytes]] = {name: [] for name in aggregate}
     record_digests = hashlib.sha256()
 
     for index in range(episodes):
@@ -179,6 +212,7 @@ def run_comparison(
             aggregate[name]["correct"] += int(score_answer(receiver, gold, answer))
             aggregate[name]["payload_bytes"].append(metrics["payload_bytes"])
             aggregate[name]["payload_bits"].append(metrics["payload_bits"])
+            messages_by_arm[name].append(payload.encode("utf-8"))
 
         rank_payload = encode_rank_bytes(sender, vocabulary_size)
         rank_answer = decode_rank_bytes(rank_payload, receiver, vocabulary_size)
@@ -187,6 +221,7 @@ def run_comparison(
         rank_arm["correct"] += int(score_answer(receiver, gold, rank_answer))
         rank_arm["payload_bytes"].append(rank_metrics["payload_bytes"])
         rank_arm["payload_bits"].append(rank_metrics["payload_bits"])
+        messages_by_arm["fixed_width_mixed_radix_rank"].append(rank_payload)
 
     rows = {}
     ideal_bits = math.ceil(math.log2(vocabulary_size ** feature_count))
@@ -202,8 +237,44 @@ def run_comparison(
             "llm_tokens_measured": False,
             "llm_inference_cost_measured": False,
         }
+    dictionary = _shared_compression_dictionary(feature_count, vocabulary_size)
+    for name, messages in messages_by_arm.items():
+        framed_messages = b"".join(message + b"\n" for message in messages)
+        independent_streams = [zlib.compress(message, level=9) for message in messages]
+        if any(zlib.decompress(compressed) != message for compressed, message in zip(independent_streams, messages)):
+            raise RuntimeError(f"independent zlib codec failed round-trip for arm {name}")
+        no_dictionary_stream = _compress_stream(messages)
+        with_dictionary_stream = _compress_stream(messages, dictionary)
+        if zlib.decompress(no_dictionary_stream) != framed_messages:
+            raise RuntimeError(f"persistent zlib codec failed round-trip for arm {name}")
+        dictionary_decoder = zlib.decompressobj(zdict=dictionary)
+        decoded_with_dictionary = dictionary_decoder.decompress(with_dictionary_stream) + dictionary_decoder.flush()
+        if decoded_with_dictionary != framed_messages:
+            raise RuntimeError(f"dictionary zlib codec failed round-trip for arm {name}")
+        no_dictionary_stream_bytes = len(no_dictionary_stream)
+        with_dictionary_stream_bytes = len(with_dictionary_stream)
+        dictionary_saving = no_dictionary_stream_bytes - with_dictionary_stream_bytes
+        per_message_saving = dictionary_saving / episodes
+        rows[name]["zlib_level_9"] = {
+            "independent_stream_total_bytes": sum(map(len, independent_streams)),
+            "persistent_stream_total_bytes": no_dictionary_stream_bytes,
+            "persistent_stream_bytes_per_message": no_dictionary_stream_bytes / episodes,
+            "message_delimiter": "LF byte included in compressed stream",
+            "flush_per_message": "Z_SYNC_FLUSH",
+            "shared_dictionary": {
+                "dictionary_bytes": len(dictionary),
+                "dictionary_sha256": hashlib.sha256(dictionary).hexdigest(),
+                "compressed_stream_total_bytes": with_dictionary_stream_bytes,
+                "bytes_if_dictionary_transmitted_at_this_horizon": len(dictionary) + with_dictionary_stream_bytes,
+                "net_savings_vs_no_dictionary_at_this_horizon": dictionary_saving - len(dictionary),
+                "linear_extrapolation_break_even_messages": (
+                    math.ceil(len(dictionary) / per_message_saving)
+                    if per_message_saving > 0 else None
+                ),
+            },
+        }
     return {
-        "schema_version": "tlu.private-match-codec-comparison.v1",
+        "schema_version": "tlu.private-match-codec-comparison.v2",
         "task_schema_version": SCHEMA_VERSION,
         "task_parameters": {
             "episodes": episodes,
@@ -215,6 +286,13 @@ def run_comparison(
         "task_sequence_sha256": record_digests.hexdigest(),
         "no_message_bayes_accuracy": 1 / candidate_count,
         "centralized_exact_information_accuracy": 1.0,
+        "compression_runtime": {
+            "python_zlib_compile_version": zlib.ZLIB_VERSION,
+            "python_zlib_runtime_version": zlib.ZLIB_RUNTIME_VERSION,
+            "compression_level": 9,
+            "dictionary_bytes_in_compressed_stream_totals": False,
+            "dictionary_wire_bytes_reported_separately": True,
+        },
         "results": rows,
     }
 
