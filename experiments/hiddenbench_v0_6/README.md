@@ -1,5 +1,9 @@
 # HiddenBench phase-policy feasibility pilot v0.6
 
+## Observed run status
+
+The 2026-09-28 run was interrupted after `natural_3` completed and `exchange_decide` had begun. `natural_3` scored 0.00 initial/final individual and majority accuracy on this one task and seed. Host CPU peaked at 89.3%; the local server was stopped and `reveal_all_3` did not run. See [`../../research/HIDDENBENCH_PHASE_PILOT_V0_6_INTERRUPTED.md`](../../research/HIDDENBENCH_PHASE_PILOT_V0_6_INTERRUPTED.md) and its [sanitized JSON aggregate](../../research/HIDDENBENCH_PHASE_PILOT_V0_6_INTERRUPTED.json). These data do not support a protocol comparison. The preregistered run must not be restarted unchanged; a future run needs a separately documented lower-cost configuration and a capability gate.
+
 This preregistered pilot tests an implementation of the published HiddenBench Exchange/Decide baseline and its Reveal-All diagnostic. It uses one hidden-profile verification task, one seed, and three-round matched conditions. The pilot is designed to validate the phase-aware runner and measure resource use; one task cannot establish comparative effectiveness.
 
 The implementation reuses the pinned HiddenBench task and prompt data, agent instantiation, vote validation, and official scorer. The local adapter adds explicit round-phase prompts, which the upstream CLI's single static `--extra-prompt` cannot express. Reveal-All appends each sender's actual visible facts verbatim to their first-round message; no hidden fact is given to the wrong agent.

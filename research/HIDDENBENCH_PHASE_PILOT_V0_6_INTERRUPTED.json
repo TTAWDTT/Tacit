@@ -1,0 +1,68 @@
+{
+  "study": "HiddenBench phase-policy feasibility pilot",
+  "version": "0.6",
+  "status": "incomplete",
+  "run_date": "2026-09-28",
+  "design": {
+    "task": "evacuation_west_city",
+    "profile": "hidden",
+    "agents": 4,
+    "rounds": 3,
+    "seed": 20260927,
+    "benchmark_revision": "3be6ca16973e4fb751ffc0dfb7eb11f2d28335d1"
+  },
+  "model": {
+    "name": "Qwen3-14B-Q4_K_M",
+    "runtime": "llama.cpp b11202",
+    "hardware": "RTX 4060 Laptop GPU, 8 GB",
+    "gpu_layers": 24,
+    "context_tokens": 8192,
+    "generation_threads": 4,
+    "batch_threads": 4,
+    "process_priority": "BelowNormal"
+  },
+  "conditions": [
+    {
+      "name": "natural_3",
+      "status": "complete",
+      "messages": 12,
+      "serialized_payload_utf8_bytes": 4354,
+      "initial_individual_accuracy": 0.0,
+      "final_individual_accuracy": 0.0,
+      "initial_majority_accuracy": 0.0,
+      "final_majority_accuracy": 0.0,
+      "server_requests": 20,
+      "completed_requests": 20,
+      "prompt_eval_tokens": 6627,
+      "generated_tokens": 13153,
+      "truncated_completions": 0,
+      "discussion_payload_tokens": null,
+      "discussion_payload_token_count_note": "Not measured: tokenizer endpoint was unavailable after safe server shutdown."
+    },
+    {
+      "name": "exchange_decide",
+      "status": "incomplete",
+      "server_requests_started": 2,
+      "scored": false
+    },
+    {
+      "name": "reveal_all_3",
+      "status": "not_started",
+      "scored": false
+    }
+  ],
+  "resource_samples": {
+    "count": 137,
+    "host_cpu_percent_mean": 54.1,
+    "host_cpu_percent_max": 89.3,
+    "gpu_utilization_percent_mean": 34.2,
+    "gpu_utilization_percent_max": 72.0,
+    "server_cpu_cores_mean": 3.3,
+    "server_cpu_cores_max": 3.7,
+    "server_working_set_mib_mean": 5823.1,
+    "server_working_set_mib_max": 8801.7,
+    "source": "Local monitor samples; raw telemetry is not published."
+  },
+  "stop_reason": "Stopped after sampled host CPU peaked at 89.3% and remained around 77-79% in subsequent samples.",
+  "interpretation": "One completed condition on one task, seed, and model is descriptive only. No protocol comparison, efficiency frontier, scaling claim, or language superiority claim is supported. Raw task prompts, facts, and transcripts remain local in the ignored cache."
+}

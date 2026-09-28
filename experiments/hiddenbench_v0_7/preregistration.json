@@ -1,0 +1,58 @@
+{
+  "study": "HiddenBench Qwen3-8B reasoning-mode capability screen",
+  "version": "0.7",
+  "status": "frozen before inference",
+  "question": "Can the locally cached Qwen3-8B model answer the West City task under the full-information profile using the model-card-recommended thinking-mode sampler, at a lower-cost operating point than the Qwen3-14B run?",
+  "motivation": "The v0.6 Qwen3-14B natural-discussion condition scored 0/4 final individual votes on one hidden-profile episode but reached high host CPU. Before any further comparison, test whether a smaller cached checkpoint with documented reasoning settings meets the full-information capability gate. This is not a model-scale or protocol comparison.",
+  "sources": {
+    "benchmark_paper": "https://arxiv.org/abs/2505.11556",
+    "benchmark_repository": "https://github.com/Yassellee/HiddenBench_ICML",
+    "benchmark_revision": "3be6ca16973e4fb751ffc0dfb7eb11f2d28335d1",
+    "benchmark_file_sha256": "8684c1c8b02da49bb3a959c9ba352b3eb682c02653a3c508c47b8ed54f7a5df3",
+    "official_model_card": "https://huggingface.co/Qwen/Qwen3-8B-GGUF",
+    "model_revision": "7c41481f57cb95916b40956ab2f0b139b296d974"
+  },
+  "model": {
+    "name": "Qwen3-8B-Q4_K_M",
+    "artifact_size_bytes": 5027783488,
+    "artifact_sha256": "d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785",
+    "runtime": "llama.cpp b11202; RTX 4060 Laptop GPU 8 GB; 99 GPU layers; one slot; 8192 context",
+    "cpu_resource_limit": "4 generation threads and 4 prompt/batch threads; BelowNormal process priority",
+    "reasoning": "on",
+    "reasoning_budget_tokens": 1024,
+    "sampling": {
+      "temperature": 0.6,
+      "top_k": 20,
+      "top_p": 0.95,
+      "min_p": 0.0,
+      "presence_penalty": 1.5,
+      "server_seed": 20260928,
+      "max_generated_tokens": 1536
+    }
+  },
+  "design": {
+    "task": "evacuation_west_city",
+    "profile": "full",
+    "agents": 4,
+    "rounds": 0,
+    "seed": 20260927,
+    "planned_votes": 4,
+    "nominal_model_calls": 4,
+    "retry_policy": "Use the pinned HiddenBench ModelClient defaults; count all llama.cpp launches and completions separately. Any incomplete vote makes the screen incomplete; do not silently substitute another seed or task.",
+    "raw_outputs": "Ignored local .cache only; never publish prompts, assignments, rationales, or raw vote records."
+  },
+  "primary_outcome": "Official HiddenBench initial individual-vote accuracy on the four-agent full-information task.",
+  "eligibility_gate": "Pass only at 4/4 correct votes. If passed, a separately preregistered hidden-profile protocol study may use this model/configuration. If not, stop this model/task line; do not rank protocols.",
+  "resource_safeguards": {
+    "launch_gate": "Three host CPU samples averaged below 35% and NVIDIA GPU utilization below 60% before model load.",
+    "automatic_stop": "Stop the runner and model service after host CPU is at least 75% for three consecutive 15-second samples, or GPU utilization is at least 90% for two consecutive samples.",
+    "telemetry": "Record host CPU, server CPU cores, process working set, GPU utilization, and GPU memory every 15 seconds.",
+    "cleanup": "The orchestrator terminates the model process in a finally block after success, failure, or interrupt."
+  },
+  "limits": [
+    "One task, one seed, and four votes are only an operating-point screen.",
+    "A pass does not demonstrate message benefit or protocol superiority.",
+    "A Qwen3-8B versus Qwen3-14B difference cannot be attributed to scale alone because checkpoint, quantization, runtime placement, and other settings differ.",
+    "If the resource gate rejects launch, no server is started and no experiment result is recorded."
+  ]
+}

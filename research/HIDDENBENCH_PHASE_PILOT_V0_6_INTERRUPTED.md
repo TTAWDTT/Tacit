@@ -2,6 +2,8 @@
 
 **Status:** incomplete; no protocol comparison is possible.
 
+Machine-readable sanitized aggregates are available in [`HIDDENBENCH_PHASE_PILOT_V0_6_INTERRUPTED.json`](HIDDENBENCH_PHASE_PILOT_V0_6_INTERRUPTED.json).
+
 The preregistered single-task run began on 2026-09-28 with Qwen3-14B Q4_K_M, one hidden-profile HiddenBench task, four agents, three rounds, and a fixed seed. The first condition (`natural_3`) completed. The run was then stopped during `exchange_decide` after host CPU samples reached 89.3% and remained around 77–79% in subsequent samples. This stop honored the machine-responsiveness constraint; llama.cpp and the runner were terminated, and GPU memory use fell to about 1.3/8.2 GiB. The third condition (`reveal_all_3`) did not run.
 
 ## Completed condition
