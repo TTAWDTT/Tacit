@@ -58,19 +58,25 @@ Learns to remove redundant agents and communication edges dynamically across rou
 
 [arXiv](https://arxiv.org/abs/2511.20639) · [code](https://github.com/Gen-Verse/LatentMAS)
 
-Uses continuous hidden representations/shared latent working memory for collaboration; the preprint reports reduced output tokens and faster inference. Key audit questions: model-family assumptions, actual serialized or shared-memory cost, receiver dependence, and comparison equivalence.
+Uses autoregressive latent thoughts and a shared latent working memory; the paper reports results across nine benchmarks, five Qwen3/Llama3 backbones, and sequential/hierarchical settings, including up to 14.6% higher accuracy, 70.8–83.7% fewer output tokens, and 4–4.3× faster inference. The implementation passes and trims `past_key_values` between agents, so “zero text tokens” is not zero communication: the experiment must count the transferred tensor/cache elements, dtype, serialization, device/network movement, and receiver-side compute. The paper's shared-memory and same-backbone paths are not equivalent to an independently deployed heterogeneous-agent wire protocol. This is a serious upper-bound systems baseline when internal access and compatible runtimes are available.
 
 ### Du et al. (2026), *Enabling Agents to Communicate Entirely in Latent Space* (Interlat), ACL 2026
 
-[ACL Anthology](https://aclanthology.org/2026.acl-long.1248/)
+[ACL Anthology](https://aclanthology.org/2026.acl-long.1248/) · [official code](https://github.com/XiaoDu-flying/Interlat)
 
-Studies direct transmission of continuous last hidden states and learned compression, including heterogeneous-model claims. This is a direct competing communication mechanism, not merely a transport baseline. We need inspect reproducibility, architecture compatibility, channel accounting, and task setup.
+Transmits temporally aligned last-layer hidden states and introduces learned compression; the paper calls itself a feasibility study, while the official implementation reports supervised training for stable latent use and supports heterogeneous-family transfer. Treat it as a competing continuous protocol. Any comparison must count full-precision payload bytes and adapter/compression training and storage, expose receiver compute, and test message substitution under an actually receiver-dependent task. Cross-family transfer should be reported separately from same-family/shared-runtime results.
 
 ### Chen et al. (2026), *CondenseFlow: Scalable Latent Space Collaboration via Semantic Compression for Multi-Agent Systems*, Findings of ACL 2026
 
 [ACL Anthology](https://aclanthology.org/2026.findings-acl.669/) · [code](https://github.com/xxy33/condenseflow)
 
-Compresses latent/KV information into fixed-size representations; its abstract claims constant-in-context communication complexity and reports cross-model/multi-benchmark results. Strong baseline candidate for compatible local models; account for learned probes, memory, and required architecture access.
+The Latent Thought Condenser uses learned semantic probes to compress KV caches to a fixed-size representation. The paper reports >99% lower KV-cache memory, about 20% lower inference latency than dense transfer, and a 1.7-point average gain over text methods over seven benchmarks/six models. Its constant-size claim concerns the latent payload as context grows; it does not make payload bytes, training/setup, or receiver compute free. The example setup loads a separate LTC checkpoint alongside Qwen3-8B, so checkpoint provenance, model compatibility, probe training cost, tensor serialization, and matched text-policy budgets need auditing before a local replication. This is a high-priority learned latent-compression baseline, not evidence that a text protocol is unnecessary in black-box deployments.
+
+### Zhang & Emu (2026), *Do Latent Channels Actually Communicate? A Causal Audit of Latent Multi-Agent LLM*
+
+[arXiv](https://arxiv.org/abs/2607.26773)
+
+This audit replaces the receiver-bound latent payload with controlled alternatives and separates message presence, example-specific content, and additional value from another agent. Its Qwen3-4B/8B results show that aggregate task effects can mix positive and negative components and vary by model/task. This is a direct methodological warning: latent payload capacity, probe readability, or end-task accuracy alone do not establish successful communication. For every channel, include same-shape true-message, other-example/mismatched-message, zero/neutral-message, and no-message controls where task semantics permit; report receiver sensitivity and whether example-specific information provides marginal utility. The paper's reported values are task- and model-specific, not a universal latent-channel verdict.
 
 ## Emergent communication and language structure
 
@@ -270,7 +276,7 @@ The appropriate abstraction is task-oriented rate-distortion / information bottl
 
 ## Search gaps / next reading pass
 
-- Read full papers and inspect code/data for the format-selection paper, ProtocolBench, LatentMAS, Interlat, CondenseFlow, CRAFT, Q-KVComm, KVComm, and the causal KV-relay audit.
+- Full-paper/code audits are now recorded for AutoForm, LatentMAS, Interlat, CondenseFlow, and two causal audits of latent/KV relays; next, verify benchmark task dependence and reproduce at least one matched, serialized-byte latent-vs-text comparison when the fixed host resource gate permits model inference.
 - Audit and, where feasible, reproduce S²-MAD's sparsification and DALA's message-value selection as policy controls; match total model-token/query budget with single-agent self-consistency before claiming gains from a message representation.
 - Review Lewis signaling games, referential games, iterated learning, and reproducibility critiques of emergent-language benchmarks.
 - Review rate-distortion, information bottleneck, communication complexity, interactive compression, and semantic/task-oriented communications.
