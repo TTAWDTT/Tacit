@@ -1,6 +1,6 @@
-# Initial research thesis
+# Research thesis
 
-**Status:** v0.2, updated 2026-09-29 after the OPTiMACS full-paper audit. This is a falsifiable starting point, not a conclusion.
+**Status:** v0.3, updated 2026-09-29 after the OPTiMACS audit, PrefixSum receiver decomposition, and exact private-query controls. This is a falsifiable research position, not a conclusion.
 
 ## Thesis
 
@@ -20,6 +20,14 @@ The first research goal is therefore not to invent notation or duplicate AutoFor
 - Production agent protocols such as A2A chiefly standardize interoperability, task lifecycle, and artifacts. These are important system layers but do not settle which semantic encoding is most efficient.
 - LLM-designed protocols are an existing research direction: LMAC uses an LLM offline to design and refine executable communication code for trained MARL agents. The gap studied here is direct protocol use between LLM endpoints, with end-to-end semantic fidelity, inference cost, transfer, and strong matched-format/policy baselines; see the full-text audit in [`research/RELATED_WORK.md`](../research/RELATED_WORK.md).
 - Emergent-language results caution that compositionality and generalization are distinct outcomes. We must measure both directly rather than infer one from the other.
+
+## Evidence update and current decision
+
+- The short-shard PrefixSum v0.16 follow-up gave Qwen3-14B the correct oracle subtotal in all 24 simulator episodes, but only 2/24 receiver outputs were exact. Its direct local-prefix and offset-vector controls were each 24/24, while direct combined-receiver calls were 7/24. A trace audit decomposed the simulator failures into omitted offsets, wrong numeric vectors, and unevaluated expressions. This is consistent with an interaction/composition/application bottleneck; it does not isolate a message-representation effect. Therefore PrefixSum is not currently eligible for ranking message formats. See the [v0.16 report](../research/PREFIXSUM_LOCAL_14B_RECEIVER_V0_16.md) and [receiver failure audit](../research/PREFIXSUM_RECEIVER_FAILURE_AUDIT_V0_1.md).
+- The private-query RAC series now includes exact finite frontiers through five source bits, cross-query-prior transfer, and a four-bit binary-symmetric-channel control. These calibrate information boundaries, finite coding, and transport corruption. They are established communication-theory controls, not evidence that LLMs can learn or use the resulting codes, and the bit-flip channel is not a model of semantic errors in intact text. See [`private_query_v0_4`](../experiments/private_query_v0_4/README.md), [`private_query_v0_5`](../experiments/private_query_v0_5/README.md), and the [channel robustness audit](../research/CHANNEL_ROBUSTNESS_AUDIT_V0_1.md).
+- The local `INDEX_m` model screen has failed its frozen CPU/free-memory launch gate on six checks. These are host-state observations, not negative model or language results. Do not relax the gate. A format study still requires a newly eligible task/receiver condition and fresh held-out episodes, in addition to a resource-safe, preregistered run.
+
+The evidence thus sharpens the immediate research question: find or construct a task/receiver condition where the receiver can apply a delivered message reliably, demonstrate measurable communication necessity with exact no-message and centralized-oracle controls, and only then compare representations under matched policy and complete costs. Until those conditions are met, the project has no positive LLM language-superiority result.
 
 ## Falsifiable hypotheses
 
