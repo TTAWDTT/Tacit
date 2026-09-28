@@ -186,3 +186,14 @@ The terms are the first-degree Fourier coefficients of the Boolean function (F\)
 The bound is not claimed tight for finite (n\). A sender who knows the queried index can send (X_I\) in one bit and attain 1, but this changes the information boundary; if the receiver must reveal (I\), that reverse-direction message, call, and round are part of total cost. A sender-independent one-bit code is not a universal solution to all query tasks; it is judged under the declared query distribution and sender/receiver knowledge.
 
 **Exact finite enumeration.** [`experiments/private_query_v0_1/`](../experiments/private_query_v0_1/README.md) enumerates every deterministic one-bit encoder for (n\le4\) and uses the Bayes-optimal coordinate decoder for each code. This checks the small-instance optima independently of an LLM and records a scaling diagnostic; it is not evidence about LLM language performance. The falsifiable asymptotic prediction is only that the one-bit task-oblivious optimum approaches chance as the number of independently queryable facts grows, consistent with the proved upper envelope. Learned/task-conditioned codes should be compared against (a) this frozen universal-code arm, (b) a query-conditioned oracle that explicitly accounts for how (I\) becomes available to the sender, and (c) a full-source communication upper bound.
+
+### Exact budget frontier by reconstruction codebook
+
+For fixed (n\), query weights (q_i\ge0\), and a deterministic decoder with at most (2^b\) messages, let (c_m\in\{0,1\}^n\) contain the answer the decoder returns for each possible query after receiving message (m\). The sender can map (x\) to its nearest (c_m\) under weighted Hamming distance (d_q(x,c)=\sum_i q_i\mathbf1[x_i\ne c_i]\). Conversely, any codebook of (2^b\) reconstruction vectors defines a valid encoder (choose the nearest vector) and receiver (output its queried coordinate). Hence the exact optimal success for a uniform source is
+
+\[
+J^*(n,b,q)=1-\frac{1}{2^n\sum_iq_i}\min_{\substack{\mathcal C\subseteq\{0,1\}^n\\|\mathcal C|\le2^b}}
+\sum_{x\in\{0,1\}^n}\min_{c\in\mathcal C}d_q(x,c).
+\]
+
+This reduction turns an encoder/decoder search into finite binary quantizer design. It supplies an oracle frontier for validating finite-budget studies. It assumes the optimal codebook is already shared and ignores codebook search/storage/setup; these must be added to any operational system comparison. [`private_query_v0_2`](../experiments/private_query_v0_2/README.md) enumerates the exact n=2..4 frontiers under uniform and skewed query distributions and freezes full training-prior protocols for cross-prior evaluation. Changing (q\) changes the distortion objective and can change the optimal protocol even though the source distribution and bit budget remain fixed. Since multiple codebooks can tie on the training prior but differ on transfer, report the selection rule or the tied-optimum range rather than only one cherry-picked code.

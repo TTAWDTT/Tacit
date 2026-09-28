@@ -1,0 +1,1159 @@
+{
+  "assumptions": {
+    "codebook_shared_without_cost": true,
+    "query_index_disclosure_is_not_free": true,
+    "query_known_to_sender": false,
+    "setup_and_prompt_cost_included": false
+  },
+  "method": "exhaustive reconstruction-codebook enumeration; nearest-codeword sender",
+  "model_calls": 0,
+  "results": [
+    {
+      "codebooks_enumerated": 4,
+      "example_optimal_reconstruction_codebook": [
+        0
+      ],
+      "message_alphabet_size": 1,
+      "message_budget_bits": 0,
+      "minimum_weighted_hamming_distortion_sum": 4,
+      "n_source_bits": 2,
+      "optimal_codebook_count": 4,
+      "optimal_training_protocols_frozen_and_tested_on_other_query_prior": {
+        "encoder_rule": "nearest codeword under training prior; ties choose lowest codeword",
+        "query_weights": [
+          7,
+          1
+        ],
+        "success_max_fraction": "1/2",
+        "success_max_probability": 0.5,
+        "success_mean_fraction": "1/2",
+        "success_mean_probability": 0.5,
+        "success_min_fraction": "1/2",
+        "success_min_probability": 0.5,
+        "target_prior_oracle_success_fraction": "1/2",
+        "target_prior_oracle_success_probability": 0.5,
+        "target_prior_regret_max_fraction": "0/1",
+        "target_prior_regret_max_probability": 0.0,
+        "target_prior_regret_mean_fraction": "0/1",
+        "target_prior_regret_mean_probability": 0.0,
+        "target_prior_regret_min_fraction": "0/1",
+        "target_prior_regret_min_probability": 0.0
+      },
+      "query_case": "uniform",
+      "query_distribution": "integer weights normalized to sum 1",
+      "query_weights": [
+        1,
+        1
+      ],
+      "source_distribution": "uniform over bit vectors",
+      "success_fraction": "1/2",
+      "success_probability": 0.5,
+      "weighted_hamming_denominator": 8
+    },
+    {
+      "codebooks_enumerated": 6,
+      "example_optimal_reconstruction_codebook": [
+        0,
+        1
+      ],
+      "message_alphabet_size": 2,
+      "message_budget_bits": 1,
+      "minimum_weighted_hamming_distortion_sum": 2,
+      "n_source_bits": 2,
+      "optimal_codebook_count": 6,
+      "optimal_training_protocols_frozen_and_tested_on_other_query_prior": {
+        "encoder_rule": "nearest codeword under training prior; ties choose lowest codeword",
+        "query_weights": [
+          7,
+          1
+        ],
+        "success_max_fraction": "15/16",
+        "success_max_probability": 0.9375,
+        "success_mean_fraction": "3/4",
+        "success_mean_probability": 0.75,
+        "success_min_fraction": "9/16",
+        "success_min_probability": 0.5625,
+        "target_prior_oracle_success_fraction": "15/16",
+        "target_prior_oracle_success_probability": 0.9375,
+        "target_prior_regret_max_fraction": "3/8",
+        "target_prior_regret_max_probability": 0.375,
+        "target_prior_regret_mean_fraction": "3/16",
+        "target_prior_regret_mean_probability": 0.1875,
+        "target_prior_regret_min_fraction": "0/1",
+        "target_prior_regret_min_probability": 0.0
+      },
+      "query_case": "uniform",
+      "query_distribution": "integer weights normalized to sum 1",
+      "query_weights": [
+        1,
+        1
+      ],
+      "source_distribution": "uniform over bit vectors",
+      "success_fraction": "3/4",
+      "success_probability": 0.75,
+      "weighted_hamming_denominator": 8
+    },
+    {
+      "codebooks_enumerated": 1,
+      "example_optimal_reconstruction_codebook": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "message_alphabet_size": 4,
+      "message_budget_bits": 2,
+      "minimum_weighted_hamming_distortion_sum": 0,
+      "n_source_bits": 2,
+      "optimal_codebook_count": 1,
+      "optimal_training_protocols_frozen_and_tested_on_other_query_prior": {
+        "encoder_rule": "nearest codeword under training prior; ties choose lowest codeword",
+        "query_weights": [
+          7,
+          1
+        ],
+        "success_max_fraction": "1/1",
+        "success_max_probability": 1.0,
+        "success_mean_fraction": "1/1",
+        "success_mean_probability": 1.0,
+        "success_min_fraction": "1/1",
+        "success_min_probability": 1.0,
+        "target_prior_oracle_success_fraction": "1/1",
+        "target_prior_oracle_success_probability": 1.0,
+        "target_prior_regret_max_fraction": "0/1",
+        "target_prior_regret_max_probability": 0.0,
+        "target_prior_regret_mean_fraction": "0/1",
+        "target_prior_regret_mean_probability": 0.0,
+        "target_prior_regret_min_fraction": "0/1",
+        "target_prior_regret_min_probability": 0.0
+      },
+      "query_case": "uniform",
+      "query_distribution": "integer weights normalized to sum 1",
+      "query_weights": [
+        1,
+        1
+      ],
+      "source_distribution": "uniform over bit vectors",
+      "success_fraction": "1/1",
+      "success_probability": 1.0,
+      "weighted_hamming_denominator": 8
+    },
+    {
+      "codebooks_enumerated": 4,
+      "example_optimal_reconstruction_codebook": [
+        0
+      ],
+      "message_alphabet_size": 1,
+      "message_budget_bits": 0,
+      "minimum_weighted_hamming_distortion_sum": 16,
+      "n_source_bits": 2,
+      "optimal_codebook_count": 4,
+      "optimal_training_protocols_frozen_and_tested_on_other_query_prior": {
+        "encoder_rule": "nearest codeword under training prior; ties choose lowest codeword",
+        "query_weights": [
+          1,
+          1
+        ],
+        "success_max_fraction": "1/2",
+        "success_max_probability": 0.5,
+        "success_mean_fraction": "1/2",
+        "success_mean_probability": 0.5,
+        "success_min_fraction": "1/2",
+        "success_min_probability": 0.5,
+        "target_prior_oracle_success_fraction": "1/2",
+        "target_prior_oracle_success_probability": 0.5,
+        "target_prior_regret_max_fraction": "0/1",
+        "target_prior_regret_max_probability": 0.0,
+        "target_prior_regret_mean_fraction": "0/1",
+        "target_prior_regret_mean_probability": 0.0,
+        "target_prior_regret_min_fraction": "0/1",
+        "target_prior_regret_min_probability": 0.0
+      },
+      "query_case": "skewed_first_coordinate_7_to_1",
+      "query_distribution": "integer weights normalized to sum 1",
+      "query_weights": [
+        7,
+        1
+      ],
+      "source_distribution": "uniform over bit vectors",
+      "success_fraction": "1/2",
+      "success_probability": 0.5,
+      "weighted_hamming_denominator": 32
+    },
+    {
+      "codebooks_enumerated": 6,
+      "example_optimal_reconstruction_codebook": [
+        0,
+        1
+      ],
+      "message_alphabet_size": 2,
+      "message_budget_bits": 1,
+      "minimum_weighted_hamming_distortion_sum": 2,
+      "n_source_bits": 2,
+      "optimal_codebook_count": 4,
+      "optimal_training_protocols_frozen_and_tested_on_other_query_prior": {
+        "encoder_rule": "nearest codeword under training prior; ties choose lowest codeword",
+        "query_weights": [
+          1,
+          1
+        ],
+        "success_max_fraction": "3/4",
+        "success_max_probability": 0.75,
+        "success_mean_fraction": "3/4",
+        "success_mean_probability": 0.75,
+        "success_min_fraction": "3/4",
+        "success_min_probability": 0.75,
+        "target_prior_oracle_success_fraction": "3/4",
+        "target_prior_oracle_success_probability": 0.75,
+        "target_prior_regret_max_fraction": "0/1",
+        "target_prior_regret_max_probability": 0.0,
+        "target_prior_regret_mean_fraction": "0/1",
+        "target_prior_regret_mean_probability": 0.0,
+        "target_prior_regret_min_fraction": "0/1",
+        "target_prior_regret_min_probability": 0.0
+      },
+      "query_case": "skewed_first_coordinate_7_to_1",
+      "query_distribution": "integer weights normalized to sum 1",
+      "query_weights": [
+        7,
+        1
+      ],
+      "source_distribution": "uniform over bit vectors",
+      "success_fraction": "15/16",
+      "success_probability": 0.9375,
+      "weighted_hamming_denominator": 32
+    },
+    {
+      "codebooks_enumerated": 1,
+      "example_optimal_reconstruction_codebook": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "message_alphabet_size": 4,
+      "message_budget_bits": 2,
+      "minimum_weighted_hamming_distortion_sum": 0,
+      "n_source_bits": 2,
+      "optimal_codebook_count": 1,
+      "optimal_training_protocols_frozen_and_tested_on_other_query_prior": {
+        "encoder_rule": "nearest codeword under training prior; ties choose lowest codeword",
+        "query_weights": [
+          1,
+          1
+        ],
+        "success_max_fraction": "1/1",
+        "success_max_probability": 1.0,
+        "success_mean_fraction": "1/1",
+        "success_mean_probability": 1.0,
+        "success_min_fraction": "1/1",
+        "success_min_probability": 1.0,
+        "target_prior_oracle_success_fraction": "1/1",
+        "target_prior_oracle_success_probability": 1.0,
+        "target_prior_regret_max_fraction": "0/1",
+        "target_prior_regret_max_probability": 0.0,
+        "target_prior_regret_mean_fraction": "0/1",
+        "target_prior_regret_mean_probability": 0.0,
+        "target_prior_regret_min_fraction": "0/1",
+        "target_prior_regret_min_probability": 0.0
+      },
+      "query_case": "skewed_first_coordinate_7_to_1",
+      "query_distribution": "integer weights normalized to sum 1",
+      "query_weights": [
+        7,
+        1
+      ],
+      "source_distribution": "uniform over bit vectors",
+      "success_fraction": "1/1",
+      "success_probability": 1.0,
+      "weighted_hamming_denominator": 32
+    },
+    {
+      "codebooks_enumerated": 8,
+      "example_optimal_reconstruction_codebook": [
+        0
+      ],
+      "message_alphabet_size": 1,
+      "message_budget_bits": 0,
+      "minimum_weighted_hamming_distortion_sum": 12,
+      "n_source_bits": 3,
+      "optimal_codebook_count": 8,
+      "optimal_training_protocols_frozen_and_tested_on_other_query_prior": {
+        "encoder_rule": "nearest codeword under training prior; ties choose lowest codeword",
+        "query_weights": [
+          7,
+          1,
+          1
+        ],
+        "success_max_fraction": "1/2",
+        "success_max_probability": 0.5,
+        "success_mean_fraction": "1/2",
+        "success_mean_probability": 0.5,
+        "success_min_fraction": "1/2",
+        "success_min_probability": 0.5,
+        "target_prior_oracle_success_fraction": "1/2",
+        "target_prior_oracle_success_probability": 0.5,
+        "target_prior_regret_max_fraction": "0/1",
+        "target_prior_regret_max_probability": 0.0,
+        "target_prior_regret_mean_fraction": "0/1",
+        "target_prior_regret_mean_probability": 0.0,
+        "target_prior_regret_min_fraction": "0/1",
+        "target_prior_regret_min_probability": 0.0
+      },
+      "query_case": "uniform",
+      "query_distribution": "integer weights normalized to sum 1",
+      "query_weights": [
+        1,
+        1,
+        1
+      ],
+      "source_distribution": "uniform over bit vectors",
+      "success_fraction": "1/2",
+      "success_probability": 0.5,
+      "weighted_hamming_denominator": 24
+    },
+    {
+      "codebooks_enumerated": 28,
+      "example_optimal_reconstruction_codebook": [
+        0,
+        7
+      ],
+      "message_alphabet_size": 2,
+      "message_budget_bits": 1,
+      "minimum_weighted_hamming_distortion_sum": 6,
+      "n_source_bits": 3,
+      "optimal_codebook_count": 4,
+      "optimal_training_protocols_frozen_and_tested_on_other_query_prior": {
+        "encoder_rule": "nearest codeword under training prior; ties choose lowest codeword",
+        "query_weights": [
+          7,
+          1,
+          1
+        ],
+        "success_max_fraction": "3/4",
+        "success_max_probability": 0.75,
+        "success_mean_fraction": "3/4",
+        "success_mean_probability": 0.75,
+        "success_min_fraction": "3/4",
+        "success_min_probability": 0.75,
+        "target_prior_oracle_success_fraction": "8/9",
+        "target_prior_oracle_success_probability": 0.8888888888888888,
+        "target_prior_regret_max_fraction": "5/36",
+        "target_prior_regret_max_probability": 0.1388888888888889,
+        "target_prior_regret_mean_fraction": "5/36",
+        "target_prior_regret_mean_probability": 0.1388888888888889,
+        "target_prior_regret_min_fraction": "5/36",
+        "target_prior_regret_min_probability": 0.1388888888888889
+      },
+      "query_case": "uniform",
+      "query_distribution": "integer weights normalized to sum 1",
+      "query_weights": [
+        1,
+        1,
+        1
+      ],
+      "source_distribution": "uniform over bit vectors",
+      "success_fraction": "3/4",
+      "success_probability": 0.75,
+      "weighted_hamming_denominator": 24
+    },
+    {
+      "codebooks_enumerated": 70,
+      "example_optimal_reconstruction_codebook": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "message_alphabet_size": 4,
+      "message_budget_bits": 2,
+      "minimum_weighted_hamming_distortion_sum": 4,
+      "n_source_bits": 3,
+      "optimal_codebook_count": 62,
+      "optimal_training_protocols_frozen_and_tested_on_other_query_prior": {
+        "encoder_rule": "nearest codeword under training prior; ties choose lowest codeword",
+        "query_weights": [
+          7,
+          1,
+          1
+        ],
+        "success_max_fraction": "17/18",
+        "success_max_probability": 0.9444444444444444,
+        "success_mean_fraction": "467/558",
+        "success_mean_probability": 0.8369175627240143,
+        "success_min_fraction": "11/18",
+        "success_min_probability": 0.6111111111111112,
+        "target_prior_oracle_success_fraction": "17/18",
+        "target_prior_oracle_success_probability": 0.9444444444444444,
+        "target_prior_regret_max_fraction": "1/3",
+        "target_prior_regret_max_probability": 0.3333333333333333,
+        "target_prior_regret_mean_fraction": "10/93",
+        "target_prior_regret_mean_probability": 0.10752688172043011,
+        "target_prior_regret_min_fraction": "0/1",
+        "target_prior_regret_min_probability": 0.0
+      },
+      "query_case": "uniform",
+      "query_distribution": "integer weights normalized to sum 1",
+      "query_weights": [
+        1,
+        1,
+        1
+      ],
+      "source_distribution": "uniform over bit vectors",
+      "success_fraction": "5/6",
+      "success_probability": 0.8333333333333334,
+      "weighted_hamming_denominator": 24
+    },
+    {
+      "codebooks_enumerated": 1,
+      "example_optimal_reconstruction_codebook": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "message_alphabet_size": 8,
+      "message_budget_bits": 3,
+      "minimum_weighted_hamming_distortion_sum": 0,
+      "n_source_bits": 3,
+      "optimal_codebook_count": 1,
+      "optimal_training_protocols_frozen_and_tested_on_other_query_prior": {
+        "encoder_rule": "nearest codeword under training prior; ties choose lowest codeword",
+        "query_weights": [
+          7,
+          1,
+          1
+        ],
+        "success_max_fraction": "1/1",
+        "success_max_probability": 1.0,
+        "success_mean_fraction": "1/1",
+        "success_mean_probability": 1.0,
+        "success_min_fraction": "1/1",
+        "success_min_probability": 1.0,
+        "target_prior_oracle_success_fraction": "1/1",
+        "target_prior_oracle_success_probability": 1.0,
+        "target_prior_regret_max_fraction": "0/1",
+        "target_prior_regret_max_probability": 0.0,
+        "target_prior_regret_mean_fraction": "0/1",
+        "target_prior_regret_mean_probability": 0.0,
+        "target_prior_regret_min_fraction": "0/1",
+        "target_prior_regret_min_probability": 0.0
+      },
+      "query_case": "uniform",
+      "query_distribution": "integer weights normalized to sum 1",
+      "query_weights": [
+        1,
+        1,
+        1
+      ],
+      "source_distribution": "uniform over bit vectors",
+      "success_fraction": "1/1",
+      "success_probability": 1.0,
+      "weighted_hamming_denominator": 24
+    },
+    {
+      "codebooks_enumerated": 8,
+      "example_optimal_reconstruction_codebook": [
+        0
+      ],
+      "message_alphabet_size": 1,
+      "message_budget_bits": 0,
+      "minimum_weighted_hamming_distortion_sum": 36,
+      "n_source_bits": 3,
+      "optimal_codebook_count": 8,
+      "optimal_training_protocols_frozen_and_tested_on_other_query_prior": {
+        "encoder_rule": "nearest codeword under training prior; ties choose lowest codeword",
+        "query_weights": [
+          1,
+          1,
+          1
+        ],
+        "success_max_fraction": "1/2",
+        "success_max_probability": 0.5,
+        "success_mean_fraction": "1/2",
+        "success_mean_probability": 0.5,
+        "success_min_fraction": "1/2",
+        "success_min_probability": 0.5,
+        "target_prior_oracle_success_fraction": "1/2",
+        "target_prior_oracle_success_probability": 0.5,
+        "target_prior_regret_max_fraction": "0/1",
+        "target_prior_regret_max_probability": 0.0,
+        "target_prior_regret_mean_fraction": "0/1",
+        "target_prior_regret_mean_probability": 0.0,
+        "target_prior_regret_min_fraction": "0/1",
+        "target_prior_regret_min_probability": 0.0
+      },
+      "query_case": "skewed_first_coordinate_7_to_1",
+      "query_distribution": "integer weights normalized to sum 1",
+      "query_weights": [
+        7,
+        1,
+        1
+      ],
+      "source_distribution": "uniform over bit vectors",
+      "success_fraction": "1/2",
+      "success_probability": 0.5,
+      "weighted_hamming_denominator": 72
+    },
+    {
+      "codebooks_enumerated": 28,
+      "example_optimal_reconstruction_codebook": [
+        0,
+        1
+      ],
+      "message_alphabet_size": 2,
+      "message_budget_bits": 1,
+      "minimum_weighted_hamming_distortion_sum": 8,
+      "n_source_bits": 3,
+      "optimal_codebook_count": 16,
+      "optimal_training_protocols_frozen_and_tested_on_other_query_prior": {
+        "encoder_rule": "nearest codeword under training prior; ties choose lowest codeword",
+        "query_weights": [
+          1,
+          1,
+          1
+        ],
+        "success_max_fraction": "2/3",
+        "success_max_probability": 0.6666666666666666,
+        "success_mean_fraction": "2/3",
+        "success_mean_probability": 0.6666666666666666,
+        "success_min_fraction": "2/3",
+        "success_min_probability": 0.6666666666666666,
+        "target_prior_oracle_success_fraction": "3/4",
+        "target_prior_oracle_success_probability": 0.75,
+        "target_prior_regret_max_fraction": "1/12",
+        "target_prior_regret_max_probability": 0.08333333333333333,
+        "target_prior_regret_mean_fraction": "1/12",
+        "target_prior_regret_mean_probability": 0.08333333333333333,
+        "target_prior_regret_min_fraction": "1/12",
+        "target_prior_regret_min_probability": 0.08333333333333333
+      },
+      "query_case": "skewed_first_coordinate_7_to_1",
+      "query_distribution": "integer weights normalized to sum 1",
+      "query_weights": [
+        7,
+        1,
+        1
+      ],
+      "source_distribution": "uniform over bit vectors",
+      "success_fraction": "8/9",
+      "success_probability": 0.8888888888888888,
+      "weighted_hamming_denominator": 72
+    },
+    {
+      "codebooks_enumerated": 70,
+      "example_optimal_reconstruction_codebook": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "message_alphabet_size": 4,
+      "message_budget_bits": 2,
+      "minimum_weighted_hamming_distortion_sum": 4,
+      "n_source_bits": 3,
+      "optimal_codebook_count": 36,
+      "optimal_training_protocols_frozen_and_tested_on_other_query_prior": {
+        "encoder_rule": "nearest codeword under training prior; ties choose lowest codeword",
+        "query_weights": [
+          1,
+          1,
+          1
+        ],
+        "success_max_fraction": "5/6",
+        "success_max_probability": 0.8333333333333334,
+        "success_mean_fraction": "5/6",
+        "success_mean_probability": 0.8333333333333334,
+        "success_min_fraction": "5/6",
+        "success_min_probability": 0.8333333333333334,
+        "target_prior_oracle_success_fraction": "5/6",
+        "target_prior_oracle_success_probability": 0.8333333333333334,
+        "target_prior_regret_max_fraction": "0/1",
+        "target_prior_regret_max_probability": 0.0,
+        "target_prior_regret_mean_fraction": "0/1",
+        "target_prior_regret_mean_probability": 0.0,
+        "target_prior_regret_min_fraction": "0/1",
+        "target_prior_regret_min_probability": 0.0
+      },
+      "query_case": "skewed_first_coordinate_7_to_1",
+      "query_distribution": "integer weights normalized to sum 1",
+      "query_weights": [
+        7,
+        1,
+        1
+      ],
+      "source_distribution": "uniform over bit vectors",
+      "success_fraction": "17/18",
+      "success_probability": 0.9444444444444444,
+      "weighted_hamming_denominator": 72
+    },
+    {
+      "codebooks_enumerated": 1,
+      "example_optimal_reconstruction_codebook": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "message_alphabet_size": 8,
+      "message_budget_bits": 3,
+      "minimum_weighted_hamming_distortion_sum": 0,
+      "n_source_bits": 3,
+      "optimal_codebook_count": 1,
+      "optimal_training_protocols_frozen_and_tested_on_other_query_prior": {
+        "encoder_rule": "nearest codeword under training prior; ties choose lowest codeword",
+        "query_weights": [
+          1,
+          1,
+          1
+        ],
+        "success_max_fraction": "1/1",
+        "success_max_probability": 1.0,
+        "success_mean_fraction": "1/1",
+        "success_mean_probability": 1.0,
+        "success_min_fraction": "1/1",
+        "success_min_probability": 1.0,
+        "target_prior_oracle_success_fraction": "1/1",
+        "target_prior_oracle_success_probability": 1.0,
+        "target_prior_regret_max_fraction": "0/1",
+        "target_prior_regret_max_probability": 0.0,
+        "target_prior_regret_mean_fraction": "0/1",
+        "target_prior_regret_mean_probability": 0.0,
+        "target_prior_regret_min_fraction": "0/1",
+        "target_prior_regret_min_probability": 0.0
+      },
+      "query_case": "skewed_first_coordinate_7_to_1",
+      "query_distribution": "integer weights normalized to sum 1",
+      "query_weights": [
+        7,
+        1,
+        1
+      ],
+      "source_distribution": "uniform over bit vectors",
+      "success_fraction": "1/1",
+      "success_probability": 1.0,
+      "weighted_hamming_denominator": 72
+    },
+    {
+      "codebooks_enumerated": 16,
+      "example_optimal_reconstruction_codebook": [
+        0
+      ],
+      "message_alphabet_size": 1,
+      "message_budget_bits": 0,
+      "minimum_weighted_hamming_distortion_sum": 32,
+      "n_source_bits": 4,
+      "optimal_codebook_count": 16,
+      "optimal_training_protocols_frozen_and_tested_on_other_query_prior": {
+        "encoder_rule": "nearest codeword under training prior; ties choose lowest codeword",
+        "query_weights": [
+          7,
+          1,
+          1,
+          1
+        ],
+        "success_max_fraction": "1/2",
+        "success_max_probability": 0.5,
+        "success_mean_fraction": "1/2",
+        "success_mean_probability": 0.5,
+        "success_min_fraction": "1/2",
+        "success_min_probability": 0.5,
+        "target_prior_oracle_success_fraction": "1/2",
+        "target_prior_oracle_success_probability": 0.5,
+        "target_prior_regret_max_fraction": "0/1",
+        "target_prior_regret_max_probability": 0.0,
+        "target_prior_regret_mean_fraction": "0/1",
+        "target_prior_regret_mean_probability": 0.0,
+        "target_prior_regret_min_fraction": "0/1",
+        "target_prior_regret_min_probability": 0.0
+      },
+      "query_case": "uniform",
+      "query_distribution": "integer weights normalized to sum 1",
+      "query_weights": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "source_distribution": "uniform over bit vectors",
+      "success_fraction": "1/2",
+      "success_probability": 0.5,
+      "weighted_hamming_denominator": 64
+    },
+    {
+      "codebooks_enumerated": 120,
+      "example_optimal_reconstruction_codebook": [
+        0,
+        7
+      ],
+      "message_alphabet_size": 2,
+      "message_budget_bits": 1,
+      "minimum_weighted_hamming_distortion_sum": 20,
+      "n_source_bits": 4,
+      "optimal_codebook_count": 40,
+      "optimal_training_protocols_frozen_and_tested_on_other_query_prior": {
+        "encoder_rule": "nearest codeword under training prior; ties choose lowest codeword",
+        "query_weights": [
+          7,
+          1,
+          1,
+          1
+        ],
+        "success_max_fraction": "29/40",
+        "success_max_probability": 0.725,
+        "success_mean_fraction": "11/16",
+        "success_mean_probability": 0.6875,
+        "success_min_fraction": "23/40",
+        "success_min_probability": 0.575,
+        "target_prior_oracle_success_fraction": "17/20",
+        "target_prior_oracle_success_probability": 0.85,
+        "target_prior_regret_max_fraction": "11/40",
+        "target_prior_regret_max_probability": 0.275,
+        "target_prior_regret_mean_fraction": "13/80",
+        "target_prior_regret_mean_probability": 0.1625,
+        "target_prior_regret_min_fraction": "1/8",
+        "target_prior_regret_min_probability": 0.125
+      },
+      "query_case": "uniform",
+      "query_distribution": "integer weights normalized to sum 1",
+      "query_weights": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "source_distribution": "uniform over bit vectors",
+      "success_fraction": "11/16",
+      "success_probability": 0.6875,
+      "weighted_hamming_denominator": 64
+    },
+    {
+      "codebooks_enumerated": 1820,
+      "example_optimal_reconstruction_codebook": [
+        0,
+        1,
+        14,
+        15
+      ],
+      "message_alphabet_size": 4,
+      "message_budget_bits": 2,
+      "minimum_weighted_hamming_distortion_sum": 12,
+      "n_source_bits": 4,
+      "optimal_codebook_count": 40,
+      "optimal_training_protocols_frozen_and_tested_on_other_query_prior": {
+        "encoder_rule": "nearest codeword under training prior; ties choose lowest codeword",
+        "query_weights": [
+          7,
+          1,
+          1,
+          1
+        ],
+        "success_max_fraction": "37/40",
+        "success_max_probability": 0.925,
+        "success_mean_fraction": "13/16",
+        "success_mean_probability": 0.8125,
+        "success_min_fraction": "31/40",
+        "success_min_probability": 0.775,
+        "target_prior_oracle_success_fraction": "37/40",
+        "target_prior_oracle_success_probability": 0.925,
+        "target_prior_regret_max_fraction": "3/20",
+        "target_prior_regret_max_probability": 0.15,
+        "target_prior_regret_mean_fraction": "9/80",
+        "target_prior_regret_mean_probability": 0.1125,
+        "target_prior_regret_min_fraction": "0/1",
+        "target_prior_regret_min_probability": 0.0
+      },
+      "query_case": "uniform",
+      "query_distribution": "integer weights normalized to sum 1",
+      "query_weights": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "source_distribution": "uniform over bit vectors",
+      "success_fraction": "13/16",
+      "success_probability": 0.8125,
+      "weighted_hamming_denominator": 64
+    },
+    {
+      "codebooks_enumerated": 12870,
+      "example_optimal_reconstruction_codebook": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "message_alphabet_size": 8,
+      "message_budget_bits": 3,
+      "minimum_weighted_hamming_distortion_sum": 8,
+      "n_source_bits": 4,
+      "optimal_codebook_count": 10310,
+      "optimal_training_protocols_frozen_and_tested_on_other_query_prior": {
+        "encoder_rule": "nearest codeword under training prior; ties choose lowest codeword",
+        "query_weights": [
+          7,
+          1,
+          1,
+          1
+        ],
+        "success_max_fraction": "19/20",
+        "success_max_probability": 0.95,
+        "success_mean_fraction": "363889/412400",
+        "success_mean_probability": 0.8823690591658584,
+        "success_min_fraction": "13/20",
+        "success_min_probability": 0.65,
+        "target_prior_oracle_success_fraction": "19/20",
+        "target_prior_oracle_success_probability": 0.95,
+        "target_prior_regret_max_fraction": "3/10",
+        "target_prior_regret_max_probability": 0.3,
+        "target_prior_regret_mean_fraction": "27891/412400",
+        "target_prior_regret_mean_probability": 0.0676309408341416,
+        "target_prior_regret_min_fraction": "0/1",
+        "target_prior_regret_min_probability": 0.0
+      },
+      "query_case": "uniform",
+      "query_distribution": "integer weights normalized to sum 1",
+      "query_weights": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "source_distribution": "uniform over bit vectors",
+      "success_fraction": "7/8",
+      "success_probability": 0.875,
+      "weighted_hamming_denominator": 64
+    },
+    {
+      "codebooks_enumerated": 1,
+      "example_optimal_reconstruction_codebook": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "message_alphabet_size": 16,
+      "message_budget_bits": 4,
+      "minimum_weighted_hamming_distortion_sum": 0,
+      "n_source_bits": 4,
+      "optimal_codebook_count": 1,
+      "optimal_training_protocols_frozen_and_tested_on_other_query_prior": {
+        "encoder_rule": "nearest codeword under training prior; ties choose lowest codeword",
+        "query_weights": [
+          7,
+          1,
+          1,
+          1
+        ],
+        "success_max_fraction": "1/1",
+        "success_max_probability": 1.0,
+        "success_mean_fraction": "1/1",
+        "success_mean_probability": 1.0,
+        "success_min_fraction": "1/1",
+        "success_min_probability": 1.0,
+        "target_prior_oracle_success_fraction": "1/1",
+        "target_prior_oracle_success_probability": 1.0,
+        "target_prior_regret_max_fraction": "0/1",
+        "target_prior_regret_max_probability": 0.0,
+        "target_prior_regret_mean_fraction": "0/1",
+        "target_prior_regret_mean_probability": 0.0,
+        "target_prior_regret_min_fraction": "0/1",
+        "target_prior_regret_min_probability": 0.0
+      },
+      "query_case": "uniform",
+      "query_distribution": "integer weights normalized to sum 1",
+      "query_weights": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "source_distribution": "uniform over bit vectors",
+      "success_fraction": "1/1",
+      "success_probability": 1.0,
+      "weighted_hamming_denominator": 64
+    },
+    {
+      "codebooks_enumerated": 16,
+      "example_optimal_reconstruction_codebook": [
+        0
+      ],
+      "message_alphabet_size": 1,
+      "message_budget_bits": 0,
+      "minimum_weighted_hamming_distortion_sum": 80,
+      "n_source_bits": 4,
+      "optimal_codebook_count": 16,
+      "optimal_training_protocols_frozen_and_tested_on_other_query_prior": {
+        "encoder_rule": "nearest codeword under training prior; ties choose lowest codeword",
+        "query_weights": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "success_max_fraction": "1/2",
+        "success_max_probability": 0.5,
+        "success_mean_fraction": "1/2",
+        "success_mean_probability": 0.5,
+        "success_min_fraction": "1/2",
+        "success_min_probability": 0.5,
+        "target_prior_oracle_success_fraction": "1/2",
+        "target_prior_oracle_success_probability": 0.5,
+        "target_prior_regret_max_fraction": "0/1",
+        "target_prior_regret_max_probability": 0.0,
+        "target_prior_regret_mean_fraction": "0/1",
+        "target_prior_regret_mean_probability": 0.0,
+        "target_prior_regret_min_fraction": "0/1",
+        "target_prior_regret_min_probability": 0.0
+      },
+      "query_case": "skewed_first_coordinate_7_to_1",
+      "query_distribution": "integer weights normalized to sum 1",
+      "query_weights": [
+        7,
+        1,
+        1,
+        1
+      ],
+      "source_distribution": "uniform over bit vectors",
+      "success_fraction": "1/2",
+      "success_probability": 0.5,
+      "weighted_hamming_denominator": 160
+    },
+    {
+      "codebooks_enumerated": 120,
+      "example_optimal_reconstruction_codebook": [
+        0,
+        1
+      ],
+      "message_alphabet_size": 2,
+      "message_budget_bits": 1,
+      "minimum_weighted_hamming_distortion_sum": 24,
+      "n_source_bits": 4,
+      "optimal_codebook_count": 64,
+      "optimal_training_protocols_frozen_and_tested_on_other_query_prior": {
+        "encoder_rule": "nearest codeword under training prior; ties choose lowest codeword",
+        "query_weights": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "success_max_fraction": "5/8",
+        "success_max_probability": 0.625,
+        "success_mean_fraction": "5/8",
+        "success_mean_probability": 0.625,
+        "success_min_fraction": "5/8",
+        "success_min_probability": 0.625,
+        "target_prior_oracle_success_fraction": "11/16",
+        "target_prior_oracle_success_probability": 0.6875,
+        "target_prior_regret_max_fraction": "1/16",
+        "target_prior_regret_max_probability": 0.0625,
+        "target_prior_regret_mean_fraction": "1/16",
+        "target_prior_regret_mean_probability": 0.0625,
+        "target_prior_regret_min_fraction": "1/16",
+        "target_prior_regret_min_probability": 0.0625
+      },
+      "query_case": "skewed_first_coordinate_7_to_1",
+      "query_distribution": "integer weights normalized to sum 1",
+      "query_weights": [
+        7,
+        1,
+        1,
+        1
+      ],
+      "source_distribution": "uniform over bit vectors",
+      "success_fraction": "17/20",
+      "success_probability": 0.85,
+      "weighted_hamming_denominator": 160
+    },
+    {
+      "codebooks_enumerated": 1820,
+      "example_optimal_reconstruction_codebook": [
+        0,
+        1,
+        14,
+        15
+      ],
+      "message_alphabet_size": 4,
+      "message_budget_bits": 2,
+      "minimum_weighted_hamming_distortion_sum": 12,
+      "n_source_bits": 4,
+      "optimal_codebook_count": 16,
+      "optimal_training_protocols_frozen_and_tested_on_other_query_prior": {
+        "encoder_rule": "nearest codeword under training prior; ties choose lowest codeword",
+        "query_weights": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "success_max_fraction": "13/16",
+        "success_max_probability": 0.8125,
+        "success_mean_fraction": "13/16",
+        "success_mean_probability": 0.8125,
+        "success_min_fraction": "13/16",
+        "success_min_probability": 0.8125,
+        "target_prior_oracle_success_fraction": "13/16",
+        "target_prior_oracle_success_probability": 0.8125,
+        "target_prior_regret_max_fraction": "0/1",
+        "target_prior_regret_max_probability": 0.0,
+        "target_prior_regret_mean_fraction": "0/1",
+        "target_prior_regret_mean_probability": 0.0,
+        "target_prior_regret_min_fraction": "0/1",
+        "target_prior_regret_min_probability": 0.0
+      },
+      "query_case": "skewed_first_coordinate_7_to_1",
+      "query_distribution": "integer weights normalized to sum 1",
+      "query_weights": [
+        7,
+        1,
+        1,
+        1
+      ],
+      "source_distribution": "uniform over bit vectors",
+      "success_fraction": "37/40",
+      "success_probability": 0.925,
+      "weighted_hamming_denominator": 160
+    },
+    {
+      "codebooks_enumerated": 12870,
+      "example_optimal_reconstruction_codebook": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "message_alphabet_size": 8,
+      "message_budget_bits": 3,
+      "minimum_weighted_hamming_distortion_sum": 8,
+      "n_source_bits": 4,
+      "optimal_codebook_count": 6756,
+      "optimal_training_protocols_frozen_and_tested_on_other_query_prior": {
+        "encoder_rule": "nearest codeword under training prior; ties choose lowest codeword",
+        "query_weights": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "success_max_fraction": "7/8",
+        "success_max_probability": 0.875,
+        "success_mean_fraction": "7/8",
+        "success_mean_probability": 0.875,
+        "success_min_fraction": "7/8",
+        "success_min_probability": 0.875,
+        "target_prior_oracle_success_fraction": "7/8",
+        "target_prior_oracle_success_probability": 0.875,
+        "target_prior_regret_max_fraction": "0/1",
+        "target_prior_regret_max_probability": 0.0,
+        "target_prior_regret_mean_fraction": "0/1",
+        "target_prior_regret_mean_probability": 0.0,
+        "target_prior_regret_min_fraction": "0/1",
+        "target_prior_regret_min_probability": 0.0
+      },
+      "query_case": "skewed_first_coordinate_7_to_1",
+      "query_distribution": "integer weights normalized to sum 1",
+      "query_weights": [
+        7,
+        1,
+        1,
+        1
+      ],
+      "source_distribution": "uniform over bit vectors",
+      "success_fraction": "19/20",
+      "success_probability": 0.95,
+      "weighted_hamming_denominator": 160
+    },
+    {
+      "codebooks_enumerated": 1,
+      "example_optimal_reconstruction_codebook": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "message_alphabet_size": 16,
+      "message_budget_bits": 4,
+      "minimum_weighted_hamming_distortion_sum": 0,
+      "n_source_bits": 4,
+      "optimal_codebook_count": 1,
+      "optimal_training_protocols_frozen_and_tested_on_other_query_prior": {
+        "encoder_rule": "nearest codeword under training prior; ties choose lowest codeword",
+        "query_weights": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "success_max_fraction": "1/1",
+        "success_max_probability": 1.0,
+        "success_mean_fraction": "1/1",
+        "success_mean_probability": 1.0,
+        "success_min_fraction": "1/1",
+        "success_min_probability": 1.0,
+        "target_prior_oracle_success_fraction": "1/1",
+        "target_prior_oracle_success_probability": 1.0,
+        "target_prior_regret_max_fraction": "0/1",
+        "target_prior_regret_max_probability": 0.0,
+        "target_prior_regret_mean_fraction": "0/1",
+        "target_prior_regret_mean_probability": 0.0,
+        "target_prior_regret_min_fraction": "0/1",
+        "target_prior_regret_min_probability": 0.0
+      },
+      "query_case": "skewed_first_coordinate_7_to_1",
+      "query_distribution": "integer weights normalized to sum 1",
+      "query_weights": [
+        7,
+        1,
+        1,
+        1
+      ],
+      "source_distribution": "uniform over bit vectors",
+      "success_fraction": "1/1",
+      "success_probability": 1.0,
+      "weighted_hamming_denominator": 160
+    }
+  ],
+  "schema": "tlu.private_query.frontier.v1"
+}
