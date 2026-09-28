@@ -1,0 +1,46 @@
+{
+  "experiment_id": "pointer-chasing-oracle-frontier-v0.1",
+  "status": "preregistered-analytic-control",
+  "research_question": "What exact bandwidth/round trade-off is obtained by a k-step pointer relay versus one simultaneous exchange of both complete private maps, under the bilateral-output requirement?",
+  "scope": "Model-free analytic oracle controls only. No stochastic performance estimates, LLM claims, or deployed transport measurements.",
+  "task": {
+    "generator": "experiments/pointer_chasing_v0_1/generate_tasks.py",
+    "answer": "parity of p_k",
+    "output_requirement": "Both agents independently compute the same exact answer.",
+    "eligible_depth_for_at-most-k-minus-1-batch-claim": "k >= 2"
+  },
+  "protocols": {
+    "pointer_relay": {
+      "schedule": "k sequential one-way messages, alternating sender, one pointer per message",
+      "payload_code": "fixed-width binary offset, ceil(log2(n)) ASCII bits",
+      "success": "zero error"
+    },
+    "full_map_simultaneous": {
+      "schedule": "one synchronous batch with one directed message from each agent to the other",
+      "payload_code": "all n map values as fixed-width binary offsets, ceil(log2(n)) ASCII bits each",
+      "success": "zero error after each agent receives the other complete map; both then calculate locally",
+      "interpretation": "Simple bilateral upper control; not claimed optimal. It fits within k-1 synchronous batches for k >= 2."
+    }
+  },
+  "cost_contract": {
+    "report_separately": ["synchronous batches", "directed transmissions", "aggregate abstract payload bits", "aggregate unframed ASCII payload bytes"],
+    "excluded": ["transport framing", "prompt and schema", "recipient tokenizer units", "inference compute", "setup and codebook costs"],
+    "ascii_bytes_equal_bit_characters": true
+  },
+  "analysis": {
+    "formula_pointer_relay_bits": "k * ceil(log2(n))",
+    "formula_full_map_exchange_bits": "2 * n * ceil(log2(n))",
+    "claim_boundary": "These are exact oracle payload formulae. They do not establish an LLM frontier or a practical communication-language advantage."
+  },
+  "interpretation_limits": [
+    "The full-map exchange reveals all private information and has two directed payloads in one synchronous batch.",
+    "The synchronous batch convention differs from the sequential-speaker convention in the cited pointer-chasing lower-bound theorem.",
+    "This baseline must not be presented as an implementation of the theorem's (k-1)-round protocol.",
+    "The comparison omits framing, prompts, tokenizer effects, latency, and model inference."
+  ],
+  "resource_policy": {
+    "model_calls": 0,
+    "local_work": "small deterministic arithmetic and serialization only",
+    "do_not_start_model_inference": true
+  }
+}

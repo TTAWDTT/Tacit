@@ -1,5 +1,14 @@
 # Research log
 
+## 2026-09-29 — Add a bilateral oracle bandwidth/round control
+
+- **Observation:** pointer-chasing theory gives a clean `k`-step relay upper bound and a `(k−1)`-round lower bound, but our benchmark requires both agents to return the answer and our existing oracle reports only abstract relay bits. Treating a different round convention as equivalent could overstate what the analytic comparison says.
+- **Hypothesis:** a transparent control that reveals both maps in one simultaneous batch should expose the protocol-level trade-off between fewer interaction batches and greater bandwidth, without needing an LLM or claiming that the control is optimal.
+- **Formalization and prediction:** for `w=ceil(log2(n))`, the k-message pointer relay costs `k w` payload bits in `k` batches; two simultaneous complete-map messages cost `2 n w` payload bits in one batch and let both agents compute the answer. The payload crossover is exactly `k=2n` under the fixed-width code.
+- **Experiment/artifact:** added an exact simulator, formula grid, and frozen analytic preregistration in `experiments/pointer_chasing_v0_1/`. The serialized control is explicitly unframed ASCII, so payload bytes equal ASCII bit characters; network framing, tokenizer, prompt, latency, and inference are excluded. The full-map batch fits an at-most-`k−1` synchronous-batch cap only when `k>=2`.
+- **Revision/limits:** re-read the ITCS 2025 protocol definitions and corrected the comparison boundary: its theorem uses Alice-first sequential-speaker round complexity and a standard common protocol output. The project's full-map control uses a simultaneous two-direction batch and bilateral explicit answers; it is an analytic exact upper control, not the cited theorem's low-round construction or a model experiment. See [`INTERACTIVE_POINTER_CHASING_ORACLE_FRONTIER_V0_1.md`](INTERACTIVE_POINTER_CHASING_ORACLE_FRONTIER_V0_1.md).
+- No model was loaded or inference run. A first local test exposed an incorrect expected count in the new test (`n=4`, width 2 means two maps total 16 bits); the assertion was corrected to the exact formula before final validation.
+
 ## 2026-09-29 — Implement the model-free pointer-chasing task control
 
 - Converted the literature-grounded task definition into [`experiments/pointer_chasing_v0_1/`](../experiments/pointer_chasing_v0_1/README.md): deterministic hash-derived episode seeds, independent one-based random function maps, role-isolated views, an independently recomputed exact scorer, fixed-width binary pointer encoding, and a `k`-message oracle relay.

@@ -1,0 +1,787 @@
+{
+  "schema_version": "tlu.pointer-chasing-oracle-frontier.v1",
+  "model_calls": 0,
+  "points": [
+    {
+      "size": 2,
+      "depth": 1,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "synchronous_batches": 1,
+        "directed_transmissions": 1,
+        "aggregate_payload_bits": 1,
+        "aggregate_payload_bytes_ascii": 1
+      },
+      "full_map_exchange": {
+        "synchronous_batches": 1,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 4,
+        "aggregate_payload_bytes_ascii": 4
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 2,
+      "depth": 2,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "synchronous_batches": 2,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 2,
+        "aggregate_payload_bytes_ascii": 2
+      },
+      "full_map_exchange": {
+        "synchronous_batches": 1,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 4,
+        "aggregate_payload_bytes_ascii": 4
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 2,
+      "depth": 4,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "synchronous_batches": 4,
+        "directed_transmissions": 4,
+        "aggregate_payload_bits": 4,
+        "aggregate_payload_bytes_ascii": 4
+      },
+      "full_map_exchange": {
+        "synchronous_batches": 1,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 4,
+        "aggregate_payload_bytes_ascii": 4
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 2,
+      "depth": 8,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "synchronous_batches": 8,
+        "directed_transmissions": 8,
+        "aggregate_payload_bits": 8,
+        "aggregate_payload_bytes_ascii": 8
+      },
+      "full_map_exchange": {
+        "synchronous_batches": 1,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 4,
+        "aggregate_payload_bytes_ascii": 4
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 2,
+      "depth": 16,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "synchronous_batches": 16,
+        "directed_transmissions": 16,
+        "aggregate_payload_bits": 16,
+        "aggregate_payload_bytes_ascii": 16
+      },
+      "full_map_exchange": {
+        "synchronous_batches": 1,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 4,
+        "aggregate_payload_bytes_ascii": 4
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 2,
+      "depth": 32,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "synchronous_batches": 32,
+        "directed_transmissions": 32,
+        "aggregate_payload_bits": 32,
+        "aggregate_payload_bytes_ascii": 32
+      },
+      "full_map_exchange": {
+        "synchronous_batches": 1,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 4,
+        "aggregate_payload_bytes_ascii": 4
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 4,
+      "depth": 1,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "synchronous_batches": 1,
+        "directed_transmissions": 1,
+        "aggregate_payload_bits": 2,
+        "aggregate_payload_bytes_ascii": 2
+      },
+      "full_map_exchange": {
+        "synchronous_batches": 1,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 16,
+        "aggregate_payload_bytes_ascii": 16
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 4,
+      "depth": 2,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "synchronous_batches": 2,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 4,
+        "aggregate_payload_bytes_ascii": 4
+      },
+      "full_map_exchange": {
+        "synchronous_batches": 1,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 16,
+        "aggregate_payload_bytes_ascii": 16
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 4,
+      "depth": 4,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "synchronous_batches": 4,
+        "directed_transmissions": 4,
+        "aggregate_payload_bits": 8,
+        "aggregate_payload_bytes_ascii": 8
+      },
+      "full_map_exchange": {
+        "synchronous_batches": 1,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 16,
+        "aggregate_payload_bytes_ascii": 16
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 4,
+      "depth": 8,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "synchronous_batches": 8,
+        "directed_transmissions": 8,
+        "aggregate_payload_bits": 16,
+        "aggregate_payload_bytes_ascii": 16
+      },
+      "full_map_exchange": {
+        "synchronous_batches": 1,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 16,
+        "aggregate_payload_bytes_ascii": 16
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 4,
+      "depth": 16,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "synchronous_batches": 16,
+        "directed_transmissions": 16,
+        "aggregate_payload_bits": 32,
+        "aggregate_payload_bytes_ascii": 32
+      },
+      "full_map_exchange": {
+        "synchronous_batches": 1,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 16,
+        "aggregate_payload_bytes_ascii": 16
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 4,
+      "depth": 32,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "synchronous_batches": 32,
+        "directed_transmissions": 32,
+        "aggregate_payload_bits": 64,
+        "aggregate_payload_bytes_ascii": 64
+      },
+      "full_map_exchange": {
+        "synchronous_batches": 1,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 16,
+        "aggregate_payload_bytes_ascii": 16
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 8,
+      "depth": 1,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "synchronous_batches": 1,
+        "directed_transmissions": 1,
+        "aggregate_payload_bits": 3,
+        "aggregate_payload_bytes_ascii": 3
+      },
+      "full_map_exchange": {
+        "synchronous_batches": 1,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 48,
+        "aggregate_payload_bytes_ascii": 48
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 8,
+      "depth": 2,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "synchronous_batches": 2,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 6,
+        "aggregate_payload_bytes_ascii": 6
+      },
+      "full_map_exchange": {
+        "synchronous_batches": 1,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 48,
+        "aggregate_payload_bytes_ascii": 48
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 8,
+      "depth": 4,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "synchronous_batches": 4,
+        "directed_transmissions": 4,
+        "aggregate_payload_bits": 12,
+        "aggregate_payload_bytes_ascii": 12
+      },
+      "full_map_exchange": {
+        "synchronous_batches": 1,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 48,
+        "aggregate_payload_bytes_ascii": 48
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 8,
+      "depth": 8,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "synchronous_batches": 8,
+        "directed_transmissions": 8,
+        "aggregate_payload_bits": 24,
+        "aggregate_payload_bytes_ascii": 24
+      },
+      "full_map_exchange": {
+        "synchronous_batches": 1,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 48,
+        "aggregate_payload_bytes_ascii": 48
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 8,
+      "depth": 16,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "synchronous_batches": 16,
+        "directed_transmissions": 16,
+        "aggregate_payload_bits": 48,
+        "aggregate_payload_bytes_ascii": 48
+      },
+      "full_map_exchange": {
+        "synchronous_batches": 1,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 48,
+        "aggregate_payload_bytes_ascii": 48
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 8,
+      "depth": 32,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "synchronous_batches": 32,
+        "directed_transmissions": 32,
+        "aggregate_payload_bits": 96,
+        "aggregate_payload_bytes_ascii": 96
+      },
+      "full_map_exchange": {
+        "synchronous_batches": 1,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 48,
+        "aggregate_payload_bytes_ascii": 48
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 16,
+      "depth": 1,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "synchronous_batches": 1,
+        "directed_transmissions": 1,
+        "aggregate_payload_bits": 4,
+        "aggregate_payload_bytes_ascii": 4
+      },
+      "full_map_exchange": {
+        "synchronous_batches": 1,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 128,
+        "aggregate_payload_bytes_ascii": 128
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 16,
+      "depth": 2,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "synchronous_batches": 2,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 8,
+        "aggregate_payload_bytes_ascii": 8
+      },
+      "full_map_exchange": {
+        "synchronous_batches": 1,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 128,
+        "aggregate_payload_bytes_ascii": 128
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 16,
+      "depth": 4,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "synchronous_batches": 4,
+        "directed_transmissions": 4,
+        "aggregate_payload_bits": 16,
+        "aggregate_payload_bytes_ascii": 16
+      },
+      "full_map_exchange": {
+        "synchronous_batches": 1,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 128,
+        "aggregate_payload_bytes_ascii": 128
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 16,
+      "depth": 8,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "synchronous_batches": 8,
+        "directed_transmissions": 8,
+        "aggregate_payload_bits": 32,
+        "aggregate_payload_bytes_ascii": 32
+      },
+      "full_map_exchange": {
+        "synchronous_batches": 1,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 128,
+        "aggregate_payload_bytes_ascii": 128
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 16,
+      "depth": 16,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "synchronous_batches": 16,
+        "directed_transmissions": 16,
+        "aggregate_payload_bits": 64,
+        "aggregate_payload_bytes_ascii": 64
+      },
+      "full_map_exchange": {
+        "synchronous_batches": 1,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 128,
+        "aggregate_payload_bytes_ascii": 128
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 16,
+      "depth": 32,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "synchronous_batches": 32,
+        "directed_transmissions": 32,
+        "aggregate_payload_bits": 128,
+        "aggregate_payload_bytes_ascii": 128
+      },
+      "full_map_exchange": {
+        "synchronous_batches": 1,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 128,
+        "aggregate_payload_bytes_ascii": 128
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 32,
+      "depth": 1,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "synchronous_batches": 1,
+        "directed_transmissions": 1,
+        "aggregate_payload_bits": 5,
+        "aggregate_payload_bytes_ascii": 5
+      },
+      "full_map_exchange": {
+        "synchronous_batches": 1,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 320,
+        "aggregate_payload_bytes_ascii": 320
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 32,
+      "depth": 2,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "synchronous_batches": 2,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 10,
+        "aggregate_payload_bytes_ascii": 10
+      },
+      "full_map_exchange": {
+        "synchronous_batches": 1,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 320,
+        "aggregate_payload_bytes_ascii": 320
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 32,
+      "depth": 4,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "synchronous_batches": 4,
+        "directed_transmissions": 4,
+        "aggregate_payload_bits": 20,
+        "aggregate_payload_bytes_ascii": 20
+      },
+      "full_map_exchange": {
+        "synchronous_batches": 1,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 320,
+        "aggregate_payload_bytes_ascii": 320
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 32,
+      "depth": 8,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "synchronous_batches": 8,
+        "directed_transmissions": 8,
+        "aggregate_payload_bits": 40,
+        "aggregate_payload_bytes_ascii": 40
+      },
+      "full_map_exchange": {
+        "synchronous_batches": 1,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 320,
+        "aggregate_payload_bytes_ascii": 320
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 32,
+      "depth": 16,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "synchronous_batches": 16,
+        "directed_transmissions": 16,
+        "aggregate_payload_bits": 80,
+        "aggregate_payload_bytes_ascii": 80
+      },
+      "full_map_exchange": {
+        "synchronous_batches": 1,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 320,
+        "aggregate_payload_bytes_ascii": 320
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    },
+    {
+      "size": 32,
+      "depth": 32,
+      "zero_error": true,
+      "both_agents_independently_compute_answer": true,
+      "pointer_relay": {
+        "synchronous_batches": 32,
+        "directed_transmissions": 32,
+        "aggregate_payload_bits": 160,
+        "aggregate_payload_bytes_ascii": 160
+      },
+      "full_map_exchange": {
+        "synchronous_batches": 1,
+        "directed_transmissions": 2,
+        "aggregate_payload_bits": 320,
+        "aggregate_payload_bytes_ascii": 320
+      },
+      "cost_model": "fixed-width binary-offset symbols serialized as unframed ASCII bits",
+      "excluded_costs": [
+        "transport framing",
+        "prompt and schema",
+        "tokenization",
+        "inference",
+        "setup"
+      ]
+    }
+  ],
+  "interpretation": "Exact analytic oracle costs; not a measured LLM or deployed transport frontier."
+}

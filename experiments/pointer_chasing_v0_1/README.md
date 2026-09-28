@@ -14,10 +14,20 @@ python experiments/pointer_chasing_v0_1/generate_tasks.py `
 
 Seeds are derived with SHA-256 from the master seed, split, size, depth, and episode index; each role/map slot is sampled with SHA-256 rejection sampling rather than a runtime-version-dependent PRNG. This makes a deterministic pseudorandom instantiation of the target uniform distribution, not a proof that the finite shard is an IID sample. A fixed regression vector protects the task version's sampling contract. The validator checks the task version, exact schema, role-view shape, function range, and independently recomputed answer. The scorer accepts only exact `0` or `1` outputs from both agents and separately reports individual and joint exactness. `oracle_relay(episode)` executes the k-message pointer relay using fixed-width binary offsets of `ceil(log2(n))` bits per pointer and checks each decode. `exact_no_message_diagnostic(n,k)` exhaustively computes per-agent Bayes accuracies for `n` in `{2,4}` under the full uniform function prior. It also provides feasible joint baselines and an upper bound on any no-message joint accuracy, but does not solve for the globally optimal pair of local decision rules; enumeration is capped because cost grows quadratically in `n^n`. The reported relay payload bit count excludes framing and is not a `tlu.costs.v3` wire-cost record.
 
+The model-free [oracle frontier script](protocol_baselines.py) adds a deliberately simple bilateral alternative: each agent sends its complete map in one simultaneous batch, then both compute the answer. Its exact payload is `2*n*ceil(log2(n))` abstract bits and the same number of unframed ASCII bytes; the pointer relay uses `k*ceil(log2(n))` bits over `k` sequential messages. These are analytic oracle points, not deployed transport measurements. Framing, schema/prompt, tokenizer, inference, and setup costs are excluded. The full-map batch fits within `k-1` synchronous batches only for `k>=2`; its schedule convention differs from the sequential-speaker convention in the cited theorem and is not an implementation of that theorem's lower-bound protocol. See the [analytic preregistration](oracle_frontier_preregistration.json) and [comparison note](../../research/INTERACTIVE_POINTER_CHASING_ORACLE_FRONTIER_V0_1.md).
+
 Run the offline integrity checks with:
 
 ```powershell
 python -m unittest discover -s experiments/pointer_chasing_v0_1 -p "test_*.py" -v
+```
+
+Generate a model-free analytic frontier table (no episode sampling or model access):
+
+```powershell
+python experiments/pointer_chasing_v0_1/protocol_baselines.py `
+  --sizes 4 8 16 32 --depths 1 2 4 8 16 32 `
+  --output research/data/POINTER_CHASING_ORACLE_FRONTIER_V0_1.json
 ```
 
 These checks validate deterministic data plumbing only. They are not a model-capability result, a measured round-complexity result, or evidence for a message format. Before a model pilot, first verify the full-information capability gate, participant-specific no-message controls, and an oracle relay through the same transport. Do not treat asymptotic bit bounds as token budgets.

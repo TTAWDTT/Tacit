@@ -18,6 +18,7 @@ from generate_tasks import (  # noqa: E402
     score_episode,
     validate_episode,
 )
+from protocol_baselines import full_map_exchange, oracle_frontier_point  # noqa: E402
 
 
 class PointerChasingTaskTest(unittest.TestCase):
@@ -60,6 +61,24 @@ class PointerChasingTaskTest(unittest.TestCase):
         self.assertEqual(relay["payload_bit_count"], episode["depth"] * 2)
         self.assertEqual(relay["answer_bit"], oracle_answer(episode))
         self.assertFalse(relay["framing_included"])
+
+    def test_full_map_exchange_is_exact_bilateral_one_batch_control(self):
+        episode = generate_episode(1729, "pilot", 4, 3, 0)
+        result = full_map_exchange(episode)
+        self.assertTrue(result["both_agents_can_compute_answer"])
+        self.assertEqual(result["answer_bit"], episode["gold_bit"])
+        self.assertEqual(result["agent_answers"], {"agent_a": episode["gold_bit"], "agent_b": episode["gold_bit"]})
+        self.assertEqual(result["synchronous_batches"], 1)
+        self.assertEqual(result["directed_transmissions"], 2)
+        self.assertEqual(result["aggregate_payload_bits"], 16)
+        self.assertEqual(result["aggregate_payload_bytes_ascii"], 16)
+
+    def test_oracle_frontier_uses_separate_round_and_bandwidth_axes(self):
+        point = oracle_frontier_point(8, 3)
+        self.assertEqual(point["pointer_relay"]["synchronous_batches"], 3)
+        self.assertEqual(point["pointer_relay"]["aggregate_payload_bits"], 9)
+        self.assertEqual(point["full_map_exchange"]["synchronous_batches"], 1)
+        self.assertEqual(point["full_map_exchange"]["aggregate_payload_bits"], 48)
 
     def test_pointer_codec_rejects_invalid_codes(self):
         with self.assertRaises(ValueError):
