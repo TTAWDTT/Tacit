@@ -37,21 +37,50 @@ with the schedule `σ`, selector `φ` (including its selected format slot on eac
 
 This factorization is necessary because a method can improve success by selecting different messages or turns without compressing a fixed semantic payload. Log chosen content, format choices, turns, and decoded content so each mechanism is auditable. Charge selector training/search and per-message selection calls to setup or inference at their actual boundary.
 
-## 2. Ideal semantic rate-distortion
+## 2. Task distortion with receiver side information
 
-For a fixed task distribution, receiver (r), and shared side information (C), an ideal one-message semantic rate-distortion function is
+For a two-agent episode, let sender A observe private state \(X\), receiver B observe private state \(Z\), and both observe public context \(C\). The target \(W\) and task loss \(\ell(W,a)\) are fixed by the task. Without communication, the receiver chooses an action from \((Z,C)\); with communication, A sends \(M\) using only \((X,C)\), and B chooses from \((M,Z,C)\). The encoder must not silently condition on \(Z\) unless that information is explicitly part of the sender's view.
+
+For fixed model/runtime condition \(r\), protocol \(\pi\), and operational budget \(b\), define
 
 \[
-R^*_{T,r}(D\mid C) = \inf_{q(m\mid x,c):\;\mathbb{E}[d_T]\le D} I(X;M\mid C,r).
+D_{T,r,\pi}(b)=\mathbb{E}[\ell(W,A_\pi)]
+\quad\text{subject to}\quad
+\mathbf c_\pi\preceq b.
 \]
 
-Here (X) is the sender's private observation and (M) is the message representation available to the receiver. This is a **theoretical reference**, not the token cost of an LLM. It captures the central question: how much information about private state must cross the boundary to keep downstream task distortion below (D), given what the receiver already knows? Shannon's fidelity criterion motivates minimizing rate under task-relevant distortion; interactive communication complexity motivates extending this to sequences of messages rather than compressing each turn independently ([Shannon 1948](https://doi.org/10.1002/j.1538-7305.1948.tb00917.x), [Shannon 1959](https://mast.queensu.ca/~math474/shannon59.pdf), [Braverman et al. 2016](https://epubs.siam.org/doi/10.1137/100811969)).
+This is the quantity experiments observe. It uses a declared task distribution, exact or preregistered task score, actual serialized channel payload, and separately recorded inference/setup/runtime budgets.
+
+### Ideal information-theoretic reference
+
+For an i.i.d. source and a single message, the **Wyner–Ziv task rate-distortion benchmark** is
+
+\[
+R^{\mathrm{WZ}}_{T}(D\mid C)=\inf_{p(u\mid x,c),\,g}
+I(X;U\mid Z,C),
+\]
+
+where \(U-X-(Z,C)\) conditional on \(C\), the receiver outputs \(\hat W=g(U,Z,C)\), and \(\mathbb E[\ell(W,\hat W)]\le D\). Equivalently, with decoder-only side information this classical operational limit has the auxiliary-variable form \(\inf[I(X;U\mid C)-I(Z;U\mid C)]\) over the same feasible test channels and decoders. If the sender also knows \(Z\), the problem changes to conditional rate-distortion; that is a different information boundary. This adapts Shannon's distortion objective and Wyner–Ziv's decoder-side-information setting to task loss rather than literal reconstruction ([Shannon 1948](https://doi.org/10.1002/j.1538-7305.1948.tb00917.x), [Wyner & Ziv 1976](https://doi.org/10.1109/TIT.1976.1055508)). The information-bottleneck view similarly asks a representation to discard source information irrelevant to a specified target, rather than preserve all details ([Tishby, Pereira & Bialek](https://arxiv.org/abs/physics/0004057)).
+
+This is a **reference bound, not the token cost of an LLM**. It assumes a known source distribution, block coding over sufficiently long i.i.d. sequences, a chosen task-loss function, and an ideal encoder/decoder. Finite one-shot episodes, restricted language models, prompt overhead, compute, latency, learned codebooks, and interactive rounds need operational measurement. Information complexity provides a separate framework for interactive protocols; distributed function-computation coding is a closer analogy when the receiver needs a function of both private inputs ([Braverman, *Interactive Information Complexity*](https://epubs.siam.org/doi/10.1137/17M1139254), [Orlitsky & Roche, *Coding for Computing*](https://doi.org/10.1109/18.915643)). Neither theorem directly converts LLM tokens into an optimal semantic rate.
+
+### Proposition: when communication has no task value
+
+Let \(R_0=\inf_{\delta}\mathbb E[\ell(W,\delta(Z,C))]\) be the receiver's Bayes risk with no message, and \(R_{\mathrm{full}}=\inf_{\gamma}\mathbb E[\ell(W,\gamma(X,Z,C))]\) its Bayes risk if both private views were centrally available. Then
+
+\[
+R_{\mathrm{full}}\le R_0.
+\]
+
+**Proof.** Any no-message decision rule \(\delta(Z,C)\) is a feasible centralized rule \(\gamma(X,Z,C)=\delta(Z,C)\) that ignores \(X\). The centralized infimum is over a superset of rules, so it cannot have greater risk. \(\square\)
+
+If \(R_0=R_{\mathrm{full}}\), communication cannot improve optimal task risk for that task distribution and loss, regardless of the language. If \(R_0>R_{\mathrm{full}}\), private sender information has positive decision value in aggregate, but this is only a necessary opportunity check: it does not prove any particular finite-budget message or LLM will realize the gain. In experiments, use an exact no-message/oracle comparison where possible; model no-message failures alone may reflect weak receiver capability rather than communication need.
 
 Three distinctions matter:
 
-1. (I(X;M\mid C,r)) is not UTF-8 bytes, model tokens, FLOPs, latency, or energy. We report these operational measures separately.
-2. Semantic distortion is receiver- and task-dependent. A message can omit irrelevant prose with zero distortion, but omit a rare constraint and cause a large task loss.
-3. In multi-turn collaboration the next message can depend on previous messages and actions. The relevant object is then an interactive protocol; per-message compression may raise rounds, repeated prompt cost, or repair traffic.
+1. Information rate is not UTF-8 bytes, model tokens, FLOPs, latency, or energy. Record those operational measures separately.
+2. Task distortion depends on receiver state, task, and loss. Omitting irrelevant prose can have zero task distortion; omitting one rare constraint can cause a large loss.
+3. With multiple rounds, later messages depend on previous messages and actions. The relevant object is an interactive protocol; independently compressing each turn can raise round count, repeated prompt cost, or repair traffic.
 
 ## 3. Operational efficiency frontier
 
@@ -81,7 +110,7 @@ If (c_B\le c_L), no finite reuse horizon repays setup under this cost measure. T
 
 ## 5. Predictions to test
 
-- **P1, task distortion:** at equal message budget, compact formats help only when omitted information is conditionally irrelevant to the receiver's optimal task action; errors should cluster around task-critical omissions, not message length itself.
+- **P1, task distortion:** at equal message budget, compact formats help only when omitted information is conditionally irrelevant to the receiver's optimal task action; errors should cluster around task-critical omissions, not message length itself. Where the centralized/no-message Bayes-risk gap is zero, no protocol should improve optimal task utility; a measured gain then indicates model/control mismatch, scorer noise, or a changed effective task/budget.
 - **P2, receiver alignment:** for a fixed sender representation, downstream distortion depends on the receiver (r). A code's token/byte advantage should be separated from its decoder mismatch cost.
 - **P3, interactive compression:** under a strict total budget, a second turn helps only if its expected value of information exceeds repeated context, prompt, and control overhead. Compare several turn allocations at a fixed total budget.
 - **P4, setup horizon:** observed codebook savings should cross the baseline at the measured (H^*) within uncertainty if per-episode costs are stable. Failure to do so suggests non-stationary quality, hidden cost, or an incomplete accounting boundary.

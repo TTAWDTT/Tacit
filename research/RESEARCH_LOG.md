@@ -1,5 +1,14 @@
 # Research log
 
+## 2026-09-29 — Formalize task distortion with receiver-side information
+
+- **Trigger:** the existing rate-distortion framing treated the shared context as the receiver's only conditioning information. Real collaboration tasks split private views, so an ideal lower bound must make the receiver's own side information and the sender's visibility explicit.
+- **Research:** checked Shannon's distortion formulation, Wyner–Ziv coding with decoder-only side information, Tishby et al.'s information bottleneck, Orlitsky–Roche function computation, and interactive information complexity. Semantic-communication surveys reinforce that there is no universal semantic distortion metric.
+- **Formalization:** define the operational score as expected task loss at a declared byte/token/compute/runtime budget. Define an ideal Wyner–Ziv-style task rate-distortion benchmark for sender state (X), receiver side information (Z), and public context (C), with an explicit encoder-view constraint and task-loss decoder. Add a proposition: optimal no-message Bayes risk is at least the centralized full-information Bayes risk because the centralized decision class can ignore sender input. Equality means no protocol can improve optimal task risk for this distribution/loss; a positive gap indicates potential value but does not guarantee a finite LLM protocol realizes it.
+- **Falsifiable consequence:** if the exact no-message oracle and centralized oracle have equal expected loss, then any claimed communication gain must be explained by model/control mismatch, scorer noise, or changed budgets/task conditions. If there is a positive gap, only then does a representation comparison have room to capture communication value. This predicts a reusable benchmark precheck and guards against calling model weakness “communication necessity.”
+- **Limits:** the Wyner–Ziv expression assumes ideal asymptotic block coding for a specified source/loss. It is not a bound on LLM tokenizer units, one-shot prompt cost, or interactive runtime. Actual LLM protocols remain judged on measured end-to-end frontiers.
+- **Artifacts:** revised [`docs/THEORY.md`](../docs/THEORY.md) §2 and the information-theoretic section of [`RELATED_WORK.md`](RELATED_WORK.md). No model was loaded; no inference or training was run.
+
 ## 2026-09-29 — Audit emergent communication and LLM iterated learning
 
 - **Trigger:** the related-work map still had an open review of Lewis games, referential games, iterated learning, and whether an emergent protocol would generalize beyond its training pair.
