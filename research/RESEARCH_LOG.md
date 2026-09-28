@@ -5,6 +5,12 @@
 - Read-only host samples measured 38.7271%, 36.8538%, and 24.8653% CPU (33.48% mean; 38.73% maximum), 14% GPU utilization, 1,018 MiB GPU memory, and 4,200 MiB free system memory. Port 8001 was unused.
 - The existing gate remains unchanged and failed on CPU mean/max and free memory. No model artifact was hashed, weights loaded, service started, or inference call made. The sanitized record is [`PRECHECK_ATTEMPT_6.json`](../experiments/index_v0_3/PRECHECK_ATTEMPT_6.json).
 
+## 2026-09-29 — Decompose the v0.16 PrefixSum receiver failures
+
+- Reanalyzed the public 24-episode per-task ledger against the pinned synthetic task inputs. Agent 0 produced its exact local prefix and the expected subtotal reached Agent 1 before submission in all 24 episodes, but Agent 1 was exact in only 2/24. The remaining receiver answers comprise 3 local-only prefixes (offset omitted), 16 incorrect numeric vectors, and 3 unevaluated expression strings. Counts by segment length are recorded in the [failure audit](PREFIXSUM_RECEIVER_FAILURE_AUDIT_V0_1.md).
+- This narrows the observed bottleneck to payload-use/final-answer behavior after successful delivery; it does not establish whether message semantics, prompt/context integration, or multi-step composition is causal. Direct local-prefix and offset-vector controls each passed 24/24, while direct combined-receiver arithmetic passed only 7/24, consistent with (but not proving) a composition/integration difficulty rather than isolated arithmetic.
+- The proposed next discriminating model study is explicitly conditional on a fresh pass of the frozen host resource gate and preregistration. It compares current receipt to a token-matched typed-offset condition and a no-message control, with event-level scoring. No inference ran during this audit, and no format comparison is licensed by these data.
+
 ## 2026-09-29 — Replace the loose one-bit RAC scaling bound with the known exact law
 
 - **Literature correction:** a full-text audit of Ambainis et al., *Quantum Random Access Codes with Shared Randomness* (arXiv:0810.2937, §2.3), found that their classical result already proves majority encoding is optimal for the uniform (n\to1) RAC. Its exact average success is (p(n)=1/2+2^{-n}\binom{n-1}{\lfloor(n-1)/2\rfloor}\), with advantage asymptotic to (1/\sqrt{2\pi n}\). The project-local Parseval bound (1/2+1/(2\sqrt n)\) remains valid but is loose; it is not the best theory available for this benchmark.
