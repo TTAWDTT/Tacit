@@ -21,7 +21,7 @@ Potential tasks to retain only if the existing suites leave a concrete gap:
 
 Avoid tasks that can be solved from public context or common model knowledge alone.
 
-AutoForm's existing HotpotQA split-context setting already demonstrates distributed supporting facts and provides a direct replication target. Its paper reports Rouge-L/F1 and a `# Tokens` measure; this project should inspect and reproduce exact definitions rather than assume a missing cost measure. First extend the task/metric coverage; do not claim communication necessity is previously untested.
+AutoForm's existing HotpotQA split-context setting already demonstrates distributed supporting facts and provides a direct replication target. The paper reports Rouge-L/F1 and says its separate-context token count is the number of tokens generated. The released API wrapper separately tracks prompt and completion tokens for spend accounting. Preserve the reported generated-token metric for comparability, but measure the full prompt/completion/runtime cost and actual channel payload independently; see [`docs/COST_ACCOUNTING.md`](COST_ACCOUNTING.md) and the [AutoForm source audit](../research/AUTOFORM_BASELINE_AUDIT.md). Do not claim communication necessity is previously untested.
 
 ## Baseline families
 
@@ -37,10 +37,10 @@ AutoForm's existing HotpotQA split-context setting already demonstrates distribu
 ## Core controlled comparisons
 
 - Same underlying model weights and task episodes while varying only representation; then vary receiver model and model family.
-- Equal *total* communication budget sweep (input/output model tokens and serialized bytes, including instruction/codebook setup amortized over episode) and equal-quality operating points. Report native model-token counts as well as bytes because tokenizers differ.
+- Sweep the **channel budget** using delivered UTF-8 bytes and, separately, receiver-tokenizer message tokens; include transmitted schemas/codebooks and state any preinstalled shared side information. Separately report **full inference cost** for every agent call (all prompt and completion tokens, including repeated context, instructions, final answers, retries, and failures), plus runtime and setup. Compare equal channel budgets, quality-versus-inference-cost frontiers, and matched-quality operating points where supported. See [`docs/COST_ACCOUNTING.md`](COST_ACCOUNTING.md).
 - Fix and report turns, wall time, tool calls, model calls, temperature, prompt, and maximum rounds. On MT-PingEval, compare one-shot against multiple turns at the same overall budget.
 - Hold task context, agent count, information partition, number of turns, decoding settings, and answer evaluator constant.
-- Separate content messages from instructions, schema definitions, codebook negotiation, shared prompt context, and hidden state transfer.
+- Separate content messages from instructions, schema definitions, codebook negotiation, shared prompt context, and hidden-state transfer in the record; charge communicated/setup components to the relevant channel or reuse-horizon budget, and repeated prompt components to inference cost.
 - Measure decode success, semantic reconstruction, task completion, correctness, latency, generated and consumed tokens, bytes on the wire, setup cost, and retries.
 - Sweep task complexity, context length, agent count, rounds, and information partition to test scaling, not just one fixed benchmark.
 
