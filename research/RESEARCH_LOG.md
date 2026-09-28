@@ -9,6 +9,13 @@
 - **Artifact follow-up:** the paper's limitations explicitly exclude lexical choice and information packaging, confirming it studies communication policy/content grounding rather than a message language. The official base [PARTNR repository](https://github.com/facebookresearch/partnr-planner) is MIT licensed and documents local Llama-3.1-8B baselines. A targeted search did not locate a public repository for this paper's dialogue extension, so availability of the extension code/data is unresolved; simulator and model costs also make it a future, not immediate, local candidate.
 - **Local changes:** added evidence notes to [`RELATED_WORK.md`](RELATED_WORK.md), candidate and measurement constraints to [`EXPERIMENT_PLAN.md`](../docs/EXPERIMENT_PLAN.md), and the thesis revision to [`THESIS.md`](../docs/THESIS.md). No paper artifacts were downloaded or local model inference run.
 
+## 2026-09-29 — Formalize the message-grounding prediction
+
+- **Observation:** in the PARTNR dialogue paper, conflict reduction did not imply task improvement; the authors report hallucinated/unobserved entity references and explicitly leave lexical choice and information packaging out of scope. This makes task-conditioned grounding a useful mechanism to test, while leaving message form as an open factor.
+- **Formalization:** added a single-claim expected-utility threshold to [`THEORY.md`](../docs/THEORY.md). With fixed policy/receiver and stable conditional effects, a true, decision-relevant, receiver-novel claim has gain $g$, a false/unsupported claim has loss $h$, precision is $q$, and opportunity cost is $c$. The claim is worthwhile iff $q>(h+c)/(g+h)$. This is elementary algebra under explicit assumptions, not an optimal-language theorem; interaction among claims blocks naive additivity.
+- **Prediction / next measurement:** at fixed schedule and receiver, raising ground-truth-verified receiver-novel claim precision should help only when the estimated utility terms put the intervention across the threshold. Score task utility directly and log inference/context costs separately; “free” simulator steps do not make inference free. The paper's entity-handle metric is only a proxy for semantic correctness, so any Tacit replication needs task-state validation rather than copying that proxy uncritically.
+- No local model inference ran.
+
 ## 2026-09-29 — Seventh INDEX_m host-resource gate rejection
 
 - A three-sample read-only recheck observed host CPU 34.2201%, 29.9667%, and 31.6867% (31.96% mean, 34.22% maximum), GPU utilization 40%, GPU memory 977 MiB, and 3,717 MiB free system memory. Port 8001 was unused.

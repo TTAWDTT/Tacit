@@ -86,6 +86,26 @@ Three distinctions matter:
 
 Distinguish transport corruption (the received bytes differ or a message is truncated), semantic decode error (bytes arrive intact but the receiver infers the wrong task-relevant content), and receiver/task execution error (the content is reconstructed but not applied correctly). Classical channel coding applies to an explicit transport-channel model; it does not by itself bound semantic error in an LLM decoder. A feedback/clarification message is an additional adaptive action and must be charged as a reverse-direction payload, a model call, repeated context, and latency. Evaluate its value at equal total budgets. The ICLR 2024 emergent-repair study shows that feedback can improve task generalization under synthetic channel noise while compositionality proxies decline, but it uses jointly trained RNN agents and a detectable noise token; see the [audit](../research/CHANNEL_ROBUSTNESS_AUDIT_V0_1.md).
 
+### A conditional grounding threshold for an individual message claim
+
+To connect message grounding to task utility, consider adding one claim to an otherwise fixed message under a fixed sender policy, receiver, episode distribution, and scoring rule. Let $q$ be the probability that the claim is both true in the sender's observed state and decision-relevant but unknown to the receiver. Let $g>0$ be its expected marginal task-utility gain when such a claim is conveyed correctly, and $h>0$ the expected marginal utility loss when the claim is instead false or unsupported and the receiver acts on it. Let $c\geq0$ be the opportunity cost of that claim, expressed in the same utility units; $c$ may include a binding channel budget or the action displaced by a synchronous message. Assume these conditional effects are stable for the comparison and that adding the claim does not change unrelated policy decisions.
+
+The expected marginal utility is
+
+\[
+\Delta U = qg - (1-q)h - c.
+\]
+
+**Proposition (single-claim threshold).** Under these assumptions, adding the claim has positive expected utility exactly when
+
+\[
+q > \frac{h+c}{g+h}.
+\]
+
+This follows by rearranging $qg-(1-q)h-c>0$; it is a decision threshold, not a theorem about natural or machine languages. It predicts that the grounding/novelty precision needed for a message to help rises with its opportunity cost, and falls when the task benefit $g$ is larger relative to the harm $h$. A claim that is true but already known by the receiver does not count toward $q$; repeated common-ground content is therefore not automatically useful. Multiple claims can interact, so summing this expression over mentions requires an additional additivity assumption and should not be done by default.
+
+**Testable implication.** Under a frozen task, schedule, and receiver, a grounding intervention that raises the measured fraction of correct, receiver-novel, decision-relevant claims should improve task utility when the estimated $g$ and $h$ make the threshold cross. Measure these quantities from task state and receiver knowledge, and retain task success as the primary outcome; do not use action-conflict reduction or belief overlap as a substitute. A comparison that only makes messaging free in simulator steps does not set $c=0$ for total inference cost, latency, or context use. The PARTNR dialogue study supplies a negative prior for this prediction: it reports many unsupported entity mentions and lower task success despite fewer action conflicts, but its handle-counting method is only a proxy for semantic claim precision and its dialogue policy does not isolate message form.
+
 ## 3. Operational efficiency frontier
 
 For protocol π and task/model condition (z=(T,r,\text{channel},\text{horizon})), record a vector rather than choosing arbitrary prices in advance:
