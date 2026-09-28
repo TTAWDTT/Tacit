@@ -204,6 +204,12 @@ The v0.8 and v0.9 controls reproduce this integration failure at small scale wit
 
 Studies Dining-Philosophers resource contention under sequential and simultaneous decisions. The paper reports that simultaneous choices can deadlock even with communication, while pre-commitment / external coordination changes outcomes. This is not a message-compression comparison, but it reinforces a design distinction for this project: distinguish what the message says from when agents act, what they commit to, and what the runtime enforces. The current PrefixSum harness is sequential and role-explicit, so DPBench's concurrency results do not directly explain our current failures.
 
+### Mao, Yang, and Zhang (2025), *Gadgetless Lifting Beats Round Elimination: Improved Lower Bounds for Pointer Chasing*
+
+[ITCS 2025 paper](https://drops.dagstuhl.de/storage/00lipics/lipics-vol325-itcs2025/html/LIPIcs.ITCS.2025.75/LIPIcs.ITCS.2025.75.html) · CC-BY 4.0
+
+The paper defines two-party `k`-step pointer chasing over independently uniform functions and a parity output. Its Theorem 2 gives an `Omega(n/k + k)` bit lower bound for `(k-1)`-round deterministic protocols with Alice first and success at least `2/3` under that input distribution; Corollary 3 states the corresponding result for randomized protocols with error at most `1/3`. The direct `k`-round pointer-relay protocol costs `O(k log n)` bits. This is a promising source of a round-depth control beyond one-way `INDEX_m`, but the asymptotic theorem is not an LLM-token bound and small-model tasks may not enter its informative regime. The project design and staged eligibility criteria are in [`INTERACTIVE_POINTER_CHASING_DESIGN.md`](INTERACTIVE_POINTER_CHASING_DESIGN.md).
+
 ### Eisenstein et al. (2026), *MT-PingEval: Evaluating Multi-Turn Collaboration with Private Information Games*
 
 [arXiv paper and HTML](https://arxiv.org/abs/2602.24188) · [full text](https://arxiv.org/html/2602.24188)

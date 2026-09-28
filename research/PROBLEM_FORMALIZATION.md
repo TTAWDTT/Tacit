@@ -85,6 +85,16 @@ The experimental separation is:
 
 Keep the one-way and interactive results separate. If a compact encoding wins only when it changes which facts are sent, the result is a policy effect. If it wins under identical semantic payloads and decoder access, it is evidence about representation. This design is further specified in [`INDEX_PROTOCOL_DESIGN.md`](INDEX_PROTOCOL_DESIGN.md).
 
+## A round-depth control: pointer chasing
+
+The one-way `INDEX_m` control does not test how required communication changes with interaction depth. A complementary task from communication complexity gives each of two agents a private function `f_A,f_B : [n] → [n]`, drawn independently and uniformly. Starting at `p_0=1`, define `p_r=f_A(p_{r-1})` for odd `r` and `p_r=f_B(p_{r-1})` for even `r`; the target is `p_k mod 2`.
+
+**Published round/communication theorem.** Mao, Yang, and Zhang (ITCS 2025, Theorem 2) show that any deterministic `(k−1)`-round protocol with Alice first and success probability at least `2/3` on this uniform distribution communicates `Ω(n/k+k)` bits. Their Corollary 3 gives the corresponding lower bound for randomized `(k−1)`-round protocols with error at most `1/3`. Their direct `k`-round pointer-relay construction sends each current pointer to the agent holding the next function and uses `O(k log n)` bits. The precise result and input distribution are in the [source paper](https://drops.dagstuhl.de/storage/00lipics/lipics-vol325-itcs2025/html/LIPIcs.ITCS.2025.75/LIPIcs.ITCS.2025.75.html).
+
+This is an imported theorem about idealized bit protocols, not a new Tacit theorem, an LLM-token lower bound, or a prediction of model accuracy. For finite model experiments, test full-information capability, scorer/generator correctness, and no-message performance first; compare at matched total serialized byte caps and report realized rounds and inference cost. Do not infer an asymptotic scaling law from toy `n,k` values. The staged task design is in [`INTERACTIVE_POINTER_CHASING_DESIGN.md`](INTERACTIVE_POINTER_CHASING_DESIGN.md).
+
+**Falsifiable prediction P2.** If an evaluated model pair can solve both the centralized capability control and the direct pointer-relay oracle, then increasing the allowed exchange depth from `k−1` to `k` at a fixed channel-byte cap should improve success in some held-out parameter strata where round-limited communication is binding. If there is no gain across eligible strata, the abstract round advantage is not translating into practical value for that model/task/budget regime. This prediction concerns interaction policy; encoding comparisons must hold round schedule fixed.
+
 ## Falsifiable predictions
 
 1. **Policy diagnosis:** on Hidden Profile tasks with a full-information capability gate, forcing explicit private-fact disclosure should raise `Q` more than it raises `P(C | Q)`. If not, the interpretation that information surfacing is the main bottleneck is weakened.

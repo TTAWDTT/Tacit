@@ -1,5 +1,11 @@
 # Research log
 
+## 2026-09-29 — Add a theory-grounded candidate for round complexity
+
+- Reviewed the ITCS 2025 pointer-chasing definition and Theorem 2 in full, alongside the Silo-Bench task appendix and MT-PingEval name-game results. Pointer chasing has a known bit-communication trade-off: a direct `k`-round pointer relay costs `O(k log n)` bits, while any `(k−1)`-round protocol meeting 2/3 accuracy under uniform random functions costs `Omega(n/k + k)` bits. This provides a more direct control for interaction depth than merely allowing more dialogue turns on a task with a guess-and-check shortcut.
+- Candidate scope: two agents hold independent private functions over `[n]`; their alternating composition is evaluated by the parity of the final pointer. The theorem assumptions, exact task, finite-sample controls, and staged eligibility are recorded in [`INTERACTIVE_POINTER_CHASING_DESIGN.md`](INTERACTIVE_POINTER_CHASING_DESIGN.md).
+- This does not establish LLM superiority or predict model-token scaling: the cited theorem is for abstract bit protocols, and local models may not solve the full-information task at useful sizes. Keep the candidate unimplemented until frozen resource and capability gates allow it. No model was loaded and no inference was run.
+
 ## 2026-09-29 — Audit MT-PingEval's interaction and budget design
 
 - Read the full arXiv v2 paper for [MT-PingEval](https://arxiv.org/abs/2602.24188), rather than relying on its abstract. It covers five private-information game families and fixes 128 whitespace-counted communication tokens per player, split evenly across 2/4/8/16 turns. Internal reasoning tokens are excluded; the paper notes whitespace/subword tokenization mismatch. Several tasks show no benefit or degradation as turns increase, including unused turns, premature stopping, and guess-and-check behavior in the name game.
