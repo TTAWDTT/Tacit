@@ -21,6 +21,8 @@ The answer is always one bit. Varying `m` changes how much of the sender's priva
 
 For zero-error deterministic one-way communication, sender-to-receiver messages require at least `m` bits in the worst case. If two vectors shared one message, any coordinate where they differ would give the receiver the same observation but demand different outputs. Sending all `m` bits achieves this bound.
 
+For uniform independent `x` and `i`, a randomized one-way protocol with average error `ε ≤ 1/2` also requires at least `m(1−h₂(ε))` expected bits under a self-delimiting binary encoding, where `h₂` is binary entropy. Thus this family gives a lower-bound curve over both message cost and error, not only an exact-accuracy point. The entropy/Fano proof and assumptions are recorded in [`research/PROBLEM_FORMALIZATION.md`](PROBLEM_FORMALIZATION.md#a-communication-complexity-control-task). This is a necessary bound; it does not claim achievability by any proposed LLM code.
+
 With a receiver query, send the index using `⌈log₂m⌉` bits and return the selected bit using one bit. The combined communication is at most `⌈log₂m⌉+1` bits before protocol framing. The receiver can achieve only `1/2` expected accuracy without communication when `x` is uniform and independent of `i`. A single agent given both inputs is the capability control and should be exact.
 
 The derivation and its limits are in the [formalization](PROBLEM_FORMALIZATION.md#a-communication-complexity-control-task).
@@ -51,7 +53,7 @@ Report task success against total cost: both-direction model tokens, bytes, mode
 
 ### D. Cross-model and scaling checks
 
-If a representation wins at fixed `m`, test a held-out receiver model and a different model family before calling the code model-agnostic. Increase `m` only at lengths where the single-agent capability gate still passes. Compare empirical success/cost curves against the exact one-way lower bound and interactive upper construction; do not fit a scaling claim from one or two lengths.
+If a representation wins at fixed `m`, test a held-out receiver model and a different model family before calling the code model-agnostic. Increase `m` only at lengths where the single-agent capability gate still passes. Compare one-way error/cost curves against `m(1−h₂(ε))`, the exact `m`-bit point, and the separate interactive upper construction; do not fit a scaling claim from one or two lengths.
 
 ## Falsifiers and limits
 
