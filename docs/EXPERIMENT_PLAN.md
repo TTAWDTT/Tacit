@@ -52,6 +52,8 @@ AutoForm's existing HotpotQA split-context setting already demonstrates distribu
 8. Latent/KV and weight-space transfer (LatentMAS, Interlat, CondenseFlow, TFlow) where open models, compatible architectures, sufficient resources, and fair serialized-boundary accounting permit runs. Otherwise record the access/compute exclusion and limit claims accordingly.
 9. No-communication, full-information, and random-message controls.
 
+If a learned/emergent protocol is promoted to a comparison, communication success with its training partner is insufficient. Freeze tests on unseen recombinations of known semantic primitives, held-out tasks, and an independently initialized receiver; include multiple seeds/chains, a holistic codebook control, semantic-fidelity and corruption/recovery measures, and charge negotiation/transmission plus decoding cost. Report structural measures such as TopSim or n-gram reuse as diagnostics, not as proof of compositional semantics. See the [emergent-communication audit](../research/RELATED_WORK.md#emergent-communication-compositionality-and-iterated-learning).
+
 ## Core controlled comparisons
 
 - Same underlying model weights and task episodes while varying only representation; then vary receiver model and model family.

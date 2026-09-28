@@ -1,5 +1,13 @@
 # Research log
 
+## 2026-09-29 — Audit emergent communication and LLM iterated learning
+
+- **Trigger:** the related-work map still had an open review of Lewis games, referential games, iterated learning, and whether an emergent protocol would generalize beyond its training pair.
+- **Sources:** reviewed EGG's official repository and archive status; the NeurIPS 2019 anti-efficient encoding paper; NeurIPS 2021 set-reference/generalization work; NeurIPS 2022 co-adaptation/overfitting analysis; the full COLING 2025 LLM emergent-communication paper; and a linguistic distinction between systematicity and compositionality in iterated learning.
+- **Observation:** a Lewis/referential game demonstrates that a signal can coordinate a particular sender-receiver pair on a bounded task. It does not establish reusable semantics, efficiency, or transfer. The 2025 LLM study gives a genuine positive result (15 seeded simulations, 27 meanings with held-out recombinations, roughly 70–75% communication success, rising within-game structure), alongside important counterevidence: only one reported model type, textual attribute stimuli, greedy decoding, short task horizon, longer signals, non-significant TopSim change across six transmission chains, and degenerate many-to-one vocabularies in some chains. This is not a baseline victory over NL or a bandwidth result.
+- **Prediction / design consequence:** if an emergent protocol encodes reusable primitives, its advantage should persist on unseen combinations and an independent receiver after counting all negotiation/transmission and decoding cost. A code that only works for co-adapted partners or known meanings should fail this transfer gate. Require multiple seeds/chains, holistic-code controls, independent receiver tests, semantic fidelity, actual serialized cost, corruption/recovery, and task-level utility; treat TopSim/n-gram metrics as diagnostics only.
+- **Decision:** retain emergent communication and iterated learning as a possible research route, but do not begin expensive training while capability and host-resource gates are unmet. Added the evidence boundary and promotion criteria to [`RELATED_WORK.md`](RELATED_WORK.md). No model was loaded and no inference, training, code installation, or dataset download was performed.
+
 ## 2026-09-29 — Audit PAC-BENCH as a privacy-constrained task family
 
 - **Trigger:** CRAFT v0.24 showed that oracle-assisted candidate actions can make a nominally complementary-information task solvable without communication. A broader task-source search surfaced PAC-BENCH (Findings ACL 2026), which makes disclosure constraints explicit.
