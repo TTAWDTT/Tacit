@@ -110,11 +110,21 @@ Compares protocol choices on task success, latency, message/byte overhead, and f
 
 Uses sparsification to suppress ineffective exchanges in multi-agent debate. The paper reports up to 94.5% lower token cost than its MAD baseline with less than 2% performance degradation on its evaluated settings. This is a strong policy-level challenge: a communication language must be compared after message selection/sparsity is controlled, or gains could come from dropping low-value turns rather than expressing retained content more efficiently. Reproduce its task/model-specific baselines before treating the headline as a general efficiency bound.
 
+The method uses grouping and a decision mechanism to selectively incorporate non-redundant responses that differ from an agent's current viewpoint. Its evaluations are reasoning/debate tasks (including arithmetic, GSM8K, MATH, MMLU, and GPQA), not complementary-private-evidence pooling. No official implementation link is provided on the ACL/ArXiv paper landing pages reviewed on 2026-09-29. A faithful reproduction would be a policy comparator, not a message-language baseline, and must test whether a novelty filter preserves unique evidence rather than only diverse opinions.
+
 ### Fan et al. (2026), *Cost-Effective Communication: An Auction-based Method for Language Agent Interaction*, AAAI
 
 [AAAI proceedings](https://ojs.aaai.org/index.php/AAAI/article/view/40182)
 
 DALA treats communication opportunities as a scarce resource and selects messages by predicted value density. This also changes who speaks and when, rather than inventing a new content code. It strengthens the need to separate channel policy (selection, scheduling, topology) from representation (encoding/decoding), and to include a policy-matched baseline in any language comparison. The reported benchmark scores are abstract-level claims here, not independently audited results.
+
+The paper specifies a centralized auction whose actor proposes messages and whose critic estimates value density; an actor-critic system is trained using MAPPO, with communication cost in the reward. The official proceedings page reviewed here links the PDF but not a code repository. That trained scheduler is materially heavier than an inference-time message filter and is not a practical first local baseline for this repository's resource-constrained setup.
+
+### Nguyen et al. (2026), *Hear Both Sides: Efficient Multi-Agent Debate via Diversity-Aware Message Retention* (DAR)
+
+[arXiv paper](https://arxiv.org/abs/2603.20640) · [MIT implementation](https://github.com/DA2I2-SLM/DAR)
+
+DAR retains a subset of existing agent responses to preserve disagreement and limit repeated broadcasting. Its public code exposes basic MAD, top-k uncertainty filtering, and a critical-message filtering method, with a Hugging Face backend alongside vLLM. The documented benchmark set covers arithmetic/GSM8K, MMLU subsets, HH-RLHF, and CommonSenseQA; the quick-start recommends an H100 for a short run, and the HF example batches 16. This makes it a useful inspectable policy reference, but not direct evidence on asymmetric-information tasks or a low-load drop-in. Any adaptation must count selector/model inference cost and verify that retention does not discard the only agent holding a task-critical private fact.
 
 ### Wang et al. (2020), *Learning Efficient Multi-agent Communication: An Information Bottleneck Approach*, ICML
 
