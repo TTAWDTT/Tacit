@@ -10,6 +10,7 @@
 - **Literature correction:** a full-text audit of Ambainis et al., *Quantum Random Access Codes with Shared Randomness* (arXiv:0810.2937, §2.3), found that their classical result already proves majority encoding is optimal for the uniform (n\to1) RAC. Its exact average success is (p(n)=1/2+2^{-n}\binom{n-1}{\lfloor(n-1)/2\rfloor}\), with advantage asymptotic to (1/\sqrt{2\pi n}\). The project-local Parseval bound (1/2+1/(2\sqrt n)\) remains valid but is loose; it is not the best theory available for this benchmark.
 - **Revision:** added [`private_query_v0_3`](../experiments/private_query_v0_3/README.md), a standard-library analytic sweep for n=1..128 and powers of two through n=4096. The exact law agrees with the exhaustive v0.1 optima at n=1..4. This is a prior-art replication and a sharper task-family baseline, not a new result or LLM evidence.
 - **Research implication:** for the uniform one-bit task, current project work should no longer present asymptotic decay as a new conjecture; comparisons should target nonuniform priors, multi-bit regimes, coding/setup cost, and whether LLM agents realize or transfer the known frontier.
+- **Artifact verification:** added four offline regression tests for the exact formula, invalid inputs, scale-point selection, monotonic success, and convergence to the asymptotic ratio. Full `python -m unittest discover -s tests -v` passes all 24 tests in 0.147 seconds; `git diff --check` passes. No model or GPU was accessed.
 
 ## 2026-09-29 — Add an exact private-query communication control
 
