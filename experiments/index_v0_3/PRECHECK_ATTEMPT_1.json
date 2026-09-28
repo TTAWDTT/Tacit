@@ -1,0 +1,25 @@
+{
+  "experiment_id": "index-llm-capability-v0.3",
+  "attempt": "prepare-only resource gate",
+  "status": "resource_gate_rejected",
+  "preregistration_commit": "233d42b",
+  "observed_resources": {
+    "host_cpu_mean_percent": 55.8,
+    "host_cpu_max_percent": 88.4,
+    "gpu_utilization_percent": 21,
+    "gpu_memory_used_mib": 961,
+    "free_system_memory_mib": 4146
+  },
+  "preregistered_launch_requirements": {
+    "host_cpu_mean_below_percent": 20,
+    "host_cpu_each_sample_below_percent": 30,
+    "gpu_utilization_below_percent": 25,
+    "gpu_memory_below_mib": 1800,
+    "free_system_memory_at_least_mib": 6000
+  },
+  "model_artifact_hashing_started": false,
+  "model_weights_loaded": false,
+  "model_service_started": false,
+  "model_requests": 0,
+  "disposition": "No resource limits were relaxed. Re-evaluate only after host load and available memory have materially changed."
+}
