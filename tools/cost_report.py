@@ -155,9 +155,9 @@ def _validate_record(record: Any, line_number: int) -> dict[str, Any]:
         if len(set(recipients)) != len(recipients):
             raise RecordError(f"{where}.recipients: duplicates are not allowed")
         _required_integer(transmission.get("payload_utf8_bytes"), f"{where}.payload_utf8_bytes")
-        if input_version == SCHEMA_VERSION and "framing_utf8_bytes" not in transmission:
-            raise RecordError(f"{where}.framing_utf8_bytes: required for tlu.costs.v2; use 0 only when no framing bytes were transmitted")
-        if "framing_utf8_bytes" in transmission:
+        if input_version == SCHEMA_VERSION:
+            _required_integer(transmission.get("framing_utf8_bytes"), f"{where}.framing_utf8_bytes")
+        elif "framing_utf8_bytes" in transmission:
             _number(transmission["framing_utf8_bytes"], f"{where}.framing_utf8_bytes", integer=True)
 
         recipient_tokens = transmission.get("recipient_tokens")

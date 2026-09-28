@@ -282,6 +282,6 @@
 
 ## 2026-09-29 — Close cost-accounting implementation gaps
 
-- A source audit found that the `tlu.costs.v2` prose required framing-byte accounting on every transmission, but the CLI accepted a missing framing field; such records could silently make wire-cost summaries incomplete. The v2 validator now requires the field while preserving the published v1 compatibility path.
+- A source audit found that the `tlu.costs.v2` prose required framing-byte accounting on every transmission, but the CLI accepted a missing framing field; such records could silently make wire-cost summaries incomplete. The v2 validator now requires a known non-negative integer (write `0` only when none was transmitted), while preserving the published v1 compatibility path. A follow-up review caught and closed an initial loophole where the required field could still be `null`.
 - The contract also requested critical-path latency for concurrent calls, but `critical_path_seconds` was not among the runtime metrics accepted and aggregated by the CLI. Added it as an episode-level runtime metric, and aligned the example/schema prose.
 - Static Python AST parsing and `git diff --check` pass. No test suite or inference was run; the v0.2 published records visibly include explicit `framing_utf8_bytes`, but functional aggregation was not re-executed under the current no-test instruction. No model was accessed.
