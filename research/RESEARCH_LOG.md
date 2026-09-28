@@ -1,5 +1,14 @@
 # Research log
 
+## 2026-09-29 — Audit S²-MAD and DALA as communication-policy baselines
+
+- **Trigger:** the literature map already identified S²-MAD and DALA as strong ways to reduce agent communication, but the representation/policy factorization requires clear attribution and fair cost accounting.
+- **Sources:** read the full NAACL 2025 S²-MAD paper and the AAAI 2026 DALA paper/official proceedings record.
+- **Findings:** S²-MAD groups agents, filters similar viewpoints, conditionally skips participation, summarizes, and stops early; it reports up to 94.5% lower token use than MAD, includes CoT-SC(40), and uses regex in main results, with a BERT cosine alternative whose best threshold varies by dataset. DALA combines learned message value density, a centralized auction, tiered message granularity/silence, and MAPPO; it uses GPT-4-1106-preview, 2% task optimization data for some benchmarks, and A100 80GB. It reports quality/token improvements over its baselines, but its paper record and main text provide no official code link found in this audit. The abstract/later prose report 6.25M GSM8K tokens while one table reports 6.20M.
+- **Attribution decision:** both are policy/system baselines, not direct fixed-content codec baselines: S²-MAD changes sender participation/schedule; DALA also changes whether and at what granularity content is emitted. S²-MAD's matcher CPU/latency and DALA's MAPPO, task optimization, actor/value inference, auction and selector costs need explicit accounting for amortized comparisons.
+- **Prediction:** if a proposed language's gain is actually better turn/message selection, it will shrink in a replayed fixed-schedule, fixed-semantic-payload codec ablation. If DALA's learned policy transfers, its selection behavior should hold on held-out tasks/receiver setups after charging training cost; otherwise its result remains task/model-conditioned. Redundancy pruning should save less when agents hold unique private evidence, making private-information tasks a necessary stress case.
+- **Artifacts:** added [`COMMUNICATION_POLICY_BASELINES_AUDIT_V0_1.md`](COMMUNICATION_POLICY_BASELINES_AUDIT_V0_1.md), updated [`RELATED_WORK.md`](RELATED_WORK.md), and strengthened baseline attribution rules in [`docs/EXPERIMENT_PLAN.md`](../docs/EXPERIMENT_PLAN.md). No code was cloned, no dependency installed, and no model/inference was run.
+
 ## 2026-09-29 — Formalize task distortion with receiver-side information
 
 - **Trigger:** the existing rate-distortion framing treated the shared context as the receiver's only conditioning information. Real collaboration tasks split private views, so an ideal lower bound must make the receiver's own side information and the sender's visibility explicit.

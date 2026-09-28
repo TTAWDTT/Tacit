@@ -46,7 +46,7 @@ AutoForm's existing HotpotQA split-context setting already demonstrates distribu
 2. JSON/schema with explicit required fields and validation.
 3. Code or compact symbolic representation where the task is naturally executable/formal.
 4. LLM-selected/ad hoc format from Chen et al. (2024), replicated as closely as feasible.
-5. Learned task-conditioned format selection (OPTiMACS) and task-trained agent interaction (Optima), with format search, task categorization, training, and inference costs charged.
+5. Learned task-conditioned format selection (OPTiMACS), task-trained interaction (Optima), and communication-policy controls (S²-MAD sparsification and DALA value-density auction), with format search, task categorization, training, message selection, and inference costs charged. These policy methods must not be credited as codec gains: hold selected semantic content/schedule fixed when comparing representations, and hold the representation fixed when comparing policies. See the [S²-MAD/DALA audit](../research/COMMUNICATION_POLICY_BASELINES_AUDIT_V0_1.md).
 6. Shared dictionary / task-specific codebook with setup cost charged.
 7. Learned discrete protocol if a reproducible training setup is justified.
 8. Latent/KV and weight-space transfer (LatentMAS, Interlat, CondenseFlow, TFlow) where open models, compatible architectures, sufficient resources, and fair serialized-boundary accounting permit runs. Otherwise record the access/compute exclusion and limit claims accordingly.
