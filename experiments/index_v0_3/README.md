@@ -30,4 +30,4 @@ If the idle gate rejects, no model weights are loaded. Do not relax the resource
 
 The first prepare-only preflight was rejected at 55.8% mean CPU (88.4% peak) and 4,146 MiB free memory. No model files were hashed and no service was started. The sanitized record is [`PRECHECK_ATTEMPT_1.json`](PRECHECK_ATTEMPT_1.json); a later gate check is eligible only after the machine's resource state has changed.
 
-A later read-only recheck observed 32.8% mean CPU (35.1% maximum) and 5,672 MiB free memory, so the gate still does not pass. No launcher or model service was started for this recheck; see [`PRECHECK_ATTEMPT_2.json`](PRECHECK_ATTEMPT_2.json).
+A later read-only recheck observed 32.8% mean CPU (35.1% maximum) and 5,672 MiB free memory, so the gate still did not pass. A third recheck observed 31.7% mean CPU, 47% GPU use, and 4,639 MiB free memory. No model artifact was hashed or service started for either recheck; see [`PRECHECK_ATTEMPT_2.json`](PRECHECK_ATTEMPT_2.json) and [`PRECHECK_ATTEMPT_3.json`](PRECHECK_ATTEMPT_3.json).

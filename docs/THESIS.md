@@ -15,6 +15,7 @@ The first research goal is therefore not to invent notation or duplicate AutoFor
 - Latent collaboration papers report efficiency/quality gains, but latent representations introduce compatibility, transmission-size, decoding, runtime, and auditability questions. Their claims should be evaluated in the native execution setting and against text baselines with equivalent task opportunity.
 - Existing communication-necessary suites now include Silo-Bench (algorithmic information silos at varying agent scales) and MT-PingEval (private-information games at fixed total budget and varying interaction turns). Prefer these before creating a redundant task set.
 - Production agent protocols such as A2A chiefly standardize interoperability, task lifecycle, and artifacts. These are important system layers but do not settle which semantic encoding is most efficient.
+- LLM-designed protocols are an existing research direction: LMAC uses an LLM offline to design and refine executable communication code for trained MARL agents. The gap studied here is direct protocol use between LLM endpoints, with end-to-end semantic fidelity, inference cost, transfer, and strong matched-format/policy baselines; see the full-text audit in [`research/RELATED_WORK.md`](../research/RELATED_WORK.md).
 - Emergent-language results caution that compositionality and generalization are distinct outcomes. We must measure both directly rather than infer one from the other.
 
 ## Falsifiable hypotheses
