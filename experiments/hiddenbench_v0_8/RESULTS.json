@@ -1,0 +1,63 @@
+{
+  "study": "HiddenBench Qwen3-8B partial-GPU capability screen",
+  "version": "0.8",
+  "status": "complete",
+  "run_date": "2026-09-28",
+  "task": "evacuation_west_city",
+  "profile": "full",
+  "seed": 20260927,
+  "benchmark_revision": "3be6ca16973e4fb751ffc0dfb7eb11f2d28335d1",
+  "benchmark_file_sha256": "8684c1c8b02da49bb3a959c9ba352b3eb682c02653a3c508c47b8ed54f7a5df3",
+  "model": {
+    "name": "Qwen3-8B-Q4_K_M",
+    "artifact_sha256": "d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785",
+    "runtime": "llama.cpp b11202",
+    "gpu_layers": 20,
+    "context_tokens": 8192,
+    "reasoning": "on",
+    "reasoning_budget_tokens": 1024,
+    "temperature": 0.6,
+    "top_k": 20,
+    "top_p": 0.95,
+    "presence_penalty": 1.5
+  },
+  "capability": {
+    "agents": 4,
+    "rounds": 0,
+    "correct_votes": 4,
+    "total_votes": 4,
+    "initial_individual_accuracy": 1.0,
+    "initial_majority_accuracy": 1.0,
+    "final_individual_accuracy": 1.0,
+    "final_majority_accuracy": 1.0,
+    "eligibility_threshold": 1.0,
+    "passed": true,
+    "official_scorer": "HiddenBench score_results, pinned source revision 3be6ca16973e4fb751ffc0dfb7eb11f2d28335d1"
+  },
+  "cost": {
+    "wall_seconds": 288.304,
+    "server_requests_started": 4,
+    "server_requests_completed": 4,
+    "prompt_eval_tokens": 1404,
+    "generated_tokens": 2804,
+    "summed_service_seconds": 287.701,
+    "mean_service_seconds_per_request": 71.925,
+    "truncated_completions": 0
+  },
+  "resources": {
+    "sample_count": 18,
+    "host_cpu_percent_mean": 59.284,
+    "host_cpu_percent_max": 91.88,
+    "server_cpu_cores_mean": 3.425,
+    "server_cpu_cores_max": 3.667,
+    "gpu_utilization_percent_mean": 35.556,
+    "gpu_utilization_percent_max": 43.0,
+    "gpu_memory_used_mib_mean": 4116.444,
+    "gpu_memory_used_mib_max": 4118.0,
+    "server_working_set_mib_mean": 5707.928,
+    "server_working_set_mib_max": 6053.5,
+    "automatic_stop_triggered": false,
+    "server_stopped_after_run": true
+  },
+  "interpretation": "This one-task, one-seed, four-vote full-information screen passed its preregistered capability gate. It establishes neither hidden-profile solvability nor communication benefit, protocol superiority, generalization, or a cost advantage over Qwen3-14B. Raw prompts, assignments, rationales, and votes remain local in the ignored cache."
+}

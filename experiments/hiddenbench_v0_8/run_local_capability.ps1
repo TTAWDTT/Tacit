@@ -108,8 +108,14 @@ try {
         }
     }
     if ($runner.ExitCode -ne 0) { throw "Capability runner exited with code $($runner.ExitCode); see $runnerErrLog" }
+    $runnerText = Get-Content -LiteralPath $runnerOutLog -Raw
+    $jsonStart = $runnerText.IndexOf('{')
+    if ($jsonStart -lt 0) { throw "Runner completed without a sanitized summary; see $runnerOutLog" }
+    $summary = $runnerText.Substring($jsonStart) | ConvertFrom-Json
+    $rawPath = Join-Path $repoRoot $summary.raw_result_local_path
+    $actualResultDir = Split-Path -Parent $rawPath
     Write-Output "Capability screen completed. Local logs: $logDir"
-    Write-Output "The sanitized aggregate and private raw output are under $runDir."
+    Write-Output "Sanitized aggregate and private raw output are under $actualResultDir."
 } finally {
     if ($runner) {
         $runner.Refresh()

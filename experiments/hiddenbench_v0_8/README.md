@@ -16,3 +16,5 @@ From the repository root:
 ```
 
 `-PrepareOnly` verifies pinned local artifacts and the current idle-load gate without starting a model. If the four full-information votes are not all correct, or the runtime stop fires, this task/model line is not eligible for a protocol ranking.
+
+**Observed result:** the screen completed at 4/4 and passed this narrow capability gate. It took 288.3 seconds wall time. Host CPU averaged 59.3% and briefly peaked at 91.9%; GPU utilization averaged 35.6% and peaked at 43%. See sanitized [`RESULTS.json`](RESULTS.json) and the [research report](../../research/HIDDENBENCH_QWEN8B_PARTIAL_GPU_V0_8.md). These data do not establish a communication result.
