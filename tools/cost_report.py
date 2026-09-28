@@ -16,8 +16,11 @@ from pathlib import Path
 from typing import Any
 
 
-SCHEMA_VERSION = "tlu.costs.v1"
+LEGACY_SCHEMA_VERSION = "tlu.costs.v1"
+SCHEMA_VERSION = "tlu.costs.v2"
+REPORT_SCHEMA_VERSION = "tlu.cost-report.v1"
 CONDITION_FIELDS = ("policy_id", "code_id", "decoder_id")
+STRATUM_FIELDS = ("experiment_id", "task_id", "split", "scorer_id", "model_population_id")
 RUNTIME_METRICS = (
     "wall_seconds",
     "tool_seconds",
@@ -30,6 +33,19 @@ RUNTIME_METRICS = (
 
 class RecordError(ValueError):
     """Raised when a record violates the versioned input contract."""
+
+
+def _reject_json_constant(value: str) -> None:
+    raise ValueError(f"non-standard JSON constant {value}")
+
+
+def _unique_object_pairs(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f"duplicate object key {key!r}")
+        result[key] = value
+    return result
 
 
 def _object(value: Any, where: str) -> dict[str, Any]:
@@ -85,9 +101,33 @@ def _peak_metric(values: list[int | float | None]) -> dict[str, Any]:
 def _validate_record(record: Any, line_number: int) -> dict[str, Any]:
     prefix = f"line {line_number}"
     record = _object(record, prefix)
-    if record.get("schema_version") != SCHEMA_VERSION:
-        raise RecordError(f"{prefix}: schema_version must be {SCHEMA_VERSION!r}")
+    input_version = record.get("schema_version")
+    if input_version not in {LEGACY_SCHEMA_VERSION, SCHEMA_VERSION}:
+        raise RecordError(f"{prefix}: schema_version must be {SCHEMA_VERSION!r} or legacy {LEGACY_SCHEMA_VERSION!r}")
     _string(record.get("episode_id"), f"{prefix}.episode_id")
+
+    if input_version == SCHEMA_VERSION:
+        stratum = _object(record.get("stratum"), f"{prefix}.stratum")
+        for name in STRATUM_FIELDS:
+            _string(stratum.get(name), f"{prefix}.stratum.{name}")
+        task_parameters = stratum.get("task_parameters")
+        if not isinstance(task_parameters, dict):
+            raise RecordError(f"{prefix}.stratum.task_parameters: expected object")
+        try:
+            json.dumps(task_parameters, allow_nan=False)
+        except (TypeError, ValueError) as exc:
+            raise RecordError(f"{prefix}.stratum.task_parameters: must contain finite JSON values") from exc
+        agent_models = stratum.get("agent_models")
+        if not isinstance(agent_models, dict) or not agent_models:
+            raise RecordError(f"{prefix}.stratum.agent_models: expected non-empty agent-to-model object")
+        for agent, model in agent_models.items():
+            _string(agent, f"{prefix}.stratum.agent_models key")
+            _string(model, f"{prefix}.stratum.agent_models.{agent}")
+    else:
+        if "stratum" in record:
+            raise RecordError(f"{prefix}: legacy v1 records must not contain v2 stratum metadata")
+        stratum = None
+    record["_normalized_stratum"] = stratum
 
     condition = _object(record.get("protocol"), f"{prefix}.protocol")
     for name in CONDITION_FIELDS:
@@ -139,6 +179,19 @@ def _validate_record(record: Any, line_number: int) -> dict[str, Any]:
         for name in ("retry", "truncated"):
             if not isinstance(call.get(name), bool):
                 raise RecordError(f"{where}.{name}: expected boolean")
+        billing = call.get("billing")
+        if billing is not None:
+            billing = _object(billing, f"{where}.billing")
+            for name in ("input_units", "output_units", "input_cost", "output_cost"):
+                _number(billing.get(name), f"{where}.billing.{name}")
+            for name in ("unit_label", "currency"):
+                value = billing.get(name)
+                if value is not None:
+                    _string(value, f"{where}.billing.{name}")
+            if any(billing.get(name) is not None for name in ("input_units", "output_units")) and billing.get("unit_label") is None:
+                raise RecordError(f"{where}.billing.unit_label: required when billed units are present")
+            if any(billing.get(name) is not None for name in ("input_cost", "output_cost")) and billing.get("currency") is None:
+                raise RecordError(f"{where}.billing.currency: required when billed costs are present")
 
     runtime = _object(record.get("runtime"), f"{prefix}.runtime")
     for name in RUNTIME_METRICS:
@@ -167,17 +220,26 @@ def _validate_record(record: Any, line_number: int) -> dict[str, Any]:
 
 
 def aggregate(records: list[dict[str, Any]]) -> dict[str, Any]:
-    groups: dict[tuple[str, str, str], list[dict[str, Any]]] = defaultdict(list)
+    records = [_validate_record(record, index) for index, record in enumerate(records, start=1)]
+    if not records:
+        raise RecordError("aggregate requires at least one episode record")
+    versions = {record.get("schema_version") for record in records}
+    if len(versions) != 1 or not versions <= {LEGACY_SCHEMA_VERSION, SCHEMA_VERSION}:
+        raise RecordError("aggregate one input schema version at a time")
+    input_version = next(iter(versions))
+    groups: dict[tuple[str, tuple[str, str, str]], list[dict[str, Any]]] = defaultdict(list)
     for record in records:
         protocol = record["protocol"]
-        key = tuple(protocol[field] for field in CONDITION_FIELDS)
-        groups[key].append(record)
+        protocol_key = tuple(protocol[field] for field in CONDITION_FIELDS)
+        stratum = record.get("_normalized_stratum")
+        stratum_key = "" if stratum is None else json.dumps(stratum, sort_keys=True, separators=(",", ":"), allow_nan=False)
+        groups[(stratum_key, protocol_key)].append(record)
 
     reports: list[dict[str, Any]] = []
-    for key, episodes in sorted(groups.items()):
+    for (stratum_key, protocol_key), episodes in sorted(groups.items()):
         episode_ids = [episode["episode_id"] for episode in episodes]
         if len(set(episode_ids)) != len(episode_ids):
-            raise RecordError(f"duplicate episode_id within protocol condition {key!r}")
+            raise RecordError(f"duplicate episode_id within stratum/protocol condition {(stratum_key, protocol_key)!r}")
         transmissions = [item for episode in episodes for item in episode["transmissions"]]
         calls = [item for episode in episodes for item in episode["model_calls"]]
         successes = sum(episode["outcome"]["joint_success"] for episode in episodes)
@@ -215,6 +277,34 @@ def aggregate(records: list[dict[str, Any]]) -> dict[str, Any]:
             }
             for stage, stage_calls in sorted(calls_by_stage.items())
         ]
+        billing_groups: dict[tuple[str | None, str | None], list[dict[str, Any]]] = defaultdict(list)
+        unreported_billing_calls = 0
+        for call in calls:
+            billing = call.get("billing")
+            if billing is None:
+                unreported_billing_calls += 1
+                continue
+            if all(billing.get(name) is None for name in ("input_units", "output_units", "input_cost", "output_cost")):
+                unreported_billing_calls += 1
+            billing_groups[(billing.get("currency"), billing.get("unit_label"))].append(billing)
+        billing_report = {
+            "calls": len(calls),
+            "unreported_calls": unreported_billing_calls,
+            "by_currency_and_unit": [
+                {
+                    "currency": currency,
+                    "unit_label": unit_label,
+                    "calls": len(billing_records),
+                    "input_units": _metric([item.get("input_units") for item in billing_records]),
+                    "output_units": _metric([item.get("output_units") for item in billing_records]),
+                    "input_cost": _metric([item.get("input_cost") for item in billing_records]),
+                    "output_cost": _metric([item.get("output_cost") for item in billing_records]),
+                }
+                for (currency, unit_label), billing_records in sorted(
+                    billing_groups.items(), key=lambda item: (item[0][0] or "", item[0][1] or "")
+                )
+            ],
+        }
 
         runtime: dict[str, Any] = {}
         for name in RUNTIME_METRICS:
@@ -252,12 +342,16 @@ def aggregate(records: list[dict[str, Any]]) -> dict[str, Any]:
         }
 
         reports.append({
-            "protocol": dict(zip(CONDITION_FIELDS, key)),
+            "stratum": json.loads(stratum_key) if stratum_key else None,
+            "aggregation_scope": "protocol_only_legacy_v1" if input_version == LEGACY_SCHEMA_VERSION else "full_stratum_and_protocol",
+            "protocol": dict(zip(CONDITION_FIELDS, protocol_key)),
             "episodes": len(episodes),
             "joint_successes": successes,
             "joint_success_rate": successes / len(episodes),
             "answer_score": _metric([episode["outcome"].get("answer_score") for episode in episodes]),
             "channel": {
+                "transmissions": len(transmissions),
+                "recipient_deliveries": sum(len(item["recipients"]) for item in transmissions),
                 "payload_bytes": _metric([item["payload_utf8_bytes"] for item in transmissions]),
                 "wire_bytes": _metric([
                     None if item.get("framing_utf8_bytes") is None
@@ -275,6 +369,7 @@ def aggregate(records: list[dict[str, Any]]) -> dict[str, Any]:
                 },
             },
             "inference": inference,
+            "billing": billing_report,
             "runtime": runtime,
             "setup": {
                 "unique_artifacts": len(setup_artifacts),
@@ -284,7 +379,7 @@ def aggregate(records: list[dict[str, Any]]) -> dict[str, Any]:
                 "amortized_tokens_per_episode_by_tokenizer": amortized_setup_tokens,
             },
         })
-    return {"schema_version": SCHEMA_VERSION, "groups": reports}
+    return {"schema_version": REPORT_SCHEMA_VERSION, "input_schema_version": input_version, "groups": reports}
 
 
 def read_jsonl(path: Path) -> list[dict[str, Any]]:
@@ -294,18 +389,25 @@ def read_jsonl(path: Path) -> list[dict[str, Any]]:
             if not line.strip():
                 continue
             try:
-                value = json.loads(line)
-            except json.JSONDecodeError as exc:
-                raise RecordError(f"line {line_number}: invalid JSON: {exc.msg}") from exc
+                value = json.loads(
+                    line,
+                    parse_constant=_reject_json_constant,
+                    object_pairs_hook=_unique_object_pairs,
+                )
+            except (json.JSONDecodeError, ValueError) as exc:
+                raise RecordError(f"line {line_number}: invalid JSON: {exc}") from exc
             records.append(_validate_record(value, line_number))
     if not records:
         raise RecordError("input contains no episode records")
+    versions = {record["schema_version"] for record in records}
+    if len(versions) != 1:
+        raise RecordError("input must not mix tlu.costs.v1 and tlu.costs.v2 records")
     return records
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("input", type=Path, help="per-episode JSONL using tlu.costs.v1")
+    parser.add_argument("input", type=Path, help="per-episode JSONL using one consistent tlu.costs.v1 or tlu.costs.v2 schema")
     parser.add_argument("-o", "--output", type=Path, help="write report JSON to this path (default: stdout)")
     args = parser.parse_args()
     try:

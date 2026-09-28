@@ -2,7 +2,7 @@
 
 **Status:** Measurement contract for future protocol experiments. Do not mix channel bandwidth with model inference work or combine them into a scalar unless prices and weights are preregistered.
 
-The versioned JSONL contract is `tlu.costs.v1`. The standard-library aggregator at [`tools/cost_report.py`](../tools/cost_report.py) validates records and emits protocol-grouped summaries without model access. Run it with `python tools/cost_report.py path/to/episodes.jsonl --output path/to/report.json`. Missing optional metrics remain marked incomplete; the tool does not silently convert them to zero.
+The current JSONL contract is `tlu.costs.v2`. The standard-library aggregator at [`tools/cost_report.py`](../tools/cost_report.py) validates records and emits stratum-and-protocol-grouped summaries without model access. It still reads the published pre-stratum `tlu.costs.v1` format for compatibility; those legacy summaries are marked as protocol-only because task and model strata cannot be recovered. Run it with `python tools/cost_report.py path/to/episodes.jsonl --output path/to/report.json`. Missing optional metrics remain marked incomplete; the tool does not silently convert them to zero. Reports use `tlu.cost-report.v1`.
 
 ## Keep three budgets distinct
 
@@ -30,8 +30,12 @@ Every run record should be sufficient to reconstruct the aggregates and frontier
 
 ```json
 {
-  "schema_version": "tlu.costs.v1",
+  "schema_version": "tlu.costs.v2",
   "episode_id": "task-seed-condition",
+  "stratum": {"experiment_id": "index-v0.2", "task_id": "INDEX_m@0.1", "split": "heldout",
+              "task_parameters": {"m": 8}, "model_population_id": "qwen3-8b-pair",
+              "agent_models": {"sender": "Qwen3-8B@revision", "receiver": "Qwen3-8B@revision"},
+              "scorer_id": "exact-bit-v1"},
   "protocol": {"policy_id": "...", "code_id": "...", "decoder_id": "..."},
   "outcome": {"joint_success": false, "answer_score": 0.0},
   "transmissions": [
@@ -42,7 +46,9 @@ Every run record should be sufficient to reconstruct the aggregates and frontier
   "model_calls": [
     {"agent": "A", "stage": "communicate", "model": "model-revision",
      "tokenizer": "model-or-tokenizer-revision", "input_tokens": 0, "output_tokens": 0,
-     "service_seconds": 0.0, "retry": false, "truncated": false}
+     "service_seconds": 0.0, "retry": false, "truncated": false,
+     "billing": {"input_units": null, "output_units": null, "unit_label": null,
+                 "input_cost": null, "output_cost": null, "currency": null}}
   ],
   "runtime": {"wall_seconds": 0.0, "tool_seconds": null, "process_cpu_seconds": null,
               "process_gpu_seconds": null, "peak_rss_bytes": null, "peak_vram_bytes": null},
@@ -51,7 +57,7 @@ Every run record should be sufficient to reconstruct the aggregates and frontier
 }
 ```
 
-The arrays `transmissions`, `model_calls`, and `setup` are required; use an empty array when none occurred. Payload byte count is required for each transmission; report framing as `0` only when there truly are no framing bytes. Token counts, latency, runtime, and one-time costs may be `null` when unknown. The aggregator reports observed totals, coverage, and completeness per measure. Resource peaks are summarized with maxima rather than sums. Setup artifacts are deduplicated by `artifact_id` and their byte/token costs are amortized only by the declared `reuse_horizon`.
+The arrays `transmissions`, `model_calls`, and `setup` are required; use an empty array when none occurred. Payload byte count is required for each transmission; report framing as `0` only when there truly are no framing bytes. Token counts, latency, runtime, billing, and one-time costs may be `null` when unknown. The `stratum` fields keep experiment, task/split/parameters, scorer, and agent model population fixed; the aggregator groups by the full stratum and protocol IDs so it cannot silently pool different task lengths or model pairings. The aggregator reports observed totals, coverage, and completeness per measure. Resource peaks are summarized with maxima rather than sums. Billing is grouped by currency and billed-unit label; unreported billing is counted separately. Setup artifacts are deduplicated by `artifact_id` within each group and their byte/token costs are amortized only by the declared `reuse_horizon`.
 
 Preserve raw payloads privately as appropriate, with a sanitized aggregate suitable for public release. The schema records sizes and token counts but does not independently reconstruct payload bytes from message contents, so retain an auditable private payload ledger or deterministic serializer when verification requires it.
 
