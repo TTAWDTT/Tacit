@@ -82,6 +82,10 @@ Three distinctions matter:
 2. Task distortion depends on receiver state, task, and loss. Omitting irrelevant prose can have zero task distortion; omitting one rare constraint can cause a large loss.
 3. With multiple rounds, later messages depend on previous messages and actions. The relevant object is an interactive protocol; independently compressing each turn can raise round count, repeated prompt cost, or repair traffic.
 
+### Error layers and feedback value
+
+Distinguish transport corruption (the received bytes differ or a message is truncated), semantic decode error (bytes arrive intact but the receiver infers the wrong task-relevant content), and receiver/task execution error (the content is reconstructed but not applied correctly). Classical channel coding applies to an explicit transport-channel model; it does not by itself bound semantic error in an LLM decoder. A feedback/clarification message is an additional adaptive action and must be charged as a reverse-direction payload, a model call, repeated context, and latency. Evaluate its value at equal total budgets. The ICLR 2024 emergent-repair study shows that feedback can improve task generalization under synthetic channel noise while compositionality proxies decline, but it uses jointly trained RNN agents and a detectable noise token; see the [audit](../research/CHANNEL_ROBUSTNESS_AUDIT_V0_1.md).
+
 ## 3. Operational efficiency frontier
 
 For protocol π and task/model condition (z=(T,r,\text{channel},\text{horizon})), record a vector rather than choosing arbitrary prices in advance:
@@ -114,7 +118,7 @@ If (c_B\le c_L), no finite reuse horizon repays setup under this cost measure. T
 - **P2, receiver alignment:** for a fixed sender representation, downstream distortion depends on the receiver (r). A code's token/byte advantage should be separated from its decoder mismatch cost.
 - **P3, interactive compression:** under a strict total budget, a second turn helps only if its expected value of information exceeds repeated context, prompt, and control overhead. Compare several turn allocations at a fixed total budget.
 - **P4, setup horizon:** observed codebook savings should cross the baseline at the measured (H^*) within uncertainty if per-episode costs are stable. Failure to do so suggests non-stationary quality, hidden cost, or an incomplete accounting boundary.
-- **P5, error recovery:** adding redundancy or clarification can lower first-pass message efficiency but improve expected task utility under corruption/receiver mismatch. Measure bytes/tokens including retries and repair turns.
+- **P5, error recovery:** fixed redundancy should help mainly under the transport corruptions it is designed to detect; receiver clarification should help mainly when an intact message has task-relevant ambiguity. These mechanisms should not be assumed to improve an integrity-preserving channel. Any gain must survive matched total bidirectional bytes, inference tokens/calls, and a fixed round cap; separately score transport integrity, semantic fidelity, task execution, and final task utility. See the [channel-robustness audit](../research/CHANNEL_ROBUSTNESS_AUDIT_V0_1.md).
 
 ## 6. Conditions required for a stronger theorem
 

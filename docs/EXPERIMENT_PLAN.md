@@ -63,6 +63,7 @@ If a learned/emergent protocol is promoted to a comparison, communication succes
 - Separate content messages from instructions, schema definitions, codebook negotiation, shared prompt context, and hidden-state transfer in the record; charge communicated/setup components to the relevant channel or reuse-horizon budget, and repeated prompt components to inference cost.
 - For learned format selectors, also record task-classification calls, candidate-format generation/search, exploration trajectories, selector state size, and per-message selection latency; report break-even reuse horizon separately from message-format cost.
 - Measure decode success, semantic reconstruction, task completion, correctness, latency, generated and consumed tokens, bytes on the wire, setup cost, and retries.
+- For robustness, separate transport corruption/truncation, semantic decode error with intact bytes, and task-execution error; compare redundancy and repair at equal total forward-plus-reverse bytes, model calls/tokens, and round caps. Do not attribute semantic failures to the physical channel. See the [channel-robustness audit](../research/CHANNEL_ROBUSTNESS_AUDIT_V0_1.md).
 - Sweep task complexity, context length, agent count, rounds, and information partition to test scaling, not just one fixed benchmark.
 
 ## Initial predictions

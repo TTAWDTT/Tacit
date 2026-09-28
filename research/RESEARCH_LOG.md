@@ -1,5 +1,13 @@
 # Research log
 
+## 2026-09-29 — Separate transport errors from semantic repair
+
+- **Trigger:** theory calls for error correction and robustness, but LLM agent systems usually exchange intact serialized strings; treating every receiver mistake as a noisy physical channel would misapply coding theory.
+- **Research:** reviewed Shannon's channel-coding framework and Nikolaus's ICLR 2024 *Emergent Communication with Conversational Repair* paper, its methods/results/limitations, and the linked public code repository README. No code was cloned or executed.
+- **Observation:** classical channel coding assumes an explicit stochastic transport channel. Nikolaus's jointly trained RNN signaling game improves held-out task accuracy under noise after adding a feedback channel, while TopSim falls. Its main corruption is a detectable special noise token; the binary reverse channel is uncorrupted and emits feedback at each sender step; the paper does not fix a total two-way budget. Feedback also correlates with sender symbols and receiver-side candidate objects, suggesting co-construction beyond an ACK/repeat request. This is an insightful repair precedent, not an LLM result or proof of efficiency under equal costs.
+- **Formalization / prediction:** distinguish (1) transport corruption/truncation, (2) semantic decode error on intact bytes, and (3) downstream task execution error. Injected ECC should help only under matching transport noise; clarification should help only when ambiguity can change the receiver's task action. A repair gain must survive matched total forward-plus-reverse bytes, inference calls/tokens, and round caps.
+- **Artifacts:** added [`CHANNEL_ROBUSTNESS_AUDIT_V0_1.md`](CHANNEL_ROBUSTNESS_AUDIT_V0_1.md); updated [`RELATED_WORK.md`](RELATED_WORK.md), [`docs/THEORY.md`](../docs/THEORY.md), and [`docs/EXPERIMENT_PLAN.md`](../docs/EXPERIMENT_PLAN.md). No model, data, or dependencies were downloaded; no local inference or training ran.
+
 ## 2026-09-29 — Audit S²-MAD and DALA as communication-policy baselines
 
 - **Trigger:** the literature map already identified S²-MAD and DALA as strong ways to reduce agent communication, but the representation/policy factorization requires clear attribution and fair cost accounting.
