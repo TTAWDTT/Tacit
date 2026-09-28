@@ -1,0 +1,77 @@
+{
+  "study": "HiddenBench phase-policy feasibility pilot",
+  "version": "0.6",
+  "status": "frozen before model inference",
+  "question": "On one communication-dependent HiddenBench verification task, does a phase-aware Exchange/Decide policy produce a different answer and cost profile than three-round natural discussion, and how does forced first-round disclosure behave?",
+  "scope": "Single-task engineering/feasibility pilot only. This cannot establish protocol superiority, generalization, a scaling law, or an efficiency frontier.",
+  "sources": {
+    "benchmark_paper": "https://arxiv.org/abs/2505.11556",
+    "benchmark_revision": "v4, 2026-05-13",
+    "benchmark_repository": "https://github.com/Yassellee/HiddenBench_ICML",
+    "benchmark_revision_commit": "3be6ca16973e4fb751ffc0dfb7eb11f2d28335d1",
+    "benchmark_file": "src/hiddenbench/data/benchmark_short.json",
+    "benchmark_sha256": "8684c1c8b02da49bb3a959c9ba352b3eb682c02653a3c508c47b8ed54f7a5df3",
+    "model_card": "https://huggingface.co/Qwen/Qwen3-14B-GGUF",
+    "model_revision": "530227a7d994db8eca5ab5ced2fb692b614357fd"
+  },
+  "model": {
+    "name": "Qwen3-14B-Q4_K_M",
+    "sha256": "500a8806e85ee9c83f3ae08420295592451379b4f8cf2d0f41c15dffeb6b81f0",
+    "runtime": "llama.cpp b11202; RTX 4060 Laptop GPU 8 GB; one slot; 24 GPU layers; 8192 context",
+    "cpu_resource_limit": "--threads 4 --threads-batch 4; BelowNormal OS process priority where supported",
+    "reasoning": "on",
+    "reasoning_budget_tokens": 1024,
+    "temperature": 0.6,
+    "top_k": 20,
+    "top_p": 0.95,
+    "min_p": 0.0,
+    "presence_penalty": 1.5,
+    "fixed_server_seed": 20260928,
+    "max_generated_tokens": 1536
+  },
+  "design": {
+    "task": "evacuation_west_city",
+    "profile": "hidden",
+    "agents": 4,
+    "rounds": 3,
+    "seed": 20260927,
+    "conditions": [
+      {
+        "name": "natural_3",
+        "definition": "Unmodified upstream natural discussion, limited to three rounds."
+      },
+      {
+        "name": "exchange_decide",
+        "definition": "Rounds 1-2: each agent shares 1-2 decision-relevant facts and one reason the apparent front-runner could be wrong. Round 3: each agent summarizes strongest evidence and remaining uncertainty before separate final voting."
+      },
+      {
+        "name": "reveal_all_3",
+        "definition": "Natural discussion for three rounds; mechanically append every fact available in the sender's local profile, verbatim, to each first-round message. Later messages are unmodified."
+      }
+    ],
+    "condition_order": ["natural_3", "exchange_decide", "reveal_all_3"],
+    "planned_successful_model_responses": 60,
+    "retry_policy": "Upstream model client retries up to three times; invalid final votes may trigger up to three attempts. Count actual server completions separately from successful response slots.",
+    "persistence": "Save one private raw result file after each condition. Do not publish raw task messages or visible facts."
+  },
+  "predictions": [
+    "Exchange/Decide may improve final accuracy over three-round natural discussion by eliciting and testing unique evidence; the single instance is descriptive only.",
+    "Reveal-All should maximize explicit first-round fact coverage by construction; lower accuracy despite complete disclosure would point to integration rather than surfacing in this episode.",
+    "The four-thread cap should lower peak host CPU use relative to the unbounded v0.5 service configuration, at possible cost to wall time. This is a resource prediction, not an assumed outcome."
+  ],
+  "outcomes": [
+    "official HiddenBench initial and final individual/majority accuracy",
+    "semantic coverage of task-specific information in each transcript, annotated without exact-string-only matching",
+    "discussion transcript tokens and UTF-8 bytes",
+    "generated tokens, prompt-evaluation tokens, request count, service time, and truncations",
+    "host CPU and memory samples during inference",
+    "condition-level wall time and completion status"
+  ],
+  "limits": [
+    "One task, one profile, one seed, one model, and one run per condition.",
+    "The three-round natural baseline is matched in turns, not compared directly to v0.5's 15-round result.",
+    "Reveal-All changes disclosure policy and communication volume; it is a mechanistic diagnostic, not a bandwidth-matched codec comparison.",
+    "The runner reuses the pinned upstream task model, agent prompts, vote schema, and scorer but implements phase scheduling locally; it is not an exact reproduction of the paper's full 18-task, five-run study.",
+    "The four-thread setting has not yet been run. Stop if the user reports renewed system lag; do not exceed the frozen 60 nominal model-response calls."
+  ]
+}

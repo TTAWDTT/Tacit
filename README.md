@@ -24,6 +24,8 @@ The initial thesis, working theory, literature map, and local communication-nece
 
 In the v0.11 short-shard calibration, sender-side hybrid success improved at length 2 (Qwen3-4B 5/8; Qwen3-8B 7/8 with an oracle receiver), but neither model receiver completed an exact output. Qwen3-4B received no message before submission in 24 receiver episodes; Qwen3-8B received the correct oracle message in 15/24 and was exact in 0/15. Therefore no task length currently supports a protocol comparison. See the [v0.11 report](research/PREFIXSUM_SHORT_SHARD_V0_11.md) and public [per-episode data](research/data/PREFIXSUM_SHORT_SHARD_V0_11_RUNS.jsonl).
 
+The separate HiddenBench line passed a three-task full-information gate with Qwen3-14B, but its 15-round natural discussion was resource-intensive and incomplete under hidden information. The v0.5 run was stopped after local lag; one completed hidden task scored 0, and an in-progress task did not persist a score. The new [v0.6 phase-policy pilot](experiments/hiddenbench_v0_6/README.md) preregisters a single-task comparison of natural discussion, Exchange/Decide, and Reveal-All with a four-thread CPU cap. It is a feasibility pilot, not evidence of protocol superiority.
+
 ## Scope
 
 The first phase is a reproducible research platform and small local experiments. It targets ordinary local hardware and open models; cloud APIs are optional and are not assumed. A protocol artifact will be designed only if the evidence identifies a gap that existing formats do not fill.
