@@ -27,6 +27,8 @@ MT-PingEval is not yet a ready-made matched-cost protocol comparison. Its v2 “
 
 For an explicit round-depth theory control, retain [pointer chasing](../research/INTERACTIVE_POINTER_CHASING_DESIGN.md) as a candidate beside the existing one-way `INDEX_m` task. The literature supplies a round/bit trade-off under a specified random-function distribution, while Silo-Bench and MT-PingEval supply complementary multi-agent and naturalistic interaction tasks. Do not treat pointer chasing's asymptotic bit theorem as an LLM/token prediction; require deterministic task/oracle checks and a passing model full-information capability gate before model calls, then match total channel-byte caps when comparing `k` versus `k−1` rounds.
 
+The model-free [exact no-message audit](../research/INTERACTIVE_POINTER_CHASING_NO_MESSAGE_V0_1.md) exhausts all function pairs for `n=2,4` and depths 1–4. At `n=4,k=2` the exact joint no-message upper bound is 0.5, matching the best constant baseline, while the oracle relay is exact. At `n=4,k=3` the no-message upper bound is 0.5762, so use this as a finite prior diagnostic only; larger scales need separately measured no-message model controls. Both agents must submit final outputs, with joint exactness primary.
+
 Potential tasks to retain only if the existing suites leave a concrete gap:
 
 - Distributed constraint satisfaction: agents hold disjoint constraints; only joint aggregation identifies a valid assignment.

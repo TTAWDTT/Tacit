@@ -8,6 +8,7 @@ sys.path.insert(0, str(ROOT / "experiments" / "pointer_chasing_v0_1"))
 from generate_tasks import (  # noqa: E402
     decode_pointer,
     encode_pointer,
+    exact_no_message_diagnostic,
     generate_episode,
     generate_shard,
     oracle_relay,
@@ -25,6 +26,12 @@ class PointerChasingTaskTest(unittest.TestCase):
         second = generate_shard("pilot", 81, [4, 8], [2, 3], 3)
         self.assertEqual(first, second)
         self.assertEqual(len(first), 12)
+
+    def test_hash_sampler_regression_vector(self):
+        episode = generate_episode(123, "pilot", 4, 2, 0)
+        self.assertEqual(episode["agent_a_view"]["function_values_1_based"], [2, 4, 3, 3])
+        self.assertEqual(episode["agent_b_view"]["function_values_1_based"], [3, 2, 3, 3])
+        self.assertEqual(episode["gold_bit"], 0)
 
     def test_split_and_condition_streams_are_distinct(self):
         train = generate_episode(81, "train", 16, 3, 0)
@@ -91,18 +98,44 @@ class PointerChasingTaskTest(unittest.TestCase):
         self.assertTrue(score["exact_a"])
         self.assertFalse(score["joint_exact"])
 
+    def test_exact_no_message_prior_for_n2_k1(self):
+        result = exact_no_message_diagnostic(2, 1)
+        self.assertEqual(result["episode_count"], 16)
+        self.assertEqual(result["agent_a_individual_bayes_accuracy"], 1.0)
+        self.assertEqual(result["agent_b_individual_bayes_accuracy"], 0.5)
+        self.assertEqual(result["both_individual_map_predictions_joint_accuracy"], 0.5)
+        self.assertEqual(result["joint_no_message_upper_bound"], 0.5)
+        self.assertFalse(result["global_no_message_optimum_search_performed"])
+
+    def test_n4_k2_has_exact_half_joint_no_message_upper_bound(self):
+        result = exact_no_message_diagnostic(4, 2)
+        self.assertEqual(result["joint_no_message_upper_bound"], 0.5)
+        self.assertEqual(result["best_public_constant_accuracy"], 0.5)
+
+    def test_exact_no_message_diagnostic_refuses_expensive_sizes(self):
+        with self.assertRaises(ValueError):
+            exact_no_message_diagnostic(6, 2)
+
     def test_malformed_episodes_and_parameters_are_rejected(self):
         with self.assertRaises(ValueError):
             generate_episode(1, "pilot", 1, 2, 0)
+        with self.assertRaises(ValueError):
+            generate_episode(1, "pilot", 3, 2, 0)
         with self.assertRaises(ValueError):
             generate_episode(1, "pilot", 8, 0, 0)
         with self.assertRaises(ValueError):
             generate_episode(1, "pilot", 8, 2, -1)
         with self.assertRaises(ValueError):
+            generate_episode(1, "pilot", 8.0, 2, 0)
+        with self.assertRaises(ValueError):
             generate_shard("pilot", 1, [8, 8], [2], 1)
+        with self.assertRaises(ValueError):
+            generate_shard("pilot", 1, [8, 9], [2], 1)
         episode = generate_episode(1, "pilot", 8, 2, 0)
         with self.assertRaises(ValueError):
             score_episode(episode, {"agent_a": str(episode["gold_bit"])})
+        with self.assertRaises(ValueError):
+            score_episode(episode, {"agent_a": 1, "agent_b": 1})
         episode = generate_episode(1, "pilot", 8, 2, 0)
         episode["agent_b_view"]["gold_bit"] = episode["gold_bit"]
         with self.assertRaises(ValueError):
