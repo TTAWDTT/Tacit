@@ -214,6 +214,22 @@ The preprint separates tool reliability into stages including initialization, pa
 
 ## Communication-dependent task suites
 
+### Dongre & Hakkani-Tür (2026), *Embodied Multi-Agent Coordination by Aligning World Models Through Dialogue*, SIGDIAL
+
+[ACL Anthology record and paper](https://aclanthology.org/2026.sigdial-1.21/)
+
+Extends PARTNR with two partially observed agents, complementary capabilities, and a dialogue channel. The tasks are designed so neither agent can finish alone: one agent can stage objects while only the other has the state-changing actions. The paper compares silent coordination, synchronous/costed messaging, and asynchronous/free messaging, and defines observation convergence, belief convergence, grounded alignment, information novelty, and belief-sensitive messaging. In its paired Sonnet slate, synchronous dialogue reduced action conflict by 92.6 percentage points while success fell from 0.706 to 0.529; the asynchronous/free condition still had lower success (0.412) despite removing message action-step cost. Across three models, dialogue lowered task success in the tested setup. The paper attributes the discrepancy partly to hallucinated entity references; its handle-based audit classified 60–69% of mentions as neither observed by sender nor receiver.
+
+This is a strong negative prior and a candidate task design, not evidence about message-format superiority. It motivates measuring grounded novelty and receiver belief alongside conflict and success, with dialogue/no-dialogue controls and matched architecture. It also warns that “more alignment” proxies and fewer conflicts can move opposite to actual task completion. The reported setup uses proprietary hosted models and Habitat/PARTNR; feasibility and artifact/license status must be checked before adopting it locally. The paper's abstract says 40–83 percentage points, while the PDF's headline Sonnet result is 92.6 points; retain the paired-table value only for that exact condition and do not generalize it.
+
+### Anjum et al. (2026), *ProMCP: Profiling Token Flows and Latency Costs in MCP-Based LLM Agents*, Findings of ACL
+
+[ACL Anthology record, paper, and official code](https://aclanthology.org/2026.findings-acl.1967/)
+
+Introduces end-to-end instrumentation that correlates timestamps, payloads, and token accounting across MCP Host–Client–Server boundaries, and decomposes workflows into six stages. The reported study spans 20 servers and 169 tools. Its abstract reports that customized-client deployments spend 56–72% of tokens and 60–67% of latency in planning/schema injection, while an off-the-shelf client spends over 85% of latency in final synthesis; tool execution itself is a small share. These are MCP workflow measurements, not an LLM-to-LLM semantic-code comparison, and they should not be imported as expected effect sizes for Tacit.
+
+The transferable lesson is methodological: measure stage-attributed end-to-end cost, repeated context/schema, planning, payload, retries, and final synthesis rather than treating the wire string as the whole system. This complements `tlu.costs.v3`, which records per-episode inputs and serialized payloads but does not yet prescribe a per-call stage timeline. Use ProMCP as an instrumentation reference if a future runtime spans MCP components; do not add MCP tool-schema overhead to a bare two-agent codec experiment unless that runtime is part of the declared system boundary.
+
 ### Zhang et al. (2026), *Silo-Bench: A Scalable Environment for Evaluating Distributed Coordination in Multi-Agent LLM Systems*
 
 [ACL 2026 paper](https://aclanthology.org/2026.acl-long.1354/) · [arXiv](https://arxiv.org/abs/2603.01045) · [paper code and benchmark](https://github.com/jwyjohn/acl26-silo-bench)
