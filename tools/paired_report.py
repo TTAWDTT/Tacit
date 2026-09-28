@@ -76,10 +76,10 @@ def _episode_metric(record: dict[str, Any], name: str) -> float | None:
     if name == "wire_bytes":
         total = 0
         for transmission in record["transmissions"]:
-            framing = transmission.get("framing_utf8_bytes")
+            framing = transmission.get("_normalized_framing_bytes")
             if framing is None:
                 return None
-            total += transmission["payload_utf8_bytes"] + framing
+            total += transmission["_normalized_payload_bytes"] + framing
         return float(total)
     if name == "transmissions":
         return float(len(record["transmissions"]))
@@ -259,7 +259,7 @@ def paired_report(
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("input", type=Path, help="per-episode tlu.costs.v1 or tlu.costs.v2 JSONL")
+    parser.add_argument("input", type=Path, help="per-episode tlu.costs.v1, v2, or v3 JSONL")
     parser.add_argument("-o", "--output", type=Path, help="write report JSON to this path (default: stdout)")
     parser.add_argument("--replicates", type=int, default=5000, help="paired bootstrap resamples (minimum 100)")
     parser.add_argument("--seed", type=int, default=1729, help="deterministic bootstrap random seed")

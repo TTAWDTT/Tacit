@@ -2,7 +2,7 @@
 
 **Status:** Measurement contract for future protocol experiments. Do not mix channel bandwidth with model inference work or combine them into a scalar unless prices and weights are preregistered.
 
-The current JSONL contract is `tlu.costs.v2`. The standard-library aggregator at [`tools/cost_report.py`](../tools/cost_report.py) validates records and emits stratum-and-protocol-grouped summaries without model access. It still reads the published pre-stratum `tlu.costs.v1` format for compatibility; those legacy summaries are marked as protocol-only because task and model strata cannot be recovered. Run it with `python tools/cost_report.py path/to/episodes.jsonl --output path/to/report.json`. Missing optional metrics remain marked incomplete; the tool does not silently convert them to zero. Reports use `tlu.cost-report.v1`.
+The current JSONL contract is `tlu.costs.v3`. The standard-library aggregator at [`tools/cost_report.py`](../tools/cost_report.py) validates records and emits stratum-and-protocol-grouped summaries without model access. It still reads v2 UTF-8 records and the published pre-stratum v1 format for compatibility; v1 summaries are marked protocol-only because task and model strata cannot be recovered. Run it with `python tools/cost_report.py path/to/episodes.jsonl --output path/to/report.json`. Missing optional metrics remain marked incomplete; the tool does not silently convert them to zero. Reports use `tlu.cost-report.v1`.
 
 ## Keep three budgets distinct
 
@@ -12,9 +12,9 @@ Count what crosses the agent boundary: serialized payload bytes, framing/metadat
 
 The communication-constrained frontier uses channel budget (B_{channel}), e.g. UTF-8 bytes or a fixed receiver-tokenizer budget. These units are not interchangeable; report each separately. Never infer that fewer generated tokens means lower channel use without counting actual delivered payloads.
 
-**Encoding boundary:** `tlu.costs.v2` currently names both payload and framing byte fields as UTF-8 counts. Use it only when the measured wire payload and envelope are UTF-8 text (including JSON text). For HTTP+JSON A2A runs, freeze the serializer and split the exact transmitted bytes into the serialized semantic `Part` and the rest of the request envelope; the two counts must partition the measured wire bytes without gaps or double counting. Count recipient tokens over the actual text content the model receives (including JSON syntax only if it is part of the prompt), while complete prompt token counts remain inference cost. Do not place arbitrary binary sizes, Protobuf lengths, latent tensors, or shared-memory references in UTF-8 fields. Before comparing such channels, version the schema to represent encoding/media type and raw payload/envelope byte counts separately.
+**Encoding boundary:** v2 names payload and framing byte fields as UTF-8 counts and remains text-only. v3 uses encoding-neutral `payload_bytes` and `framing_bytes`, plus `encoding`, `media_type`, and a `transport_boundary` (`network` or serialized `inter_process`); `payload_metadata` may record auditable tensor dtype/shape or other format-specific details. For HTTP+JSON, freeze the serializer and split exact transmitted bytes into semantic payload and envelope; counts must partition measured wire bytes with no gaps or double counting. For latent tensors, count the actual serialized representation crossing the declared agent boundary, including container headers and framing exactly once. In-memory tensor size, tensor element count, and same-process object sharing are not portable wire-byte measurements. Recipient tokens are measured only when the receiver gets a textual payload; complete prompt tokens remain inference cost.
 
-**Latent-channel consequence:** v2 cannot currently record a continuous hidden-state or KV-cache transfer faithfully. A future version must distinguish serialized payload bytes, framing bytes, media type/encoding, dtype and tensor shape (or an auditable payload manifest), plus recipient-token counts only when a textual rendering is actually delivered. Shared-memory transfer must state whether it is same-process/device-only or crosses a process/host boundary; a pointer is not a zero-byte portable protocol. Do not enter tensor element counts or in-memory size as UTF-8 bytes. Until that schema exists, Tacit reports can discuss latent papers but must not claim a directly comparable measured latent-vs-text frontier.
+**Latent-channel consequence:** v3 supports serialized continuous hidden-state and KV-cache payloads when their actual encoded bytes and transfer boundary are measured. Same-process shared-memory baselines are outside the v3 wire-byte scope; report them as a separate deployment scope and never present them as a zero-byte portable protocol. Do not enter tensor element counts or in-memory size as wire bytes.
 
 ### 2. Model inference cost
 
@@ -34,7 +34,7 @@ Every run record should be sufficient to reconstruct the aggregates and frontier
 
 ```json
 {
-  "schema_version": "tlu.costs.v2",
+  "schema_version": "tlu.costs.v3",
   "episode_id": "task-seed-condition",
   "stratum": {"experiment_id": "index-v0.2", "task_id": "INDEX_m@0.1", "split": "heldout",
               "task_parameters": {"m": 8}, "model_population_id": "qwen3-8b-pair",
@@ -43,8 +43,10 @@ Every run record should be sufficient to reconstruct the aggregates and frontier
   "protocol": {"policy_id": "...", "code_id": "...", "decoder_id": "..."},
   "outcome": {"joint_success": false, "answer_score": 0.0},
   "transmissions": [
-    {"round": 1, "sender": "A", "recipients": ["B"], "payload_utf8_bytes": 0,
-     "framing_utf8_bytes": 0,
+    {"round": 1, "sender": "A", "recipients": ["B"], "payload_bytes": 0,
+     "framing_bytes": 0, "encoding": "utf-8", "media_type": "text/plain",
+     "transport_boundary": "network",
+     "payload_metadata": {},
      "recipient_tokens": {"B": {"tokenizer": "model-or-tokenizer-revision", "tokens": 0}}}
   ],
   "model_calls": [
@@ -61,7 +63,7 @@ Every run record should be sufficient to reconstruct the aggregates and frontier
 }
 ```
 
-The arrays `transmissions`, `model_calls`, and `setup` are required; use an empty array when none occurred. Payload and framing byte counts are required for each `tlu.costs.v2` transmission; report framing as `0` only when there truly are no framing bytes. Token counts, latency, runtime, billing, and one-time costs may be `null` when unknown. The `stratum` fields keep experiment, task/split/parameters, scorer, and agent model population fixed; the aggregator groups by the full stratum and protocol IDs so it cannot silently pool different task lengths or model pairings. The aggregator reports observed totals, coverage, and completeness per measure. Resource peaks are summarized with maxima rather than sums. Billing is grouped by currency and billed-unit label; unreported billing is counted separately. Setup artifacts are deduplicated by `artifact_id` within each group and their byte/token costs are amortized only by the declared `reuse_horizon`.
+The arrays `transmissions`, `model_calls`, and `setup` are required; use an empty array when none occurred. Payload and framing byte counts, encoding, media type, and serialized transport boundary are required for every v3 transmission; report framing as `0` only when there truly are no framing bytes. The current wire scope accepts `network` and serialized `inter_process` transfers; same-process shared-memory comparisons need a separate accounting contract. Token counts, latency, runtime, billing, and one-time costs may be `null` when unknown. The `stratum` fields keep experiment, task/split/parameters, scorer, and agent model population fixed; the aggregator groups by the full stratum and protocol IDs so it cannot silently pool different task lengths or model pairings. The aggregator reports observed totals, coverage, and completeness per measure. Resource peaks are summarized with maxima rather than sums. Billing is grouped by currency and billed-unit label; unreported billing is counted separately. Setup artifacts are deduplicated by `artifact_id` within each group and their byte/token costs are amortized only by the declared `reuse_horizon`.
 
 Preserve raw payloads privately as appropriate, with a sanitized aggregate suitable for public release. The schema records sizes and token counts but does not independently reconstruct payload bytes from message contents, so retain an auditable private payload ledger or deterministic serializer when verification requires it.
 

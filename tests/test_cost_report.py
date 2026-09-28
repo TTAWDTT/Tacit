@@ -20,6 +20,16 @@ def _record(episode_id: str, *, version: str = "tlu.costs.v2", framing: object =
             "receiver": {"tokenizer": "test-tokenizer-v1", "tokens": 2}
         },
     }
+    if version == "tlu.costs.v3":
+        transmission.pop("payload_utf8_bytes")
+        transmission.update({
+            "payload_bytes": 12,
+            "framing_bytes": 4,
+            "encoding": "float16-le",
+            "media_type": "application/vnd.tlu.tensor",
+            "transport_boundary": "network",
+            "payload_metadata": {"dtype": "float16", "shape": [2, 3]},
+        })
     if framing is not _MISSING:
         transmission["framing_utf8_bytes"] = framing
 
@@ -33,7 +43,7 @@ def _record(episode_id: str, *, version: str = "tlu.costs.v2", framing: object =
         "runtime": {"wall_seconds": 5.0, "critical_path_seconds": 2.0},
         "setup": [],
     }
-    if version == "tlu.costs.v2":
+    if version in {"tlu.costs.v2", "tlu.costs.v3"}:
         record["stratum"] = {
             "experiment_id": "unit-test",
             "task_id": "toy@1",
@@ -50,6 +60,39 @@ _MISSING = object()
 
 
 class CostReportContractTests(unittest.TestCase):
+    def test_v3_records_binary_payloads_and_metadata(self) -> None:
+        record = _record("binary-episode", version="tlu.costs.v3")
+        group = aggregate([record])["groups"][0]
+        self.assertEqual(group["channel"]["payload_bytes"]["observed_sum"], 12)
+        self.assertEqual(group["channel"]["wire_bytes"]["observed_sum"], 16)
+
+    def test_v3_requires_encoding_and_actual_framing_bytes(self) -> None:
+        missing = _record("binary-episode", version="tlu.costs.v3")
+        del missing["transmissions"][0]["encoding"]
+        with self.assertRaisesRegex(RecordError, "encoding: expected non-empty string"):
+            aggregate([missing])
+        missing = _record("binary-episode", version="tlu.costs.v3")
+        del missing["transmissions"][0]["framing_bytes"]
+        with self.assertRaisesRegex(RecordError, "framing_bytes: value is required"):
+            aggregate([missing])
+
+    def test_v3_rejects_unserialized_same_process_boundary(self) -> None:
+        record = _record("binary-episode", version="tlu.costs.v3")
+        record["transmissions"][0]["transport_boundary"] = "same_process"
+        with self.assertRaisesRegex(RecordError, "transport_boundary: expected"):
+            aggregate([record])
+
+    def test_v3_is_supported_by_paired_and_frontier_reports(self) -> None:
+        left = _record("binary-episode", version="tlu.costs.v3")
+        left["protocol"]["code_id"] = "binary"
+        right = copy.deepcopy(left)
+        right["protocol"]["code_id"] = "smaller-binary"
+        right["transmissions"][0]["payload_bytes"] = 8
+        paired = paired_report([left, right], replicates=100, seed=3)
+        self.assertEqual(paired["comparisons"][0]["metrics"]["wire_bytes"]["mean_left_minus_right"], 4.0)
+        frontier = frontier_report([left, right])
+        self.assertEqual(frontier["input_schema_version"], "tlu.costs.v3")
+
     def test_v2_requires_framing_byte_count(self) -> None:
         with self.assertRaisesRegex(RecordError, "framing_utf8_bytes: value is required"):
             aggregate([_record("episode-1", framing=_MISSING)])

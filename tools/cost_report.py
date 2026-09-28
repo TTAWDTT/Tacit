@@ -18,6 +18,7 @@ from typing import Any
 
 LEGACY_SCHEMA_VERSION = "tlu.costs.v1"
 SCHEMA_VERSION = "tlu.costs.v2"
+ENCODING_SCHEMA_VERSION = "tlu.costs.v3"
 REPORT_SCHEMA_VERSION = "tlu.cost-report.v1"
 CONDITION_FIELDS = ("policy_id", "code_id", "decoder_id")
 STRATUM_FIELDS = ("experiment_id", "task_id", "split", "scorer_id", "model_population_id")
@@ -103,11 +104,11 @@ def _validate_record(record: Any, line_number: int) -> dict[str, Any]:
     prefix = f"line {line_number}"
     record = _object(record, prefix)
     input_version = record.get("schema_version")
-    if input_version not in {LEGACY_SCHEMA_VERSION, SCHEMA_VERSION}:
-        raise RecordError(f"{prefix}: schema_version must be {SCHEMA_VERSION!r} or legacy {LEGACY_SCHEMA_VERSION!r}")
+    if input_version not in {LEGACY_SCHEMA_VERSION, SCHEMA_VERSION, ENCODING_SCHEMA_VERSION}:
+        raise RecordError(f"{prefix}: unsupported schema_version {input_version!r}")
     _string(record.get("episode_id"), f"{prefix}.episode_id")
 
-    if input_version == SCHEMA_VERSION:
+    if input_version in {SCHEMA_VERSION, ENCODING_SCHEMA_VERSION}:
         stratum = _object(record.get("stratum"), f"{prefix}.stratum")
         for name in STRATUM_FIELDS:
             _string(stratum.get(name), f"{prefix}.stratum.{name}")
@@ -154,11 +155,33 @@ def _validate_record(record: Any, line_number: int) -> dict[str, Any]:
             _string(recipient, f"{where}.recipients[]")
         if len(set(recipients)) != len(recipients):
             raise RecordError(f"{where}.recipients: duplicates are not allowed")
-        _required_integer(transmission.get("payload_utf8_bytes"), f"{where}.payload_utf8_bytes")
+        if input_version == ENCODING_SCHEMA_VERSION:
+            _required_integer(transmission.get("payload_bytes"), f"{where}.payload_bytes")
+            _required_integer(transmission.get("framing_bytes"), f"{where}.framing_bytes")
+            _string(transmission.get("encoding"), f"{where}.encoding")
+            _string(transmission.get("media_type"), f"{where}.media_type")
+            boundary = transmission.get("transport_boundary")
+            if boundary not in {"network", "inter_process"}:
+                raise RecordError(f"{where}.transport_boundary: expected 'network' or 'inter_process'")
+            metadata = transmission.get("payload_metadata", {})
+            if not isinstance(metadata, dict):
+                raise RecordError(f"{where}.payload_metadata: expected object")
+            try:
+                json.dumps(metadata, allow_nan=False)
+            except (TypeError, ValueError) as exc:
+                raise RecordError(f"{where}.payload_metadata: must contain finite JSON values") from exc
+            transmission["_normalized_payload_bytes"] = transmission["payload_bytes"]
+            transmission["_normalized_framing_bytes"] = transmission["framing_bytes"]
+        else:
+            _required_integer(transmission.get("payload_utf8_bytes"), f"{where}.payload_utf8_bytes")
         if input_version == SCHEMA_VERSION:
             _required_integer(transmission.get("framing_utf8_bytes"), f"{where}.framing_utf8_bytes")
-        elif "framing_utf8_bytes" in transmission:
+        elif input_version == LEGACY_SCHEMA_VERSION and "framing_utf8_bytes" in transmission:
             _number(transmission["framing_utf8_bytes"], f"{where}.framing_utf8_bytes", integer=True)
+        if input_version != ENCODING_SCHEMA_VERSION:
+            transmission["_normalized_payload_bytes"] = transmission["payload_utf8_bytes"]
+            framing_field = "framing_utf8_bytes"
+            transmission["_normalized_framing_bytes"] = transmission.get(framing_field)
 
         recipient_tokens = transmission.get("recipient_tokens")
         if not isinstance(recipient_tokens, dict) or set(recipient_tokens) != set(recipients):
@@ -227,7 +250,7 @@ def aggregate(records: list[dict[str, Any]]) -> dict[str, Any]:
     if not records:
         raise RecordError("aggregate requires at least one episode record")
     versions = {record.get("schema_version") for record in records}
-    if len(versions) != 1 or not versions <= {LEGACY_SCHEMA_VERSION, SCHEMA_VERSION}:
+    if len(versions) != 1 or not versions <= {LEGACY_SCHEMA_VERSION, SCHEMA_VERSION, ENCODING_SCHEMA_VERSION}:
         raise RecordError("aggregate one input schema version at a time")
     input_version = next(iter(versions))
     groups: dict[tuple[str, tuple[str, str, str]], list[dict[str, Any]]] = defaultdict(list)
@@ -355,15 +378,15 @@ def aggregate(records: list[dict[str, Any]]) -> dict[str, Any]:
             "channel": {
                 "transmissions": len(transmissions),
                 "recipient_deliveries": sum(len(item["recipients"]) for item in transmissions),
-                "payload_bytes": _metric([item["payload_utf8_bytes"] for item in transmissions]),
+                "payload_bytes": _metric([item["_normalized_payload_bytes"] for item in transmissions]),
                 "wire_bytes": _metric([
-                    None if item.get("framing_utf8_bytes") is None
-                    else item["payload_utf8_bytes"] + item["framing_utf8_bytes"]
+                    None if item.get("_normalized_framing_bytes") is None
+                    else item["_normalized_payload_bytes"] + item["_normalized_framing_bytes"]
                     for item in transmissions
                 ]),
                 "recipient_delivery_bytes": _metric([
-                    None if item.get("framing_utf8_bytes") is None
-                    else (item["payload_utf8_bytes"] + item["framing_utf8_bytes"]) * len(item["recipients"])
+                    None if item.get("_normalized_framing_bytes") is None
+                    else (item["_normalized_payload_bytes"] + item["_normalized_framing_bytes"]) * len(item["recipients"])
                     for item in transmissions
                 ]),
                 "receiver_tokenizers": {
@@ -404,13 +427,13 @@ def read_jsonl(path: Path) -> list[dict[str, Any]]:
         raise RecordError("input contains no episode records")
     versions = {record["schema_version"] for record in records}
     if len(versions) != 1:
-        raise RecordError("input must not mix tlu.costs.v1 and tlu.costs.v2 records")
+        raise RecordError("input must contain records from exactly one schema version")
     return records
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("input", type=Path, help="per-episode JSONL using one consistent tlu.costs.v1 or tlu.costs.v2 schema")
+    parser.add_argument("input", type=Path, help="per-episode JSONL using one consistent tlu.costs.v1, v2, or v3 schema")
     parser.add_argument("-o", "--output", type=Path, help="write report JSON to this path (default: stdout)")
     args = parser.parse_args()
     try:

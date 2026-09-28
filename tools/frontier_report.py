@@ -72,11 +72,11 @@ def _setup_bytes(records: list[dict[str, Any]]) -> float | None:
 def _episode_metrics(record: dict[str, Any]) -> dict[str, float | None]:
     wire_bytes: float | None = 0.0
     for transmission in record["transmissions"]:
-        framing = transmission.get("framing_utf8_bytes")
+        framing = transmission.get("_normalized_framing_bytes")
         if framing is None:
             wire_bytes = None
             break
-        wire_bytes += transmission["payload_utf8_bytes"] + framing
+        wire_bytes += transmission["_normalized_payload_bytes"] + framing
 
     def sum_calls(field: str) -> float | None:
         if len({call["tokenizer"] for call in record["model_calls"]}) > 1:
@@ -243,7 +243,7 @@ def frontier_report(records: list[dict[str, Any]]) -> dict[str, Any]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("input", type=Path, help="per-episode tlu.costs.v1 or tlu.costs.v2 JSONL")
+    parser.add_argument("input", type=Path, help="per-episode tlu.costs.v1, v2, or v3 JSONL")
     parser.add_argument("-o", "--output", type=Path, help="write report JSON to this path (default: stdout)")
     args = parser.parse_args()
     try:
