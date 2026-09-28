@@ -290,3 +290,8 @@
 
 - Ran the cost CLI on the existing `experiments/index_v0_2/COST_RECORDS.jsonl` ledger and parsed its output: all 64 v2 records were accepted, yielding eight task/protocol groups of eight episodes each, with zero missing wire-byte measurements in all groups. This confirms the stricter framing contract works on the published dataset and the v2 grouping still separates task/policy conditions.
 - The generated report remains in ignored `.cache/`; no data or preregistration was altered. This is an integration check of old oracle-control data, not new experimental evidence, an LLM result, or a protocol comparison. No model was loaded.
+
+## 2026-09-29 — Fourth INDEX v0.3 resource rejection
+
+- A read-only three-sample host check measured CPU at 80.4066%, 86.7501%, and 79.8309% (82.3292% mean); GPU utilization/memory were 20%/994 MiB and free system memory was 4,323 MiB. The fixed v0.3 gate therefore failed on CPU and RAM. Port 8001 was not checked after those earlier failures.
+- No launcher, model-artifact hash, model service, or inference request was started. The timestamped sanitized record is [`PRECHECK_ATTEMPT_4.json`](../experiments/index_v0_3/PRECHECK_ATTEMPT_4.json). Thresholds remain frozen; this machine-state sample is not model or protocol evidence.
