@@ -1,5 +1,13 @@
 # Research log
 
+## 2026-09-29 — Audit PAC-BENCH as a privacy-constrained task family
+
+- **Trigger:** CRAFT v0.24 showed that oracle-assisted candidate actions can make a nominally complementary-information task solvable without communication. A broader task-source search surfaced PAC-BENCH (Findings ACL 2026), which makes disclosure constraints explicit.
+- **Research:** read the paper's task formulation, metric, results, limitations, and repository instructions; inspected the official GitHub README and Hugging Face dataset card. The paper describes a 100-scenario evaluated set; the linked Hugging Face collection lists 1,476 rows. Public code is available, and the data card declares CC-BY-4.0.
+- **Evidence and limits:** the paper reports task/privacy degradation and failure modes including disclosure, excessive abstraction, and hallucination. Task score uses an LLM judge; privacy checks combine keywords and an LLM rubric, with human review on a subset. The repository README does not state a code license and its default workflow uses Docker/20 containers. This does not isolate message format or constitute a matched-cost language comparison.
+- **Decision:** record PAC-BENCH as a secondary privacy stress test. Keep machine-checkable tasks and exact scorers as primary for representation attribution; audit licenses independently before reusing each asset. No scenarios were downloaded; no code, containers, or models were run.
+- **Artifacts:** added [`PAC_BENCH_AUDIT_V0_1.md`](PAC_BENCH_AUDIT_V0_1.md), updated related work, thesis, experiment plan, and README. Also clarified the MT-PingEval paper-license versus underlying task-asset boundary.
+
 ## 2026-09-29 — Audit TFlow weight-space communication
 
 - **Trigger:** broader search for strong alternatives beyond text-format selection surfaced TFlow, a new executable weight-space communication method with a public inference repository.
