@@ -6,6 +6,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import random
 import subprocess
 import sys
 import urllib.request
@@ -50,6 +51,56 @@ def verify_service() -> None:
         raise SystemExit(f"Expected one idle 8192-token context slot; got {slots}")
 
 
+def persist_record(path: Path, record: dict) -> None:
+    """Atomically checkpoint private vote data after each completed agent call."""
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    temporary.write_text(json.dumps(record, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    temporary.replace(path)
+
+
+def collect_agent_votes(agents, vote_prompt: str, possible_answers: list[str], record: dict,
+                       raw_path: Path) -> list[dict]:
+    votes = []
+    for agent in agents:
+        response = agent.vote(vote_prompt, possible_answers)
+        vote = {"agent": agent.name, **response}
+        votes.append(vote)
+        record["initial_votes"] = votes
+        persist_record(raw_path, record)
+    return votes
+
+
+def collect_votes_checkpointed(task, client, prompts, seed: int, raw_path: Path) -> tuple[list, list]:
+    """Mirror upstream collect_initial_votes while persisting each completed vote."""
+    from hiddenbench.simulator import Profile, instantiate_agents, render_prompt
+
+    rng = random.Random(seed)
+    agents, assignments = instantiate_agents(
+        task, client, Profile.FULL, prompts, rng,
+        extra_prompt="", special_agent_ratio=1.0,
+    )
+    vote_prompt = render_prompt(
+        prompts.first_vote_prompt,
+        {
+            "group_discussion": "No discussion has occurred yet. This is your initial vote based solely on the information available to you.",
+            "possible_answers": ", ".join(task.possible_answers),
+        },
+    )
+    record = {
+        "task_id": task.id,
+        "scenario": task.name,
+        "correct_answer": task.correct_answer,
+        "profile": "full",
+        "model": MODEL,
+        "seed": seed,
+        "fact_assignments": assignments,
+        "initial_votes": [],
+    }
+    persist_record(raw_path, record)
+    votes = collect_agent_votes(agents, vote_prompt, task.possible_answers, record, raw_path)
+    return votes, assignments
+
+
 def main() -> None:
     import argparse
     parser = argparse.ArgumentParser()
@@ -69,7 +120,6 @@ def main() -> None:
     from hiddenbench.metrics import score_results
     from hiddenbench.models import build_model_client
     from hiddenbench.prompts import load_prompts
-    from hiddenbench.simulator import Profile, collect_initial_votes
 
     benchmark = load_benchmark(path=DATA)
     task = next((item for item in benchmark if item.name == TASK), None)
@@ -81,26 +131,14 @@ def main() -> None:
         temperature=0.6,
     )
     started = datetime.now(timezone.utc)
-    votes, assignments = collect_initial_votes(
-        task, client, Profile.FULL, load_prompts(), seed=SEED,
-        extra_prompt="", special_agent_ratio=1.0,
+    raw_dir = RAW_ROOT / started.strftime("%Y%m%dT%H%M%SZ")
+    raw_dir.mkdir(parents=True, exist_ok=False)
+    raw_path = raw_dir / "full_profile.raw.json"
+    votes, assignments = collect_votes_checkpointed(
+        task, client, load_prompts(), seed=SEED, raw_path=raw_path,
     )
     if len(votes) != 4:
         raise SystemExit(f"Expected 4 initial votes, got {len(votes)}; screen incomplete")
-    raw_dir = RAW_ROOT / started.strftime("%Y%m%dT%H%M%SZ")
-    raw_dir.mkdir(parents=True, exist_ok=False)
-    record = {
-        "task_id": task.id,
-        "scenario": task.name,
-        "correct_answer": task.correct_answer,
-        "profile": "full",
-        "model": MODEL,
-        "seed": SEED,
-        "fact_assignments": assignments,
-        "initial_votes": votes,
-    }
-    raw_path = raw_dir / "full_profile.raw.json"
-    raw_path.write_text(json.dumps(record, indent=2, ensure_ascii=False), encoding="utf-8")
     official = score_results({"metadata": {"profile": "full", "model": MODEL}, "runs": [{
         "task_id": task.id,
         "scenario": task.name,

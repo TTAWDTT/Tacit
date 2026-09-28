@@ -1,7 +1,13 @@
 {
   "study": "HiddenBench Qwen3-8B partial-GPU capability screen",
   "version": "0.8",
-  "status": "frozen before inference",
+  "status": "amended before inference",
+  "amendments": [
+    {
+      "date": "2026-09-28",
+      "reason": "After v0.7 was stopped before its runner persisted any vote, add an atomic local checkpoint after each fully returned vote. Task, model, seed, sampler, resource gates, outcomes, and pass threshold are unchanged."
+    }
+  ],
   "question": "Can the cached Qwen3-8B model meet the full-information capability gate when only 20 transformer layers are offloaded to the GPU, keeping GPU utilization below the v0.7 stop condition while preserving the same model, prompts, sampler, task, and seed?",
   "motivation": "The v0.7 screen completed one long response quickly but saturated GPU utilization at 97% and 95%, triggering its automatic stop. The host CPU remained near 20%. This revision changes only GPU layer placement from 99 to 20 to test a lower-GPU-load operating point; CPU overload remains an automatic stop condition.",
   "sources": {

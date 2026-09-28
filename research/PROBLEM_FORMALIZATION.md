@@ -46,6 +46,27 @@ For a fixed-length transcript represented by at most `B` bits, `I(Y;T) ≤ H(T) 
 
 Together these inequalities give a task- and distribution-dependent constraint: no representation can communicate more than its channel budget, and a compressed message only helps if it preserves information relevant to `Y`. They do **not** establish that shorter codes improve LLM task success: decoding errors, additional inference, prompt sensitivity, and compute latency can reverse a token-count gain. This is a benchmark-level bound, not a universal optimality claim about a language.
 
+## A communication-complexity control task
+
+The standard `INDEX_m` task gives the sender a private bit vector `x ∈ {0,1}^m` and the receiver a private index `i ∈ {1,…,m}`; the receiver must output `x_i`. Draw `x` uniformly and independently of `i`.
+
+**Proposition (deterministic one-way lower bound).** Any zero-error one-way protocol from sender to receiver requires at least `m` bits in the worst case.
+
+**Proof.** If two different vectors `x` and `x′` produced the same sender message, choose a coordinate `i` where they differ. A receiver holding that `i` would see the same message in both cases and therefore produce the same output, which must be wrong for one vector. Thus all `2^m` vectors need distinct messages, requiring at least `log₂(2^m) = m` bits. Sending `x` verbatim meets the bound.
+
+With interaction, the receiver can send `i` in `⌈log₂ m⌉` bits and the sender can reply with `x_i` in one bit, for a total of at most `⌈log₂ m⌉ + 1` bits, before framing or protocol-negotiation overhead. This is an upper bound for one simple interactive protocol, not a claim that interaction always wins under LLM token, compute, or latency costs. With no communication and independent uniform `x`, any receiver strategy has expected accuracy `1/2`; a single-agent full-information control can read both `x` and `i` and should return the exact bit.
+
+This task family supplies known communication requirements and a scaling axis without arithmetic. However, it initially tests a narrow information-transfer primitive, not broad reasoning or a natural-language semantic task. LLM ability to reliably read long random vectors is a separate capability bottleneck and must be gated before comparing representations.
+
+The experimental separation is:
+
+1. **Capability and necessity controls:** single-agent full information, no-message receiver, and a deterministic oracle channel.
+2. **Policy comparison:** one-way full-vector transfer versus receiver-query / sender-answer interaction. This measures message selection and round cost, not language quality.
+3. **Representation comparison:** within each fixed policy, relay identical semantic payloads as optimized natural language, structured text, and a compositional typed code. Count messages in both directions, common setup/decoder instructions, model-tokenizer tokens, bytes, generated tokens, service time, retries, and accuracy.
+4. **Scaling:** vary `m` only after the smaller-length capability gate passes; compare observed cost and error against the `m`-bit one-way lower bound and the interactive `⌈log₂m⌉+1`-bit construction. A token is not a bit, so these are information bounds, not direct token predictions.
+
+Keep the one-way and interactive results separate. If a compact encoding wins only when it changes which facts are sent, the result is a policy effect. If it wins under identical semantic payloads and decoder access, it is evidence about representation. This design is further specified in [`INDEX_PROTOCOL_DESIGN.md`](INDEX_PROTOCOL_DESIGN.md).
+
 ## Falsifiable predictions
 
 1. **Policy diagnosis:** on Hidden Profile tasks with a full-information capability gate, forcing explicit private-fact disclosure should raise `Q` more than it raises `P(C | Q)`. If not, the interpretation that information surfacing is the main bottleneck is weakened.
