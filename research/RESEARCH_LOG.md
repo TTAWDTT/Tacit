@@ -1,5 +1,12 @@
 # Research log
 
+## 2026-09-29 — Audit MT-PingEval's interaction and budget design
+
+- Read the full arXiv v2 paper for [MT-PingEval](https://arxiv.org/abs/2602.24188), rather than relying on its abstract. It covers five private-information game families and fixes 128 whitespace-counted communication tokens per player, split evenly across 2/4/8/16 turns. Internal reasoning tokens are excluded; the paper notes whitespace/subword tokenization mismatch. Several tasks show no benefit or degradation as turns increase, including unused turns, premature stopping, and guess-and-check behavior in the name game.
+- Research implication: a fixed aggregate message cap alone does not ensure realized interaction, equal inference compute, or a native-tokenizer budget. Treat MT-PingEval as a task source and interaction-policy study, not a ready-made format leaderboard. Before adaptation, verify license/artifact availability and establish receiver need with correct, deranged-information, no-message, and centralized-oracle controls. A deterministic table-intersection task is the most practical initial candidate; keep image tasks out of a low-resource first pass.
+- Falsifiable prediction: on tasks that demonstrably require later exchange, a multi-turn gain must survive correct-versus-deranged and no-message controls at matched delivered bytes; simply permitting more turns is insufficient. Any future comparison must separately log native tokenizer caps, actual messages/unused turns, inference cost, and stop reasons.
+- The paper metadata/full text reviewed did not link official code or data; this is only “not located in this audit,” not a claim that no artifacts exist. Updated [`RELATED_WORK.md`](RELATED_WORK.md) and [`docs/EXPERIMENT_PLAN.md`](../docs/EXPERIMENT_PLAN.md). No model was loaded and no inference was run. No new benchmark data were generated.
+
 ## 2026-09-29 — Communication policy is a first-class baseline
 
 - Reviewed primary proceedings pages for S²-MAD (NAACL 2025), budget-aware reasoning evaluation (EMNLP 2024), IMAC (ICML 2020), DALA (AAAI 2026), and ProtocolBench. The recurring result is that communication selection/scheduling and total inference budget can dominate message encoding: S²-MAD reports up to 94.5% fewer tokens with under 2% degradation in its tested settings, and budget-matched self-consistency can outperform multi-agent strategies in some settings. Treat these as task-specific published results, not universal guarantees.
