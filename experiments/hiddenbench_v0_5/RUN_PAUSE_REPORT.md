@@ -20,7 +20,7 @@ The primary-source paper is stronger than the natural-discussion baseline alone.
 
 ## Resource and design decision
 
-The Qwen3-14B Q4_K_M model ran with partial CPU offload and 24 GPU layers. The local server accumulated 177,472 CPU-seconds over its lifetime and used approximately 4.7 GB resident memory at inspection. This is cumulative CPU time, not a point-in-time utilization measurement, but the inference run coincided with noticeable system lag. The run was stopped and should remain paused until a lower-impact configuration is available.
+The Qwen3-14B Q4_K_M model ran with partial CPU offload and 24 GPU layers. The local server accumulated 177,472 CPU-seconds over its lifetime and used approximately 4.7 GB resident memory at inspection. This is cumulative CPU time, not a point-in-time utilization measurement, but the inference run coincided with noticeable system lag. The machine has 16 logical processors. The pinned llama.cpp binary supports separate `--threads` and `--threads-batch` limits; a future run can preregister a four-thread cap for both, then measure actual CPU use and wall time. That setting has not been benchmarked here and is not claimed to guarantee a particular system load. The run was stopped and should remain paused until a lower-impact configuration is selected.
 
 Before more local inference, choose one of these reproducible approaches: cap llama.cpp inference threads and accept longer wall time; use a smaller model that passes the Full Profile gate; or move to a hardware session with more GPU memory. Any changed model/configuration must be recorded as a new preregistered run. Do not mix its measurements with v0.5.
 
