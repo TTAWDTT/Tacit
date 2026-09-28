@@ -57,6 +57,16 @@ Report task success against total cost: both-direction model tokens, bytes, mode
 
 If a representation wins at fixed `m`, test a held-out receiver model and a different model family before calling the code model-agnostic. Increase `m` only at lengths where the single-agent capability gate still passes. Compare one-way error/cost curves against `m(1−h₂(ε))`, the exact `m`-bit point, and the separate interactive upper construction; do not fit a scaling claim from one or two lengths.
 
+### E. Latent channels and causal message-use checks
+
+Latent methods form a separate system-access condition, not a zero-token variant of text. Only attempt them after the same pinned model passes the full-information and direct-message capability gates. A first internal-access comparison may include a dense last-hidden-state or KV relay and a text message under the same sender/receiver task roles. A learned compressor (for example, an Interlat adapter or CondenseFlow probe) is a separate condition whose training data, artifact bytes, training compute, model compatibility, and declared amortization horizon are recorded. Keep same-model/same-family and cross-family pairings in different strata.
+
+For a serialized latent transmission, record the actual encoded bytes crossing a `network` or serialized `inter_process` boundary, including dtype, shape, container/header and framing costs in the v3 ledger. A same-process shared KV cache may be a useful local upper bound on latency, but it is a separate deployment scope and is ineligible for a portable wire-byte frontier. Never report zero generated text tokens as zero channel bytes.
+
+At the receiver boundary, run matched episodes with: (1) the correct sender-produced message, (2) a same-shape message from a different episode with compatible task parameters, (3) a neutral/zero payload where the receiver accepts it, and (4) no message. Randomize or counterbalance condition order where execution state could leak across runs. Report answer quality and paired deltas for correct-vs-mismatched and correct-vs-no-message; a latent channel counts as task-relevant communication only if example-specific content provides measurable marginal value in a receiver-need task. Matching tensor shape and bytes prevents capacity from confounding the intervention. Record invalid/unstable payloads and receiver-side failures rather than silently dropping them.
+
+Do not claim latent superiority from this INDEX pilot alone. It is a communication-complexity control for private information, not a reasoning benchmark. A credible result needs repeated held-out episodes at more than one eligible `m`, exact semantic task/scorer parity, text and dense-latent controls, the causal substitutions above, and separate channel-byte, model-inference, wall/critical-path, and setup-cost frontiers. If the local model cannot expose stable receiver-usable latent states within the fixed resource gate, defer the latent comparison rather than relaxing the gate or substituting a synthetic tensor oracle for an LLM result.
+
 ## Falsifiers and limits
 
 - If the optimized natural-language baseline reaches the same frontier as the typed code, there may be no practical language artifact to ship.
