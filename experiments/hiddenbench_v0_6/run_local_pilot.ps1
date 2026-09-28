@@ -22,6 +22,8 @@ if ($CheckHostLoadOnly) {
 
 $runStamp = (Get-Date).ToUniversalTime().ToString('yyyyMMddTHHmmssZ')
 $logDir = Join-Path $repoRoot ".cache/pilot_hiddenbench_v0_6/server_$runStamp"
+$pilotRunDir = Join-Path $repoRoot ".cache/pilot_hiddenbench_v0_6/$runStamp"
+$analysisPath = Join-Path $repoRoot ".cache/pilot_hiddenbench_v0_6/$runStamp.sanitized.json"
 New-Item -ItemType Directory -Path $logDir -Force | Out-Null
 $stdoutLog = Join-Path $logDir 'llama_server.stdout.log'
 $stderrLog = Join-Path $logDir 'llama_server.stderr.log'
@@ -63,10 +65,16 @@ try {
     if (-not $ready) { throw "Local model did not become ready. See $stderrLog" }
 
     $env:PYTHONPATH = (Join-Path $repoRoot '.cache/research/HiddenBench_ICML/src')
-    python experiments/hiddenbench_v0_6/run_protocol_pilot_v0_6.py --prepare-only
+    python experiments/hiddenbench_v0_6/run_protocol_pilot_v0_6.py --prepare-only `
+        --run-dir $pilotRunDir --server-log $stderrLog
     if ($LASTEXITCODE -ne 0) { throw 'v0.6 prepare-only verification failed.' }
-    python experiments/hiddenbench_v0_6/run_protocol_pilot_v0_6.py
+    python experiments/hiddenbench_v0_6/run_protocol_pilot_v0_6.py `
+        --run-dir $pilotRunDir --server-log $stderrLog
     if ($LASTEXITCODE -ne 0) { throw "v0.6 runner exited with code $LASTEXITCODE." }
+    python experiments/hiddenbench_v0_6/analyze_protocol_pilot_v0_6.py `
+        --raw-dir $pilotRunDir --server-log $stderrLog --resource-log $resourceLog --output $analysisPath
+    if ($LASTEXITCODE -ne 0) { throw "v0.6 analysis exited with code $LASTEXITCODE." }
+    Write-Output "Sanitized analysis saved to $analysisPath"
 } finally {
     if ($monitorJob) {
         Stop-Job -Job $monitorJob -ErrorAction SilentlyContinue

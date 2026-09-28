@@ -6,6 +6,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import sys
 import urllib.request
 
@@ -61,7 +62,18 @@ def local_environment() -> dict[str, str]:
     return env
 
 
-def run(*, prepare_only: bool = False) -> None:
+def latest_server_task_id(path: Path | None) -> int | None:
+    if path is None or not path.is_file():
+        return None
+    latest = None
+    for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
+        match = re.search(r"\| task (\d+)\s+\|", line)
+        if match and "launch_slot_:" in line:
+            latest = int(match.group(1))
+    return latest
+
+
+def run(*, prepare_only: bool = False, run_dir: Path | None = None, server_log: Path | None = None) -> None:
     os.environ.update(local_environment())
     sys.path.insert(0, str(SOURCE / "src"))
     from hiddenbench.benchmark import load_benchmark
@@ -77,8 +89,11 @@ def run(*, prepare_only: bool = False) -> None:
     if len(tasks) != 1:
         raise SystemExit(f"Expected exactly one {TASK_NAME} task; found {len(tasks)}")
     task = tasks[0]
-    run_dir = RUNS_ROOT / datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    run_dir.mkdir(parents=True, exist_ok=False)
+    run_dir = run_dir or RUNS_ROOT / datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    if run_dir.exists() and any(run_dir.iterdir()):
+        raise SystemExit(f"Refusing to overwrite non-empty run directory: {run_dir}")
+    run_dir.mkdir(parents=True, exist_ok=True)
+    print(f"PILOT_RUN_DIR={run_dir}", flush=True)
     client = build_model_client(
         provider="openai-compatible",
         model=MODEL,
@@ -88,7 +103,9 @@ def run(*, prepare_only: bool = False) -> None:
     )
     for protocol in PROTOCOLS:
         output = run_dir / f"{protocol}.result.json"
+        task_id_before = latest_server_task_id(server_log)
         result = run_scenario(task, client, "hidden", protocol, seed=SEED)
+        task_id_after = latest_server_task_id(server_log)
         payload = {
             "metadata": {
                 "benchmark": "HiddenBench",
@@ -99,6 +116,8 @@ def run(*, prepare_only: bool = False) -> None:
                 "seed": SEED,
                 "task": TASK_NAME,
                 "source_revision": SOURCE_REV,
+                "server_task_id_before": task_id_before,
+                "server_task_id_after": task_id_after,
                 "created_at": datetime.now(timezone.utc).isoformat(),
             },
             "runs": [result],
@@ -113,5 +132,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--prepare-only", action="store_true")
+    parser.add_argument("--run-dir", type=Path)
+    parser.add_argument("--server-log", type=Path)
     args = parser.parse_args()
-    run(prepare_only=args.prepare_only)
+    run(prepare_only=args.prepare_only, run_dir=args.run_dir, server_log=args.server_log)

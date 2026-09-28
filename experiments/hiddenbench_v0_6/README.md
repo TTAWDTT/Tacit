@@ -17,7 +17,7 @@ $env:PYTHONPATH = (Resolve-Path '.cache/research/HiddenBench_ICML/src').Path
 python -m unittest discover -s experiments/hiddenbench_v0_6 -p 'test_*.py' -v
 ```
 
-The fake model checks round scheduling, vote counts, presence of phase-specific instructions, and that Reveal-All appends only the sender's visible facts. It performs no inference and uses no model server.
+The fake model checks round scheduling, vote counts, presence of phase-specific instructions, and that Reveal-All appends only the sender's visible facts. Analyzer tests check per-condition server-log attribution and verify that sanitized outputs do not include private benchmark facts. These tests perform no model inference and use no model server.
 
 ## Local run
 
@@ -35,7 +35,7 @@ The PowerShell orchestrator requires baseline host load below 40% CPU and 70% GP
 ./experiments/hiddenbench_v0_6/run_local_pilot.ps1
 ```
 
-The run writes one private result after each completed condition under `.cache/pilot_hiddenbench_v0_6/<timestamp>/`. Stop the server after the run or if the computer becomes uncomfortable to use:
+The run writes one private result after each completed condition under `.cache/pilot_hiddenbench_v0_6/<timestamp>/`, then creates a sanitized score/cost report next to it while the local tokenizer endpoint is still available. It also records periodic server/host CPU, memory, and GPU samples. Raw JSON contains task facts and private prompts; only the sanitized report is eligible for publication. The orchestrator stops the server after the run or if the computer becomes uncomfortable to use:
 
 ```powershell
 Stop-Process -Id $server.Id
