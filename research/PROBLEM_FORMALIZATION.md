@@ -25,6 +25,18 @@ The channel budget `B` must be stated in a concrete unit. At minimum report mode
 
 For fixed policy and decoder, a representation comparison estimates the effect of `c`. For fixed representation, a policy comparison estimates the effect of `π`. A full factorial design can test whether their effects interact. Changing policy, code, model prompt, and round count together does not identify a language effect.
 
+## Joint utility-cost frontier
+
+Let `C_ch` be the complete serialized channel cost for one episode (report bytes and each participating model's tokenizer units), and let `C_inf` be inference cost (at least total prompt+completion tokens and model calls; add wall/service time and hardware use when available). These are separate resource coordinates, not interchangeable units. For a fixed task distribution and model population, define the achievable success frontier
+
+`F(B_ch, B_inf) = sup_{π,c,d} P(Ŷ = Y)`
+
+subject to `E[C_ch] ≤ B_ch` and `E[C_inf] ≤ B_inf`.
+
+This makes “more efficient” a measurable claim: a system improves the frontier if it raises success at the same pair of budgets, or reaches the same success with no more of either resource. A single weighted sum `C_ch + λ C_inf` is valid only after reporting and justifying the exchange rate `λ`; otherwise it can conceal a transfer of cost from the channel into longer prompts, decoder work, or extra calls. Shared codebook/grammar acquisition and distribution must be amortized or reported separately, and robustness should be shown as a separate constrained frontier when corruption is introduced.
+
+**Falsifiable prediction P1.** If a representation's main advantage is payload compression, its success advantage over an equally optimized natural-language/structured baseline should be largest at tight `B_ch`, and should shrink as the channel budget becomes slack, provided `B_inf` and all policy decisions are matched. If the gap instead tracks a changed schedule, model-token count, or receiver prompting budget, the gain is not evidence of a better representation. Evaluate P1 with a small preregistered sweep of channel budgets and report the full `(success, C_ch, C_inf)` points; do not fit a scaling law unless the sweep covers enough levels and held-out task instances.
+
 ## Diagnostic events
 
 Where a task has an independently audited set `K` of facts sufficient to determine its answer, define:

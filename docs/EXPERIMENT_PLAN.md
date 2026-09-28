@@ -12,6 +12,10 @@
 
 ## First benchmark requirement
 
+### Separate communication policy from representation
+
+Recent strong alternatives change whether, when, and which agent speaks. S²-MAD reports large task-specific token savings by removing low-value exchanges, DALA selects messages by value density, and IMAC jointly learns a message code and scheduler. Budget-matched reasoning work also finds that single-agent self-consistency can be a stronger baseline than multi-agent methods at equal compute in some settings. Therefore, a representation comparison must hold the schedule/topology fixed; a policy comparison must hold the representation fixed. Include a message-sparsification/value-selection policy arm and a single-agent compute-matched arm when feasible. Score task success against total inference budget as well as channel payload cost. See the literature notes in [`research/RELATED_WORK.md`](../research/RELATED_WORK.md).
+
 Start by reusing existing suites rather than creating another benchmark. Evaluate Silo-Bench's private data shards / algorithmic tasks for scaling and MT-PingEval's private-information games for multi-turn behavior, subject to artifact license and reproducibility checks. Establish communication necessity in each selected split with (a) full communication, (b) no communication, and (c) a centralized oracle/upper bound. Add a small deterministic synthetic task only if these suites do not permit clean message-format/budget interventions.
 
 Potential tasks to retain only if the existing suites leave a concrete gap:

@@ -1,6 +1,6 @@
 # Related work map (initial)
 
-**Research date:** 2026-09-27. Claims below are short summaries of public abstracts/specifications and need full-paper review before being used as experimental facts. Search is ongoing; this is not a systematic review.
+**Research date:** 2026-09-29. Claims below are short summaries of public abstracts/specifications and need full-paper review before being used as experimental facts. Search is ongoing; this is not a systematic review.
 
 ## Directly relevant: representations and formats
 
@@ -103,6 +103,30 @@ An interoperability standard for independent/opaque agents: discovery, task life
 [arXiv](https://arxiv.org/abs/2510.17149) · [project page](https://hongyidu.ai/projects/protocolbench)
 
 Compares protocol choices on task success, latency, message/byte overhead, and failure robustness, and studies scenario-aware routing. Important adjacent benchmark; inspect overlap and reuse artifacts before creating another protocol benchmark.
+
+### Zeng et al. (2025), *S²-MAD: Breaking the Token Barrier to Enhance Multi-Agent Debate Efficiency*, NAACL
+
+[ACL Anthology](https://aclanthology.org/2025.naacl-long.475/)
+
+Uses sparsification to suppress ineffective exchanges in multi-agent debate. The paper reports up to 94.5% lower token cost than its MAD baseline with less than 2% performance degradation on its evaluated settings. This is a strong policy-level challenge: a communication language must be compared after message selection/sparsity is controlled, or gains could come from dropping low-value turns rather than expressing retained content more efficiently. Reproduce its task/model-specific baselines before treating the headline as a general efficiency bound.
+
+### Fan et al. (2026), *Cost-Effective Communication: An Auction-based Method for Language Agent Interaction*, AAAI
+
+[AAAI proceedings](https://ojs.aaai.org/index.php/AAAI/article/view/40182)
+
+DALA treats communication opportunities as a scarce resource and selects messages by predicted value density. This also changes who speaks and when, rather than inventing a new content code. It strengthens the need to separate channel policy (selection, scheduling, topology) from representation (encoding/decoding), and to include a policy-matched baseline in any language comparison. The reported benchmark scores are abstract-level claims here, not independently audited results.
+
+### Wang et al. (2020), *Learning Efficient Multi-agent Communication: An Information Bottleneck Approach*, ICML
+
+[PMLR proceedings](https://proceedings.mlr.press/v119/wang20i)
+
+IMAC jointly learns compact messages and a scheduler under limited-bandwidth multi-agent reinforcement learning. Its information-bottleneck framing is relevant to the theory: message utility is task-conditioned, and connection/scheduling cost is part of the resource budget. Its learned policies and embodied cooperative tasks are not a direct LLM baseline, but show that optimizing message content while fixing whether/when agents communicate leaves out a long-established part of the problem.
+
+### Wang et al. (2024), *Reasoning in Token Economies: Budget-Aware Evaluation of LLM Reasoning Strategies*, EMNLP
+
+[ACL Anthology](https://aclanthology.org/2024.emnlp-main.1112/)
+
+Compares reasoning methods under matched query, token, and monetary budgets. The authors report that chain-of-thought self-consistency can outperform more elaborate methods when given comparable compute, and that some multi-agent debate strategies worsen as budget grows. This is a direct warning against attributing quality gains to collaboration or language without matching total inference resources; report both channel cost and full inference budget, including single-agent compute-matched controls.
 
 ### Shen et al. (2025), *Understanding the Information Propagation Effects of Communication Topologies in LLM-based Multi-Agent Systems*, EMNLP
 
@@ -211,6 +235,7 @@ The appropriate abstraction is task-oriented rate-distortion / information bottl
 ## Search gaps / next reading pass
 
 - Read full papers and inspect code/data for the format-selection paper, ProtocolBench, LatentMAS, Interlat, CondenseFlow, CRAFT, Q-KVComm, KVComm, and the causal KV-relay audit.
+- Audit and, where feasible, reproduce S²-MAD's sparsification and DALA's message-value selection as policy controls; match total model-token/query budget with single-agent self-consistency before claiming gains from a message representation.
 - Review Lewis signaling games, referential games, iterated learning, and reproducibility critiques of emergent-language benchmarks.
 - Review rate-distortion, information bottleneck, communication complexity, interactive compression, and semantic/task-oriented communications.
 - Survey coding theory/error correction and protocol negotiation under noisy or adversarial channels.
