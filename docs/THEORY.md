@@ -4,7 +4,7 @@
 
 ## 1. Episode and protocol
 
-An episode is a cooperative task (T) with target (Y^*), private observation (X_i) at agent (i), public/shared context (C), and receiver implementation (r) (model weights, tokenizer, prompt/runtime, and available tools). A protocol π specifies the encoder, message syntax, any shared dictionary or setup exchange, decoder/receiver policy, and interaction schedule. The received messages (M_{1:k}) induce a final action Ŷ and task utility (U_T(Ŷ,Y^*)in[0,1]).
+An episode is a cooperative task (T) with target (Y^*), private observation (X_i) at agent (i), public/shared context (C), and receiver implementation (r) (model weights, tokenizer, prompt/runtime, and available tools). A protocol π specifies the encoder, message syntax, any shared dictionary or setup exchange, decoder/receiver policy, and interaction schedule; Section 1.1 factors this shorthand into components. The received messages (M_{1:k}) induce a final action Ŷ and task utility (U_T(Ŷ,Y^*)in[0,1]).
 
 Define task distortion as
 
@@ -13,6 +13,29 @@ d_T = 1 - U_T(\hat Y,Y^*).
 \]
 
 Exact-answer tasks may use 0/1 utility. Tasks with graded outputs need a task-specific proper score or rubric fixed before the run. ROUGE is a textual similarity measure and is not a substitute for task utility when exact outcomes are available.
+
+### 1.1 Factor the communication system before attributing gains
+
+Represent an implemented communication system as
+
+`P = (σ, φ, ρ, δ)`
+
+where:
+
+- `σ` is the interaction policy: who can speak, when, to whom, and which private content is surfaced;
+- `φ` is the format-selection policy: how a task/receiver/history condition is mapped to a format choice or candidate-format set;
+- `ρ` is the representation itself: the grammar/encoder that maps selected content into a payload;
+- `δ` is the receiver-side decoder/parser, including any explicit repair step.
+
+The receiver model/runtime remains part of condition `r`, and its complete prompt and completion costs are measured. A format selector is not itself a language: AutoForm is prompted selection among formats, and OPTiMACS learns a task-conditioned format policy while also growing its format inventory. If either selector changes *which* information gets disclosed or *whether* a turn occurs, its effect is a policy effect unless the schedule and semantic content are held fixed.
+
+For a preregistered operational budget vector `b`, let `J_b(σ,φ,ρ,δ)` be expected task utility when the same channel and inference caps are enforced and all failures, truncations, retries, and over-budget behavior are scored by the frozen evaluator. A codec-package contrast is
+
+`Δ_codec(b) = J_b(σ,φ,ρ₁,δ₁) − J_b(σ,φ,ρ₀,δ₀)`
+
+with the schedule `σ`, selector `φ` (including its selected format slot on each episode), task episodes, and semantic content to be conveyed matched. This estimates the representation-plus-decoder package; an encoder-only claim requires a shared decoder. A selector contrast instead varies `φ` over a common format inventory while freezing `σ` and the receiver. When a new representation requires its own learned selector, report both the combined system and a matched-selector codec ablation; do not label the combined delta as a language-only gain. If resources permit, use a `φ × (ρ,δ)` factorial and report their interaction rather than silently optimizing one arm more than another.
+
+This factorization is necessary because a method can improve success by selecting different messages or turns without compressing a fixed semantic payload. Log chosen content, format choices, turns, and decoded content so each mechanism is auditable. Charge selector training/search and per-message selection calls to setup or inference at their actual boundary.
 
 ## 2. Ideal semantic rate-distortion
 

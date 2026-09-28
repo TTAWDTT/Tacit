@@ -1,5 +1,12 @@
 # Research log
 
+## 2026-09-29 — Factor learned selection policy from message representation
+
+- **Observation:** the OPTiMACS audit shows that recent systems jointly vary task categorization, format inventory, and format selection. Existing shorthand such as “language wins” can therefore conflate changing which content/turn is chosen with changing how fixed content is encoded.
+- **Formalization:** decomposed a communication system into `P=(σ,φ,ρ,δ)`: interaction/content-selection policy, format selector, representation/encoder, and receiver decoder. Defined a budget-enforced utility contrast for the representation-plus-decoder package with schedule, selector, task episodes, and semantic payload matched; defined selector comparisons over a common format inventory separately.
+- **Prediction/design consequence:** if the apparent gain vanishes when `σ`/`φ` and semantic content are replayed identically, it was a policy/selection effect rather than a codec-package advantage. When the selector and representation interact, report a factorial interaction or explicitly call it a jointly optimized system. Charge selection calls and training/search at their actual boundaries.
+- **Artifacts:** updated [`docs/THEORY.md`](../docs/THEORY.md) and [`docs/THESIS.md`](../docs/THESIS.md). No models were loaded and no inference or training was run.
+
 ## 2026-09-29 — Audit OPTiMACS and revise the novelty boundary
 
 - **Trigger:** a current ACL search surfaced Gupta et al., *Learning Optimal Message Representations for Agentic Communication* (Findings ACL 2026), which directly overlaps the project's proposed adaptive message-format direction and was absent from the related-work map.

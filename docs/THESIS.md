@@ -35,6 +35,8 @@ The first research goal is therefore not to invent notation or duplicate AutoFor
 
 Report task success and calibration/fidelity alongside output and input tokens, serialized bytes, number of turns, wall-clock latency, setup/training cost, local inference time or energy where measurable, parse/decode failures, recovery cost, and cross-model transfer. Plot a Pareto frontier rather than collapsing these dimensions into an arbitrary scalar. Compare both equal-budget and equal-quality operating points.
 
+For attribution, record interaction schedule/content selection, format-selection policy, representation/encoder, and receiver decoder as separate experimental factors. A reusable-language claim needs a matched-policy comparison or a scripted semantic-payload ablation; a jointly optimized selector-plus-format result must be reported as a system result, with both training/search and runtime selection costs included.
+
 ## Scope exclusions
 
 This thesis does not claim language is inherently superior to latent transfer, tool calls, shared memory, or a transport protocol. These are competing communication mechanisms or different system layers and belong in comparisons where their assumptions can be made explicit. The project will not claim a universal optimum from a finite model/task sample.
