@@ -23,7 +23,13 @@ The fake model checks round scheduling, vote counts, presence of phase-specific 
 
 The raw benchmark outputs contain task facts and prompts. Keep them under ignored `.cache/`; only sanitized aggregates may be published.
 
-The PowerShell orchestrator starts llama.cpp hidden at below-normal process priority, with generation and batch threads capped at four. It checks the model alias and pinned preflight before inference, then always stops the model server when the runner exits:
+Check the host-load gate without starting a model service:
+
+```powershell
+./experiments/hiddenbench_v0_6/run_local_pilot.ps1 -CheckHostLoadOnly
+```
+
+The PowerShell orchestrator requires baseline host load below 40% CPU and 70% GPU. It then starts llama.cpp hidden at below-normal process priority, with generation and batch threads capped at four. It checks the model alias and pinned preflight before inference, then always stops the model server when the runner exits:
 
 ```powershell
 ./experiments/hiddenbench_v0_6/run_local_pilot.ps1

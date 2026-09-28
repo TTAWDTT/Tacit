@@ -1,7 +1,13 @@
 {
   "study": "HiddenBench phase-policy feasibility pilot",
   "version": "0.6",
-  "status": "frozen before model inference",
+  "status": "amended before first model inference",
+  "amendments": [
+    {
+      "date": "2026-09-28",
+      "reason": "Following the earlier local responsiveness problem, add an explicit host-load gate and periodic resource sampling; task, model, protocol conditions, seed, and decoding settings are unchanged."
+    }
+  ],
   "question": "On one communication-dependent HiddenBench verification task, does a phase-aware Exchange/Decide policy produce a different answer and cost profile than three-round natural discussion, and how does forced first-round disclosure behave?",
   "scope": "Single-task engineering/feasibility pilot only. This cannot establish protocol superiority, generalization, a scaling law, or an efficiency frontier.",
   "sources": {
@@ -19,6 +25,7 @@
     "sha256": "500a8806e85ee9c83f3ae08420295592451379b4f8cf2d0f41c15dffeb6b81f0",
     "runtime": "llama.cpp b11202; RTX 4060 Laptop GPU 8 GB; one slot; 24 GPU layers; 8192 context",
     "cpu_resource_limit": "--threads 4 --threads-batch 4; BelowNormal OS process priority where supported",
+    "host_idle_gate": "Do not start unless three sampled baseline CPU readings average below 40% and NVIDIA GPU utilization is below 70%.",
     "reasoning": "on",
     "reasoning_budget_tokens": 1024,
     "temperature": 0.6,
@@ -72,6 +79,6 @@
     "The three-round natural baseline is matched in turns, not compared directly to v0.5's 15-round result.",
     "Reveal-All changes disclosure policy and communication volume; it is a mechanistic diagnostic, not a bandwidth-matched codec comparison.",
     "The runner reuses the pinned upstream task model, agent prompts, vote schema, and scorer but implements phase scheduling locally; it is not an exact reproduction of the paper's full 18-task, five-run study.",
-    "The four-thread setting has not yet been run. Stop if the user reports renewed system lag; do not exceed the frozen 60 nominal model-response calls."
+    "The four-thread setting has not yet been run. The launcher refuses to start above its preregistered host-load gate. Stop if the user reports renewed system lag; do not exceed the frozen 60 nominal model-response calls."
   ]
 }
