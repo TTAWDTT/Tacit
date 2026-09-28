@@ -1,0 +1,41 @@
+{
+  "experiment_id": "index-controls-v0.2",
+  "status": "completed_model_free_control",
+  "task_manifest": {
+    "task_id": "INDEX_m@0.1",
+    "split": "pilot",
+    "master_seed": 20260929,
+    "episodes_by_m": {"4": 8, "8": 8},
+    "episode_count": 16,
+    "sha256": "637e79254f4dc8f10e65c184a5653ffbf784ab86ecfa98795073e2c68ddedcab"
+  },
+  "measurement": {
+    "record_schema": "tlu.costs.v2",
+    "report_schema": "tlu.cost-report.v1",
+    "record_count": 64,
+    "group_count": 8,
+    "model_calls": 0,
+    "model_loads": 0,
+    "network_calls": 0,
+    "recipient_token_counts": "not applicable for deterministic oracle agents",
+    "framing_bytes_per_transmission": 0
+  },
+  "results": [
+    {"m": 4, "policy_id": "no_message_fixed_zero", "episodes": 8, "successes": 6, "success_rate": 0.75, "payload_utf8_bytes_total": 0, "transmissions_total": 0},
+    {"m": 4, "policy_id": "single_agent_full_information_oracle", "episodes": 8, "successes": 8, "success_rate": 1.0, "payload_utf8_bytes_total": 0, "transmissions_total": 0},
+    {"m": 4, "policy_id": "one_way_full_vector_oracle", "episodes": 8, "successes": 8, "success_rate": 1.0, "payload_utf8_bytes_total": 32, "transmissions_total": 8},
+    {"m": 4, "policy_id": "interactive_index_query_oracle", "episodes": 8, "successes": 8, "success_rate": 1.0, "payload_utf8_bytes_total": 24, "transmissions_total": 16},
+    {"m": 8, "policy_id": "no_message_fixed_zero", "episodes": 8, "successes": 5, "success_rate": 0.625, "payload_utf8_bytes_total": 0, "transmissions_total": 0},
+    {"m": 8, "policy_id": "single_agent_full_information_oracle", "episodes": 8, "successes": 8, "success_rate": 1.0, "payload_utf8_bytes_total": 0, "transmissions_total": 0},
+    {"m": 8, "policy_id": "one_way_full_vector_oracle", "episodes": 8, "successes": 8, "success_rate": 1.0, "payload_utf8_bytes_total": 64, "transmissions_total": 8},
+    {"m": 8, "policy_id": "interactive_index_query_oracle", "episodes": 8, "successes": 8, "success_rate": 1.0, "payload_utf8_bytes_total": 32, "transmissions_total": 16}
+  ],
+  "interpretation": [
+    "This run validates deterministic task loading, role-specific oracle execution, exact-bit scoring, per-episode records, and aggregation only.",
+    "The fixed-zero finite pilot achieved 11/16 overall; its expectation under the task distribution is 1/2, and this small shard is not a stable estimate.",
+    "Interactive payload totals match ceil(log2(m))+1 ASCII bytes per episode for m=4 and m=8; one-way totals match m ASCII bytes per episode.",
+    "These are oracle payload UTF-8 bytes, not LLM tokenizer tokens, model inference costs, or evidence that an LLM can use either protocol.",
+    "No language comparison, model capability, generalization, scaling, or superiority claim is supported."
+  ],
+  "preregistration_amendment": "The first public preregistration contained a mistyped manifest hash. The hash check rejected execution before writing records; the corrected SHA-256 was pushed in commit a9e4b6c before the successful run."
+}
