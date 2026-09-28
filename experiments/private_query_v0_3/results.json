@@ -1,0 +1,1346 @@
+{
+  "assumptions": {
+    "decoder": "query-dependent deterministic output",
+    "receiver_query": "uniform over coordinates and hidden from sender at encode time",
+    "score": "average exact coordinate-retrieval probability",
+    "sender_channel": "one classical bit",
+    "source": "uniform over {0,1}^n"
+  },
+  "asymptotic_formula": "1/2 + 1/sqrt(2*pi*n) + O(n^(-3/2))",
+  "exact_formula": "1/2 + binom(n-1, floor((n-1)/2)) / 2^n",
+  "model_calls": 0,
+  "prior_result": "Ambainis et al. 2009, classical n-to-1 random access code",
+  "rows": [
+    {
+      "advantage_over_chance": 0.5,
+      "advantage_over_chance_fraction": "1/2",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.3989422804014327,
+      "exact_to_asymptotic_advantage_ratio": 1.2533141373155001,
+      "message_budget_bits": 1,
+      "n_source_bits": 1,
+      "success_fraction": "1/1",
+      "success_probability": 1.0
+    },
+    {
+      "advantage_over_chance": 0.25,
+      "advantage_over_chance_fraction": "1/4",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.28209479177387814,
+      "exact_to_asymptotic_advantage_ratio": 0.886226925452758,
+      "message_budget_bits": 1,
+      "n_source_bits": 2,
+      "success_fraction": "3/4",
+      "success_probability": 0.75
+    },
+    {
+      "advantage_over_chance": 0.25,
+      "advantage_over_chance_fraction": "1/4",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.23032943298089034,
+      "exact_to_asymptotic_advantage_ratio": 1.0854018818374014,
+      "message_budget_bits": 1,
+      "n_source_bits": 3,
+      "success_fraction": "3/4",
+      "success_probability": 0.75
+    },
+    {
+      "advantage_over_chance": 0.1875,
+      "advantage_over_chance_fraction": "3/16",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.19947114020071635,
+      "exact_to_asymptotic_advantage_ratio": 0.9399856029866251,
+      "message_budget_bits": 1,
+      "n_source_bits": 4,
+      "success_fraction": "11/16",
+      "success_probability": 0.6875
+    },
+    {
+      "advantage_over_chance": 0.1875,
+      "advantage_over_chance_fraction": "3/16",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.1784124116152771,
+      "exact_to_asymptotic_advantage_ratio": 1.0509358530746118,
+      "message_budget_bits": 1,
+      "n_source_bits": 5,
+      "success_fraction": "11/16",
+      "success_probability": 0.6875
+    },
+    {
+      "advantage_over_chance": 0.15625,
+      "advantage_over_chance_fraction": "5/32",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.16286750396763996,
+      "exact_to_asymptotic_advantage_ratio": 0.959368788699833,
+      "message_budget_bits": 1,
+      "n_source_bits": 6,
+      "success_fraction": "21/32",
+      "success_probability": 0.65625
+    },
+    {
+      "advantage_over_chance": 0.15625,
+      "advantage_over_chance_fraction": "5/32",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.15078600877302686,
+      "exact_to_asymptotic_advantage_ratio": 1.0362367256182097,
+      "message_budget_bits": 1,
+      "n_source_bits": 7,
+      "success_fraction": "21/32",
+      "success_probability": 0.65625
+    },
+    {
+      "advantage_over_chance": 0.13671875,
+      "advantage_over_chance_fraction": "35/256",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.14104739588693907,
+      "exact_to_asymptotic_advantage_ratio": 0.9693106997139541,
+      "message_budget_bits": 1,
+      "n_source_bits": 8,
+      "success_fraction": "163/256",
+      "success_probability": 0.63671875
+    },
+    {
+      "advantage_over_chance": 0.13671875,
+      "advantage_over_chance_fraction": "35/256",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.1329807601338109,
+      "exact_to_asymptotic_advantage_ratio": 1.0281092532666212,
+      "message_budget_bits": 1,
+      "n_source_bits": 9,
+      "success_fraction": "163/256",
+      "success_probability": 0.63671875
+    },
+    {
+      "advantage_over_chance": 0.123046875,
+      "advantage_over_chance_fraction": "63/512",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.126156626101008,
+      "exact_to_asymptotic_advantage_ratio": 0.9753500771452293,
+      "message_budget_bits": 1,
+      "n_source_bits": 10,
+      "success_fraction": "319/512",
+      "success_probability": 0.623046875
+    },
+    {
+      "advantage_over_chance": 0.123046875,
+      "advantage_over_chance_fraction": "63/512",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.12028562337275517,
+      "exact_to_asymptotic_advantage_ratio": 1.0229557909733564,
+      "message_budget_bits": 1,
+      "n_source_bits": 11,
+      "success_fraction": "319/512",
+      "success_probability": 0.623046875
+    },
+    {
+      "advantage_over_chance": 0.11279296875,
+      "advantage_over_chance_fraction": "231/2048",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.11516471649044517,
+      "exact_to_asymptotic_advantage_ratio": 0.9794056043142176,
+      "message_budget_bits": 1,
+      "n_source_bits": 12,
+      "success_fraction": "1255/2048",
+      "success_probability": 0.61279296875
+    },
+    {
+      "advantage_over_chance": 0.11279296875,
+      "advantage_over_chance_fraction": "231/2048",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.11064668061060755,
+      "exact_to_asymptotic_advantage_ratio": 1.019397673093744,
+      "message_budget_bits": 1,
+      "n_source_bits": 13,
+      "success_fraction": "1255/2048",
+      "success_probability": 0.61279296875
+    },
+    {
+      "advantage_over_chance": 0.104736328125,
+      "advantage_over_chance_fraction": "429/4096",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.10662180931146154,
+      "exact_to_asymptotic_advantage_ratio": 0.9823161771626506,
+      "message_budget_bits": 1,
+      "n_source_bits": 14,
+      "success_fraction": "2477/4096",
+      "success_probability": 0.604736328125
+    },
+    {
+      "advantage_over_chance": 0.104736328125,
+      "advantage_over_chance_fraction": "429/4096",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.10300645387285057,
+      "exact_to_asymptotic_advantage_ratio": 1.0167938433671813,
+      "message_budget_bits": 1,
+      "n_source_bits": 15,
+      "success_fraction": "2477/4096",
+      "success_probability": 0.604736328125
+    },
+    {
+      "advantage_over_chance": 0.0981903076171875,
+      "advantage_over_chance_fraction": "6435/65536",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.09973557010035818,
+      "exact_to_asymptotic_advantage_ratio": 0.9845064054718315,
+      "message_budget_bits": 1,
+      "n_source_bits": 16,
+      "success_fraction": "39203/65536",
+      "success_probability": 0.5981903076171875
+    },
+    {
+      "advantage_over_chance": 0.0981903076171875,
+      "advantage_over_chance_fraction": "6435/65536",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.09675771533058149,
+      "exact_to_asymptotic_advantage_ratio": 1.0148059747143825,
+      "message_budget_bits": 1,
+      "n_source_bits": 17,
+      "success_fraction": "39203/65536",
+      "success_probability": 0.5981903076171875
+    },
+    {
+      "advantage_over_chance": 0.09273529052734375,
+      "advantage_over_chance_fraction": "12155/131072",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.09403159725795938,
+      "exact_to_asymptotic_advantage_ratio": 0.9862141368601934,
+      "message_budget_bits": 1,
+      "n_source_bits": 18,
+      "success_fraction": "77691/131072",
+      "success_probability": 0.5927352905273438
+    },
+    {
+      "advantage_over_chance": 0.09273529052734375,
+      "advantage_over_chance_fraction": "12155/131072",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.09152363603029011,
+      "exact_to_asymptotic_advantage_ratio": 1.0132387058644898,
+      "message_budget_bits": 1,
+      "n_source_bits": 19,
+      "success_fraction": "77691/131072",
+      "success_probability": 0.5927352905273438
+    },
+    {
+      "advantage_over_chance": 0.08809852600097656,
+      "advantage_over_chance_fraction": "46189/524288",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.08920620580763855,
+      "exact_to_asymptotic_advantage_ratio": 0.9875829288261564,
+      "message_budget_bits": 1,
+      "n_source_bits": 20,
+      "success_fraction": "308333/524288",
+      "success_probability": 0.5880985260009766
+    },
+    {
+      "advantage_over_chance": 0.08809852600097656,
+      "advantage_over_chance_fraction": "46189/524288",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.08705634275513632,
+      "exact_to_asymptotic_advantage_ratio": 1.0119713648983808,
+      "message_budget_bits": 1,
+      "n_source_bits": 21,
+      "success_fraction": "308333/524288",
+      "success_probability": 0.5880985260009766
+    },
+    {
+      "advantage_over_chance": 0.08409404754638672,
+      "advantage_over_chance_fraction": "88179/1048576",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.08505477996612626,
+      "exact_to_asymptotic_advantage_ratio": 0.9887045452339991,
+      "message_budget_bits": 1,
+      "n_source_bits": 22,
+      "success_fraction": "612467/1048576",
+      "success_probability": 0.5840940475463867
+    },
+    {
+      "advantage_over_chance": 0.08409404754638672,
+      "advantage_over_chance_fraction": "88179/1048576",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.08318521584049796,
+      "exact_to_asymptotic_advantage_ratio": 1.0109253993838447,
+      "message_budget_bits": 1,
+      "n_source_bits": 23,
+      "success_fraction": "612467/1048576",
+      "success_probability": 0.5840940475463867
+    },
+    {
+      "advantage_over_chance": 0.0805901288986206,
+      "advantage_over_chance_fraction": "676039/8388608",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.08143375198381998,
+      "exact_to_asymptotic_advantage_ratio": 0.9896403755857032,
+      "message_budget_bits": 1,
+      "n_source_bits": 24,
+      "success_fraction": "4870343/8388608",
+      "success_probability": 0.5805901288986206
+    },
+    {
+      "advantage_over_chance": 0.0805901288986206,
+      "advantage_over_chance_fraction": "676039/8388608",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.07978845608028654,
+      "exact_to_asymptotic_advantage_ratio": 1.0100474787671965,
+      "message_budget_bits": 1,
+      "n_source_bits": 25,
+      "success_fraction": "4870343/8388608",
+      "success_probability": 0.5805901288986206
+    },
+    {
+      "advantage_over_chance": 0.07749050855636597,
+      "advantage_over_chance_fraction": "1300075/16777216",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.07823901817554269,
+      "exact_to_asymptotic_advantage_ratio": 0.9904330392094478,
+      "message_budget_bits": 1,
+      "n_source_bits": 26,
+      "success_fraction": "9688683/16777216",
+      "success_probability": 0.577490508556366
+    },
+    {
+      "advantage_over_chance": 0.07749050855636597,
+      "advantage_over_chance_fraction": "1300075/16777216",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.07677647766029679,
+      "exact_to_asymptotic_advantage_ratio": 1.0093001257394025,
+      "message_budget_bits": 1,
+      "n_source_bits": 27,
+      "success_fraction": "9688683/16777216",
+      "success_probability": 0.577490508556366
+    },
+    {
+      "advantage_over_chance": 0.07472299039363861,
+      "advantage_over_chance_fraction": "5014575/67108864",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.07539300438651343,
+      "exact_to_asymptotic_advantage_ratio": 0.9911130482419842,
+      "message_budget_bits": 1,
+      "n_source_bits": 28,
+      "success_fraction": "38569007/67108864",
+      "success_probability": 0.5747229903936386
+    },
+    {
+      "advantage_over_chance": 0.07472299039363861,
+      "advantage_over_chance_fraction": "5014575/67108864",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.0740817216722683,
+      "exact_to_asymptotic_advantage_ratio": 1.008656234046601,
+      "message_budget_bits": 1,
+      "n_source_bits": 29,
+      "success_fraction": "38569007/67108864",
+      "success_probability": 0.5747229903936386
+    },
+    {
+      "advantage_over_chance": 0.07223222404718399,
+      "advantage_over_chance_fraction": "9694845/134217728",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.07283656203947195,
+      "exact_to_asymptotic_advantage_ratio": 0.9917028210095851,
+      "message_budget_bits": 1,
+      "n_source_bits": 30,
+      "success_fraction": "76803709/134217728",
+      "success_probability": 0.572232224047184
+    },
+    {
+      "advantage_over_chance": 0.07223222404718399,
+      "advantage_over_chance_fraction": "9694845/134217728",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.07165214876274964,
+      "exact_to_asymptotic_advantage_ratio": 1.0080957137287685,
+      "message_budget_bits": 1,
+      "n_source_bits": 31,
+      "success_fraction": "76803709/134217728",
+      "success_probability": 0.572232224047184
+    },
+    {
+      "advantage_over_chance": 0.06997496704570949,
+      "advantage_over_chance_fraction": "300540195/4294967296",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.07052369794346953,
+      "exact_to_asymptotic_advantage_ratio": 0.9922191984572349,
+      "message_budget_bits": 1,
+      "n_source_bits": 32,
+      "success_fraction": "2448023843/4294967296",
+      "success_probability": 0.5699749670457095
+    },
+    {
+      "advantage_over_chance": 0.06997496704570949,
+      "advantage_over_chance_fraction": "300540195/4294967296",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.06944693703390213,
+      "exact_to_asymptotic_advantage_ratio": 1.0076033592604607,
+      "message_budget_bits": 1,
+      "n_source_bits": 33,
+      "success_fraction": "2448023843/4294967296",
+      "success_probability": 0.5699749670457095
+    },
+    {
+      "advantage_over_chance": 0.06791687977965921,
+      "advantage_over_chance_fraction": "583401555/8589934592",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.06841803664237174,
+      "exact_to_asymptotic_advantage_ratio": 0.9926750768173584,
+      "message_budget_bits": 1,
+      "n_source_bits": 34,
+      "success_fraction": "4878368851/8589934592",
+      "success_probability": 0.5679168797796592
+    },
+    {
+      "advantage_over_chance": 0.06791687977965921,
+      "advantage_over_chance_fraction": "583401555/8589934592",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.06743355313447354,
+      "exact_to_asymptotic_advantage_ratio": 1.007167450367354,
+      "message_budget_bits": 1,
+      "n_source_bits": 35,
+      "success_fraction": "4878368851/8589934592",
+      "success_probability": 0.5679168797796592
+    },
+    {
+      "advantage_over_chance": 0.06603029978577979,
+      "advantage_over_chance_fraction": "2268783825/34359738368",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.06649038006690546,
+      "exact_to_asymptotic_advantage_ratio": 0.9930804985523813,
+      "message_budget_bits": 1,
+      "n_source_bits": 36,
+      "success_fraction": "19448653009/34359738368",
+      "success_probability": 0.5660302997857798
+    },
+    {
+      "advantage_over_chance": 0.06603029978577979,
+      "advantage_over_chance_fraction": "2268783825/34359738368",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.06558570689128541,
+      "exact_to_asymptotic_advantage_ratio": 1.0067788076940503,
+      "message_budget_bits": 1,
+      "n_source_bits": 37,
+      "success_fraction": "19448653009/34359738368",
+      "success_probability": 0.5660302997857798
+    },
+    {
+      "advantage_over_chance": 0.06429266031773295,
+      "advantage_over_chance_fraction": "4418157975/68719476736",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.06471698367586758,
+      "exact_to_asymptotic_advantage_ratio": 0.9934434002632164,
+      "message_budget_bits": 1,
+      "n_source_bits": 38,
+      "success_fraction": "38777896343/68719476736",
+      "success_probability": 0.564292660317733
+    },
+    {
+      "advantage_over_chance": 0.06429266031773295,
+      "advantage_over_chance_fraction": "4418157975/68719476736",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.06388189083547281,
+      "exact_to_asymptotic_advantage_ratio": 1.0064301396982451,
+      "message_budget_bits": 1,
+      "n_source_bits": 39,
+      "success_fraction": "38777896343/68719476736",
+      "success_probability": 0.564292660317733
+    },
+    {
+      "advantage_over_chance": 0.06268534380978963,
+      "advantage_over_chance_fraction": "34461632205/549755813888",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.063078313050504,
+      "exact_to_asymptotic_advantage_ratio": 0.9937701371246289,
+      "message_budget_bits": 1,
+      "n_source_bits": 40,
+      "success_fraction": "309339539149/549755813888",
+      "success_probability": 0.5626853438097896
+    },
+    {
+      "advantage_over_chance": 0.06268534380978963,
+      "advantage_over_chance_fraction": "34461632205/549755813888",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.06230431670671086,
+      "exact_to_asymptotic_advantage_ratio": 1.0061155811221298,
+      "message_budget_bits": 1,
+      "n_source_bits": 41,
+      "success_fraction": "309339539149/549755813888",
+      "success_probability": 0.5626853438097896
+    },
+    {
+      "advantage_over_chance": 0.06119283562384226,
+      "advantage_over_chance_fraction": "67282234305/1099511627776",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.06155813030745727,
+      "exact_to_asymptotic_advantage_ratio": 0.9940658580468491,
+      "message_budget_bits": 1,
+      "n_source_bits": 42,
+      "success_fraction": "617038048193/1099511627776",
+      "success_probability": 0.5611928356238423
+    },
+    {
+      "advantage_over_chance": 0.06119283562384226,
+      "advantage_over_chance_fraction": "67282234305/1099511627776",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.06083812740644757,
+      "exact_to_asymptotic_advantage_ratio": 1.0058303605406023,
+      "message_budget_bits": 1,
+      "n_source_bits": 43,
+      "success_fraction": "617038048193/1099511627776",
+      "success_probability": 0.5611928356238423
+    },
+    {
+      "advantage_over_chance": 0.059802089359664024,
+      "advantage_over_chance_fraction": "263012370465/4398046511104",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.060142811686377584,
+      "exact_to_asymptotic_advantage_ratio": 0.9943347788844609,
+      "message_budget_bits": 1,
+      "n_source_bits": 44,
+      "success_fraction": "2462035626017/4398046511104",
+      "success_probability": 0.559802089359664
+    },
+    {
+      "advantage_over_chance": 0.059802089359664024,
+      "advantage_over_chance_fraction": "263012370465/4398046511104",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.05947080387175904,
+      "exact_to_asymptotic_advantage_ratio": 1.0055705567494826,
+      "message_budget_bits": 1,
+      "n_source_bits": 45,
+      "success_fraction": "2462035626017/4398046511104",
+      "success_probability": 0.559802089359664
+    },
+    {
+      "advantage_over_chance": 0.05850204393880176,
+      "advantage_over_chance_fraction": "514589420475/8796093022208",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.05882083021528271,
+      "exact_to_asymptotic_advantage_ratio": 0.9945803846135085,
+      "message_budget_bits": 1,
+      "n_source_bits": 46,
+      "success_fraction": "4912635931579/8796093022208",
+      "success_probability": 0.5585020439388018
+    },
+    {
+      "advantage_over_chance": 0.05850204393880176,
+      "advantage_over_chance_fraction": "514589420475/8796093022208",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.05819171233890564,
+      "exact_to_asymptotic_advantage_ratio": 1.0053329174795334,
+      "message_budget_bits": 1,
+      "n_source_bits": 47,
+      "success_fraction": "4912635931579/8796093022208",
+      "success_probability": 0.5585020439388018
+    },
+    {
+      "advantage_over_chance": 0.05728325135674339,
+      "advantage_over_chance_fraction": "8061900920775/140737488355328",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.057582358245222585,
+      "exact_to_asymptotic_advantage_ratio": 0.9948055811259865,
+      "message_budget_bits": 1,
+      "n_source_bits": 48,
+      "success_fraction": "78430645098439/140737488355328",
+      "success_probability": 0.5572832513567434
+    },
+    {
+      "advantage_over_chance": 0.05728325135674339,
+      "advantage_over_chance_fraction": "8061900920775/140737488355328",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.05699175434306181,
+      "exact_to_asymptotic_advantage_ratio": 1.0051147225952533,
+      "message_budget_bits": 1,
+      "n_source_bits": 49,
+      "success_fraction": "78430645098439/140737488355328",
+      "success_probability": 0.5572832513567434
+    },
+    {
+      "advantage_over_chance": 0.056137586329608524,
+      "advantage_over_chance_fraction": "15801325804719/281474976710656",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.056418958354775624,
+      "exact_to_asymptotic_advantage_ratio": 0.9950128107045549,
+      "message_budget_bits": 1,
+      "n_source_bits": 50,
+      "success_fraction": "156538814160047/281474976710656",
+      "success_probability": 0.5561375863296085
+    },
+    {
+      "advantage_over_chance": 0.056137586329608524,
+      "advantage_over_chance_fraction": "15801325804719/281474976710656",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.0558630929922844,
+      "exact_to_asymptotic_advantage_ratio": 1.0049136795444182,
+      "message_budget_bits": 1,
+      "n_source_bits": 51,
+      "success_fraction": "156538814160047/281474976710656",
+      "success_probability": 0.5561375863296085
+    },
+    {
+      "advantage_over_chance": 0.05505801736173144,
+      "advantage_over_chance_fraction": "61989816618513/1125899906842624",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.055323340305303774,
+      "exact_to_asymptotic_advantage_ratio": 0.9952041409266298,
+      "message_budget_bits": 1,
+      "n_source_bits": 52,
+      "success_fraction": "624939770039825/1125899906842624",
+      "success_probability": 0.5550580173617314
+    },
+    {
+      "advantage_over_chance": 0.05505801736173144,
+      "advantage_over_chance_fraction": "61989816618513/1125899906842624",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.05479893661891683,
+      "exact_to_asymptotic_advantage_ratio": 1.0047278425239583,
+      "message_budget_bits": 1,
+      "n_source_bits": 53,
+      "success_fraction": "624939770039825/1125899906842624",
+      "success_probability": 0.5550580173617314
+    },
+    {
+      "advantage_over_chance": 0.0540384244476253,
+      "advantage_over_chance_fraction": "121683714103007/2251799813685248",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.05428916798921333,
+      "exact_to_asymptotic_advantage_ratio": 0.9953813338668618,
+      "message_budget_bits": 1,
+      "n_source_bits": 54,
+      "success_fraction": "1247583620945631/2251799813685248",
+      "success_probability": 0.5540384244476253
+    },
+    {
+      "advantage_over_chance": 0.0540384244476253,
+      "advantage_over_chance_fraction": "121683714103007/2251799813685248",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.05379336611548361,
+      "exact_to_asymptotic_advantage_ratio": 1.0045555493146794,
+      "message_budget_bits": 1,
+      "n_source_bits": 55,
+      "success_fraction": "1247583620945631/2251799813685248",
+      "success_probability": 0.5540384244476253
+    },
+    {
+      "advantage_over_chance": 0.05307345258248913,
+      "advantage_over_chance_fraction": "956086325095055/18014398509481984",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.05331090465573077,
+      "exact_to_asymptotic_advantage_ratio": 0.9955459005099417,
+      "message_budget_bits": 1,
+      "n_source_bits": 56,
+      "success_fraction": "9963285579836047/18014398509481984",
+      "success_probability": 0.5530734525824892
+    },
+    {
+      "advantage_over_chance": 0.05307345258248913,
+      "advantage_over_chance_fraction": "956086325095055/18014398509481984",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.05284119589930132,
+      "exact_to_asymptotic_advantage_ratio": 1.0043953714376643,
+      "message_budget_bits": 1,
+      "n_source_bits": 57,
+      "success_fraction": "9963285579836047/18014398509481984",
+      "success_probability": 0.5530734525824892
+    },
+    {
+      "advantage_over_chance": 0.05215839305520484,
+      "advantage_over_chance_fraction": "1879204156221315/36028797018963968",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.05238368775643532,
+      "exact_to_asymptotic_advantage_ratio": 0.9956991439343098,
+      "message_budget_bits": 1,
+      "n_source_bits": 58,
+      "success_fraction": "19893602665703299/36028797018963968",
+      "success_probability": 0.5521583930552049
+    },
+    {
+      "advantage_over_chance": 0.05215839305520484,
+      "advantage_over_chance_fraction": "1879204156221315/36028797018963968",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.05193786102966899,
+      "exact_to_asymptotic_advantage_ratio": 1.004246074465983,
+      "message_budget_bits": 1,
+      "n_source_bits": 59,
+      "success_fraction": "19893602665703299/36028797018963968",
+      "success_probability": 0.5521583930552049
+    },
+    {
+      "advantage_over_chance": 0.05128908650428476,
+      "advantage_over_chance_fraction": "7391536347803839/144115188075855872",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.051503226936425284,
+      "exact_to_asymptotic_advantage_ratio": 0.9958421938803008,
+      "message_budget_bits": 1,
+      "n_source_bits": 60,
+      "success_fraction": "79449130385731775/144115188075855872",
+      "success_probability": 0.5512890865042848
+    },
+    {
+      "advantage_over_chance": 0.05128908650428476,
+      "advantage_over_chance_fraction": "7391536347803839/144115188075855872",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.05107932485591396,
+      "exact_to_asymptotic_advantage_ratio": 1.0041065861571683,
+      "message_budget_bits": 1,
+      "n_source_bits": 61,
+      "success_fraction": "79449130385731775/144115188075855872",
+      "success_probability": 0.5512890865042848
+    },
+    {
+      "advantage_over_chance": 0.050461843173570484,
+      "advantage_over_chance_fraction": "14544636039226909/288230376151711744",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.05066572027672756,
+      "exact_to_asymptotic_advantage_ratio": 0.9959760346434723,
+      "message_budget_bits": 1,
+      "n_source_bits": 62,
+      "success_fraction": "158659824115082781/288230376151711744",
+      "success_probability": 0.5504618431735705
+    },
+    {
+      "advantage_over_chance": 0.050461843173570484,
+      "advantage_over_chance_fraction": "14544636039226909/288230376151711744",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.05026200292434228,
+      "exact_to_asymptotic_advantage_ratio": 1.0039759706657336,
+      "message_budget_bits": 1,
+      "n_source_bits": 63,
+      "success_fraction": "158659824115082781/288230376151711744",
+      "success_probability": 0.5504618431735705
+    },
+    {
+      "advantage_over_chance": 0.049673376873983446,
+      "advantage_over_chance_fraction": "916312070471295267/18446744073709551616",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.04986778505017909,
+      "exact_to_asymptotic_advantage_ratio": 0.9961015277498285,
+      "message_budget_bits": 1,
+      "n_source_bits": 64,
+      "success_fraction": "10139684107326071075/18446744073709551616",
+      "success_probability": 0.5496733768739834
+    },
+    {
+      "advantage_over_chance": 0.049673376873983446,
+      "advantage_over_chance_fraction": "916312070471295267/18446744073709551616",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.04948269986600528,
+      "exact_to_asymptotic_advantage_ratio": 1.0038534075241348,
+      "message_budget_bits": 1,
+      "n_source_bits": 65,
+      "success_fraction": "10139684107326071075/18446744073709551616",
+      "success_probability": 0.5496733768739834
+    },
+    {
+      "advantage_over_chance": 0.04892074995165037,
+      "advantage_over_chance_fraction": "1804857108504066435/36893488147419103232",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.04910640010930738,
+      "exact_to_asymptotic_advantage_ratio": 0.9962194305173304,
+      "message_budget_bits": 1,
+      "n_source_bits": 66,
+      "success_fraction": "20251601182213618051/36893488147419103232",
+      "success_probability": 0.5489207499516504
+    },
+    {
+      "advantage_over_chance": 0.04892074995165037,
+      "advantage_over_chance_fraction": "1804857108504066435/36893488147419103232",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.04873855672688035,
+      "exact_to_asymptotic_advantage_ratio": 1.0037381743942684,
+      "message_budget_bits": 1,
+      "n_source_bits": 67,
+      "success_fraction": "20251601182213618051/36893488147419103232",
+      "success_probability": 0.5489207499516504
+    },
+    {
+      "advantage_over_chance": 0.04820132715824374,
+      "advantage_over_chance_fraction": "7113260368810144185/147573952589676412928",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.04837885766529074,
+      "exact_to_asymptotic_advantage_ratio": 0.9963304113487911,
+      "message_budget_bits": 1,
+      "n_source_bits": 68,
+      "success_fraction": "80900236663648350649/147573952589676412928",
+      "success_probability": 0.5482013271582438
+    },
+    {
+      "advantage_over_chance": 0.04820132715824374,
+      "advantage_over_chance_fraction": "7113260368810144185/147573952589676412928",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.04802700675810862,
+      "exact_to_asymptotic_advantage_ratio": 1.0036296328233216,
+      "message_budget_bits": 1,
+      "n_source_bits": 69,
+      "success_fraction": "80900236663648350649/147573952589676412928",
+      "success_probability": 0.5482013271582438
+    },
+    {
+      "advantage_over_chance": 0.047512736770268835,
+      "advantage_over_chance_fraction": "14023284727082855679/295147905179352825856",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.04768272270088961,
+      "exact_to_asymptotic_advantage_ratio": 0.9964350624085146,
+      "message_budget_bits": 1,
+      "n_source_bits": 70,
+      "success_fraction": "161597237316759268607/295147905179352825856",
+      "success_probability": 0.5475127367702688
+    },
+    {
+      "advantage_over_chance": 0.047512736770268835,
+      "advantage_over_chance_fraction": "14023284727082855679/295147905179352825856",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.04734573810584494,
+      "exact_to_asymptotic_advantage_ratio": 1.0035272164107054,
+      "message_budget_bits": 1,
+      "n_source_bits": 71,
+      "success_fraction": "161597237316759268607/295147905179352825856",
+      "success_probability": 0.5475127367702688
+    },
+    {
+      "advantage_over_chance": 0.046852837648459544,
+      "advantage_over_chance_fraction": "110628135069209194801/2361183241434822606848",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.04701579862897969,
+      "exact_to_asymptotic_advantage_ratio": 0.9965339101903568,
+      "message_budget_bits": 1,
+      "n_source_bits": 72,
+      "success_fraction": "1291219755786620498225/2361183241434822606848",
+      "success_probability": 0.5468528376484595
+    },
+    {
+      "advantage_over_chance": 0.046852837648459544,
+      "advantage_over_chance_fraction": "110628135069209194801/2361183241434822606848",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.046692662163224076,
+      "exact_to_asymptotic_advantage_ratio": 1.0034304209230038,
+      "message_budget_bits": 1,
+      "n_source_bits": 73,
+      "success_fraction": "1291219755786620498225/2361183241434822606848",
+      "success_probability": 0.5468528376484595
+    },
+    {
+      "advantage_over_chance": 0.04621969119375063,
+      "advantage_over_chance_fraction": "218266320541953276229/4722366482869645213696",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.046376098091741196,
+      "exact_to_asymptotic_advantage_ratio": 0.9966274243753503,
+      "message_budget_bits": 1,
+      "n_source_bits": 74,
+      "success_fraction": "2579449561976775883077/4722366482869645213696",
+      "success_probability": 0.5462196911937506
+    },
+    {
+      "advantage_over_chance": 0.04621969119375063,
+      "advantage_over_chance_fraction": "218266320541953276229/4722366482869645213696",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.046065886596178066,
+      "exact_to_asymptotic_advantage_ratio": 1.00333879599281,
+      "message_budget_bits": 1,
+      "n_source_bits": 75,
+      "success_fraction": "2579449561976775883077/4722366482869645213696",
+      "success_probability": 0.5462196911937506
+    },
+    {
+      "advantage_over_chance": 0.04561153736225391,
+      "advantage_over_chance_fraction": "861577581086657669325/18889465931478580854784",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.045761818015145055,
+      "exact_to_asymptotic_advantage_ratio": 0.9967160252933699,
+      "message_budget_bits": 1,
+      "n_source_bits": 76,
+      "success_fraction": "10306310546825948096717/18889465931478580854784",
+      "success_probability": 0.5456115373622539
+    },
+    {
+      "advantage_over_chance": 0.04561153736225391,
+      "advantage_over_chance_fraction": "861577581086657669325/18889465931478580854784",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.04546369224866979,
+      "exact_to_asymptotic_advantage_ratio": 1.0032519381130651,
+      "message_budget_bits": 1,
+      "n_source_bits": 77,
+      "success_fraction": "10306310546825948096717/18889465931478580854784",
+      "success_probability": 0.5456115373622539
+    },
+    {
+      "advantage_over_chance": 0.045026774062737834,
+      "advantage_over_chance_fraction": "1701063429324939500975/37778931862957161709568",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.04517131820478159,
+      "exact_to_asymptotic_advantage_ratio": 0.9968000902389328,
+      "message_budget_bits": 1,
+      "n_source_bits": 78,
+      "success_fraction": "20590529360803520355759/37778931862957161709568",
+      "success_probability": 0.5450267740627378
+    },
+    {
+      "advantage_over_chance": 0.045026774062737834,
+      "advantage_over_chance_fraction": "1701063429324939500975/37778931862957161709568",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.04488451328474891,
+      "exact_to_asymptotic_advantage_ratio": 1.0031694846970138,
+      "message_budget_bits": 1,
+      "n_source_bits": 79,
+      "success_fraction": "20590529360803520355759/37778931862957161709568",
+      "success_probability": 0.5450267740627378
+    },
+    {
+      "advantage_over_chance": 0.044463939386953616,
+      "advantage_over_chance_fraction": "26876802183334044115405/604462909807314587353088",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.044603102903819275,
+      "exact_to_asymptotic_advantage_ratio": 0.9968799588412998,
+      "message_budget_bits": 1,
+      "n_source_bits": 80,
+      "success_fraction": "329108257086991337791949/604462909807314587353088",
+      "success_probability": 0.5444639393869536
+    },
+    {
+      "advantage_over_chance": 0.044463939386953616,
+      "advantage_over_chance_fraction": "26876802183334044115405/604462909807314587353088",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.04432692004460363,
+      "exact_to_asymptotic_advantage_ratio": 1.0030911090193524,
+      "message_budget_bits": 1,
+      "n_source_bits": 81,
+      "success_fraction": "329108257086991337791949/604462909807314587353088",
+      "success_probability": 0.5444639393869536
+    },
+    {
+      "advantage_over_chance": 0.043921696223698084,
+      "advantage_over_chance_fraction": "53098072606098965203605/1208925819614629174706176",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.04405580484050956,
+      "exact_to_asymptotic_advantage_ratio": 0.996955937650056,
+      "message_budget_bits": 1,
+      "n_source_bits": 82,
+      "success_fraction": "657560982413413552556693/1208925819614629174706176",
+      "success_probability": 0.5439216962236981
+    },
+    {
+      "advantage_over_chance": 0.043921696223698084,
+      "advantage_over_chance_fraction": "53098072606098965203605/1208925819614629174706176",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.043789604186862806,
+      "exact_to_asymptotic_advantage_ratio": 1.0030165158897442,
+      "message_budget_bits": 1,
+      "n_source_bits": 83,
+      "success_fraction": "657560982413413552556693/1208925819614629174706176",
+      "success_probability": 0.5439216962236981
+    },
+    {
+      "advantage_over_chance": 0.043398818887701675,
+      "advantage_over_chance_fraction": "209863810776486386280915/4835703278458516698824704",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.04352817137756816,
+      "exact_to_asymptotic_advantage_ratio": 0.997028304066705,
+      "message_budget_bits": 1,
+      "n_source_bits": 84,
+      "success_fraction": "2627715450005744735693267/4835703278458516698824704",
+      "success_probability": 0.5433988188877017
+    },
+    {
+      "advantage_over_chance": 0.043398818887701675,
+      "advantage_over_chance_fraction": "209863810776486386280915/4835703278458516698824704",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.04327136576535075,
+      "exact_to_asymptotic_advantage_ratio": 1.0029454379379212,
+      "message_budget_bits": 1,
+      "n_source_bits": 85,
+      "success_fraction": "2627715450005744735693267/4835703278458516698824704",
+      "success_probability": 0.5433988188877017
+    },
+    {
+      "advantage_over_chance": 0.04289418145877491,
+      "advantage_over_chance_fraction": "414847067813984717066925/9671406556917033397649408",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.04301905244379022,
+      "exact_to_asymptotic_advantage_ratio": 0.9970973097285564,
+      "message_budget_bits": 1,
+      "n_source_bits": 86,
+      "success_fraction": "5250550346272501415891629/9671406556917033397649408",
+      "success_probability": 0.5428941814587749
+    },
+    {
+      "advantage_over_chance": 0.04289418145877491,
+      "advantage_over_chance_fraction": "414847067813984717066925/9671406556917033397649408",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.042771101949515035,
+      "exact_to_asymptotic_advantage_ratio": 1.0028776324118363,
+      "message_budget_bits": 1,
+      "n_source_bits": 87,
+      "success_fraction": "5250550346272501415891629/9671406556917033397649408",
+      "success_probability": 0.5428941814587749
+    },
+    {
+      "advantage_over_chance": 0.04240674757856156,
+      "advantage_over_chance_fraction": "3281063172710606398620225/77371252455336267181195264",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.04252738998306313,
+      "exact_to_asymptotic_advantage_ratio": 0.9971631834319102,
+      "message_budget_bits": 1,
+      "n_source_bits": 88,
+      "success_fraction": "41966689400378739989217857/77371252455336267181195264",
+      "success_probability": 0.5424067475785616
+    },
+    {
+      "advantage_over_chance": 0.04240674757856156,
+      "advantage_over_chance_fraction": "3281063172710606398620225/77371252455336267181195264",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.042287797147042144,
+      "exact_to_asymptotic_advantage_ratio": 1.0028128784080619,
+      "message_budget_bits": 1,
+      "n_source_bits": 89,
+      "success_fraction": "41966689400378739989217857/77371252455336267181195264",
+      "success_probability": 0.5424067475785616
+    },
+    {
+      "advantage_over_chance": 0.041935561494355324,
+      "advantage_over_chance_fraction": "6489213830472088210604445/154742504910672534362390528",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.042052208700336,
+      "exact_to_asymptotic_advantage_ratio": 0.9972261336660839,
+      "message_budget_bits": 1,
+      "n_source_bits": 90,
+      "success_fraction": "83860466285808355391799709/154742504910672534362390528",
+      "success_probability": 0.5419355614943553
+    },
+    {
+      "advantage_over_chance": 0.041935561494355324,
+      "advantage_over_chance_fraction": "6489213830472088210604445/154742504910672534362390528",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.04182051432720856,
+      "exact_to_asymptotic_advantage_ratio": 1.0027509744678562,
+      "message_budget_bits": 1,
+      "n_source_bits": 91,
+      "success_fraction": "83860466285808355391799709/154742504910672534362390528",
+      "success_probability": 0.5419355614943553
+    },
+    {
+      "advantage_over_chance": 0.041479740173764504,
+      "advantage_over_chance_fraction": "25674715590128696833261065/618970019642690137449562112",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.04159260792024898,
+      "exact_to_asymptotic_advantage_ratio": 0.9972863508174123,
+      "message_budget_bits": 1,
+      "n_source_bits": 92,
+      "success_fraction": "335159725411473765558042121/618970019642690137449562112",
+      "success_probability": 0.5414797401737645
+    },
+    {
+      "advantage_over_chance": 0.041479740173764504,
+      "advantage_over_chance_fraction": "25674715590128696833261065/618970019642690137449562112",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.041368387376188615,
+      "exact_to_asymptotic_advantage_ratio": 1.0026917364837862,
+      "message_budget_bits": 1,
+      "n_source_bits": 93,
+      "success_fraction": "335159725411473765558042121/618970019642690137449562112",
+      "success_probability": 0.5414797401737645
+    },
+    {
+      "advantage_over_chance": 0.04103846634212871,
+      "advantage_over_chance_fraction": "50803160635786570329644235/1237940039285380274899124224",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.04114775440369707,
+      "exact_to_asymptotic_advantage_ratio": 0.9973440090923031,
+      "message_budget_bits": 1,
+      "n_source_bits": 94,
+      "success_fraction": "669773180278476707779206347/1237940039285380274899124224",
+      "success_probability": 0.5410384663421287
+    },
+    {
+      "advantage_over_chance": 0.04103846634212871,
+      "advantage_over_chance_fraction": "50803160635786570329644235/1237940039285380274899124224",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.04093061434233554,
+      "exact_to_asymptotic_advantage_ratio": 1.0026349958710885,
+      "message_budget_bits": 1,
+      "n_source_bits": 95,
+      "success_fraction": "669773180278476707779206347/1237940039285380274899124224",
+      "success_probability": 0.5410384663421287
+    },
+    {
+      "advantage_over_chance": 0.04061098231773153,
+      "advantage_over_chance_fraction": "1608766753466574727105400775/39614081257132168796771975168",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.04071687599190999,
+      "exact_to_asymptotic_advantage_ratio": 0.9973992682002544,
+      "message_budget_bits": 1,
+      "n_source_bits": 96,
+      "success_fraction": "21415807382032659125491388359/39614081257132168796771975168",
+      "success_probability": 0.5406109823177315
+    },
+    {
+      "advantage_over_chance": 0.04061098231773153,
+      "advantage_over_chance_fraction": "1608766753466574727105400775/39614081257132168796771975168",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.040506451451525566,
+      "exact_to_asymptotic_advantage_ratio": 1.0025805979655131,
+      "message_budget_bits": 1,
+      "n_source_bits": 97,
+      "success_fraction": "21415807382032659125491388359/39614081257132168796771975168",
+      "success_probability": 0.5406109823177315
+    },
+    {
+      "advantage_over_chance": 0.040196584538979174,
+      "advantage_over_chance_fraction": "3184701532372607112841303575/79228162514264337593543950336",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.04029925596769688,
+      "exact_to_asymptotic_advantage_ratio": 0.9974522748310787,
+      "message_budget_bits": 1,
+      "n_source_bits": 98,
+      "success_fraction": "42798782789504775909613278743/79228162514264337593543950336",
+      "success_probability": 0.5401965845389791
+    },
+    {
+      "advantage_over_chance": 0.040196584538979174,
+      "advantage_over_chance_fraction": "3184701532372607112841303575/79228162514264337593543950336",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.04009520779091839,
+      "exact_to_asymptotic_advantage_ratio": 1.0025284006155906,
+      "message_budget_bits": 1,
+      "n_source_bits": 99,
+      "success_fraction": "42798782789504775909613278743/79228162514264337593543950336",
+      "success_probability": 0.5401965845389791
+    },
+    {
+      "advantage_over_chance": 0.039794618693589384,
+      "advantage_over_chance_fraction": "12611418068195524166851562157/316912650057057350374175801344",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.03989422804014327,
+      "exact_to_asymptotic_advantage_ratio": 0.9975031639551052,
+      "message_budget_bits": 1,
+      "n_source_bits": 100,
+      "success_fraction": "171067743096724199353939462829/316912650057057350374175801344",
+      "success_probability": 0.5397946186935894
+    },
+    {
+      "advantage_over_chance": 0.039794618693589384,
+      "advantage_over_chance_fraction": "12611418068195524166851562157/316912650057057350374175801344",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.03969624057466072,
+      "exact_to_asymptotic_advantage_ratio": 1.0024782729423365,
+      "message_budget_bits": 1,
+      "n_source_bits": 101,
+      "success_fraction": "171067743096724199353939462829/316912650057057350374175801344",
+      "success_probability": 0.5397946186935894
+    },
+    {
+      "advantage_over_chance": 0.039404475373064,
+      "advantage_over_chance_fraction": "24975553429171528252000152507/633825300114114700748351602688",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.039501171872899005,
+      "exact_to_asymptotic_advantage_ratio": 0.997552059970622,
+      "message_budget_bits": 1,
+      "n_source_bits": 102,
+      "success_fraction": "341888203486228878626175953851/633825300114114700748351602688",
+      "success_probability": 0.539404475373064
+    },
+    {
+      "advantage_over_chance": 0.039404475373064,
+      "advantage_over_chance_fraction": "24975553429171528252000152507/633825300114114700748351602688",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.03930895091771607,
+      "exact_to_asymptotic_advantage_ratio": 1.002430094243621,
+      "message_budget_bits": 1,
+      "n_source_bits": 103,
+      "success_fraction": "341888203486228878626175953851/633825300114114700748351602688",
+      "success_probability": 0.539404475373064
+    },
+    {
+      "advantage_over_chance": 0.03902558618678453,
+      "advantage_over_chance_fraction": "197883231015743646919693516017/5070602400912917605986812821504",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.03911950908777134,
+      "exact_to_asymptotic_advantage_ratio": 0.9975990777190972,
+      "message_budget_bits": 1,
+      "n_source_bits": 104,
+      "success_fraction": "2733184431472202449913099926769/5070602400912917605986812821504",
+      "success_probability": 0.5390255861867845
+    },
+    {
+      "advantage_over_chance": 0.03902558618678453,
+      "advantage_over_chance_fraction": "197883231015743646919693516017/5070602400912917605986812821504",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.03893278005460123,
+      "exact_to_asymptotic_advantage_ratio": 1.0023837530238824,
+      "message_budget_bits": 1,
+      "n_source_bits": 105,
+      "success_fraction": "2733184431472202449913099926769/5070602400912917605986812821504",
+      "success_probability": 0.5390255861867845
+    },
+    {
+      "advantage_over_chance": 0.03865742027936204,
+      "advantage_over_chance_fraction": "392032816163265715595619229845/10141204801825835211973625643008",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.038748699685047905,
+      "exact_to_asymptotic_advantage_ratio": 0.9976443233856157,
+      "message_budget_bits": 1,
+      "n_source_bits": 106,
+      "success_fraction": "5462635217076183321582432051349/10141204801825835211973625643008",
+      "success_probability": 0.538657420279362
+    },
+    {
+      "advantage_over_chance": 0.03865742027936204,
+      "advantage_over_chance_fraction": "392032816163265715595619229845/10141204801825835211973625643008",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.03856720594871517,
+      "exact_to_asymptotic_advantage_ratio": 1.0023391461327749,
+      "message_budget_bits": 1,
+      "n_source_bits": 107,
+      "success_fraction": "5462635217076183321582432051349/10141204801825835211973625643008",
+      "success_probability": 0.538657420279362
+    },
+    {
+      "advantage_over_chance": 0.038299481202701276,
+      "advantage_over_chance_fraction": "1553611530721090058101157688645/40564819207303340847894502572032",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.03838823883014839,
+      "exact_to_asymptotic_advantage_ratio": 0.9976878952993954,
+      "message_budget_bits": 1,
+      "n_source_bits": 108,
+      "success_fraction": "21836021134372760482048408974661/40564819207303340847894502572032",
+      "success_probability": 0.5382994812027013
+    },
+    {
+      "advantage_over_chance": 0.038299481202701276,
+      "advantage_over_chance_fraction": "1553611530721090058101157688645/40564819207303340847894502572032",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.03821174024545592,
+      "exact_to_asymptotic_advantage_ratio": 1.0022961779987445,
+      "message_budget_bits": 1,
+      "n_source_bits": 109,
+      "success_fraction": "21836021134372760482048408974661/40564819207303340847894502572032",
+      "success_probability": 0.5382994812027013
+    },
+    {
+      "advantage_over_chance": 0.03795130410085854,
+      "advantage_over_chance_fraction": "3078975579065433024236839782951/81129638414606681695789005144064",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.03803765396310911,
+      "exact_to_asymptotic_advantage_ratio": 0.9977298846470838,
+      "message_budget_bits": 1,
+      "n_source_bits": 110,
+      "success_fraction": "43643794786368773872131342354983/81129638414606681695789005144064",
+      "success_probability": 0.5379513041008586
+    },
+    {
+      "advantage_over_chance": 0.03795130410085854,
+      "advantage_over_chance_fraction": "3078975579065433024236839782951/81129638414606681695789005144064",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.03786592552867553,
+      "exact_to_asymptotic_advantage_ratio": 1.002254759945544,
+      "message_budget_bits": 1,
+      "n_source_bits": 111,
+      "success_fraction": "43643794786368773872131342354983/81129638414606681695789005144064",
+      "success_probability": 0.5379513041008586
+    },
+    {
+      "advantage_over_chance": 0.03761245317138659,
+      "advantage_over_chance_fraction": "48823755610894723670041316558223/1298074214633706907132624082305024",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.037696502193256716,
+      "exact_to_asymptotic_advantage_ratio": 0.9977703761097187,
+      "message_budget_bits": 1,
+      "n_source_bits": 112,
+      "success_fraction": "697860862927748177236353357710735/1298074214633706907132624082305024",
+      "success_probability": 0.5376124531713866
+    },
+    {
+      "advantage_over_chance": 0.03761245317138659,
+      "advantage_over_chance_fraction": "48823755610894723670041316558223/1298074214633706907132624082305024",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.03752933284541683,
+      "exact_to_asymptotic_advantage_ratio": 1.0022148095814047,
+      "message_budget_bits": 1,
+      "n_source_bits": 113,
+      "success_fraction": "697860862927748177236353357710735/1298074214633706907132624082305024",
+      "success_probability": 0.5376124531713866
+    },
+    {
+      "advantage_over_chance": 0.03728251937163758,
+      "advantage_over_chance_fraction": "96790954105808838152888925808407/2596148429267413814265248164610048",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.03736436794640276,
+      "exact_to_asymptotic_advantage_ratio": 0.9978094484327266,
+      "message_budget_bits": 1,
+      "n_source_bits": 114,
+      "success_fraction": "1394865168739515745285513008113431/2596148429267413814265248164610048",
+      "success_probability": 0.5372825193716376
+    },
+    {
+      "advantage_over_chance": 0.03728251937163758,
+      "advantage_over_chance_fraction": "96790954105808838152888925808407/2596148429267413814265248164610048",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.03720155946846915,
+      "exact_to_asymptotic_advantage_ratio": 1.0021762502520104,
+      "message_budget_bits": 1,
+      "n_source_bits": 115,
+      "success_fraction": "1394865168739515745285513008113431/2596148429267413814265248164610048",
+      "success_probability": 0.5372825193716376
+    },
+    {
+      "advantage_over_chance": 0.03696111834257174,
+      "advantage_over_chance_fraction": "383826197316138496123525050619545/10384593717069655257060992658440192",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.03704086083613415,
+      "exact_to_asymptotic_advantage_ratio": 0.9978471749370194,
+      "message_budget_bits": 1,
+      "n_source_bits": 116,
+      "success_fraction": "5576123055850966124654021379839641/10384593717069655257060992658440192",
+      "success_probability": 0.5369611183425718
+    },
+    {
+      "advantage_over_chance": 0.03696111834257174,
+      "advantage_over_chance_fraction": "383826197316138496123525050619545/10384593717069655257060992658440192",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.03688222687020251,
+      "exact_to_asymptotic_advantage_ratio": 1.0021390105496306,
+      "message_budget_bits": 1,
+      "n_source_bits": 117,
+      "success_fraction": "5576123055850966124654021379839641/10384593717069655257060992658440192",
+      "success_probability": 0.5369611183425718
+    },
+    {
+      "advantage_over_chance": 0.03664788852610927,
+      "advantage_over_chance_fraction": "761146865864206848244956456313335/20769187434139310514121985316880384",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.036725613734403466,
+      "exact_to_asymptotic_advantage_ratio": 0.9978836239781778,
+      "message_budget_bits": 1,
+      "n_source_bits": 118,
+      "success_fraction": "11145740582933862105305949114753527/20769187434139310514121985316880384",
+      "success_probability": 0.5366478885261092
+    },
+    {
+      "advantage_over_chance": 0.03664788852610927,
+      "advantage_over_chance_fraction": "761146865864206848244956456313335/20769187434139310514121985316880384",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.036570978884500054,
+      "exact_to_asymptotic_advantage_ratio": 1.0021030238718005,
+      "message_budget_bits": 1,
+      "n_source_bits": 119,
+      "success_fraction": "11145740582933862105305949114753527/20769187434139310514121985316880384",
+      "success_probability": 0.5366478885261092
+    },
+    {
+      "advantage_over_chance": 0.03634248945505836,
+      "advantage_over_chance_fraction": "6038431802522707662743321220085791/166153499473114484112975882535043072",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.036418281019735974,
+      "exact_to_asymptotic_advantage_ratio": 0.9979188593597665,
+      "message_budget_bits": 1,
+      "n_source_bits": 120,
+      "success_fraction": "89115181539079949719231262487607327/166153499473114484112975882535043072",
+      "success_probability": 0.5363424894550584
+    },
+    {
+      "advantage_over_chance": 0.03634248945505836,
+      "advantage_over_chance_fraction": "6038431802522707662743321220085791/166153499473114484112975882535043072",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.036267480036493875,
+      "exact_to_asymptotic_advantage_ratio": 1.002068228023811,
+      "message_budget_bits": 1,
+      "n_source_bits": 121,
+      "success_fraction": "89115181539079949719231262487607327/166153499473114484112975882535043072",
+      "success_probability": 0.5363424894550584
+    },
+    {
+      "advantage_over_chance": 0.03604460019723001,
+      "advantage_over_chance_fraction": "11977872919758157822818719141481651/332306998946228968225951765070086144",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.03611853698404732,
+      "exact_to_asymptotic_advantage_ratio": 0.9979529407060433,
+      "message_budget_bits": 1,
+      "n_source_bits": 122,
+      "success_fraction": "178131372392872641935794601676524723/332306998946228968225951765070086144",
+      "success_probability": 0.53604460019723
+    },
+    {
+      "advantage_over_chance": 0.03604460019723001,
+      "advantage_over_chance_fraction": "11977872919758157822818719141481651/332306998946228968225951765070086144",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.035971414022295214,
+      "exact_to_asymptotic_advantage_ratio": 1.0020345648600146,
+      "message_budget_bits": 1,
+      "n_source_bits": 123,
+      "success_fraction": "178131372392872641935794601676524723/332306998946228968225951765070086144",
+      "success_probability": 0.53604460019723
+    },
+    {
+      "advantage_over_chance": 0.03575391793757493,
+      "advantage_over_chance_fraction": "47525108681621077813119434012975583/1329227995784915872903807060280344576",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.03582607438137482,
+      "exact_to_asymptotic_advantage_ratio": 0.9979859237986342,
+      "message_budget_bits": 1,
+      "n_source_bits": 124,
+      "success_fraction": "712139106574079014265022964153147871/1329227995784915872903807060280344576",
+      "success_probability": 0.535753917937575
+    },
+    {
+      "advantage_over_chance": 0.03575391793757493,
+      "advantage_over_chance_fraction": "47525108681621077813119434012975583/1329227995784915872903807060280344576",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.035682482323055424,
+      "exact_to_asymptotic_advantage_ratio": 1.0020019799595992,
+      "message_budget_bits": 1,
+      "n_source_bits": 125,
+      "success_fraction": "712139106574079014265022964153147871/1329227995784915872903807060280344576",
+      "success_probability": 0.535753917937575
+    },
+    {
+      "advantage_over_chance": 0.03547015668410211,
+      "advantage_over_chance_fraction": "94295850558771979787935384946380125/2658455991569831745807614120560689152",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.03554060310382051,
+      "exact_to_asymptotic_advantage_ratio": 0.9980178608811838,
+      "message_budget_bits": 1,
+      "n_source_bits": 126,
+      "success_fraction": "1423523846343687852691742445226724701/2658455991569831745807614120560689152",
+      "success_probability": 0.5354701566841021
+    },
+    {
+      "advantage_over_chance": 0.03547015668410211,
+      "advantage_over_chance_fraction": "94295850558771979787935384946380125/2658455991569831745807614120560689152",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.035400402939551975,
+      "exact_to_asymptotic_advantage_ratio": 1.001970422333024,
+      "message_budget_bits": 1,
+      "n_source_bits": 127,
+      "success_fraction": "1423523846343687852691742445226724701/2658455991569831745807614120560689152",
+      "success_probability": 0.5354701566841021
+    },
+    {
+      "advantage_over_chance": 0.03519304608500757,
+      "advantage_over_chance_fraction": "11975573020964041433067793888190275875/340282366920938463463374607431768211456",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.03526184897173477,
+      "exact_to_asymptotic_advantage_ratio": 0.9980488009354713,
+      "message_budget_bits": 1,
+      "n_source_bits": 128,
+      "success_fraction": "182116756481433273164755097604074381603/340282366920938463463374607431768211456",
+      "success_probability": 0.5351930460850076
+    },
+    {
+      "advantage_over_chance": 0.024909554968070076,
+      "advantage_over_chance_fraction": "2884329411724603169044874178931143443870105850987581016304218283632259375395/115792089237316195423570985008687907853269984665640564039457584007913129639936",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.024933892525089544,
+      "exact_to_asymptotic_advantage_ratio": 0.9990239166630329,
+      "message_budget_bits": 1,
+      "n_source_bits": 256,
+      "success_fraction": "60780374030382700880830366683275097370505098183807863036033010287588824195363/115792089237316195423570985008687907853269984665640564039457584007913129639936",
+      "success_probability": 0.5249095549680701
+    },
+    {
+      "advantage_over_chance": 0.01762231774291937,
+      "advantage_over_chance_fraction": "236276651577482462494502185025593194739105357821240941288664429576783035168283050422325149817027119984928715664216987480163087353331754833674133286035747/13407807929942597099574024998205846127479365820592393377723561443721764030073546976801874298166903427690031858186486050853753882811946569946433649006084096",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.017630924485867384,
+      "exact_to_asymptotic_advantage_ratio": 0.9995118382501773,
+      "message_budget_bits": 1,
+      "n_source_bits": 512,
+      "success_fraction": "6940180616548781012281514684128516258478788268117437630150445151437665050205056538823262298900478833829944644757460012907040028759305039806890957789077795/13407807929942597099574024998205846127479365820592393377723561443721764030073546976801874298166903427690031858186486050853753882811946569946433649006084096",
+      "success_probability": 0.5176223177429193
+    },
+    {
+      "advantage_over_chance": 0.012463902946489773,
+      "advantage_over_chance_fraction": "2240627276049485405012082425240666590007653929533868497208043949702386853305719822395542070036457030173084717009309301401503750836188248429349936991813308031235837925752786051012579667700545279513914261052614880057450188523875050969255802466276823731258719222256824382666347250141664201106934381978286956835/179769313486231590772930519078902473361797697894230657273430081157732675805500963132708477322407536021120113879871393357658789768814416622492847430639474124377767893424865485276302219601246094119453082952085005768838150682342462881473913110540827237163350510684586298239947245938479716304835356329624224137216",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.012466946262544772,
+      "exact_to_asymptotic_advantage_ratio": 0.9997558892136928,
+      "message_budget_bits": 1,
+      "n_source_bits": 1024,
+      "success_fraction": "92125284019165280791477341964691903270906502876649197133923084528568724756056201388749780731240225040733141656945005980230898635243396559675773652311550370220119784638185528689163689468323592339240455737095117764476525529695106491706212357736690442312933974564549973502639970219381522353524612546790399025443/179769313486231590772930519078902473361797697894230657273430081157732675805500963132708477322407536021120113879871393357658789768814416622492847430639474124377767893424865485276302219601246094119453082952085005768838150682342462881473913110540827237163350510684586298239947245938479716304835356329624224137216",
+      "success_probability": 0.5124639029464898
+    },
+    {
+      "advantage_over_chance": 0.00881438620242326,
+      "advantage_over_chance_fraction": "284854572418592466398992135487522446800436840507846234208916696595193148735418535874146164345577221041112144757928387239477210852957269578650243968729409119463682956335434610655254777320486957486955022644696673780584901399617813695364555523935391862109521507322391461571201183659126739816765674398093133042703647245528202389677065184713569380160883605761300414276114691967611625211051173609188116023304192153012333976204366600644006681350519991255979661699232174440776306645562459039992171611814988631117667868941762544404000678335475737106239650088582077190015789125649938398001146121728739745745200886215089987875/32317006071311007300714876688669951960444102669715484032130345427524655138867890893197201411522913463688717960921898019494119559150490921095088152386448283120630877367300996091750197750389652106796057638384067568276792218642619756161838094338476170470581645852036305042887575891541065808607552399123930385521914333389668342420684974786564569494856176035326322058077805659331026192708460314150258592864177116725943603718461857357598351152301645904403697613233287231227125684710820209725157101726931323469678542580656697935045997268352998638215525166389437335543602135433229604645318478604952148193555853611059596230656",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.008815462242933692,
+      "exact_to_asymptotic_advantage_ratio": 0.9998779371426274,
+      "message_budget_bits": 1,
+      "n_source_bits": 2048,
+      "success_fraction": "16443357608074096116756430479822498427022488175365588250274089410357520718169363982472746870107033952885471125218877396986536990428202730126194320161953550679779121639985932656530353652515313010884983841836730457918981010720927691776283602693173477097400344433340543983014989129429659644120541873960058325803660813940362373600019552577995854127588971623424461443315017521633124721565281330684317412455392750515984135835435295279443182257501342943457828468315875790054339149000972563902570722475280650365956939159270111511926999312511975056214002233283300744961816856842264740720660385424204813842523127691744888103203/32317006071311007300714876688669951960444102669715484032130345427524655138867890893197201411522913463688717960921898019494119559150490921095088152386448283120630877367300996091750197750389652106796057638384067568276792218642619756161838094338476170470581645852036305042887575891541065808607552399123930385521914333389668342420684974786564569494856176035326322058077805659331026192708460314150258592864177116725943603718461857357598351152301645904403697613233287231227125684710820209725157101726931323469678542580656697935045997268352998638215525166389437335543602135433229604645318478604952148193555853611059596230656",
+      "success_probability": 0.5088143862024233
+    },
+    {
+      "advantage_over_chance": 0.00623309268188013,
+      "advantage_over_chance_fraction": "6509772693773295592136395808739816779077164671473341138553868509491725224766882381255773313126448919715981698633330008122992885149828474252873952028680816154453622383293887444095274517223345898254587121808295216440143981915054297829710523805411171552637552054185920247834915752076841142447174594444105656373947187002964442520351842249752552307449444970171023210546935921754478612945986552505455238886955637958517662035406725837569565545736456718635262846451193401480981526699235636635224536878835775968960706012871299892913710606637353287470387631329380251102534406501122264404717789193061677753974553424012302971316538237019433767551462678379990320428682071490274126421939392088228878759957378934051018739324388827259120031568326842778478381481827135287886762207089449311213993831625755634018593857217391056326121893545982827881242831537226954162109320525355257291426064917508046708803116405516377167707045916539877398795933356371665857499764373902761590747368643088712466503942782289284738679383194012201896966222131043312339179729437713137912614826723886185540696529055633425412545569916762816307096989097299529596272495054758671733182520071646031068479297732498142624013751089227460989883948694484725716685197660505693232963875/1044388881413152506691752710716624382579964249047383780384233483283953907971557456848826811934997558340890106714439262837987573438185793607263236087851365277945956976543709998340361590134383718314428070011855946226376318839397712745672334684344586617496807908705803704071284048740118609114467977783598029006686938976881787785946905630190260940599579453432823469303026696443059025015972399867714215541693835559885291486318237914434496734087811872639496475100189041349008417061675093668333850551032972088269550769983616369411933015213796825837188091833656751221318492846368125550225998300412344784862595674492194617023806505913245610825731835380087608622102834270197698202313169017678006675195485079921636419370285375124784014907159135459982790513399611551794271106831134090584272884279791554849782954323534517065223269061394905987693002122963395687782878948440616007412945674919823050571642377154816321380631045902916136926708342856440730447899971901781465763473223850267253059899795996090799469201774624817718449867455659250178329070473119433165550807568221846571746373296884912819520317457002440926616910874148385078411929804522981857338977648103126085903001302413467189726673216491511131602920781738033436090243804708340403154190336",
+      "asymptotic_advantage_1_over_sqrt_2pi_n": 0.006233473131272386,
+      "exact_to_asymptotic_advantage_ratio": 0.9999389667069635,
+      "message_budget_bits": 1,
+      "n_source_bits": 4096,
+      "success_fraction": "528704213400349548938012751167052008069059289195165231330670610151468679210545610805669179280625228090161035055852961427116779604242725277884491995954363455127432110655148886614276069584415205055468622127736268329628303401613910670665877865977704480301041506407087772283476940122136145699681163486243120159717416675443858335493804657344883022607239171686582757862060284143283991120932186486362563009733873417901163405194525683054817932589642393038383500396545714075985190057536782470802149812395321820103736091004679484598880218213535766206064433548157755861761780829685185039517716939399234070185272390670109611483219791193642239180417380368423794631480099206589123227578523900927232216357699918894869228424467076389651127485147894572769873638181632911185022315622656494603350435971521533058910071018984649588937756424243435821727743893018924798053548794745663260997898902377419571994624304982924537858022568867997945862150104784592031081449750324793494472483980568222338996453840780334684473280270506421061121899949960668401503714965997429720688018610834809471413883177498089835172704298417983279615552426171492068802237397316249600402671344123209074019979948939231737487350359334983026791344339563501443761807100014675894810059043/1044388881413152506691752710716624382579964249047383780384233483283953907971557456848826811934997558340890106714439262837987573438185793607263236087851365277945956976543709998340361590134383718314428070011855946226376318839397712745672334684344586617496807908705803704071284048740118609114467977783598029006686938976881787785946905630190260940599579453432823469303026696443059025015972399867714215541693835559885291486318237914434496734087811872639496475100189041349008417061675093668333850551032972088269550769983616369411933015213796825837188091833656751221318492846368125550225998300412344784862595674492194617023806505913245610825731835380087608622102834270197698202313169017678006675195485079921636419370285375124784014907159135459982790513399611551794271106831134090584272884279791554849782954323534517065223269061394905987693002122963395687782878948440616007412945674919823050571642377154816321380631045902916136926708342856440730447899971901781465763473223850267253059899795996090799469201774624817718449867455659250178329070473119433165550807568221846571746373296884912819520317457002440926616910874148385078411929804522981857338977648103126085903001302413467189726673216491511131602920781738033436090243804708340403154190336",
+      "success_probability": 0.5062330926818801
+    }
+  ],
+  "schema": "tlu.private_query.one_bit_scaling.v1"
+}

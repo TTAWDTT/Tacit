@@ -132,6 +132,8 @@ Proposes a direct best-match mapping between emerged symbols and concepts to mak
 
 Random access codes are a classical communication-theory primitive: a sender compresses a bit vector into a bounded message, and a receiver with a private query index tries to recover the requested coordinate. Classical (n\to1) encoders, including shared-randomness variants, have been studied directly; see [Ambainis et al. (2008)](https://arxiv.org/abs/0810.2937). This prevents framing a hidden-index/coordinate-retrieval task as a new benchmark idea. Tacit's use is narrower: an exact finite control for validating information boundaries, query-distribution effects, and wire-budget accounting before using expensive or capability-limited LLMs. The project-local enumeration and its limits are recorded in [`private_query_v0_1`](../experiments/private_query_v0_1/README.md).
 
+The same paper proves that majority encoding is an optimal deterministic classical (n\to1) RAC under uniform inputs and query averaging, with exact success (1/2+2^{-n}\binom{n-1}{\lfloor(n-1)/2\rfloor}\) and asymptotic advantage (1/\sqrt{2\pi n}\). This is a known result and should be used as the analytic baseline for the uniform one-bit scaling curve; the exact project-local enumeration up to n=4 is an implementation cross-check, not a new theorem. See [`private_query_v0_3`](../experiments/private_query_v0_3/README.md).
+
 ### Agent2Agent (A2A) Protocol v1
 
 [Current official specification](https://a2a-protocol.org/latest/specification/) · [normative schema](https://github.com/a2aproject/A2A/blob/main/specification/a2a.proto)

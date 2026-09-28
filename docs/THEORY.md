@@ -185,6 +185,15 @@ The terms are the first-degree Fourier coefficients of the Boolean function (F\)
 
 The bound is not claimed tight for finite (n\). A sender who knows the queried index can send (X_I\) in one bit and attain 1, but this changes the information boundary; if the receiver must reveal (I\), that reverse-direction message, call, and round are part of total cost. A sender-independent one-bit code is not a universal solution to all query tasks; it is judged under the declared query distribution and sender/receiver knowledge.
 
+For the specific uniform-source, uniform-query classical (n\to1\) random access code above, a stronger exact result is already known: the deterministic majority encoder with identity decoder is optimal, with
+
+\[
+p^*(n)=\frac12+\frac{1}{2^n}\binom{n-1}{\lfloor(n-1)/2\rfloor}
+\sim \frac12+\frac{1}{\sqrt{2\pi n}}.
+\]
+
+This theorem is due to established RAC literature, not a Tacit contribution ([Ambainis et al., 2009, §2.3](https://arxiv.org/abs/0810.2937)). It sharpens the Parseval upper bound above for this exact distribution and confirms that a single classical bit becomes nearly useless as the number of possible facts grows. The analytic scaling table in [`private_query_v0_3`](../experiments/private_query_v0_3/README.md) reproduces this law and the n≤4 exhaustive optima. It does not extend to skewed query distributions or to LLMs without further assumptions.
+
 **Exact finite enumeration.** [`experiments/private_query_v0_1/`](../experiments/private_query_v0_1/README.md) enumerates every deterministic one-bit encoder for (n\le4\) and uses the Bayes-optimal coordinate decoder for each code. This checks the small-instance optima independently of an LLM and records a scaling diagnostic; it is not evidence about LLM language performance. The falsifiable asymptotic prediction is only that the one-bit task-oblivious optimum approaches chance as the number of independently queryable facts grows, consistent with the proved upper envelope. Learned/task-conditioned codes should be compared against (a) this frozen universal-code arm, (b) a query-conditioned oracle that explicitly accounts for how (I\) becomes available to the sender, and (c) a full-source communication upper bound.
 
 ### Exact budget frontier by reconstruction codebook
