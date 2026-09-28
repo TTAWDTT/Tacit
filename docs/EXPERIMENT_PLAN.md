@@ -45,10 +45,11 @@ AutoForm's existing HotpotQA split-context setting already demonstrates distribu
 2. JSON/schema with explicit required fields and validation.
 3. Code or compact symbolic representation where the task is naturally executable/formal.
 4. LLM-selected/ad hoc format from Chen et al. (2024), replicated as closely as feasible.
-5. Shared dictionary / task-specific codebook with setup cost charged.
-6. Learned discrete protocol if a reproducible training setup is justified.
-7. Latent/KV transfer (LatentMAS, Interlat, CondenseFlow) where open models and compatible architectures permit fair runs.
-8. No-communication, full-information, and random-message controls.
+5. Learned task-conditioned format selection (OPTiMACS) and task-trained agent interaction (Optima), with format search, task categorization, training, and inference costs charged.
+6. Shared dictionary / task-specific codebook with setup cost charged.
+7. Learned discrete protocol if a reproducible training setup is justified.
+8. Latent/KV transfer (LatentMAS, Interlat, CondenseFlow) where open models and compatible architectures permit fair runs.
+9. No-communication, full-information, and random-message controls.
 
 ## Core controlled comparisons
 
@@ -57,6 +58,7 @@ AutoForm's existing HotpotQA split-context setting already demonstrates distribu
 - Fix and report turns, wall time, tool calls, model calls, temperature, prompt, and maximum rounds. On MT-PingEval, compare one-shot against multiple turns at the same overall budget.
 - Hold task context, agent count, information partition, number of turns, decoding settings, and answer evaluator constant.
 - Separate content messages from instructions, schema definitions, codebook negotiation, shared prompt context, and hidden-state transfer in the record; charge communicated/setup components to the relevant channel or reuse-horizon budget, and repeated prompt components to inference cost.
+- For learned format selectors, also record task-classification calls, candidate-format generation/search, exploration trajectories, selector state size, and per-message selection latency; report break-even reuse horizon separately from message-format cost.
 - Measure decode success, semantic reconstruction, task completion, correctness, latency, generated and consumed tokens, bytes on the wire, setup cost, and retries.
 - Sweep task complexity, context length, agent count, rounds, and information partition to test scaling, not just one fixed benchmark.
 

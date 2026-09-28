@@ -22,6 +22,14 @@ Optima is a strong learned-interaction baseline, not merely a message-format pro
 
 This result weakens any claim that the open problem is simply to make natural-language agent messages shorter: task-trained interaction behavior can change both success and communication volume, and the learned behavior can transfer across related datasets. It does not isolate a reusable wire language from task-specific agent-policy training, and its same-model two-role setup does not establish cross-model protocol transfer. A Tacit representation claim must therefore compare against a trained communication/policy baseline when feasible, or explicitly narrow its claim to zero/few-shot, frozen-model, heterogeneous, or deployment-constrained settings; count training/search and report the reuse horizon. A representation-only ablation should hold the learned disclosure/scheduling policy fixed.
 
+### Gupta et al. (2026), *Learning Optimal Message Representations for Agentic Communication* (OPTiMACS), Findings of ACL
+
+[ACL Anthology](https://aclanthology.org/2026.findings-acl.1441/) · [full paper](https://aclanthology.org/2026.findings-acl.1441.pdf) · [detailed audit](OPTIMACS_AUDIT_V0_1.md)
+
+OPTiMACS learns a task-conditioned representation-selection policy from complete multi-agent trajectories. It uses an LLM task categorizer, an expanding inventory of formats, and a behavior policy mixing Q-value exploitation, LLM-proposed formats, and diversity exploration. On its reported datasets it improves task scores over vanilla/AutoForm in many settings and reduces message-token totals on GSM+, WikiHop, and HotPotQA, but increases NarrativeQA tokens by 19.3%. The paper explicitly does not target OOD generalization and leaves transfer to related datasets as future work. Its headline efficiency tables do not give a call-level ledger for task categorization/format discovery, serialized channel bytes, or total setup and receiver-prompt cost; the reported numbers must not be treated as a complete end-to-end frontier. No official implementation link was located in the ACL record or this audit.
+
+This directly challenges any claim that Tacit is the first to learn adaptive message representations. It belongs in the learned-format baseline family, separately from a reusable protocol artifact. Tacit's remaining research question must be narrower and testable: do stable, compositional representations improve the complete frontier under held-out tasks, heterogeneous receivers, equal schedule/budget, and measured selection/setup costs? See the [OPTiMACS source audit](OPTIMACS_AUDIT_V0_1.md).
+
 ### Tang et al. (2025), *Augmenting Multi-Agent Communication with State Delta Trajectory* (SDE), EMNLP
 
 [ACL Anthology](https://aclanthology.org/2025.emnlp-main.518/) · [paper](https://aclanthology.org/2025.emnlp-main.518.pdf) · [official code/data](https://github.com/LittleDinoC/StateDelta)

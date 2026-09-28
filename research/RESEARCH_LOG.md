@@ -1,5 +1,14 @@
 # Research log
 
+## 2026-09-29 — Audit OPTiMACS and revise the novelty boundary
+
+- **Trigger:** a current ACL search surfaced Gupta et al., *Learning Optimal Message Representations for Agentic Communication* (Findings ACL 2026), which directly overlaps the project's proposed adaptive message-format direction and was absent from the related-work map.
+- **Research:** read the full 31-page ACL paper and official anthology record. OPTiMACS learns a task-conditioned message-format policy from multi-agent reward trajectories using an LLM task categorizer, an expanding format set, Q-value selection, LLM format proposals, and diversity exploration. Experiments cover GSM+ and multi-hop information exchange (WikiHopQA, HotPotQA, NarrativeQA), with model sizes through Qwen2.5-Math-7B and Llama-3-8B.
+- **Evidence and counterevidence:** paper tables report higher aggregate task scores in multiple conditions and lower message-token totals on GSM+, WikiHop, and HotPotQA, but +19.3% tokens on NarrativeQA. The method is dataset/task specific and the authors leave transfer to related datasets open. The paper reports average tokens/time but does not provide a complete call-level account for task categorization, format discovery/search, serialized channel bytes, and reuse-horizon cost. The ACL record exposes the paper and checklist; no official code/data link was located in this audit.
+- **Revision:** updated the project thesis to distinguish interaction policy from reusable message representation. Tacit must not claim that adaptive format learning itself is novel. Its testable contribution, if any, is a stable/compositional protocol whose complete frontier and transfer outperform strong prompted and learned selectors under explicit deployment constraints.
+- **Plan:** added OPTiMACS to the learned-format baselines and required separate accounting for task classification, format search, exploration trajectories, selector state, and training/setup amortization. Published the [full audit](OPTIMACS_AUDIT_V0_1.md) and updated the [related-work map](RELATED_WORK.md), [thesis](../docs/THESIS.md), and [experiment plan](../docs/EXPERIMENT_PLAN.md).
+- No repository code was executed and no model was loaded; this turn changed the research evidence map and the falsifiable project scope.
+
 ## 2026-09-29 — Implement the parity-assisted pointer-chasing control
 
 - **Observation:** the frozen v0.1 frontier's full-map exchange used `2n ceil(log2 n)` bits in one simultaneous batch, but the cited ITCS 2025 paper also notes that sharing both maps' coordinate-wise output parities lets the final pointer's parity be computed without sending that last pointer.
