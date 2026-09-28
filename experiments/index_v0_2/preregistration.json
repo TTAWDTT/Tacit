@@ -12,7 +12,7 @@
     "lengths": [4, 8],
     "episodes_per_length": {"4": 8, "8": 8},
     "episode_count": 16,
-    "sha256": "637e79254f4dc8f10e65c184a5653ffbf784ab86ecfa98795073e2c68ddecab"
+    "sha256": "637e79254f4dc8f10e65c184a5653ffbf784ab86ecfa98795073e2c68ddedcab"
     },
     "distribution": {
       "sender_vector": "iid uniform bits",

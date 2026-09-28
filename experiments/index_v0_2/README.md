@@ -4,7 +4,7 @@ This preregistered, model-free control checks that the `INDEX_m` task manifest, 
 
 ## Frozen task shard
 
-The preregistration pins 16 synthetic episodes: eight each at vector lengths `m=4` and `m=8`, generated with split `pilot` and master seed `20260929`. The manifest SHA-256 is `637e79254f4dc8f10e65c184a5653ffbf784ab86ecfa98795073e2c68ddecab`. The raw task file is kept under ignored `.cache/` and can be regenerated with:
+The preregistration pins 16 synthetic episodes: eight each at vector lengths `m=4` and `m=8`, generated with split `pilot` and master seed `20260929`. The manifest SHA-256 is `637e79254f4dc8f10e65c184a5653ffbf784ab86ecfa98795073e2c68ddedcab`. The raw task file is kept under ignored `.cache/` and can be regenerated with:
 
 ```powershell
 python experiments/index_v0_1/generate_tasks.py `
