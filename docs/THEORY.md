@@ -164,3 +164,25 @@ The last term is simply \(P(M\cap R)\); it makes the receiver gate explicit. A h
 **Falsifiable eligibility prediction.** On the preregistered PrefixSum cells, if the estimated exact receiver rate conditional on a correct message is zero, then the observed sample provides no end-to-end headroom for a representation-only gain under that same receiver/interface; the bottleneck must first be changed or measured more precisely. If \(P(R\mid M)>0\), a communication format can still improve end-to-end utility by improving message acquisition/fidelity or receiver use, but a claim of efficiency must report each component and the joint result. This is a task-local screening condition, not a theorem that a protocol cannot affect receiver behavior: different representations can change \(P(R\mid M)\).
 
 **Evidence status.** In v0.12, Qwen3-8B had 0 exact receiver outputs among 17/24 new ordinary-path receipts; the synthetic prefilled transcript also yielded 0/24. The v0.13 direct combined prompt yielded 7/24 exact outputs, so interface/context changes the receiver distribution and cannot be collapsed into a model-only ability parameter. These small deterministic-run samples are noisy diagnostics, not population probability estimates. v0.16 tests a larger local model before this gate is treated as a property of the task family.
+
+## 9. Private-query communication benchmark
+
+This finite task isolates task uncertainty at the receiver. The sender observes (X=(X_1,\ldots,X_n)\), with independent uniform bits. The receiver privately observes a uniformly selected index (I\in\{1,\ldots,n\}\), and must output (X_I\). The sender does not observe (I\). The channel is noiseless, one-way, and restricted to one bit; no task-dependent setup, shared input-dependent advice, or extra reverse message is free.
+
+**Proposition (one-bit random-access upper bound).** For any deterministic encoder (M=f(X)\in\{0,1\}) and any receiver decoder (\hat X_I=g_I(M)\), the average exact-answer probability obeys
+
+\[
+P[\hat X_I=X_I]\le \frac12+\frac{1}{2\sqrt n}.
+\]
+
+**Proof.** Represent the encoder output as (F=(-1)^M\) and each source bit as (S_i=(-1)^{X_i}\). Given (I=i\), the best decoder's success is (\frac12+\frac12|\mathbb E[S_iF]|\): for each of the two message values it chooses the more frequent bit. Therefore
+
+\[
+P[\hat X_I=X_I]=\frac12+\frac{1}{2n}\sum_{i=1}^{n}|\mathbb E[S_iF]|.
+\]
+
+The terms are the first-degree Fourier coefficients of the Boolean function (F\) on the uniform Boolean cube. Parseval gives (\sum_i(\mathbb E[S_iF])^2\le\mathbb E[F^2]=1\), and Cauchy–Schwarz gives (\sum_i|\mathbb E[S_iF]|\le\sqrt n\). Substitution proves the bound. A randomized encoder/decoder is a mixture of deterministic strategies and cannot exceed their maximum average success. \(\square\)
+
+The bound is not claimed tight for finite (n\). A sender who knows the queried index can send (X_I\) in one bit and attain 1, but this changes the information boundary; if the receiver must reveal (I\), that reverse-direction message, call, and round are part of total cost. A sender-independent one-bit code is not a universal solution to all query tasks; it is judged under the declared query distribution and sender/receiver knowledge.
+
+**Exact finite enumeration.** [`experiments/private_query_v0_1/`](../experiments/private_query_v0_1/README.md) enumerates every deterministic one-bit encoder for (n\le4\) and uses the Bayes-optimal coordinate decoder for each code. This checks the small-instance optima independently of an LLM and records a scaling diagnostic; it is not evidence about LLM language performance. The falsifiable asymptotic prediction is only that the one-bit task-oblivious optimum approaches chance as the number of independently queryable facts grows, consistent with the proved upper envelope. Learned/task-conditioned codes should be compared against (a) this frozen universal-code arm, (b) a query-conditioned oracle that explicitly accounts for how (I\) becomes available to the sender, and (c) a full-source communication upper bound.

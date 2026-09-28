@@ -1,5 +1,13 @@
 # Research log
 
+## 2026-09-29 — Add an exact private-query communication control
+
+- **Motivation:** the theory specified source coding with receiver side information, but did not yet include a minimal finite case where the receiver's private task choice directly changes which source fact is useful.
+- **Prior-work check:** literature search identifies the task as a classical random access code (RAC), with established work on classical (n\to1) codes and shared randomness ([Ambainis et al. 2008](https://arxiv.org/abs/0810.2937)). This is an existing theory/task family; Tacit does not claim to invent it. A targeted search did not identify an LLM protocol study of this precise budgeted control, but absence from these search results is not evidence of priority.
+- **Formal result:** for uniform independent source bits, a uniform receiver-private coordinate, and a deterministic one-bit sender code (F\), success is (1/2 +(1/(2n))\sum_i|\hat F(\{i\})|\). Parseval and Cauchy–Schwarz imply the upper bound (1/2+1/(2\sqrt n)\), also valid for randomized mixtures. The sender-knows-query one-bit oracle reaches 1 only under a changed information boundary; disclosure must be costed if used operationally.
+- **Exact control:** [`experiments/private_query_v0_1/enumerate_codes.py`](../experiments/private_query_v0_1/enumerate_codes.py) exhaustively enumerates all (2^{2^n}\) deterministic encoders for (n=1,2,3,4\), optimizing the receiver decoder for each. Exact optimum success is 1, 3/4, 3/4, and 11/16 (0.6875), respectively, over 2, 16, 256, and 65,536 encoders. The finite optima satisfy the proved upper envelope. No models are loaded or called.
+- **Prediction/design consequence:** the one-bit task-oblivious success approaches chance under the proved (O(n^{-1/2})\) upper envelope, while a query-aware sender can answer perfectly with one bit after it knows the query. A future LLM result must separate representation quality from task information available to the sender and include any query-disclosure costs. These are model-free control outcomes, not evidence that one LLM language beats another.
+
 ## 2026-09-29 — Separate agent acts, lifecycle, and semantic content codes
 
 - **Question:** Do established agent protocols already answer what semantic language LLMs should use to communicate, or do they mainly solve interoperability and interaction management?

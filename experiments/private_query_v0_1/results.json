@@ -1,0 +1,347 @@
+{
+  "controls": {
+    "full_source_n_bit_success_probability": 1.0,
+    "no_message_success_probability": 0.5,
+    "query_disclosure_to_sender_included_in_one_bit_channel_budget": false,
+    "query_given_to_sender_one_bit_success_probability": 1.0
+  },
+  "method": "exhaustive deterministic encoders; Bayes-optimal decoders",
+  "model_calls": 0,
+  "results": [
+    {
+      "correct_source_query_pairs": 2,
+      "encoder_count_enumerated": 4,
+      "examples_of_optimal_encoders_first_8": [
+        {
+          "decoder_bits_by_query_then_message": [
+            1,
+            0
+          ],
+          "truth_table_hex": "0x1"
+        },
+        {
+          "decoder_bits_by_query_then_message": [
+            0,
+            1
+          ],
+          "truth_table_hex": "0x2"
+        }
+      ],
+      "fourier_upper_bound": 1.0,
+      "n_source_bits": 1,
+      "query_distribution": "uniform over coordinates",
+      "sender_message_budget_bits": 1,
+      "source_distribution": "uniform over bit vectors",
+      "success_fraction": "1/1",
+      "success_probability": 1.0,
+      "total_source_query_pairs": 2
+    },
+    {
+      "correct_source_query_pairs": 6,
+      "encoder_count_enumerated": 16,
+      "examples_of_optimal_encoders_first_8": [
+        {
+          "decoder_bits_by_query_then_message": [
+            1,
+            0,
+            1,
+            0
+          ],
+          "truth_table_hex": "0x1"
+        },
+        {
+          "decoder_bits_by_query_then_message": [
+            0,
+            1,
+            1,
+            0
+          ],
+          "truth_table_hex": "0x2"
+        },
+        {
+          "decoder_bits_by_query_then_message": [
+            0,
+            0,
+            1,
+            0
+          ],
+          "truth_table_hex": "0x3"
+        },
+        {
+          "decoder_bits_by_query_then_message": [
+            1,
+            0,
+            0,
+            1
+          ],
+          "truth_table_hex": "0x4"
+        },
+        {
+          "decoder_bits_by_query_then_message": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "truth_table_hex": "0x5"
+        },
+        {
+          "decoder_bits_by_query_then_message": [
+            1,
+            0,
+            1,
+            0
+          ],
+          "truth_table_hex": "0x7"
+        },
+        {
+          "decoder_bits_by_query_then_message": [
+            0,
+            1,
+            0,
+            1
+          ],
+          "truth_table_hex": "0x8"
+        },
+        {
+          "decoder_bits_by_query_then_message": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "truth_table_hex": "0xa"
+        }
+      ],
+      "fourier_upper_bound": 0.8535533905932737,
+      "n_source_bits": 2,
+      "query_distribution": "uniform over coordinates",
+      "sender_message_budget_bits": 1,
+      "source_distribution": "uniform over bit vectors",
+      "success_fraction": "3/4",
+      "success_probability": 0.75,
+      "total_source_query_pairs": 8
+    },
+    {
+      "correct_source_query_pairs": 18,
+      "encoder_count_enumerated": 256,
+      "examples_of_optimal_encoders_first_8": [
+        {
+          "decoder_bits_by_query_then_message": [
+            1,
+            0,
+            1,
+            0,
+            1,
+            0
+          ],
+          "truth_table_hex": "0x17"
+        },
+        {
+          "decoder_bits_by_query_then_message": [
+            0,
+            1,
+            1,
+            0,
+            1,
+            0
+          ],
+          "truth_table_hex": "0x2b"
+        },
+        {
+          "decoder_bits_by_query_then_message": [
+            1,
+            0,
+            0,
+            1,
+            1,
+            0
+          ],
+          "truth_table_hex": "0x4d"
+        },
+        {
+          "decoder_bits_by_query_then_message": [
+            1,
+            0,
+            1,
+            0,
+            0,
+            1
+          ],
+          "truth_table_hex": "0x71"
+        },
+        {
+          "decoder_bits_by_query_then_message": [
+            0,
+            1,
+            0,
+            1,
+            1,
+            0
+          ],
+          "truth_table_hex": "0x8e"
+        },
+        {
+          "decoder_bits_by_query_then_message": [
+            0,
+            1,
+            1,
+            0,
+            0,
+            1
+          ],
+          "truth_table_hex": "0xb2"
+        },
+        {
+          "decoder_bits_by_query_then_message": [
+            1,
+            0,
+            0,
+            1,
+            0,
+            1
+          ],
+          "truth_table_hex": "0xd4"
+        },
+        {
+          "decoder_bits_by_query_then_message": [
+            0,
+            1,
+            0,
+            1,
+            0,
+            1
+          ],
+          "truth_table_hex": "0xe8"
+        }
+      ],
+      "fourier_upper_bound": 0.7886751345948129,
+      "n_source_bits": 3,
+      "query_distribution": "uniform over coordinates",
+      "sender_message_budget_bits": 1,
+      "source_distribution": "uniform over bit vectors",
+      "success_fraction": "3/4",
+      "success_probability": 0.75,
+      "total_source_query_pairs": 24
+    },
+    {
+      "correct_source_query_pairs": 44,
+      "encoder_count_enumerated": 65536,
+      "examples_of_optimal_encoders_first_8": [
+        {
+          "decoder_bits_by_query_then_message": [
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+            1,
+            0
+          ],
+          "truth_table_hex": "0x117"
+        },
+        {
+          "decoder_bits_by_query_then_message": [
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+            1,
+            0
+          ],
+          "truth_table_hex": "0x11f"
+        },
+        {
+          "decoder_bits_by_query_then_message": [
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+            1,
+            0
+          ],
+          "truth_table_hex": "0x137"
+        },
+        {
+          "decoder_bits_by_query_then_message": [
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+            1,
+            0
+          ],
+          "truth_table_hex": "0x13f"
+        },
+        {
+          "decoder_bits_by_query_then_message": [
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+            1,
+            0
+          ],
+          "truth_table_hex": "0x157"
+        },
+        {
+          "decoder_bits_by_query_then_message": [
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+            1,
+            0
+          ],
+          "truth_table_hex": "0x15f"
+        },
+        {
+          "decoder_bits_by_query_then_message": [
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+            1,
+            0
+          ],
+          "truth_table_hex": "0x177"
+        },
+        {
+          "decoder_bits_by_query_then_message": [
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+            1,
+            0
+          ],
+          "truth_table_hex": "0x17f"
+        }
+      ],
+      "fourier_upper_bound": 0.75,
+      "n_source_bits": 4,
+      "query_distribution": "uniform over coordinates",
+      "sender_message_budget_bits": 1,
+      "source_distribution": "uniform over bit vectors",
+      "success_fraction": "11/16",
+      "success_probability": 0.6875,
+      "total_source_query_pairs": 64
+    }
+  ],
+  "schema": "tlu.private_query.enumeration.v1"
+}
