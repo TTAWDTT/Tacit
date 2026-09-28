@@ -22,3 +22,9 @@ The generator uses independently derived deterministic seeds per split, vector l
 - A language-model sender and receiver use disjoint views (actual communication condition).
 
 First compare one-way full-vector messages to receiver-query / sender-answer interaction as a **policy** comparison. Only then compare optimized natural language, structured text, and a compositional typed code under the *same* communication policy and identical semantic payloads. Charge shared definitions, negotiation, both message directions, token/byte cost, decode failures, retries, and compute. This task is a channel control; positive results do not establish transfer to general agent collaboration.
+
+## Runner and measurement contract
+
+Any future model runner for this task must emit one [`tlu.costs.v2`](../../docs/COST_ACCOUNTING.md) JSONL record per task episode. Set the stratum fields to the preregistration/experiment ID, `INDEX_m` version, split, exact `m`, scorer version, and pinned sender/receiver model revisions. Keep one-way and interactive policies as distinct `policy_id` values; keep each representation and decoder under separately pinned IDs. The aggregator will then keep different vector lengths and model pairings out of the same success/cost point.
+
+For each actual transmission, measure UTF-8 payload and framing bytes from the serialized wire representation, and count the payload with each recipient's exact tokenizer revision. Record every prompt and completion call, including failed, truncated, retry, and final-answer calls; use stages such as `communicate`, `receive`, and `answer` consistently. Keep the evaluator-only gold bit out of all agent messages. Until that runner exists and its records are audited, generator outputs are not protocol experiment results.
