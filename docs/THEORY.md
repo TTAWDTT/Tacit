@@ -88,23 +88,23 @@ Distinguish transport corruption (the received bytes differ or a message is trun
 
 ### A conditional grounding threshold for an individual message claim
 
-To connect message grounding to task utility, consider adding one claim to an otherwise fixed message under a fixed sender policy, receiver, episode distribution, and scoring rule. Let $q$ be the probability that the claim is both true in the sender's observed state and decision-relevant but unknown to the receiver. Let $g>0$ be its expected marginal task-utility gain when such a claim is conveyed correctly, and $h>0$ the expected marginal utility loss when the claim is instead false or unsupported and the receiver acts on it. Let $c\geq0$ be the opportunity cost of that claim, expressed in the same utility units; $c$ may include a binding channel budget or the action displaced by a synchronous message. Assume these conditional effects are stable for the comparison and that adding the claim does not change unrelated policy decisions.
+To connect message grounding to task utility, consider adding one atomic claim to an otherwise fixed message under a fixed sender policy, receiver, episode distribution, and scoring rule. Let event $B$ mean the claim is supported by the sender's observed state, true at send time, relevant to the scored task, and not already known by the receiver; let $q=P(B)$. Define $u_1=E[\Delta U\mid B]$ and $u_0=E[\Delta U\mid\neg B]$, where $\Delta U$ is the marginal task-utility change from including the claim rather than omitting it, with all other message content held fixed. The non-$B$ cases include repeated, irrelevant, unsupported, and false claims, whose effects need not be equal. Let $c\geq0$ be any additional resource opportunity cost converted to task-utility units by a preregistered deployment price; do not charge an action displacement again if its effect is already included in $\Delta U$. If there is no defensible scalar conversion for channel, latency, or compute, keep those costs as separate frontier dimensions and evaluate this condition within a fixed budget rather than inventing a weight.
 
 The expected marginal utility is
 
 \[
-\Delta U = qg - (1-q)h - c.
+E[\Delta U_{net}] = q u_1 + (1-q)u_0 - c.
 \]
 
-**Proposition (single-claim threshold).** Under these assumptions, adding the claim has positive expected utility exactly when
+**Proposition (single-claim threshold).** If $u_1>u_0$, adding the claim has positive expected net utility exactly when
 
 \[
-q > \frac{h+c}{g+h}.
+q > \frac{c-u_0}{u_1-u_0}.
 \]
 
-This follows by rearranging $qg-(1-q)h-c>0$; it is a decision threshold, not a theorem about natural or machine languages. It predicts that the grounding/novelty precision needed for a message to help rises with its opportunity cost, and falls when the task benefit $g$ is larger relative to the harm $h$. A claim that is true but already known by the receiver does not count toward $q$; repeated common-ground content is therefore not automatically useful. Multiple claims can interact, so summing this expression over mentions requires an additional additivity assumption and should not be done by default.
+This follows by rearranging $q u_1+(1-q)u_0-c>0$; it is a decision threshold, not a theorem about natural or machine languages. In the special conservative case where a qualifying claim has mean gain $u_1=g>0$ and every non-qualifying claim has mean effect $u_0=-h\leq0$, it reduces to $q>(h+c)/(g+h)$. That simpler expression requires the non-qualifying cases to share this nonpositive mean; it must not be interpreted as saying every repeated or irrelevant fact is false or harmful. If $u_1\leq u_0$, increasing $q$ cannot improve expected utility under this two-class model. Multiple claims can interact, so summing this expression over mentions requires an additional additivity assumption and should not be done by default.
 
-**Testable implication.** Under a frozen task, schedule, and receiver, a grounding intervention that raises the measured fraction of correct, receiver-novel, decision-relevant claims should improve task utility when the estimated $g$ and $h$ make the threshold cross. Measure these quantities from task state and receiver knowledge, and retain task success as the primary outcome; do not use action-conflict reduction or belief overlap as a substitute. A comparison that only makes messaging free in simulator steps does not set $c=0$ for total inference cost, latency, or context use. The PARTNR dialogue study supplies a negative prior for this prediction: it reports many unsupported entity mentions and lower task success despite fewer action conflicts, but its handle-counting method is only a proxy for semantic claim precision and its dialogue policy does not isolate message form.
+**Testable implication.** Under a frozen task, schedule, receiver, and stable conditional effects, changing only the rate $q$ predicts $\Delta E[U_{net}]=(q_2-q_1)(u_1-u_0)$. Measure event labels from task state and receiver knowledge, and retain task success as the primary outcome; do not use action-conflict reduction or belief overlap as a substitute. A comparison that only makes messaging free in simulator steps does not set the total inference, latency, or context cost to zero. The PARTNR dialogue study supplies a negative prior: it reports many unsupported entity mentions and lower task success despite fewer action conflicts, but its handle-counting method is only a proxy for semantic claim labels and its dialogue policy does not isolate message form.
 
 ## 3. Operational efficiency frontier
 
