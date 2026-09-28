@@ -1,0 +1,97 @@
+{
+  "experiment_id": "index-llm-capability-v0.3",
+  "title": "Resource-gated Qwen3-1.7B INDEX_m capability and direct-message pilot",
+  "status": "preregistered",
+  "research_question": "Can a locally cached small instruction model reliably read and answer INDEX_m in the full-information condition, then transfer a vector through a role-separated message without the receiver seeing the sender's private input?",
+  "scope": "A small capability and direct-message feasibility screen. The structured JSON wire form is an existing baseline, not a proposed new language. The pilot cannot establish superiority, generalization, or a scaling law.",
+  "sources": {
+    "task_generator": "experiments/index_v0_1/generate_tasks.py",
+    "task_manifest_sha256": "637e79254f4dc8f10e65c184a5653ffbf784ab86ecfa98795073e2c68ddedcab",
+    "model_repository": "https://huggingface.co/Qwen/Qwen3-1.7B",
+    "model_revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+    "model_shards": {
+      "model-00001-of-00002.safetensors": {
+        "bytes": 3441185608,
+        "sha256": "169ad53ec313c3a34b06c0809216e4fc072cce444a5d4ff2b59690d064130ed5"
+      },
+      "model-00002-of-00002.safetensors": {
+        "bytes": 622329984,
+        "sha256": "912becff8d60672aa8628ef08c05898d9adf17c2ad4ae3caf99b065622fdeff9"
+      }
+    },
+    "tokenizer_json_sha256": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4"
+  },
+  "task_shard": {
+    "split": "pilot",
+    "master_seed": 20260929,
+    "selection_rule": "Use episode indices 0 and 1 at each of m=4 and m=8 from the pinned v0.2 manifest; no selection by outcome.",
+    "episode_ids": [
+      "pilot-m4-e00000",
+      "pilot-m4-e00001",
+      "pilot-m8-e00000",
+      "pilot-m8-e00001"
+    ],
+    "episode_count": 4
+  },
+  "model": {
+    "name": "Qwen3-1.7B",
+    "format": "local safetensors, float16 on CUDA",
+    "runtime": "repository local_chat_server.py, one local worker, one PyTorch/OMP/MKL CPU thread, BelowNormal process priority",
+    "decoding": {
+      "temperature": 0.0,
+      "sampling": "greedy",
+      "thinking": "disabled by server chat template",
+      "max_new_tokens": 24,
+      "request_retries": 0,
+      "format_retries": 0
+    }
+  },
+  "conditions": {
+    "full_information_gate": {
+      "agent_view": "One model call sees the complete bit vector and receiver index.",
+      "success": "Strict JSON object {\"bit\":0} or {\"bit\":1} exactly matches the gold bit.",
+      "gate": "All four episodes must be correct and non-truncated before any communication-condition model call is made."
+    },
+    "one_way_structured_message": {
+      "sender_view": "Only the bit vector.",
+      "receiver_view": "Only the 1-based index and the exact raw sender output.",
+      "wire_format_requested": "JSON object {\"bits\":\"0101...\"}; no shared prompt contains the hidden vector or gold bit.",
+      "success": "The receiver's strict JSON bit answer equals the evaluator's gold bit. Invalid sender JSON is still passed verbatim to the receiver and counts in end-to-end success."
+    },
+    "references": [
+      "paired fixed-zero no-message baseline",
+      "centralized deterministic oracle",
+      "one-way deterministic JSON-vector oracle"
+    ]
+  },
+  "maximum_work": {
+    "model_requests": 12,
+    "calls_if_full_information_gate_fails": 4,
+    "maximum_new_tokens_per_request": 24,
+    "overall_run_seconds": 300,
+    "server_startup_seconds": 120,
+    "per_request_timeout_seconds": 60
+  },
+  "resource_safeguards": {
+    "launch_gate": "Three host CPU samples at 2-second intervals must average below 20% and each remain below 30%; NVIDIA GPU utilization below 25%; GPU memory below 1800 MiB; free system memory at least 6000 MiB; port 8001 unused.",
+    "automatic_stop": "Stop this runner and only its own local service after host CPU reaches 45% or GPU utilization reaches 85% in two consecutive 10-second samples, free system memory drops below 4000 MiB, or the 300-second cap is reached.",
+    "cleanup": "A PowerShell finally block terminates and waits for only the child runner and model-server processes launched by this experiment.",
+    "network": "Model and tokenizer load local-only; endpoint binds to 127.0.0.1; no external API or network call is permitted."
+  },
+  "metrics": [
+    "full-information exact-bit success",
+    "one-way end-to-end exact-bit success",
+    "strict JSON adherence and decode failure",
+    "message UTF-8 bytes and standalone recipient tokenizer tokens",
+    "per-call input/output tokens, request time, and generation time",
+    "host CPU, server CPU, server working set, GPU utilization/memory, and free RAM telemetry"
+  ],
+  "interpretation_limits": [
+    "Four selected episodes are an operating-point screen, not a stable success-rate estimate.",
+    "Passing the full-information gate only licenses this tiny direct-message feasibility observation.",
+    "The JSON vector is an established structured baseline; this experiment does not propose a new language or compare representations.",
+    "The one-way ASCII JSON vector is not bit-optimal and its bytes/tokens are not comparable to the theoretical m-bit lower bound without encoding costs.",
+    "One model revision and one task family do not establish transfer, cross-model compatibility, semantic generality, robustness, or scaling."
+  ],
+  "raw_data": ".cache/index_v0_3/; publish only sanitized records and outcomes"
+}

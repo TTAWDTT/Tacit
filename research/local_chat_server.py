@@ -97,6 +97,7 @@ async def chat_completions(request: Request) -> JSONResponse:
     generation_seconds = time.perf_counter() - generation_started
     content = tokenizer.decode(completion_ids, skip_special_tokens=True).strip()
     completion_tokens = int(completion_ids.numel())
+    request_seconds = time.perf_counter() - request_started
     response = {
         "id": f"chatcmpl-{uuid.uuid4().hex}",
         "object": "chat.completion",
@@ -115,6 +116,8 @@ async def chat_completions(request: Request) -> JSONResponse:
             "prompt_tokens": int(input_ids.shape[1]),
             "completion_tokens": completion_tokens,
             "total_tokens": int(input_ids.shape[1]) + completion_tokens,
+            "generation_seconds": generation_seconds,
+            "request_seconds": request_seconds,
         },
     }
     if USAGE_LOG:
@@ -124,7 +127,7 @@ async def chat_completions(request: Request) -> JSONResponse:
             "prompt_tokens": int(input_ids.shape[1]),
             "completion_tokens": completion_tokens,
             "generation_seconds": round(generation_seconds, 6),
-            "request_seconds": round(time.perf_counter() - request_started, 6),
+            "request_seconds": round(request_seconds, 6),
             "finish_reason": response["choices"][0]["finish_reason"],
         }
         log_path = Path(USAGE_LOG)
