@@ -134,6 +134,8 @@ Proposes a direct best-match mapping between emerged symbols and concepts to mak
 
 An interoperability standard for independent/opaque agents: discovery, task lifecycle, messages, streaming, artifacts, security, and protocol bindings. Its canonical data model separates task messages from output artifacts and allows `Part` payloads to contain text, raw bytes, URLs, or structured JSON data. It is therefore a real deployment substrate and a strong transport/envelope baseline, but it does not by itself show which semantic representation lets the recipient reason most efficiently. Any eventual runtime should carry its semantic payload through A2A-compatible parts where useful and report inner payload cost separately from the complete serialized A2A envelope.
 
+The [protocol boundary audit](AGENT_PROTOCOLS_SEMANTIC_BOUNDARY_AUDIT_V0_1.md) compares A2A 1.0.0 with MCP 2026-07-28, FIPA ACL, and KQML. It refines the framing: FIPA ACL does specify formal communicative-act semantics, and KQML has performative semantics/protocol work, so these are not merely transport envelopes. Their acts and lifecycle semantics still do not determine an efficient task-content code for a particular LLM pair and task distribution.
+
 ### Sander et al. (2026), *A Technical Taxonomy of LLM Agent Communication Protocols* (preprint)
 
 [arXiv](https://arxiv.org/abs/2606.19135)
@@ -342,5 +344,5 @@ The project now distinguishes an ideal information-theoretic reference from an o
 - Extend the emergent-communication audit with a reproducibility check of multi-seed / OOD evaluation practice and, if a learned protocol becomes competitive, freeze an independent-receiver and held-out-composition test before training. Initial audit is in the section above.
 - Review rate-distortion, information bottleneck, communication complexity, interactive compression, and semantic/task-oriented communications.
 - Survey coding theory/error correction and protocol negotiation under noisy or adversarial channels.
-- Inspect established agent communication language work (FIPA ACL, KQML) and current MCP implementations; A2A's current task/message/artifact model is now mapped above. Keep envelope interoperability distinct from semantic efficiency.
+- Inspect current MCP/A2A SDK serialization when a runtime is selected; the spec-level boundary audit for FIPA ACL, KQML, MCP 2026-07-28, and A2A 1.0.0 is in [`AGENT_PROTOCOLS_SEMANTIC_BOUNDARY_AUDIT_V0_1.md`](AGENT_PROTOCOLS_SEMANTIC_BOUNDARY_AUDIT_V0_1.md). Keep act/lifecycle interoperability distinct from task-content efficiency while measuring any interactions between them.
 - Search mechanistic interpretability/representation alignment for implications of hidden-state transfer across models.

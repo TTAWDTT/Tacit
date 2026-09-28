@@ -14,6 +14,8 @@
 - All new pilot runners must write per-episode `tlu.costs.v3` records before inference begins. Include experiment/task/split/parameters/scorer/model stratum IDs and pinned policy/code/decoder IDs. Legacy v1 records remain readable but cannot support task/model-stratified frontiers; v2 remains readable for its frozen text-only experiments. See the [cost contract](COST_ACCOUNTING.md) and [`INDEX_m` runner requirements](../experiments/index_v0_1/README.md#runner-and-measurement-contract).
 - `tlu.costs.v2` byte fields are UTF-8-specific and cannot report binary latent/KV payloads honestly. v3 records encoding-neutral serialized payload/framing bytes, media type, encoding, and network or serialized inter-process boundary. It still does not make same-process shared-memory access a portable zero-byte protocol. Do not treat bytes as model tokens.
 
+- Existing agent standards occupy different layers. FIPA ACL and KQML standardize communicative acts and interaction semantics; MCP standardizes host/client/server context and tool integration; A2A standardizes peer-agent discovery, task lifecycle, messages, artifacts, and bindings. None alone establishes the most efficient task-content code for a particular receiver and task distribution. For a codec claim, hold act/lifecycle, schedule, and envelope constant and report both inner payload and complete serialized envelope costs. For a whole-system claim, measure negotiation, setup, calls, parsing, and any behavior changes. See the [protocol boundary audit](../research/AGENT_PROTOCOLS_SEMANTIC_BOUNDARY_AUDIT_V0_1.md).
+
 ## First benchmark requirement
 
 ### Separate communication policy from representation

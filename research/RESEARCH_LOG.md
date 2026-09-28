@@ -1,5 +1,14 @@
 # Research log
 
+## 2026-09-29 — Separate agent acts, lifecycle, and semantic content codes
+
+- **Question:** Do established agent protocols already answer what semantic language LLMs should use to communicate, or do they mainly solve interoperability and interaction management?
+- **Sources reviewed:** the 1993 KQML specification and design paper; FIPA ACL communicative-act and message-structure specifications; official MCP specifications pinned at 2026-07-28 and 2025-11-25; A2A 1.0.0 specification. The version pin matters: the MCP 2026-07-28 base changes from stateful initialization/session exchange to stateless self-contained requests with per-request negotiation.
+- **Observation:** KQML makes performatives explicit and leaves message content in a separately identified representation language/ontology; its original draft itself notes formal semantics work was incomplete. FIPA ACL gives acts such as `inform` and `request` formal communicative semantics, while the content language and ontology remain separate. MCP standardizes context/tool integration; A2A standardizes peer-agent lifecycle, typed message parts, and artifacts. These are substantial precedents, not empty envelopes, but their specifications do not identify the task-optimal semantic code for a specific model pair and task distribution.
+- **Revision to project framing:** explicitly distinguish (a) communicative act and response semantics, (b) task/work lifecycle and delivery interoperability, and (c) task-content representation. Do not claim invention of agent communication acts. A future semantic protocol can be carried inside MCP/A2A-compatible structures, and must report payload and full-envelope costs separately.
+- **Prediction/design consequence:** if an inner code's gain vanishes when both arms use the same pinned envelope and schedule, the prior apparent gain came from envelope/policy changes rather than semantic coding. If it survives, then separately verify cross-implementation act/lifecycle conformance and count setup/negotiation costs. This is a design prediction for later experiments, not an observed result.
+- **Artifact:** [`AGENT_PROTOCOLS_SEMANTIC_BOUNDARY_AUDIT_V0_1.md`](AGENT_PROTOCOLS_SEMANTIC_BOUNDARY_AUDIT_V0_1.md).
+
 ## 2026-09-29 — Separate transport errors from semantic repair
 
 - **Trigger:** theory calls for error correction and robustness, but LLM agent systems usually exchange intact serialized strings; treating every receiver mistake as a noisy physical channel would misapply coding theory.
