@@ -16,6 +16,13 @@
 - **Prediction / next measurement:** at fixed schedule and receiver, raising ground-truth-verified receiver-novel claim precision should help only when the estimated utility terms put the intervention across the threshold. Score task utility directly and log inference/context costs separately; “free” simulator steps do not make inference free. The paper's entity-handle metric is only a proxy for semantic correctness, so any Tacit replication needs task-state validation rather than copying that proxy uncritically.
 - No local model inference ran.
 
+## 2026-09-29 — Implement a model-free grounded-claim measurement contract
+
+- **Need:** the grounding threshold requires task-state and receiver-state labels, while raw text inspection or an LLM judge would add an uncalibrated semantic measurement layer. Existing cost ledgers do not encode claim-level sender evidence, truth, receiver novelty, and task relevance.
+- **Artifact:** added standard-library-only [`tools/claim_audit.py`](../tools/claim_audit.py) and [`docs/CLAIM_AUDIT.md`](../docs/CLAIM_AUDIT.md). It strictly validates atomic claim-instance labels, keeps full task/model/protocol/extractor strata separate, reports component rates and the joint grounded-novel-relevant rate, distinguishes pooled claims from macro episode weighting, and preserves silent/zero-claim episodes. It never reads message text or calls a model.
+- **Limits:** the tool cannot recover omitted claims, validate annotations, estimate the threshold's gain/harm/opportunity-cost terms, or establish causal task benefit. Future use requires a frozen fact map/extractor with coverage reporting plus receiver-application and task-outcome measures.
+- **Regression coverage:** added synthetic offline tests for conjunctive qualification, denominator behavior, episode weighting, silence, stratification, duplicate IDs, and invalid labels. Full standard-library discovery passes 38 tests, and a CLI round trip writes/reads a one-claim report with the expected 1/1 rate. No local inference or network requests are part of validation.
+
 ## 2026-09-29 — Seventh INDEX_m host-resource gate rejection
 
 - A three-sample read-only recheck observed host CPU 34.2201%, 29.9667%, and 31.6867% (31.96% mean, 34.22% maximum), GPU utilization 40%, GPU memory 977 MiB, and 3,717 MiB free system memory. Port 8001 was unused.
