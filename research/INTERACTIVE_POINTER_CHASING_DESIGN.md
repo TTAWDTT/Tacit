@@ -1,6 +1,6 @@
 # Interactive communication control: pointer chasing
 
-**Status:** theory-grounded benchmark candidate; not implemented, preregistered, or evaluated with an LLM.
+**Status:** theory-grounded task implemented as a model-free generator/oracle in v0.1; not preregistered or evaluated with an LLM.
 
 ## Why this task may fill a real gap
 
@@ -40,7 +40,7 @@ Only if the local model passes controls 1-4 should a round-policy pilot be consi
 
 ## Decision
 
-Keep this as the leading **round-complexity control candidate**, alongside the existing one-way `INDEX_m` control and reused Silo-Bench tasks. Do not implement it until the repository's frozen local-resource preflight and full-information criteria permit a small model capability screen. The task generator/oracle itself is cheap CPU work, but running it must not be used to bypass an inference eligibility gate.
+Keep this as the leading **round-complexity control**, alongside the existing one-way `INDEX_m` control and reused Silo-Bench tasks. Its model-free generator, scorer, fixed-width pointer codec, and oracle relay are implemented in [`experiments/pointer_chasing_v0_1/`](../experiments/pointer_chasing_v0_1/README.md). Do not launch a model capability screen until the repository's frozen resource preflight and experiment-specific capability criteria permit it. Offline generator/oracle checks are not an inference eligibility bypass.
 
 ## Sources
 

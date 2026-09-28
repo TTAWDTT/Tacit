@@ -1,5 +1,11 @@
 # Research log
 
+## 2026-09-29 — Implement the model-free pointer-chasing task control
+
+- Converted the literature-grounded task definition into [`experiments/pointer_chasing_v0_1/`](../experiments/pointer_chasing_v0_1/README.md): deterministic hash-derived episode seeds, independent one-based random function maps, role-isolated views, an independently recomputed exact scorer, fixed-width binary pointer encoding, and a `k`-message oracle relay.
+- Added eight offline integrity tests covering exact hand-computed traces, deterministic split/condition streams, role leakage rejection, fixed-width codec validity, oracle answer parity, and strict scoring. All eight pass; an 8-episode CLI shard was generated successfully. The generated shard is under ignored `.cache/` and is not published.
+- This was a CPU-only task-plumbing check: no model was loaded, no inference was run, and no model-resource gate was relaxed. The oracle's `k * ceil(log2(n))` payload bits exclude framing and must not be represented as measured wire bytes. The model pilot remains ineligible pending the frozen resource and capability gates.
+
 ## 2026-09-29 — Add a theory-grounded candidate for round complexity
 
 - Reviewed the ITCS 2025 pointer-chasing definition and Theorem 2 in full, alongside the Silo-Bench task appendix and MT-PingEval name-game results. Pointer chasing has a known bit-communication trade-off: a direct `k`-round pointer relay costs `O(k log n)` bits, while any `(k−1)`-round protocol meeting 2/3 accuracy under uniform random functions costs `Omega(n/k + k)` bits. This provides a more direct control for interaction depth than merely allowing more dialogue turns on a task with a guess-and-check shortcut.
