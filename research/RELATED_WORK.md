@@ -14,6 +14,12 @@ This establishes a real positive and negative prior, not an empty baseline. The 
 
 Full-paper review confirms that AutoForm is a strong baseline to instantiate directly: its multi-agent prompt invites code, pseudocode, JSON, tables, logical operators, and equations rather than prescribing one format. Its HotpotQA split-context experiment is explicitly communication-dependent and shows model-pair-dependent outcomes. Therefore this project must distinguish a format-selection prompt from a fixed encoding and evaluate adherence as well as task quality. A local small-model run that ignores a format instruction is evidence about instruction adherence, not about the representational efficiency of the requested format.
 
+### Tang et al. (2025), *Augmenting Multi-Agent Communication with State Delta Trajectory* (SDE), EMNLP
+
+[ACL Anthology](https://aclanthology.org/2025.emnlp-main.518/) · [paper](https://aclanthology.org/2025.emnlp-main.518.pdf) · [official code/data](https://github.com/LittleDinoC/StateDelta)
+
+SDE transmits natural-language tokens together with token-aligned differences between adjacent hidden states, then injects those deltas into the receiving model's hidden state. The paper evaluates both asymmetric-information QA and information-symmetric debate/workflow tasks and reports larger benefits on complex reasoning. This is a serious hybrid-channel comparator: it can address reasoning traces that text may omit, but it requires internal-state access and adds a high-dimensional channel whose actual byte, storage, and receiver-compute costs must be counted. Its claims do not establish a portable discrete language, and should not be compared to text using token counts alone.
+
 ### Xia et al. (2024), *FOFO: A Benchmark to Evaluate LLMs' Format-Following Capability*, ACL
 
 [ACL Anthology](https://aclanthology.org/2024.acl-long.40/)
@@ -21,6 +27,18 @@ Full-paper review confirms that AutoForm is a strong baseline to instantiate dir
 FOFO reports that open-weight models lag closed models in complex format adherence, that adherence and content quality can vary independently, and that format proficiency differs by domain. This makes format adherence a necessary measurement axis in communication experiments. In DuoSum v0.4, the local Qwen3-1.7B used valid compact-key-value syntax in 10/10 messages and concise-NL syntax in 13/13, but only 9/10 and 9/13 respectively carried the sender's own value. One binary-arm message had binary-digit syntax but none of eight decoded to the sender's value; none of eight JSON messages parsed as JSON. Those arms cannot support claims about correct binary or JSON performance.
 
 ## Latent and hidden-state transfer
+
+### Ramesh & Li (2025), *Communicating Activations Between Language Model Agents*, ICML
+
+[arXiv](https://arxiv.org/abs/2501.14082) · [TMLR/ICML proceedings PDF](https://raw.githubusercontent.com/mlresearch/v267/main/assets/ramesh25a/ramesh25a.pdf)
+
+Transfers/intervenes on intermediate activations between frozen language models and reports up to 27% improvement over natural-language communication on its evaluated coordination and reasoning setups with lower compute. This is an important upper-end alternative to text: it retains non-linguistic representations and depends on model weights/activations, projection/alignment, layer compatibility, and access to the receiver forward pass. It is not a drop-in baseline for API-only or heterogeneous black-box agents. Audit payload bytes, projection/training cost, model pairing, and causal controls before using the reported gain as evidence that a new text protocol is needed.
+
+### Zhang et al. (2024), *Cut the Crap: An Economical Communication Pipeline for LLM-based Multi-Agent Systems* (AgentPrune)
+
+[arXiv](https://arxiv.org/abs/2410.02506)
+
+AgentPrune targets redundant message edges and turns in multi-agent topologies, reporting substantial token reductions with comparable task scores across several benchmarks. It changes communication topology and message selection, not the code used to express a selected message. This makes it a relevant policy/topology cost baseline and a warning that gains attributed to a language may instead come from eliminating unnecessary exchanges.
 
 ### Zou et al. (2025), *Latent Collaboration in Multi-Agent Systems* (LatentMAS)
 
