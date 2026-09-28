@@ -1,5 +1,10 @@
 # Research log
 
+## 2026-09-29 — Seventh INDEX_m host-resource gate rejection
+
+- A three-sample read-only recheck observed host CPU 34.2201%, 29.9667%, and 31.6867% (31.96% mean, 34.22% maximum), GPU utilization 40%, GPU memory 977 MiB, and 3,717 MiB free system memory. Port 8001 was unused.
+- The unchanged preregistered gate failed on CPU mean/maximum, GPU utilization, and free memory. No model artifact was hashed or read, no service started, and no inference request occurred. The sanitized record is [`PRECHECK_ATTEMPT_7.json`](../experiments/index_v0_3/PRECHECK_ATTEMPT_7.json). This is host-state evidence only; do not retry until load and available memory materially change.
+
 ## 2026-09-29 — Exact RAC frontier with physical bit-flip noise
 
 - **Research grounding:** Shannon's noisy-channel coding theorem formalizes coding under specified stochastic transport channels; existing RAC theory establishes the private-query task, while the related noisy-RAC paper located in the audit studies quantum, not the present classical resource model ([Shannon 1948](https://doi.org/10.1002/j.1538-7305.1948.tb01338.x), [Ambainis et al.](https://arxiv.org/abs/0810.2937), [Marques & da Silva 2022](https://arxiv.org/abs/2204.09485)). The model-free study therefore claims no new general coding theory and does not treat bit flips as LLM semantic errors.

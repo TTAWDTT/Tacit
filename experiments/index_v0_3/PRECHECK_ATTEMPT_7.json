@@ -1,0 +1,36 @@
+{
+  "study": "index_m_qwen3_1_7b_capability_pilot_v0_3",
+  "attempt": "read-only resource-gate recheck",
+  "attempt_number": 7,
+  "status": "idle_gate_not_met",
+  "sampled_at_utc": "2026-09-28T22:31:13.8156905Z",
+  "method": "Three read-only host CPU counter samples at two-second spacing; NVIDIA-SMI utilization/memory query; Windows free-memory query; local listener check on port 8001. The experiment launcher was not invoked.",
+  "observed": {
+    "host_cpu_samples_percent": [34.2201, 29.9667, 31.6867],
+    "host_cpu_mean_percent": 31.96,
+    "host_cpu_max_percent": 34.22,
+    "gpu_utilization_percent": 40,
+    "gpu_memory_used_mib": 977,
+    "gpu_memory_total_mib": 8188,
+    "free_system_memory_mib": 3717,
+    "port_8001_busy": false
+  },
+  "frozen_launch_gate": {
+    "host_cpu_mean_below_percent": 20,
+    "host_cpu_each_sample_below_percent": 30,
+    "gpu_utilization_below_percent": 25,
+    "gpu_memory_below_mib": 1800,
+    "free_system_memory_at_least_mib": 6000,
+    "port_8001_must_be_unused": true
+  },
+  "rejection_reasons": [
+    "Host CPU mean and maximum exceeded the frozen limits",
+    "GPU utilization exceeded the frozen limit",
+    "Free system memory was below the frozen minimum"
+  ],
+  "model_artifact_hashed": false,
+  "model_loaded": false,
+  "service_started": false,
+  "inference_requests": 0,
+  "interpretation": "The unchanged resource gate rejected this host state before any model artifact access. This is a host-state observation, not task or protocol evidence."
+}
