@@ -1,0 +1,73 @@
+{
+  "experiment_id": "index-controls-v0.2",
+  "title": "Deterministic INDEX_m channel and scorer controls",
+  "status": "preregistered",
+  "purpose": "Exercise the task, role boundary, oracle policies, per-episode cost record, and aggregator without loading or calling an LLM. This does not test a language or an LLM communication capability.",
+  "task": {
+    "task_id": "INDEX_m@0.1",
+    "generator": "experiments/index_v0_1/generate_tasks.py",
+    "manifest": {
+    "split": "pilot",
+    "master_seed": 20260929,
+    "lengths": [4, 8],
+    "episodes_per_length": {"4": 8, "8": 8},
+    "episode_count": 16,
+    "sha256": "637e79254f4dc8f10e65c184a5653ffbf784ab86ecfa98795073e2c68ddecab"
+    },
+    "distribution": {
+      "sender_vector": "iid uniform bits",
+      "receiver_index": "uniform independent 1-based index"
+    }
+  },
+  "conditions": [
+    {
+      "policy_id": "no_message_fixed_zero",
+      "agents": "receiver returns 0 without receiving the sender vector",
+      "expected_reference": "0.5 accuracy in expectation; report this finite pilot's exact count"
+    },
+    {
+      "policy_id": "single_agent_full_information_oracle",
+      "agents": "central deterministic evaluator receives both private views and returns x_i",
+      "expected_reference": "16/16 exact; zero channel transmissions"
+    },
+    {
+      "policy_id": "one_way_full_vector_oracle",
+      "agents": "deterministic sender transmits all m bits; deterministic receiver selects x_i",
+      "expected_reference": "16/16 exact; m ASCII payload bytes per episode, before framing"
+    },
+    {
+      "policy_id": "interactive_index_query_oracle",
+      "agents": "receiver sends a fixed-width binary index; sender returns the selected bit",
+      "expected_reference": "16/16 exact; ceil(log2(m))+1 ASCII payload bytes per episode, before framing"
+    }
+  ],
+  "metrics": [
+    "exact_bit_success",
+    "transmission_count",
+    "payload_utf8_bytes",
+    "framing_utf8_bytes",
+    "per-recipient-tokenizer-count (not applicable for oracle agents)",
+    "model_call_count (must be zero)",
+    "runner wall and process CPU seconds"
+  ],
+  "measurement": {
+    "record_schema": "tlu.costs.v2",
+    "report_schema": "tlu.cost-report.v1",
+    "scorer_id": "exact-bit-v1",
+    "oracle_tokenizer_marker": "not-applicable-oracle-v1",
+    "raw_task_path": ".cache/index_v0_2/tasks.jsonl",
+    "raw_result_path": ".cache/index_v0_2/cost_records.jsonl",
+    "aggregate_path": ".cache/index_v0_2/cost_report.json"
+  },
+  "resource_limits": {
+    "llm_calls": 0,
+    "model_loads": 0,
+    "network_calls": 0
+  },
+  "interpretation_limits": [
+    "This verifies only deterministic task/channel/scorer plumbing and the cost-record path.",
+    "Oracle success does not imply that any LLM role can perform the sender or receiver operation.",
+    "No language, protocol superiority, scaling, or cross-model transfer claim is licensed.",
+    "ASCII payload bytes are not model-token counts or a direct bit-cost estimate for natural-language protocols."
+  ]
+}
