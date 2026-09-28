@@ -1,5 +1,11 @@
 # Research log
 
+## 2026-09-29 — Extend the exact private-query oracle to five source bits
+
+- The existing finite frontier stopped at n=4. Added [`private_query_v0_4`](../experiments/private_query_v0_4/README.md), exhaustively enumerating all 32, 496, and 35,960 decoder codebooks at 0, 1, and 2 message bits for a uniform five-bit source, under both uniform and 7:1:1:1:1 private-query priors. All success and frozen cross-prior transfer values are exact rational fractions; shared codebook setup remains a declared free-oracle assumption. No model was loaded or called.
+- Uniform-query optima are 1/2, 11/16, and 31/40; skew-prior optima are 1/2, 9/11, and 39/44. At one bit, frozen uniform-optimal protocols transfer to the skew prior at 11/16, while frozen skew-optimal protocols transfer to uniform at 3/5. At two bits, transfer means are 31/40 (uniform to skew) and 3/4 (skew to uniform); ties among uniform-optimal codebooks range from 67/88 to 73/88 on the skew prior. These are exact known-family RAC controls, not an LLM language result or superiority claim.
+- Added four focused regression tests, including agreement with the known exact one-bit RAC law and the n=5 two-bit optimum. Full standard-library test discovery passes all 28 tests in 0.839 seconds; `git diff --check` passes. This model-free finite extension does not require any local inference resources.
+
 ## 2026-09-29 — Sixth preregistered INDEX_m resource recheck
 
 - Read-only host samples measured 38.7271%, 36.8538%, and 24.8653% CPU (33.48% mean; 38.73% maximum), 14% GPU utilization, 1,018 MiB GPU memory, and 4,200 MiB free system memory. Port 8001 was unused.

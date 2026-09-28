@@ -1,0 +1,249 @@
+{
+  "assumptions": {
+    "codebook_discovery_storage_and_setup_cost_included": false,
+    "frozen_sender_tie_break": "lowest codeword",
+    "integer_query_weights_normalized_to_a_probability_distribution": true,
+    "receiver_query_private_to_sender": true,
+    "uniform_source_vectors": true
+  },
+  "candidate_codebook_counts_by_budget": {
+    "0": 32,
+    "1": 496,
+    "2": 35960
+  },
+  "method": "exact exhaustive decoder-codebook enumeration with nearest weighted-Hamming sender",
+  "model_calls": 0,
+  "results": [
+    {
+      "codebooks_enumerated": 32,
+      "example_optimal_reconstruction_codebook": [
+        0
+      ],
+      "frozen_optimal_training_protocol_transfer": {
+        "success_max_fraction": "1/2",
+        "success_mean_fraction": "1/2",
+        "success_min_fraction": "1/2",
+        "target_prior_oracle_success_fraction": "1/2",
+        "target_prior_regret_max_fraction": "0/1",
+        "target_prior_regret_mean_fraction": "0/1",
+        "target_prior_regret_min_fraction": "0/1"
+      },
+      "message_alphabet_size": 1,
+      "message_budget_bits": 0,
+      "n_source_bits": 5,
+      "optimal_codebook_count": 32,
+      "query_case": "uniform",
+      "query_weights": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "success_fraction": "1/2",
+      "success_probability": 0.5,
+      "transfer_query_case": "skewed_first_coordinate_7_to_1",
+      "transfer_query_weights": [
+        7,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "codebooks_enumerated": 496,
+      "example_optimal_reconstruction_codebook": [
+        0,
+        31
+      ],
+      "frozen_optimal_training_protocol_transfer": {
+        "success_max_fraction": "11/16",
+        "success_mean_fraction": "11/16",
+        "success_min_fraction": "11/16",
+        "target_prior_oracle_success_fraction": "9/11",
+        "target_prior_regret_max_fraction": "23/176",
+        "target_prior_regret_mean_fraction": "23/176",
+        "target_prior_regret_min_fraction": "23/176"
+      },
+      "message_alphabet_size": 2,
+      "message_budget_bits": 1,
+      "n_source_bits": 5,
+      "optimal_codebook_count": 16,
+      "query_case": "uniform",
+      "query_weights": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "success_fraction": "11/16",
+      "success_probability": 0.6875,
+      "transfer_query_case": "skewed_first_coordinate_7_to_1",
+      "transfer_query_weights": [
+        7,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "codebooks_enumerated": 35960,
+      "example_optimal_reconstruction_codebook": [
+        0,
+        7,
+        25,
+        30
+      ],
+      "frozen_optimal_training_protocol_transfer": {
+        "success_max_fraction": "73/88",
+        "success_mean_fraction": "31/40",
+        "success_min_fraction": "67/88",
+        "target_prior_oracle_success_fraction": "39/44",
+        "target_prior_regret_max_fraction": "1/8",
+        "target_prior_regret_mean_fraction": "49/440",
+        "target_prior_regret_min_fraction": "5/88"
+      },
+      "message_alphabet_size": 4,
+      "message_budget_bits": 2,
+      "n_source_bits": 5,
+      "optimal_codebook_count": 120,
+      "query_case": "uniform",
+      "query_weights": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "success_fraction": "31/40",
+      "success_probability": 0.775,
+      "transfer_query_case": "skewed_first_coordinate_7_to_1",
+      "transfer_query_weights": [
+        7,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "codebooks_enumerated": 32,
+      "example_optimal_reconstruction_codebook": [
+        0
+      ],
+      "frozen_optimal_training_protocol_transfer": {
+        "success_max_fraction": "1/2",
+        "success_mean_fraction": "1/2",
+        "success_min_fraction": "1/2",
+        "target_prior_oracle_success_fraction": "1/2",
+        "target_prior_regret_max_fraction": "0/1",
+        "target_prior_regret_mean_fraction": "0/1",
+        "target_prior_regret_min_fraction": "0/1"
+      },
+      "message_alphabet_size": 1,
+      "message_budget_bits": 0,
+      "n_source_bits": 5,
+      "optimal_codebook_count": 32,
+      "query_case": "skewed_first_coordinate_7_to_1",
+      "query_weights": [
+        7,
+        1,
+        1,
+        1,
+        1
+      ],
+      "success_fraction": "1/2",
+      "success_probability": 0.5,
+      "transfer_query_case": "uniform",
+      "transfer_query_weights": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "codebooks_enumerated": 496,
+      "example_optimal_reconstruction_codebook": [
+        0,
+        1
+      ],
+      "frozen_optimal_training_protocol_transfer": {
+        "success_max_fraction": "3/5",
+        "success_mean_fraction": "3/5",
+        "success_min_fraction": "3/5",
+        "target_prior_oracle_success_fraction": "11/16",
+        "target_prior_regret_max_fraction": "7/80",
+        "target_prior_regret_mean_fraction": "7/80",
+        "target_prior_regret_min_fraction": "7/80"
+      },
+      "message_alphabet_size": 2,
+      "message_budget_bits": 1,
+      "n_source_bits": 5,
+      "optimal_codebook_count": 256,
+      "query_case": "skewed_first_coordinate_7_to_1",
+      "query_weights": [
+        7,
+        1,
+        1,
+        1,
+        1
+      ],
+      "success_fraction": "9/11",
+      "success_probability": 0.8181818181818182,
+      "transfer_query_case": "uniform",
+      "transfer_query_weights": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "codebooks_enumerated": 35960,
+      "example_optimal_reconstruction_codebook": [
+        0,
+        1,
+        14,
+        15
+      ],
+      "frozen_optimal_training_protocol_transfer": {
+        "success_max_fraction": "3/4",
+        "success_mean_fraction": "3/4",
+        "success_min_fraction": "3/4",
+        "target_prior_oracle_success_fraction": "31/40",
+        "target_prior_regret_max_fraction": "1/40",
+        "target_prior_regret_mean_fraction": "1/40",
+        "target_prior_regret_min_fraction": "1/40"
+      },
+      "message_alphabet_size": 4,
+      "message_budget_bits": 2,
+      "n_source_bits": 5,
+      "optimal_codebook_count": 1600,
+      "query_case": "skewed_first_coordinate_7_to_1",
+      "query_weights": [
+        7,
+        1,
+        1,
+        1,
+        1
+      ],
+      "success_fraction": "39/44",
+      "success_probability": 0.8863636363636364,
+      "transfer_query_case": "uniform",
+      "transfer_query_weights": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    }
+  ],
+  "schema": "tlu.private_query.frontier.n5.v0_4"
+}
