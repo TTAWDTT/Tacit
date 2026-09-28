@@ -1,0 +1,71 @@
+{
+  "study": "HiddenBench Qwen3-1.7B full-information capability screen",
+  "version": "0.9",
+  "status": "preregistered-before-inference",
+  "question": "Can the already-cached Qwen3-1.7B checkpoint run a minimal HiddenBench full-information vote screen on the local GPU with lower CPU pressure than the prior Qwen3-8B setup?",
+  "scope": "A resource and model/task capability screen only. It does not compare communication methods or models, and it does not establish protocol value.",
+  "sources": {
+    "benchmark_paper": "https://arxiv.org/abs/2505.11556",
+    "benchmark_repository": "https://github.com/Yassellee/HiddenBench_ICML",
+    "benchmark_revision": "3be6ca16973e4fb751ffc0dfb7eb11f2d28335d1",
+    "benchmark_file": "src/hiddenbench/data/benchmark_short.json",
+    "benchmark_file_sha256": "8684c1c8b02da49bb3a959c9ba352b3eb682c02653a3c508c47b8ed54f7a5df3",
+    "model_repository": "https://huggingface.co/Qwen/Qwen3-1.7B",
+    "model_revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e"
+  },
+  "model": {
+    "name": "Qwen3-1.7B",
+    "format": "safetensors, loaded as float16 on CUDA by the project-local Transformers endpoint",
+    "shards": [
+      {
+        "file": "model-00001-of-00002.safetensors",
+        "bytes": 3441185608,
+        "sha256": "169ad53ec313c3a34b06c0809216e4fc072cce444a5d4ff2b59690d064130ed5"
+      },
+      {
+        "file": "model-00002-of-00002.safetensors",
+        "bytes": 622329984,
+        "sha256": "912becff8d60672aa8628ef08c05898d9adf17c2ad4ae3caf99b065622fdeff9"
+      }
+    ],
+    "runtime": "Project-local Transformers endpoint; PyTorch 2.6.0+cu124; Transformers 5.2.0; one local CUDA device; two PyTorch CPU threads; one server worker; below-normal process priority",
+    "decoding": {
+      "temperature": 0.0,
+      "sampling": "greedy",
+      "thinking": "disabled by local Qwen chat template",
+      "max_new_tokens": 256,
+      "request_retries": 1,
+      "invalid_vote_retries": 1
+    }
+  },
+  "design": {
+    "task": "evacuation_west_city",
+    "profile": "full",
+    "agents": 4,
+    "discussion_rounds": 0,
+    "seed": 20260927,
+    "maximum_model_requests": 4,
+    "control_reference": "The Qwen3-8B Q4_K_M v0.8 screen passed 4/4 votes on this same full-information task and seed, using a different model, decoding configuration, and backend.",
+    "outcome": "Official HiddenBench initial individual-vote accuracy and majority accuracy.",
+    "eligibility_gate": "Eligible for a separately preregistered follow-up only if all four votes are correct and the resource limits are respected. Any incomplete, malformed, or truncated vote makes this screen incomplete and ineligible.",
+    "raw_data": "Private prompt/fact/vote records and per-request usage logs stay under ignored .cache/pilot_hiddenbench_v0_9/. Publish only sanitized aggregates."
+  },
+  "resource_safeguards": {
+    "launch_gate": "Three host CPU samples averaged below 25%; NVIDIA GPU utilization below 50%; GPU memory use below 2500 MiB; at least 6000 MiB system memory is free; port 8000 is unused; required local artifacts and runtime are present.",
+    "automatic_stop": "Stop runner and local model service after host CPU is at least 65% for two consecutive 15-second samples, or GPU utilization is at least 90% for two consecutive 15-second samples.",
+    "no_progress_stop": "Stop if the model service fails to become ready within 120 seconds or the runner exceeds 600 seconds.",
+    "telemetry": "Sample host CPU, server CPU cores, server working set, GPU utilization, and GPU memory every 15 seconds. The server logs only request ID, token counts, generation/request durations, and finish reason; it never logs prompts or generated content.",
+    "cleanup": "Terminate and wait for the runner and local model service from a PowerShell finally block."
+  },
+  "predictions": [
+    "If all four full-information votes are correct inside the resource envelope, this cached 1.7B setup becomes a lower-resource candidate for future study; no hidden-information ability follows from that pass.",
+    "If the model misses the 4/4 gate, stop this model/task line without a communication-format comparison.",
+    "If the resource gate rejects launch or an automatic stop fires, record a resource-infeasible result and do not retry with relaxed thresholds in this study."
+  ],
+  "limits": [
+    "One task, one seed, and four votes are only a screening operating point.",
+    "The v0.8 Qwen3-8B reference changes checkpoint, precision/quantization, runtime, decoding, and backend; this is not a causal model-size or hardware comparison.",
+    "Full-information success does not demonstrate hidden-information solvability, communication benefit, protocol superiority, generalization, or a cost advantage.",
+    "Local endpoint usage logging measures request token counts and service time, not total system energy or a universal latency metric."
+  ]
+}

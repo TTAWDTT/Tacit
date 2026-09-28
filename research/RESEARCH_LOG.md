@@ -1,5 +1,13 @@
 # Research log
 
+## 2026-09-29 — Lower-resource HiddenBench capability screen preregistered
+
+- The current workspace was synced at `0d11945`. The 1.7B Hugging Face checkpoint is already cached as two float16-loadable safetensors shards totaling 4,063,515,592 bytes. Both shard hashes match the preregistered model revision; no model download was started. A local `llama-server` was absent, but an existing Python process (PID 8704; about 1.1 GiB working set) and 48% GPU utilization were observed, so this was not treated as an idle-machine state and the v0.9 launcher/preflight was not started.
+- Preregistered [`experiments/hiddenbench_v0_9/`](../experiments/hiddenbench_v0_9/README.md) as a capability/resource screen on the same one-task full-information HiddenBench case used by v0.8. It uses the cached Qwen3-1.7B checkpoint with a GPU-backed local Transformers server, not a model-size efficacy comparison. Eligibility remains 4/4 correct votes; a pass grants no hidden-profile, communication, or protocol claim.
+- Added request-usage telemetry to the local endpoint. With `TLU_USAGE_LOG` configured it records request identifiers, input/output token counts, generation and request duration, and stop reason without writing prompts or completions. PyTorch CPU threads are capped at two by default; the preregistered launcher uses below-normal priority and a strict idle gate.
+- Launcher safeguards require host CPU <25% over three samples, GPU <50%, GPU memory <2500 MiB, free system memory ≥6000 MiB, an unused local port, and checksum-verified local artifacts. It stops at the frozen CPU/GPU thresholds, on startup timeout, or after 600 seconds and cleans up both child processes. No model inference has been run; no server process is active.
+- Static parsing succeeded for the Python runner, PowerShell launcher, and preregistration JSON; `git diff --check` is clean. Next: publish these files before any generation, then make the single preregistered resource-gated attempt only if a later idle check finds the machine below every frozen threshold. If rejected, do not relax thresholds in this protocol.
+
 ## 2026-09-28 — AutoForm baseline audit after HiddenBench v0.8
 
 - Published the sanitized preregistered HiddenBench v0.8 capability result: four of four full-information votes passed on Qwen3-8B, but that one task/seed screen says nothing about hidden-information communication or protocol ranking. Runtime used 35.6% mean GPU and 59.3% mean host CPU, with a 91.9% CPU peak; no further model inference was run in this turn.
