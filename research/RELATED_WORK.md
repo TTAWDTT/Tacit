@@ -40,6 +40,12 @@ Transfers/intervenes on intermediate activations between frozen language models 
 
 AgentPrune targets redundant message edges and turns in multi-agent topologies, reporting substantial token reductions with comparable task scores across several benchmarks. It changes communication topology and message selection, not the code used to express a selected message. This makes it a relevant policy/topology cost baseline and a warning that gains attributed to a language may instead come from eliminating unnecessary exchanges.
 
+### Wang et al. (2025), *AgentDropout: Dynamic Agent Elimination for Token-Efficient and High-Performance LLM-Based Multi-Agent Collaboration*, ACL
+
+[ACL Anthology](https://aclanthology.org/2025.acl-long.1170/) · [official code](https://github.com/wangzx1219/AgentDropout)
+
+Learns to remove redundant agents and communication edges dynamically across rounds. The paper reports average reductions of 21.6% in prompt tokens and 18.4% in completion tokens against its selected baselines. This is a strong topology/policy control because it reduces both receiver-side rereading and sender-side generation; it does not establish that retained message content is encoded more compactly. Future format comparisons need to hold active agents, edge schedule, and rounds fixed, or include a matched AgentDropout arm and charge the selector's training/inference cost.
+
 ### Zou et al. (2025), *Latent Collaboration in Multi-Agent Systems* (LatentMAS)
 
 [arXiv](https://arxiv.org/abs/2511.20639) · [code](https://github.com/Gen-Verse/LatentMAS)
@@ -94,9 +100,15 @@ Proposes a direct best-match mapping between emerged symbols and concepts to mak
 
 ### Agent2Agent (A2A) Protocol v1
 
-[Specification](https://github.com/a2aproject/A2A/blob/main/docs/specification.md)
+[Current official specification](https://a2a-protocol.org/latest/specification/) · [normative schema](https://github.com/a2aproject/A2A/blob/main/specification/a2a.proto)
 
-An interoperability standard for independent/opaque agents: discovery, task lifecycle, messages, streaming, and artifacts. This project should integrate with or sit above such transports rather than duplicate network-level plumbing. A2A does not by itself answer the semantic representation efficiency question.
+An interoperability standard for independent/opaque agents: discovery, task lifecycle, messages, streaming, artifacts, security, and protocol bindings. Its canonical data model separates task messages from output artifacts and allows `Part` payloads to contain text, raw bytes, URLs, or structured JSON data. It is therefore a real deployment substrate and a strong transport/envelope baseline, but it does not by itself show which semantic representation lets the recipient reason most efficiently. Any eventual runtime should carry its semantic payload through A2A-compatible parts where useful and report inner payload cost separately from the complete serialized A2A envelope.
+
+### Sander et al. (2026), *A Technical Taxonomy of LLM Agent Communication Protocols* (preprint)
+
+[arXiv](https://arxiv.org/abs/2606.19135)
+
+Classifies nine adopted open-source protocols across counterparty, payload, interaction state, discovery, and schema flexibility. The authors argue that a layered/federated stack is more plausible than one standard maximizing efficiency, portability, and versatility simultaneously. This is a descriptive taxonomy, not an empirical comparison of semantic fidelity or task/cost frontiers. It supports keeping Tacit's semantic coding question separate from transport interoperability and treating A2A/MCP as neighboring layers rather than competitors in the same metric.
 
 ### ProtocolBench / ProtocolRouter (2025 preprint)
 
@@ -255,5 +267,5 @@ The appropriate abstraction is task-oriented rate-distortion / information bottl
 - Review Lewis signaling games, referential games, iterated learning, and reproducibility critiques of emergent-language benchmarks.
 - Review rate-distortion, information bottleneck, communication complexity, interactive compression, and semantic/task-oriented communications.
 - Survey coding theory/error correction and protocol negotiation under noisy or adversarial channels.
-- Inspect established agent communication language work (FIPA ACL, KQML) and current A2A/MCP implementations without confusing envelope interoperability with semantics.
+- Inspect established agent communication language work (FIPA ACL, KQML) and current MCP implementations; A2A's current task/message/artifact model is now mapped above. Keep envelope interoperability distinct from semantic efficiency.
 - Search mechanistic interpretability/representation alignment for implications of hidden-state transfer across models.

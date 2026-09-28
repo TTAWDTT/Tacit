@@ -1,0 +1,27 @@
+{
+  "experiment_id": "index-llm-capability-v0.3",
+  "attempt": "read-only resource-gate recheck",
+  "status": "idle_gate_not_met",
+  "date_local": "2026-09-29",
+  "observed_resources": {
+    "host_cpu_samples_percent": [30.6, 32.7, 35.1],
+    "host_cpu_mean_percent": 32.8,
+    "host_cpu_max_percent": 35.1,
+    "gpu_utilization_percent": 17,
+    "gpu_memory_used_mib": 964,
+    "gpu_memory_total_mib": 8188,
+    "free_system_memory_mib": 5672
+  },
+  "preregistered_launch_requirements": {
+    "host_cpu_mean_below_percent": 20,
+    "host_cpu_each_sample_below_percent": 30,
+    "gpu_utilization_below_percent": 25,
+    "gpu_memory_below_mib": 1800,
+    "free_system_memory_at_least_mib": 6000
+  },
+  "model_artifact_hashing_started": false,
+  "model_weights_loaded": false,
+  "model_service_started": false,
+  "model_requests": 0,
+  "disposition": "CPU and free-memory limits remain unsatisfied. No launch was attempted and no threshold was relaxed."
+}
