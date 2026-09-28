@@ -63,6 +63,16 @@ The arrays `transmissions`, `model_calls`, and `setup` are required; use an empt
 
 Preserve raw payloads privately as appropriate, with a sanitized aggregate suitable for public release. The schema records sizes and token counts but does not independently reconstruct payload bytes from message contents, so retain an auditable private payload ledger or deterministic serializer when verification requires it.
 
+## Paired analysis
+
+Use paired episode comparisons for task-success/cost differences rather than interpreting unpaired group means. The standard-library paired report is [`tools/paired_report.py`](../tools/paired_report.py). Run it with:
+
+```powershell
+python tools/paired_report.py path/to/episodes.jsonl --replicates 10000 --seed 1729 --output path/to/paired-report.json
+```
+
+It matches v2 conditions on experiment/task/split/parameters/scorer and exact `episode_id`, then reports left-minus-right differences with percentile bootstrap 95% intervals for joint success, wire bytes, transmission count, inference input/output tokens, model-call count, summed service time, wall time, critical-path time, and amortized setup bytes. Full model strata are preserved on both sides, and `control_alignment` shows whether model strata, policy, and decoder match and whether the code differs. These are necessary checks for a representation-only comparison, not proof that prompts or schedules were identical; verify those against the preregistration. Cross-model contrasts are reported as such and do not isolate representation. Unmatched episode counts and metric-specific missing pairs remain visible. Legacy v1 inputs can only be paired by episode ID because their task/model strata are absent, so task identity must be checked externally. Bootstrap intervals over a small fixed synthetic shard do not establish population generalization; report the paired episode count and benchmark split.
+
 ## Comparisons to publish
 
 1. **Quality versus channel budget:** success and semantic fidelity at equal delivered bytes and, separately, equal receiver-tokenizer payload tokens.

@@ -6,6 +6,7 @@ import copy
 import unittest
 
 from tools.cost_report import RecordError, aggregate
+from tools.paired_report import paired_report
 
 
 def _record(episode_id: str, *, version: str = "tlu.costs.v2", framing: object = 0) -> dict:
@@ -73,6 +74,65 @@ class CostReportContractTests(unittest.TestCase):
         ][0]
         self.assertEqual(group["aggregation_scope"], "protocol_only_legacy_v1")
         self.assertFalse(group["channel"]["wire_bytes"]["complete"])
+
+    def test_paired_report_matches_episodes_and_uses_left_minus_right(self) -> None:
+        left_one = _record("episode-1")
+        left_one["protocol"]["code_id"] = "left"
+        left_two = _record("episode-2")
+        left_two["protocol"]["code_id"] = "left"
+        left_two["outcome"]["joint_success"] = False
+
+        right_one = _record("episode-1")
+        right_one["protocol"]["code_id"] = "right"
+        right_one["outcome"]["joint_success"] = False
+        right_two = _record("episode-2")
+        right_two["protocol"]["code_id"] = "right"
+        right_two["outcome"]["joint_success"] = False
+        right_two["runtime"]["critical_path_seconds"] = 4.0
+
+        report = paired_report([left_one, left_two, right_one, right_two], replicates=200, seed=7)
+        comparison = report["comparisons"][0]
+        self.assertEqual(comparison["paired_episode_count"], 2)
+        self.assertEqual(comparison["metrics"]["joint_success"]["mean_left_minus_right"], 0.5)
+        self.assertEqual(comparison["metrics"]["critical_path_seconds"]["mean_left_minus_right"], -1.0)
+        self.assertEqual(comparison["control_alignment"], {
+            "model_strata_matched": True,
+            "policy_matched": True,
+            "decoder_matched": True,
+            "code_differs": True,
+        })
+
+    def test_paired_report_is_reproducible_and_reports_unmatched_episodes(self) -> None:
+        left = _record("shared")
+        left["protocol"]["code_id"] = "left"
+        left_only = _record("left-only")
+        left_only["protocol"]["code_id"] = "left"
+        right = _record("shared")
+        right["protocol"]["code_id"] = "right"
+        right_only = _record("right-only")
+        right_only["protocol"]["code_id"] = "right"
+
+        records = [left, left_only, right, right_only]
+        first = paired_report(records, replicates=200, seed=11)
+        second = paired_report(records, replicates=200, seed=11)
+        self.assertEqual(first, second)
+        comparison = first["comparisons"][0]
+        self.assertEqual(comparison["paired_episode_count"], 1)
+        self.assertEqual(comparison["left_only_episodes"], 1)
+        self.assertEqual(comparison["right_only_episodes"], 1)
+
+    def test_paired_report_matches_task_cells_and_marks_model_mismatch(self) -> None:
+        left = _record("same-task")
+        left["protocol"]["code_id"] = "natural-language"
+        right = _record("same-task")
+        right["protocol"]["code_id"] = "compact-code"
+        right["stratum"]["model_population_id"] = "different-model-pair"
+        right["stratum"]["agent_models"] = {"sender": "model-b", "receiver": "model-b"}
+
+        comparison = paired_report([left, right], replicates=100)["comparisons"][0]
+        self.assertEqual(comparison["paired_episode_count"], 1)
+        self.assertFalse(comparison["control_alignment"]["model_strata_matched"])
+        self.assertNotIn("model_population_id", comparison["task_stratum"])
 
 
 if __name__ == "__main__":
