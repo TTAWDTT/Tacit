@@ -2,6 +2,13 @@
 
 **Status:** design plus exploratory diagnostics from Silo-Bench v0.1 and interaction calibration v0.2. No confirmatory evidence has been collected. Freeze each concrete protocol before its first model run.
 
+## Current status and active gates (2026-09-28)
+
+- The HiddenBench v0.6 three-round natural condition completed at 0/4 final individual votes on one hidden task/seed; the remaining conditions were manually interrupted after repeated high host CPU samples. The v0.7 8B full-information screen was automatically stopped at 97%/95% GPU utilization before any vote was durably scored. See the linked reports in the root README.
+- The v0.8 screen is preregistered with 20 GPU layers, an unchanged 4/4 full-information gate, stricter idle-load checks, automatic stop thresholds, and per-vote atomic checkpoints. Its first preflight was rejected at 43.6% host CPU. No model server was started; do not lower the launch gate to force a run.
+- A synthetic `INDEX_m` generator and exact one-way communication lower-bound proof are available at [`experiments/index_v0_1/`](../experiments/index_v0_1/README.md) and [`research/INDEX_PROTOCOL_DESIGN.md`](../research/INDEX_PROTOCOL_DESIGN.md). It currently tests only task construction and scoring; no model calls or protocol claims exist.
+- Near-term sequence: (1) run v0.8 only when the frozen resource gate passes; (2) require 4/4 full-information votes before any HiddenBench communication comparison; (3) develop the `INDEX_m` single-agent/no-message/oracle controls before a representation study; (4) retain AutoForm and optimized natural-language baselines as primary alternatives. These paths are independent; a blocked hardware gate does not justify relaxing the capability or evidence thresholds.
+
 ## First benchmark requirement
 
 Start by reusing existing suites rather than creating another benchmark. Evaluate Silo-Bench's private data shards / algorithmic tasks for scaling and MT-PingEval's private-information games for multi-turn behavior, subject to artifact license and reproducibility checks. Establish communication necessity in each selected split with (a) full communication, (b) no communication, and (c) a centralized oracle/upper bound. Add a small deterministic synthetic task only if these suites do not permit clean message-format/budget interventions.
