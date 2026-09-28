@@ -62,6 +62,14 @@ def _protocol_key(record: dict[str, Any]) -> tuple[str, str, str]:
     return tuple(protocol[field] for field in PROTOCOL_FIELDS)  # type: ignore[return-value]
 
 
+def _tokenizer_units(records: dict[str, dict[str, Any]]) -> set[str]:
+    return {
+        call["tokenizer"]
+        for record in records.values()
+        for call in record["model_calls"]
+    }
+
+
 def _episode_metric(record: dict[str, Any], name: str) -> float | None:
     if name == "joint_success":
         return float(record["outcome"]["joint_success"])
@@ -76,6 +84,8 @@ def _episode_metric(record: dict[str, Any], name: str) -> float | None:
     if name == "transmissions":
         return float(len(record["transmissions"]))
     if name in {"input_tokens", "output_tokens"}:
+        if len({call["tokenizer"] for call in record["model_calls"]}) > 1:
+            return None
         field = name
         values = [call[field] for call in record["model_calls"]]
         if any(value is None for value in values):
@@ -174,10 +184,23 @@ def paired_report(
             left = groups[(task_key, left_protocol_key, left_stratum_key)]
             right = groups[(task_key, right_protocol_key, right_stratum_key)]
             common_ids = sorted(set(left) & set(right))
+            left_tokenizers = _tokenizer_units(left)
+            right_tokenizers = _tokenizer_units(right)
+            tokenizer_units = left_tokenizers | right_tokenizers
+            token_deltas_comparable = (
+                len(tokenizer_units) <= 1
+                and (not left_tokenizers or not right_tokenizers or left_tokenizers == right_tokenizers)
+            )
             metrics: dict[str, Any] = {}
             for metric_index, metric_name in enumerate(BOOTSTRAP_METRICS):
                 deltas = []
                 missing_pairs = 0
+                if metric_name in {"input_tokens", "output_tokens"} and not token_deltas_comparable:
+                    metrics[metric_name] = {
+                        **_paired_bootstrap(deltas, replicates=replicates, rng=random.Random(seed)),
+                        "missing_pairs": len(common_ids),
+                    }
+                    continue
                 for episode_id in common_ids:
                     left_value = _episode_metric(left[episode_id], metric_name)
                     right_value = _episode_metric(right[episode_id], metric_name)
@@ -205,6 +228,11 @@ def paired_report(
                     "policy_matched": left_protocol_key[0] == right_protocol_key[0],
                     "decoder_matched": left_protocol_key[2] == right_protocol_key[2],
                     "code_differs": left_protocol_key[1] != right_protocol_key[1],
+                },
+                "tokenizer_units": {
+                    "left": sorted(left_tokenizers),
+                    "right": sorted(right_tokenizers),
+                    "deltas_comparable": token_deltas_comparable,
                 },
                 "pairing_basis": (
                     "episode_id_only_task_identity_unverified"

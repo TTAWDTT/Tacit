@@ -6,6 +6,7 @@ import copy
 import unittest
 
 from tools.cost_report import RecordError, aggregate
+from tools.frontier_report import frontier_report
 from tools.paired_report import paired_report
 
 
@@ -128,11 +129,103 @@ class CostReportContractTests(unittest.TestCase):
         right["protocol"]["code_id"] = "compact-code"
         right["stratum"]["model_population_id"] = "different-model-pair"
         right["stratum"]["agent_models"] = {"sender": "model-b", "receiver": "model-b"}
+        left["model_calls"] = [{
+            "agent": "receiver", "stage": "answer", "model": "model-a",
+            "tokenizer": "tokenizer-a", "input_tokens": 12, "output_tokens": 2,
+            "service_seconds": 1.0, "retry": False, "truncated": False,
+        }]
+        right["model_calls"] = [{
+            "agent": "receiver", "stage": "answer", "model": "model-b",
+            "tokenizer": "tokenizer-b", "input_tokens": 10, "output_tokens": 2,
+            "service_seconds": 1.0, "retry": False, "truncated": False,
+        }]
 
         comparison = paired_report([left, right], replicates=100)["comparisons"][0]
         self.assertEqual(comparison["paired_episode_count"], 1)
         self.assertFalse(comparison["control_alignment"]["model_strata_matched"])
         self.assertNotIn("model_population_id", comparison["task_stratum"])
+        self.assertFalse(comparison["tokenizer_units"]["deltas_comparable"])
+        token_metric = comparison["metrics"]["input_tokens"]
+        self.assertEqual(token_metric["paired_episodes"], 0)
+        self.assertEqual(token_metric["missing_pairs"], 1)
+
+    def test_frontier_reports_nondominated_points_without_scalarizing_costs(self) -> None:
+        low_cost = _record("episode-1")
+        low_cost["protocol"]["code_id"] = "low-cost"
+        low_cost["transmissions"][0]["payload_utf8_bytes"] = 1
+        low_cost["runtime"]["wall_seconds"] = 2.0
+
+        dominated = _record("episode-1")
+        dominated["protocol"]["code_id"] = "dominated"
+        dominated["transmissions"][0]["payload_utf8_bytes"] = 3
+        dominated["runtime"]["wall_seconds"] = 3.0
+
+        report = frontier_report([low_cost, dominated])
+        group = report["groups"][0]
+        operational = next(item for item in group["frontiers"] if item["scope"] == "operational")
+        self.assertEqual(operational["minimize"], [
+            "wire_bytes", "input_tokens", "output_tokens", "model_calls",
+            "service_seconds", "wall_seconds", "amortized_setup_bytes",
+        ])
+        self.assertEqual(operational["nondominated_protocols"], [low_cost["protocol"]])
+
+    def test_frontier_refuses_to_compare_conditions_with_different_episode_sets(self) -> None:
+        left_one = _record("episode-1")
+        left_one["protocol"]["code_id"] = "left"
+        left_two = _record("episode-2")
+        left_two["protocol"]["code_id"] = "left"
+        right = _record("episode-1")
+        right["protocol"]["code_id"] = "right"
+
+        group = frontier_report([left_one, left_two, right])["groups"][0]
+        self.assertFalse(group["episode_coverage_matched_across_conditions"])
+        self.assertTrue(all(frontier["eligible_conditions"] == 0 for frontier in group["frontiers"]))
+        self.assertTrue(all(frontier["excluded_conditions"][0]["episode_set_mismatch"] for frontier in group["frontiers"]))
+
+    def test_frontier_does_not_add_token_counts_from_heterogeneous_tokenizers(self) -> None:
+        left = _record("episode-1")
+        left["protocol"]["code_id"] = "left"
+        right = _record("episode-1")
+        right["protocol"]["code_id"] = "right"
+        for record in (left, right):
+            record["stratum"]["model_population_id"] = "heterogeneous-pair"
+            record["stratum"]["agent_models"] = {"sender": "model-a", "receiver": "model-b"}
+            record["model_calls"] = [
+                {"agent": "sender", "stage": "communicate", "model": "model-a",
+                 "tokenizer": "tokenizer-a", "input_tokens": 10, "output_tokens": 2,
+                 "service_seconds": 1.0, "retry": False, "truncated": False},
+                {"agent": "receiver", "stage": "answer", "model": "model-b",
+                 "tokenizer": "tokenizer-b", "input_tokens": 12, "output_tokens": 3,
+                 "service_seconds": 1.0, "retry": False, "truncated": False},
+            ]
+
+        group = frontier_report([left, right])["groups"][0]
+        self.assertEqual(group["tokenizer_units"], ["tokenizer-a", "tokenizer-b"])
+        self.assertFalse(group["conditions"][0]["costs"]["input_tokens"]["complete"])
+        channel_frontier = next(item for item in group["frontiers"] if item["scope"] == "channel_bytes")
+        token_frontier = next(item for item in group["frontiers"] if item["scope"] == "channel_and_inference_tokens")
+        self.assertEqual(channel_frontier["eligible_conditions"], 2)
+        self.assertEqual(token_frontier["eligible_conditions"], 0)
+
+    def test_frontier_refuses_legacy_records_without_task_strata(self) -> None:
+        report = frontier_report([_record("legacy", version="tlu.costs.v1", framing=_MISSING)])
+        self.assertEqual(report["groups"], [])
+        self.assertIn("lacks task and model strata", report["excluded_reason"])
+
+    def test_frontier_deduplicates_setup_cost_over_the_condition_group(self) -> None:
+        first = _record("episode-1")
+        second = _record("episode-2")
+        first["protocol"]["code_id"] = "same-condition"
+        second["protocol"]["code_id"] = "same-condition"
+        first["setup"] = [{
+            "artifact_id": "shared-codebook-v1",
+            "one_time_bytes": 100,
+            "one_time_tokens": {},
+            "reuse_horizon": 10,
+        }]
+
+        point = frontier_report([first, second])["groups"][0]["conditions"][0]
+        self.assertEqual(point["costs"]["amortized_setup_bytes"]["mean"], 10.0)
 
 
 if __name__ == "__main__":

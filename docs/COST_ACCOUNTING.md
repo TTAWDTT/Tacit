@@ -71,7 +71,17 @@ Use paired episode comparisons for task-success/cost differences rather than int
 python tools/paired_report.py path/to/episodes.jsonl --replicates 10000 --seed 1729 --output path/to/paired-report.json
 ```
 
-It matches v2 conditions on experiment/task/split/parameters/scorer and exact `episode_id`, then reports left-minus-right differences with percentile bootstrap 95% intervals for joint success, wire bytes, transmission count, inference input/output tokens, model-call count, summed service time, wall time, critical-path time, and amortized setup bytes. Full model strata are preserved on both sides, and `control_alignment` shows whether model strata, policy, and decoder match and whether the code differs. These are necessary checks for a representation-only comparison, not proof that prompts or schedules were identical; verify those against the preregistration. Cross-model contrasts are reported as such and do not isolate representation. Unmatched episode counts and metric-specific missing pairs remain visible. Legacy v1 inputs can only be paired by episode ID because their task/model strata are absent, so task identity must be checked externally. Bootstrap intervals over a small fixed synthetic shard do not establish population generalization; report the paired episode count and benchmark split.
+It matches v2 conditions on experiment/task/split/parameters/scorer and exact `episode_id`, then reports left-minus-right differences with percentile bootstrap 95% intervals for joint success, wire bytes, transmission count, inference input/output tokens, model-call count, summed service time, wall time, critical-path time, and amortized setup bytes. Token deltas are omitted when the two conditions use incompatible tokenizer units; the report records the tokenizer IDs and comparability decision instead of adding unlike token counts. Full model strata are preserved on both sides, and `control_alignment` shows whether model strata, policy, and decoder match and whether the code differs. These are necessary checks for a representation-only comparison, not proof that prompts or schedules were identical; verify those against the preregistration. Cross-model contrasts are reported as such and do not isolate representation. Unmatched episode counts and metric-specific missing pairs remain visible. Legacy v1 inputs can only be paired by episode ID because their task/model strata are absent, so task identity must be checked externally. Bootstrap intervals over a small fixed synthetic shard do not establish population generalization; report the paired episode count and benchmark split.
+
+## Empirical Pareto frontiers
+
+Use [`tools/frontier_report.py`](../tools/frontier_report.py) to compute descriptive non-dominated protocol points from the versioned per-episode records:
+
+```powershell
+python tools/frontier_report.py path/to/episodes.jsonl --output path/to/frontier-report.json
+```
+
+Frontiers are computed separately within the full v2 task/model stratum and only when all conditions have identical episode-ID coverage and complete measurements for the declared dimensions. The report includes channel-bytes, channel-plus-inference-token, operational, and critical-path scopes; the exact cost axes are emitted with each scope. Input/output tokens are excluded when a stratum mixes tokenizer units rather than summing unlike counts. Missing dimensions and unmatched episode coverage make a condition ineligible, not zero-cost. Legacy v1 records are refused for stratified frontiers because their task/model metadata is absent. These empirical frontiers do not carry population uncertainty; use the paired report for uncertainty and keep task-specific strata separate.
 
 ## Comparisons to publish
 
