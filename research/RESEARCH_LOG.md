@@ -1,5 +1,13 @@
 # Research log
 
+## 2026-09-29 — Audit TFlow weight-space communication
+
+- **Trigger:** broader search for strong alternatives beyond text-format selection surfaced TFlow, a new executable weight-space communication method with a public inference repository.
+- **Research:** reviewed the full arXiv HTML and official GitHub README. TFlow maps sender hidden states to transient receiver-specific LoRA perturbations; evaluations use three frozen Qwen3-4B agents across five benchmarks. The repository exposes inference and a ~123 MB parameter-generator checkpoint but says training code is not included.
+- **Evidence and limits:** the paper reports fewer processed tokens and lower latency against its text MAS arm, with an accuracy gap on four of five tasks and a larger gap on HumanEval+. It also reports greater latency than the standalone receiver on four of five tasks. Since its communication object is tensor/weight-space and the demonstrated receiver is fixed/compatible, token savings do not establish lower wire bandwidth or heterogeneous transfer.
+- **Prediction/design consequence:** compare the serialized tensor boundary, generator setup/compute, and receiver overhead; use true, same-shape mismatched-instance, neutral, and no-message controls. Treat TFlow as a conditional systems baseline. A text protocol claim must name the deployment setting in which weight-space access is unavailable or unsuitable.
+- **Artifacts:** added [`research/TFLOW_AUDIT_V0_1.md`](TFLOW_AUDIT_V0_1.md), updated the related-work map, thesis, experiment baseline list, and README. No checkpoint was downloaded, no model was loaded, and no inference or training was run.
+
 ## 2026-09-29 — Factor learned selection policy from message representation
 
 - **Observation:** the OPTiMACS audit shows that recent systems jointly vary task categorization, format inventory, and format selection. Existing shorthand such as “language wins” can therefore conflate changing which content/turn is chosen with changing how fixed content is encoded.

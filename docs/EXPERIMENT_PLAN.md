@@ -48,7 +48,7 @@ AutoForm's existing HotpotQA split-context setting already demonstrates distribu
 5. Learned task-conditioned format selection (OPTiMACS) and task-trained agent interaction (Optima), with format search, task categorization, training, and inference costs charged.
 6. Shared dictionary / task-specific codebook with setup cost charged.
 7. Learned discrete protocol if a reproducible training setup is justified.
-8. Latent/KV transfer (LatentMAS, Interlat, CondenseFlow) where open models and compatible architectures permit fair runs.
+8. Latent/KV and weight-space transfer (LatentMAS, Interlat, CondenseFlow, TFlow) where open models, compatible architectures, sufficient resources, and fair serialized-boundary accounting permit runs. Otherwise record the access/compute exclusion and limit claims accordingly.
 9. No-communication, full-information, and random-message controls.
 
 ## Core controlled comparisons

@@ -44,6 +44,14 @@ FOFO reports that open-weight models lag closed models in complex format adheren
 
 ## Latent and hidden-state transfer
 
+### Bao et al. (2026), *Good Agentic Friends Do Not Just Give Verbal Advice: They Can Update Your Weights* (TFlow)
+
+[arXiv paper](https://arxiv.org/abs/2605.13839) · [official code and inference checkpoint](https://github.com/BWR-hhh/TFlow) · [detailed audit](TFLOW_AUDIT_V0_1.md)
+
+TFlow converts sender hidden states into transient, receiver-specific LoRA perturbations rather than appending messages to the receiver's context. In a three-agent Qwen3-4B setup, it reports higher accuracy than a standalone receiver with fewer processed tokens, and 71–83% fewer tokens plus 2.3–4.6x lower latency than its text-based multi-agent comparator. The gap on HumanEval+ is larger; applying instance-specific LoRA perturbations also makes TFlow slower than the standalone receiver on four of five tasks, despite beating the token-heavy TextMAS baseline. Its channel is a tensor/weight update, so token count is not a bandwidth measure: serialized factors, sender activations, generator setup/compute, receiver patching cost, and reuse horizon must be counted. The demonstrated receiver-specific, shared-Qwen3 setup is not model-agnostic or API-only. The public repository includes inference but not training code and links a roughly 123 MB generator checkpoint.
+
+This is a conditional systems baseline, not a text-language competitor under identical access assumptions. A causal comparison must include true versus same-shape mismatched-instance and neutral perturbations, and must report portable serialized bytes as well as full inference cost. Do not claim that a discrete protocol beats the strongest latent/weight-space alternatives unless this comparator is run or excluded for an explicit deployment constraint.
+
 ### Ramesh & Li (2025), *Communicating Activations Between Language Model Agents*, ICML
 
 [arXiv](https://arxiv.org/abs/2501.14082) · [TMLR/ICML proceedings PDF](https://raw.githubusercontent.com/mlresearch/v267/main/assets/ramesh25a/ramesh25a.pdf)
