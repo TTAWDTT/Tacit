@@ -1,0 +1,100 @@
+{
+  "centralized_exact_information_accuracy": 1.0,
+  "no_message_bayes_accuracy": 0.125,
+  "results": {
+    "compact_json": {
+      "accuracy": 1.0,
+      "correct": 128,
+      "episodes": 128,
+      "ideal_worst_case_zero_error_bits": 20,
+      "llm_inference_cost_measured": false,
+      "llm_tokens_measured": false,
+      "payload_bits": {
+        "max": 528,
+        "mean": 528.0,
+        "median": 528.0,
+        "p95": 528
+      },
+      "payload_bytes": {
+        "max": 66,
+        "mean": 66.0,
+        "median": 66.0,
+        "p95": 66
+      },
+      "serialization": "utf-8 text"
+    },
+    "fixed_width_mixed_radix_rank": {
+      "accuracy": 1.0,
+      "correct": 128,
+      "episodes": 128,
+      "ideal_worst_case_zero_error_bits": 20,
+      "llm_inference_cost_measured": false,
+      "llm_tokens_measured": false,
+      "payload_bits": {
+        "max": 24,
+        "mean": 24.0,
+        "median": 24.0,
+        "p95": 24
+      },
+      "payload_bytes": {
+        "max": 3,
+        "mean": 3.0,
+        "median": 3.0,
+        "p95": 3
+      },
+      "serialization": "packed binary bytes"
+    },
+    "labeled_natural_language": {
+      "accuracy": 1.0,
+      "correct": 128,
+      "episodes": 128,
+      "ideal_worst_case_zero_error_bits": 20,
+      "llm_inference_cost_measured": false,
+      "llm_tokens_measured": false,
+      "payload_bits": {
+        "max": 816,
+        "mean": 816.0,
+        "median": 816.0,
+        "p95": 816
+      },
+      "payload_bytes": {
+        "max": 102,
+        "mean": 102.0,
+        "median": 102.0,
+        "p95": 102
+      },
+      "serialization": "utf-8 text"
+    },
+    "ordered_delimited_tuple": {
+      "accuracy": 1.0,
+      "correct": 128,
+      "episodes": 128,
+      "ideal_worst_case_zero_error_bits": 20,
+      "llm_inference_cost_measured": false,
+      "llm_tokens_measured": false,
+      "payload_bits": {
+        "max": 232,
+        "mean": 232.0,
+        "median": 232.0,
+        "p95": 232
+      },
+      "payload_bytes": {
+        "max": 29,
+        "mean": 29.0,
+        "median": 29.0,
+        "p95": 29
+      },
+      "serialization": "utf-8 text"
+    }
+  },
+  "schema_version": "tlu.private-match-codec-comparison.v1",
+  "task_parameters": {
+    "candidate_count": 8,
+    "episodes": 128,
+    "feature_count": 5,
+    "seed_start": 5000,
+    "vocabulary_size_per_feature": 16
+  },
+  "task_schema_version": "tlu.private-match.v1",
+  "task_sequence_sha256": "afd635dcd279f170577edc4d13e3f7382bb173cae69c93bb5d03372f9d41fe5b"
+}

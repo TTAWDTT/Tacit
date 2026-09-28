@@ -12,6 +12,10 @@ SPEC = importlib.util.spec_from_file_location("private_match_v0_1", MODULE_PATH)
 module = importlib.util.module_from_spec(SPEC)
 assert SPEC and SPEC.loader
 SPEC.loader.exec_module(module)
+import sys
+
+sys.path.insert(0, str(MODULE_PATH.parent))
+import compare_codecs as codecs
 
 
 class PrivateMatchTaskTests(unittest.TestCase):
@@ -85,6 +89,56 @@ class PrivateMatchTaskTests(unittest.TestCase):
                     output, episodes=3, seed=10, candidate_count=4, feature_count=2,
                     vocabulary_size=4,
                 )
+
+    def test_codec_arms_round_trip_with_role_limited_views(self):
+        sender, receiver, gold = module.generate_episode(
+            episode_id="codec-1", seed=119, candidate_count=8, feature_count=5,
+            vocabulary_size=16,
+        )
+        text_arms = (
+            (codecs.encode_labeled_text, codecs.decode_labeled_text),
+            (codecs.encode_json, codecs.decode_json),
+            (codecs.encode_delimited, codecs.decode_delimited),
+        )
+        for encode, decode in text_arms:
+            message = encode(sender)
+            self.assertTrue(module.score_answer(receiver, gold, decode(message, receiver)))
+        binary_message = codecs.encode_rank_bytes(sender, 16)
+        self.assertEqual(len(binary_message), 3)
+        self.assertTrue(module.score_answer(
+            receiver, gold, codecs.decode_rank_bytes(binary_message, receiver, 16)
+        ))
+
+    def test_codec_frontier_reports_bytes_separately_from_ideal_bits(self):
+        report = codecs.run_comparison(
+            episodes=7, seed=2026, candidate_count=5, feature_count=3,
+            vocabulary_size=4,
+        )
+        self.assertEqual(report["no_message_bayes_accuracy"], 0.2)
+        self.assertEqual(report["results"]["fixed_width_mixed_radix_rank"]["accuracy"], 1.0)
+        self.assertEqual(
+            report["results"]["fixed_width_mixed_radix_rank"]["ideal_worst_case_zero_error_bits"], 6
+        )
+        self.assertEqual(
+            report["results"]["fixed_width_mixed_radix_rank"]["payload_bytes"]["mean"], 1
+        )
+        self.assertFalse(report["results"]["compact_json"]["llm_tokens_measured"])
+
+    def test_codecs_support_values_wider_than_four_digits(self):
+        sender, receiver, gold = module.generate_episode(
+            episode_id="wide-vocabulary", seed=9, candidate_count=2,
+            feature_count=1, vocabulary_size=10001,
+        )
+        for encode, decode in (
+            (codecs.encode_labeled_text, codecs.decode_labeled_text),
+            (codecs.encode_json, codecs.decode_json),
+            (codecs.encode_delimited, codecs.decode_delimited),
+        ):
+            self.assertTrue(module.score_answer(receiver, gold, decode(encode(sender), receiver)))
+        self.assertTrue(module.score_answer(
+            receiver, gold,
+            codecs.decode_rank_bytes(codecs.encode_rank_bytes(sender, 10001), receiver, 10001),
+        ))
 
 
 if __name__ == "__main__":

@@ -26,10 +26,20 @@ python experiments/private_match_v0_1/generate_tasks.py `
 
 Existing files are preserved unless `--force` is supplied. The manifest stores task parameters, Python runtime/randomness metadata, the analytic no-message reference, and SHA-256 hashes of all role-separated files. Keep sender/receiver views physically separate in every runner; never construct a combined model prompt from `gold.jsonl` or provide the manifest's seed to either agent.
 
+## Model-free codec calibration
+
+Run compare_codecs.py to compare a labeled natural-language template, compact JSON, an ordered delimited tuple, and a fixed-width mixed-radix rank code over the same role-separated task generator. For example:
+
+    python experiments/private_match_v0_1/compare_codecs.py --output .cache/private_match_v0_1/codec_frontier.json --episodes 128 --seed 5000 --candidates 8 --features 5 --vocabulary-size 16
+
+The report gives exact match accuracy, mean/median/p95/max UTF-8 or binary payload bytes, serialized payload bits, and the ideal worst-case zero-error bit bound. For a 5-field, 16-value schema, the theorem's lower bound is 20 bits, while a byte-aligned rank payload occupies 3 bytes (24 transmitted bits); this explicitly exposes final-byte padding. All codec arms are deterministic and should decode perfectly. Their purpose is to verify the cost boundary and give reference wire sizes, not to measure an LLM's ability to follow or understand a format. The labeled sentence is a fixed template, not a prompt-optimized natural-language baseline. The report explicitly marks LLM token and inference cost as unmeasured.
+
+Each encoder receives only the sender view; each decoder receives only the receiver view. The scorer is called after decoding. A task-sequence SHA-256 identifies the exact generated role inputs and scorer references used in the aggregate. The mixed-radix arm assumes a shared feature order and vocabulary, just like the theoretical bound; shared-state setup is not included in its payload count.
+
 ## Research role and limits
 
 The motivating [MT-PingEval paper](https://arxiv.org/abs/2602.24188) uses private personal-record tables and automatically generated instances. It reports that multi-turn accuracy gains can largely follow a random guess-and-check baseline. Private Match v0.1 deliberately uses a fixed one-way sender-to-receiver schedule first, so it can calibrate semantic payload representation without crediting extra turns or lucky guesses. It is a deliberately small task family: exact tuple matching does not test broad scientific reasoning, planning, long-horizon coordination, or natural-language grounding.
 
-Before any format comparison, require a receiver full-information capability gate on fresh tasks. Compare no message, correct target message, a target message deranged from another episode, a fixed-width shared tuple-rank code, and a centralized oracle; keep task schedule and prompts fixed. Candidate representation arms include optimized concise natural language, JSON, delimited tuples, and a compact code only if its setup/codebook cost is declared. Measure exact answer, semantic decoding, protocol adherence, actual serialized payload bytes, receiver-native input/output tokens, full prompt/completion costs, latency, and failure/retry counts. Equal-budget curves and cross-model transfer are required before a protocol claim.
+Before any LLM format comparison, require a receiver full-information capability gate on fresh tasks. Compare no message, correct target message, a target message deranged from another episode, a fixed-width shared tuple-rank code, and a centralized oracle; keep task schedule and prompts fixed. Candidate representation arms include optimized concise natural language, JSON, delimited tuples, and a compact code only if its setup/codebook cost is declared. Measure exact answer, semantic decoding, protocol adherence, actual serialized payload bytes, receiver-native input/output tokens, full prompt/completion costs, latency, and failure/retry counts. Equal-budget curves and cross-model transfer are required before a protocol claim. The model-free codec calibration is only a wire-size and scorer check; it cannot pass the LLM capability gate.
 
 The task manifest is not a preregistration. No model run, language comparison, scaling result, or superiority claim is included in this artifact.
