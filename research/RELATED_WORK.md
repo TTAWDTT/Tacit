@@ -132,6 +132,12 @@ DAR retains a subset of existing agent responses to preserve disagreement and li
 
 IMAC jointly learns compact messages and a scheduler under limited-bandwidth multi-agent reinforcement learning. Its information-bottleneck framing is relevant to the theory: message utility is task-conditioned, and connection/scheduling cost is part of the resource budget. Its learned policies and embodied cooperative tasks are not a direct LLM baseline, but show that optimizing message content while fixing whether/when agents communicate leaves out a long-established part of the problem.
 
+### Bae et al. (2026), *LLM-Guided Communication for Cooperative Multi-Agent Reinforcement Learning* (LMAC), ICML
+
+[arXiv full paper](https://arxiv.org/abs/2605.18077) · [project/code](https://saaangjun.github.io/LMAC/)
+
+This is a close adjacent precedent for letting an LLM design a communication protocol. It generates executable code that maps local observations to messages, then refines that protocol using offline state-reconstruction feedback. The protocol is used by trained MARL agents; LLMs are not the online communicating endpoints. The paper reports GPT-4.1 protocol-design cost (70.4k tokens, estimated $0.227 per run) and auxiliary decoder training, and tests constrained message dimensions. Thus “LLM-designed protocol” is not itself a novelty claim for Tacit. The open question here is narrower: whether heterogeneous or same-family LLM agents can directly use a stable protocol to exchange task-relevant semantics, at a better end-to-end success/cost frontier than optimized natural language and other baselines. LMAC's receiver state-reconstruction criterion also motivates task-conditioned semantic fidelity, while its offline decoder training and MARL stack are too heavy to be the first resource-bounded local experiment.
+
 ### Wang et al. (2024), *Reasoning in Token Economies: Budget-Aware Evaluation of LLM Reasoning Strategies*, EMNLP
 
 [ACL Anthology](https://aclanthology.org/2024.emnlp-main.1112/)

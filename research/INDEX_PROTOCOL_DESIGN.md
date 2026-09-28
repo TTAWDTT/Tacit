@@ -35,6 +35,8 @@ For each candidate `m`, verify by construction that the sender lacks `i`, the re
 
 An oracle sender/receiver pass through the same message transport and scorer is a mechanical end-to-end control. This catches task, transport, and scoring defects before LLM calls.
 
+The completed [v0.2 deterministic controls](../experiments/index_v0_2/RESULTS.json) validated the task/scorer/accounting path on 16 episodes at `m=4,8`: full-information and both oracle channel policies were exact, and the finite no-message receiver scored 11/16. Interactive query/answer used fewer ASCII payload bytes than full-vector transfer at both tested lengths. This is a policy-and-plumbing check with evaluator oracles; it is not a language or LLM result and does not validate the representation-compression prediction in `PROBLEM_FORMALIZATION.md`.
+
 ### B. Compare policies
 
 At fixed `m`, compare sending the full vector in one direction with a receiver query followed by a one-bit answer. Both must count all messages, turns, prompts, retries, and generated tokens. This is an interaction-policy result; it cannot establish that a shorthand is a better language.
