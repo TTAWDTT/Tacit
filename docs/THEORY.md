@@ -293,3 +293,33 @@ The 4-bit statement above is specifically a worst-case **fixed-width payload** b
 If the transport provides an observable packet boundary, a decoder can instead distinguish arbitrary variable-length payload strings, including prefix-related strings. Ignoring the cost of conveying that boundary, the nine shortest **non-empty** binary strings comprise two 1-bit, four 2-bit, and three 3-bit strings, totaling 19 payload bits over nine equiprobable targets (mean `19/9 ≈ 2.111`, maximum 3). This is only a payload-only combinatorial reference: a real protocol must count its packet delimiter, length field, envelope, or other framing signal. If the boundary is not free, those bits can erase this apparent saving; actual `tlu.costs.v3` serialized bytes remain authoritative. An empty payload is excluded because a zero-byte event could otherwise encode a target through the mere presence of a message.
 
 **Prediction.** When message boundaries are supplied out of band, a variable-length code can reduce mean payload below the 4-bit fixed-width reference while retaining exact decoding. When boundaries must be serialized, the total-byte frontier improves only if length-dependent payload savings exceed the measured framing premium. Test both accounting scopes explicitly; neither bit count predicts LLM token use, semantic fidelity, codebook setup, or receiver compute.
+
+## 13. Exact average-accuracy frontier for private record matching
+
+The worst-case zero-error floor above does not describe optimal expected accuracy when a protocol may confuse some records. The uniform candidate-table distribution in Private Match v0.2 admits an exact finite frontier.
+
+**Model.** Let the record space contain (N=V^d) records. The receiver observes a uniformly sampled size-(k) subset (S) without replacement. The target (X) is selected uniformly from (S); the sender observes only (X), not (S), and sends one noiseless symbol from a shared alphabet of at most (B) symbols. The receiver sees that symbol and the full candidate table, and is scored on the exact target row. The shared codebook is free in this information-theoretic reference; setup and serialized framing are charged separately in operational comparisons.
+
+**Proposition (exact finite-budget Bayes frontier).** Put (B'=min(B,N)). Write (N=B'a+r), with (0\le r<B'). The optimal encoder partitions records into (B'-r) classes of size (a) and (r) classes of size (a+1). Its optimal expected exact-match probability is
+
+\[
+P^*(N,k,B)=\frac{1}{k}\left[B'-\frac{(B'-r)\binom{N-a}{k}+r\binom{N-a-1}{k}}{\binom{N}{k}}\right],
+\]
+
+where (\binom{m}{k}=0) for (m<k). Thus (P^*(N,k,1)=1/k) and (P^*(N,k,N)=1). A fixed-width (b)-bit payload uses (B'=min(2^b,N)) symbols in this bound.
+
+**Proof.** For any encoder, its message classes partition the records into sizes (s_1,\ldots,s_{B'}). Given a message and the receiver's table, candidates in the same class have identical likelihood, so a Bayes decoder's success for a target in a class of size (s) is the reciprocal of the number of same-class candidates in the table. For a fixed target, the number of colliding other candidates is hypergeometric with population (N-1), marked size (s-1), and draw count (k-1). Using (\binom{s-1}{j}/(j+1)=\binom{s}{j+1}/s) and Vandermonde's identity, the expected reciprocal class size is
+
+\[
+\mathbb E\left[\frac{1}{1+J}\right]=\frac{\binom{N}{k}-\binom{N-s}{k}}{s\binom{N-1}{k-1}}.
+\]
+
+Weighting by the (s) equally likely targets in that class gives contribution (\frac1k[1-\binom{N-s}{k}/\binom Nk]). Summing classes yields
+
+\[
+P=\frac{1}{k}\left[B'-\frac{\sum_i\binom{N-s_i}{k}}{\binom Nk}\right].
+\]
+
+The function (h(s)=\binom{N-s}{k}) is discretely convex: its second forward difference is (\binom{N-s-2}{k-2}\ge0), taking out-of-domain binomial coefficients as zero. Therefore (\sum_i h(s_i)) is minimized, for fixed sum (N), by balanced integer class sizes. Substitution yields the stated optimum, attained by the balanced encoder and Bayes decoder. Randomized encoders and decoders are mixtures of deterministic strategies and cannot exceed this optimum. \(\square\)
+
+This task-specific result predicts the ideal success ceiling as distinguishable-message count grows, before model errors, codebook setup, and channel framing. It is neither a universal language bound nor an LLM result. The exact rational calculator is [`experiments/private_match_v0_2/code_bounds.py`](../experiments/private_match_v0_2/code_bounds.py); tests compare the formula to exhaustive encoder enumeration on small spaces. Future codec trials should report this oracle next to no-message, full-information, and operational formats, while keeping bits, UTF-8 bytes, and model tokens as separate cost axes.

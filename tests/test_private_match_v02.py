@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+from itertools import combinations, product
 import json
 import io
 import sys
@@ -12,6 +13,7 @@ from unittest.mock import patch
 
 from experiments.private_match_v0_1.generate_tasks import generate_episode
 from experiments.private_match_v0_2.protocols import PROTOCOL_IDS, protocol_by_id
+from experiments.private_match_v0_2.code_bounds import bit_budget_frontier, optimal_success_probability
 from experiments.private_match_v0_2.report import main as report_main, private_match_report
 from experiments.private_match_v0_2.runner import (
     CAPABILITY_CONDITION, MAX_MODEL_CALLS_PER_BATCH, _loopback_url, _message_diagnostics,
@@ -219,6 +221,34 @@ class PrivateMatchV02Tests(unittest.TestCase):
             validate(rows, receiver_model="other-model")
         with self.assertRaisesRegex(ValueError, "tokenizer differs"):
             validate(rows, receiver_tokenizer_id="other-tokenizer")
+
+    def test_private_match_average_case_frontier_matches_exhaustive_optimum(self):
+        for candidate_count in (2, 3, 4):
+            for message_count in (1, 2, 3):
+                best = 0
+                for encoding in product(range(message_count), repeat=4):
+                    total = 0
+                    set_count = 0
+                    for candidates in combinations(range(4), candidate_count):
+                        set_count += 1
+                        for target in candidates:
+                            collision_class_size = sum(encoding[item] == encoding[target] for item in candidates)
+                            total += 1 / collision_class_size
+                    best = max(best, total / (set_count * candidate_count))
+                exact = optimal_success_probability(
+                    space_size=4, candidate_count=candidate_count, message_count=message_count,
+                )
+                self.assertAlmostEqual(float(exact), best)
+
+    def test_private_match_frontier_endpoints_and_monotonicity(self):
+        frontier = bit_budget_frontier(space_size=16 ** 5, candidate_count=8, max_bits=20)
+        probabilities = [entry["success_probability"] for entry in frontier]
+        self.assertEqual(frontier[0]["success_fraction"], "1/8")
+        self.assertEqual(frontier[-1]["success_fraction"], "1/1")
+        self.assertEqual(probabilities, sorted(probabilities))
+        self.assertTrue(all(entry["available_messages"] == min(2 ** entry["payload_bits"], 16 ** 5) for entry in frontier))
+        with self.assertRaises(ValueError):
+            optimal_success_probability(space_size=8, candidate_count=9, message_count=2)
 
     def test_hex_nibble_mapping_is_exact_for_registered_domain(self):
         for value in range(16):

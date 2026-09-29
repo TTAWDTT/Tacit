@@ -1,7 +1,7 @@
 {
   "experiment_id": "private-match-v0.2",
   "status": "runner implemented; inference requires resource and receiver-capability gates",
-  "preregistration_revision": 4,
+  "preregistration_revision": 5,
   "amendment_history": [
     {
       "revision": 2,
@@ -22,6 +22,13 @@
       "date": "2026-09-29",
       "change": "Added a strict full-information receiver capability stage and a same-task/model/tokenizer ledger gate before protocol comparisons.",
       "rationale": "The experiment plan requires a receiver-capability-positive local condition. Without it, failure on every compressed or natural-language message could reflect candidate matching or answer-format inability rather than communication quality.",
+      "data_collected_before_amendment": false
+    },
+    {
+      "revision": 5,
+      "date": "2026-09-29",
+      "change": "Added an exact model-free average-accuracy frontier for finite message alphabets under the task's uniform private candidate-set distribution.",
+      "rationale": "The worst-case zero-error payload floor does not predict the success-versus-message-capacity curve when protocols may incur collisions. The finite frontier supplies a falsifiable ideal reference before prompting or model inference.",
       "data_collected_before_amendment": false
     }
   ],
@@ -52,6 +59,7 @@
     "no_message_exact_bayes_accuracy": "1 / candidate_count",
     "paired_unit": "episode_id",
     "frontier": "report success against application bytes, reported model tokens, and wall time; do not combine these into a scalar unless a cost model is specified",
-    "claims": "No superiority claim from this pilot alone; compare confidence intervals and repeat across model populations and task scales before making general claims."
+    "model_free_reference": "Report the exact balanced-codebook Bayes success frontier from experiments/private_match_v0_2/code_bounds.py for the declared record-space size, candidate count, and payload alphabet. It excludes shared-codebook setup, physical framing, model inference, and LLM decoding errors; never present it as a language or LLM result.",
+    "claims": "No superiority claim from this pilot alone; compare operational formats to the model-free frontier, report confidence intervals, and repeat across model populations and task scales before making general claims."
   }
 }

@@ -21,6 +21,28 @@ sender-selected semantic fidelity are left null instead of being guessed.
 This makes failed messages auditable while keeping the synthetic target out of
 the scorer fields.
 
+The experiment also has an exact model-free success frontier for a bounded
+message alphabet under its uniform candidate-table distribution. It is an
+ideal codebook reference only: shared setup, serialized framing, LLM decoding
+errors, and model cost are excluded. Generate it without model calls:
+
+```powershell
+python experiments/private_match_v0_2/code_bounds.py --features 5 --vocabulary-size 16 --candidates 8 --max-bits 12
+```
+
+Use the reference as an information-theoretic ceiling alongside measured
+conditions; do not report it as a discovered LLM language or operational
+compression result. The derivation and assumptions are in
+[`THEORY.md` §13](../../docs/THEORY.md).
+
+For the frozen default (`N=16^5`, `k=8`), the ideal Bayes accuracy is 12.5%
+with no message, 24.9% with a one-bit alphabet, 65.6% with three bits, 89.7%
+with five bits, and 99.9% with twelve bits. These are codebook-oracle ceilings
+with balanced record-to-message classes and uniformly sampled candidate tables,
+not expected LLM performance. They show why the study should sweep budgets and report
+success against measured bytes instead of treating the zero-error 20-bit
+record identity as the only relevant reference.
+
 The execution path is deliberately staged. A batch has a hard ceiling of 12
 planned model requests and each HTTP request has a 30-second timeout. At four
 episodes, run the no-message baseline and one message condition together (12
