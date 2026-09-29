@@ -210,10 +210,40 @@ class PrivateMatchV03Tests(unittest.TestCase):
         self.assertEqual(codebook.representatives, (0, 1))
         self.assertEqual(codebook.success_probability(training_prior), Fraction(3, 4))
         self.assertEqual(codebook.success_probability(shifted_prior), Fraction(1, 4))
+        self.assertEqual(
+            codebook.worst_case_success_probability(training_prior, tv_radius=Fraction(1, 8)),
+            Fraction(5, 8),
+        )
+        nearby_priors = []
+        denominator = 8
+        for a in range(denominator + 1):
+            for b in range(denominator - a + 1):
+                for c in range(denominator - a - b + 1):
+                    d = denominator - a - b - c
+                    candidate = tuple(Fraction(value, denominator) for value in (a, b, c, d))
+                    tv = sum((abs(left - right) for left, right in zip(training_prior, candidate)),
+                             Fraction(0)) / 2
+                    if tv <= Fraction(1, 8):
+                        nearby_priors.append(candidate)
+        self.assertEqual(
+            min(codebook.success_probability(prior) for prior in nearby_priors),
+            codebook.worst_case_success_probability(
+                training_prior, tv_radius=Fraction(1, 8),
+            ),
+        )
         shifted_optimum = optimal_nonuniform_codebook(
             probabilities=shifted_prior, payload_bits=1,
         )
         self.assertEqual(shifted_optimum.success_probability(shifted_prior), Fraction(3, 4))
+        perfect_codebook = optimal_nonuniform_codebook(
+            probabilities=training_prior, payload_bits=2,
+        )
+        self.assertEqual(
+            perfect_codebook.worst_case_success_probability(training_prior, tv_radius=1),
+            Fraction(1),
+        )
+        with self.assertRaises(ValueError):
+            codebook.worst_case_success_probability(training_prior, tv_radius=1.1)
 
         for bits in range(3):
             exhaustive = Fraction(0)

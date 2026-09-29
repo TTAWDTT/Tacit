@@ -209,6 +209,9 @@ attaining one-coordinate fixed-width encoder and frozen MAP decoder. Its
 `success_probability(evaluation_prior)` method quantifies exact transfer while
 keeping both fixed. The method assumes that encoder and decoder already share
 the codebook; discovery and setup costs are excluded.
+`FixedWidthCodebook.worst_case_success_probability(prior, tv_radius=...)`
+returns the exact worst-case success over all priors within the stated total
+variation distance, with the encoder and decoder frozen.
 The current episode generator still samples uniform coordinates, so this is a
 theoretical calculator and future experiment control, not a claim about the
 present generated shards.

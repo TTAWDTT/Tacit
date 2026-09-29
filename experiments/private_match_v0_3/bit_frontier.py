@@ -106,6 +106,30 @@ class FixedWidthCodebook:
         return sum((probability for index, probability in enumerate(prior)
                     if self.representatives[self.symbols[index]] == index), Fraction(0))
 
+    def worst_case_success_probability(
+        self, probabilities: Sequence[int | Fraction], *, tv_radius: int | Fraction,
+    ) -> Fraction:
+        """Exact lower bound over evaluation priors within TV distance.
+
+        Total variation is ``0.5 * sum(abs(p - p_eval))``. The support and
+        frozen encoder/decoder stay fixed while the prior may shift.
+        """
+        prior = _probability_vector(probabilities, name="probabilities")
+        if len(prior) != len(self.symbols):
+            raise ValueError("evaluation prior support must match the codebook")
+        if isinstance(tv_radius, bool) or not isinstance(tv_radius, (int, Fraction)):
+            raise ValueError("tv_radius must be an exact integer or fraction")
+        radius = Fraction(tv_radius)
+        if not 0 <= radius <= 1:
+            raise ValueError("tv_radius must lie in [0, 1]")
+        correct = tuple(
+            self.representatives[self.symbols[index]] == index
+            for index in range(len(self.symbols))
+        )
+        if all(correct):
+            return Fraction(1)
+        return max(Fraction(0), self.success_probability(prior) - radius)
+
 
 def optimal_nonuniform_codebook(
     *, probabilities: Sequence[int | Fraction], payload_bits: int,

@@ -28,9 +28,11 @@ assigns singleton messages to the top K−1 training-prior values, pools the
 remaining values, and freezes each class's MAP representative. A synthetic
 four-value prior shift scores 3/4 in-prior and 1/4 after shift, versus 3/4
 for a codebook retrained on the shifted prior. This distinguishes frozen
-transfer from prior adaptation. Uniform rational priors reduce to the existing
-uniform frontier. The episode generator remains uniform, and no model
-inference or heavy compute was run.
+transfer from prior adaptation. Added a tight total-variation robustness bound
+for each frozen codebook (with a separate perfect-code case), and checked it
+against every denominator-eight prior inside a `1/8` shift ball. Uniform
+rational priors reduce to the existing uniform frontier. The episode generator
+remains uniform, and no model inference or heavy compute was run.
 
 ## 2026-09-29 — Use unbiased keyed streams for task sampling
 

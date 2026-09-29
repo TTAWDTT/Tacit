@@ -406,3 +406,15 @@ T(c,r;p')=\sum_{x=1}^{q}p'(x)\,\mathbf 1[r(c(x))=x].
 For two independent coordinates and frozen codebooks, exact target-row success is the product `T_X T_Y`. This measures prior transfer without letting either encoder or decoder adapt. If evaluation-prior adaptation is allowed, that is a separate condition: the sender partition stays fixed but the receiver may change each class representative. Any experiment must state which condition it uses and charge prior discovery, codebook communication/storage, framing, and inference outside this payload-only probability.
 
 `optimal_nonuniform_codebook(...)` in [`bit_frontier.py`](../experiments/private_match_v0_3/bit_frontier.py) returns the encoder symbols, frozen representatives, exact fixed-width serialization, and exact transfer score. Tests check its in-prior optimum and a preregisterable shift example: for training prior `(1/2, 1/4, 1/8, 1/8)` with one bit, accuracy is `3/4`; under evaluation prior `(1/8, 1/8, 1/2, 1/4)`, the frozen codebook scores `1/4`, while a newly optimized codebook scores `3/4`. This is an exact model-free illustration, not an empirical language result. The current task generator remains uniform, so no non-uniform shard or model comparison is implied.
+
+### Exact robustness radius under total variation
+
+For a frozen codebook, let `E` be the set of source values decoded exactly, and let the training prior assign `t = p(E)`. If the support contains at least one value outside `E`, then over every evaluation prior `p'` with total variation distance `TV(p,p') ≤ δ`,
+
+\[
+\inf_{p':\,\mathrm{TV}(p,p')\le\delta} p'(E)=\max(0,t-\delta).
+\]
+
+The event probability changes by at most total variation, giving the lower bound. It is tight: move up to `δ` mass from `E` to its nonempty complement; once the original `t` mass is exhausted, success reaches zero. If `E` is the full support, success remains one for every prior, so that perfect-code case is handled separately. For independent X and Y whose evaluation marginals may shift independently within radii `δ_X,δ_Y`, the frozen two-sender codebook has worst-case exact-row success equal to the product of the two one-coordinate bounds. This product statement does not cover dependent evaluation coordinates.
+
+The method `FixedWidthCodebook.worst_case_success_probability(...)` computes this exact one-coordinate robustness radius with rational arithmetic. Tests enumerate all denominator-eight priors within a `1/8` total-variation ball around the four-value example, verify the tight bound, and check the perfect-code exception. This supplies a model-free, falsifiable calibration for prior-shift experiments; finite data, prior estimation, and codebook setup uncertainty require additional treatment.
