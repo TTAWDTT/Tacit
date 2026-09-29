@@ -1285,3 +1285,9 @@ ceil) worst-case bits: 9, 10, and 11 for the three lengths. This predicts a comp
 - **Gap:** the shared paired report correctly resampled whole inference clusters but only exposed the pooled episode-weighted mean difference. It did not show whether a result came from consistent effects across splits or one unusually favorable split.
 - **Change:** `tools/paired_report.py` now emits schema `tlu.paired-report.v2` and provides each metric's paired episode count and left/right mean plus difference for every inference cluster, while retaining the prior bootstrap intervals and cost/token fields. The clustered-analysis audit now references those diagnostics.
 - **Verification:** all 21 `tests.test_cost_report` contract tests pass. A two-split regression verifies opposing split effects (+1 and −1) remain visible even though their pooled mean is zero. No model inference was run.
+
+## 2026-09-29 - Recheck local inference eligibility after runner changes
+
+- **Gate:** ran the unchanged read-only resource preflight for loopback ports 8000/8001 at 12:13 UTC. It rejected execution: host CPU samples were 34.36%, 31.51%, and 33.06% (mean 32.97%, limit <20%, each <30%); GPU utilization was 42% (limit <25%); free RAM was 5,986 MiB (minimum 6,000 MiB). GPU memory was 1,389/8,188 MiB and neither requested port was listening.
+- **Safety record:** the ignored local report records `model_artifact_read=false`, `model_loaded=false`, `service_started=false`, and `inference_requests=0`. No model endpoint was contacted.
+- **Decision:** defer all local inference until a fresh report passes every frozen threshold. The sampled load confirms that launching a model now would be inappropriate; continue with lightweight offline research and implementation meanwhile.
