@@ -44,6 +44,7 @@ class EmergentOODEpisodeTests(unittest.TestCase):
             ledgers = module.generate_ledgers(4, candidate_count)
             self.assertEqual(ledgers["episode_count"], candidate_count * __import__("math").comb(9, candidate_count))
             self.assertAlmostEqual(ledgers["no_message_bayes_accuracy"], 1 / candidate_count)
+            self.assertEqual(ledgers["ideal_zero_error_payload_floor_bits"], 4)
 
     def test_verifier_rejects_target_leakage_and_wrong_choice_count(self):
         ledgers = module.generate_ledgers(17)

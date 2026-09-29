@@ -1,6 +1,6 @@
 # Working theory: task-conditioned communication rate
 
-**Status:** v0.2, updated 2026-09-29 with a cumulative-cost condition for stateful setup amortization. These definitions organize experiments; they do not prove that a particular representation is better.
+**Status:** v0.3, updated 2026-09-29 with a cumulative-cost condition for stateful setup amortization and an exact one-way lower bound for held-out candidate selection. These definitions organize experiments; they do not prove that a particular representation is better.
 
 ## 1. Episode and protocol
 
@@ -273,3 +273,15 @@ Reuse improves end-to-end latency if and only if `h < p(1 - 1/s)`. With zero ove
 **Falsifiable prediction.** Within a fixed-output, fixed-call-count workflow, measure baseline repeated-prefill fraction `p`, its local speedup `s`, cache/masking overhead `h`, and end-to-end time. The formula predicts the total latency ratio from those quantities. If observed speedup exceeds the bound, another component changed (e.g. decoding, scheduling, output length, or batching), or the measured boundary is incomplete; attribute and record that change rather than crediting cache reuse alone. If measured overhead reaches `p(1 - 1/s)`, the cache cannot improve end-to-end time under this model.
 
 **Scope.** This predicts compute/latency tradeoffs for compatible shared-runtime workflows. It says nothing about semantic fidelity, privacy, serialized KV-transfer bytes, or whether a compact message language is better. Those require separate task and transport outcomes.
+
+## 12. Exact one-way floor for receiver-private candidate sets
+
+This bound applies to the held-out receiver-utility task in [`emergent_ood_v0_2`](../experiments/emergent_ood_v0_2/README.md). It distinguishes the number of choices the receiver sees from the number of possible targets the sender must encode.
+
+**Model.** There are (n) possible target meanings. The sender observes only the target (x\in[n]); the receiver privately observes a candidate set (C\subseteq[n]) of fixed size (k\), where (2\le k\le n\), and is promised (x\in C\). Every (k)-subset is a valid receiver view. A deterministic one-way protocol sends a message (m=f(x)), after which the receiver must identify (x) exactly from ((m,C)). The sender does not observe (C). Assume any shared codebook is already available to both agents; codebook distribution/setup is excluded from this payload-only floor and is charged in operational experiments.
+
+**Proposition.** Any zero-error protocol requires at least (n) distinct messages and therefore at least \(\lceil\log_2 n\rceil\) worst-case fixed-width payload bits. A fixed shared index code attains the bound. Thus, for the v0.2 task with (n=9\), the ideal fixed-width floor is 4 bits for every candidate count (2\le k\le9\), even though the receiver chooses among only (k\) candidates.
+
+**Proof.** For any two distinct targets (x,y\in[n]\), there exists a size-(k\) candidate set containing both because (k\ge2\) and (k\le n\). If (f(x)=f(y)\), then on that same receiver set the decoder receives identical inputs in the (x) and (y) cases, but exact correctness requires different outputs. This is impossible; hence (f) must be injective over all (n\) targets. Therefore it needs at least (n\) messages. Conversely, assigning each target a shared fixed-width binary index and sending its index uses \(\lceil\log_2 n\rceil\) bits; the receiver selects the matching candidate. \(\square\)
+
+**Falsifiable implication.** Varying candidate count (k\) changes the no-message Bayes accuracy to exactly (1/k\) in the balanced v0.2 construction, but it does not lower the worst-case zero-error one-way payload floor while the sender still lacks (C\) and every candidate subset remains possible. A 3-bit-per-message code when (n=9\) and (k=5\) would need extra shared input, allow errors, or use a different boundary; otherwise it violates this model. The bound charges neither codebook setup nor LLM decoding compute and is not an LLM-token bound. Compare observed protocols against the 4-bit symbolic reference only after adding their actual serializer, setup, semantic fidelity, receiver decoding, and inference costs.

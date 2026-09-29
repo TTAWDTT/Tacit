@@ -15,7 +15,10 @@
     "candidate_support": "all candidates are distinct held-out meanings",
     "episode_sampling": "For every candidate_count-sized subset of the held-out set, enumerate each member once as the private target.",
     "default_episode_count": "5 * choose(9,5) = 630",
-    "no_message_bayes_accuracy": "1 / candidate_count; exactly 0.2 for the default five-candidate task"
+    "no_message_bayes_accuracy": "1 / candidate_count; exactly 0.2 for the default five-candidate task",
+    "sender_candidate_information": "sender does not observe the receiver candidate set",
+    "ideal_zero_error_payload_floor": "ceil(log2(9)) = 4 fixed-width bits for every candidate_count >= 2 because every target pair can co-occur in a receiver set",
+    "payload_floor_setup_assumption": "shared target-index codebook is preinstalled; setup/distribution cost is excluded from the ideal payload floor and must be charged operationally"
   },
   "role_boundary": {
     "sender": ["private target meaning", "protocol instructions added by a later frozen experiment"],

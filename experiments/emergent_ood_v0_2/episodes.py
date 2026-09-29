@@ -104,10 +104,13 @@ def generate_ledgers(seed: int, candidate_count: int = 5) -> dict[str, Any]:
         "schema": "tlu.emergent_ood_ledgers.v1",
         "seed": seed,
         "candidate_count": candidate_count,
+        "held_out_target_count": len(meanings),
         "split_sha256": split_hash,
         "train_meanings": split["train_meanings"],
         "episode_count": len(gold_rows),
         "no_message_bayes_accuracy": 1 / candidate_count,
+        "ideal_zero_error_payload_floor_bits": math.ceil(math.log2(len(meanings))),
+        "payload_floor_assumptions": "sender does not know receiver candidates; fixed shared target-index codebook is preinstalled and its setup cost is excluded",
         "sender": sender_rows,
         "receiver": receiver_rows,
         "gold": gold_rows,
@@ -201,6 +204,8 @@ def verify_ledgers(ledgers: dict[str, Any]) -> None:
         raise ValueError("each held-out candidate subset must be enumerated with every member as target")
     if ledgers.get("no_message_bayes_accuracy") != 1 / candidate_count:
         raise ValueError("no-message Bayes accuracy must equal 1/candidate_count")
+    if ledgers.get("held_out_target_count") != 9 or ledgers.get("ideal_zero_error_payload_floor_bits") != 4:
+        raise ValueError("the declared 9-target task has a 4-bit fixed-width zero-error floor")
 
 
 def write_ledgers(ledgers: dict[str, Any], output_dir: Path) -> None:
