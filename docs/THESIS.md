@@ -1,6 +1,6 @@
 # Research thesis
 
-**Status:** v0.8, updated 2026-09-29 after checking concept-level generalization priors and resource-gate attempt 9. This is a falsifiable research position, not a conclusion.
+**Status:** v0.9, updated 2026-09-29 after measuring compression setup costs over long horizons. This is a falsifiable research position, not a conclusion.
 
 ## Thesis
 
@@ -32,6 +32,7 @@ The first research goal is therefore not to invent notation or duplicate AutoFor
 - The audit of Kouwenhoven et al.'s LLM emergent-communication study narrows what its held-out results support: agents generate signals for unseen combinations, but the held-out block does not test independent receiver selection on those combinations. Structure correlations and training-partner success therefore do not establish OOD task utility or cost efficiency. A future emergent protocol comparison must include held-out receiver choice, a holistic-code control, and matched channel budgets; the paper's stated distractor count and chance rate also need reconciliation before replication. See the [audit](../research/EMERGENT_OOD_UTILITY_AUDIT_V0_1.md).
 - The model-free [`emergent_ood_v0_1` split fixture](../experiments/emergent_ood_v0_1/README.md) makes one compositionality test executable: it withholds nine triples while retaining every unary and pairwise combination in the 18-meaning training set. This guarantees third-order novelty at the meaning level, but no sender/receiver task has run; it is a dataset-design control, not language evidence.
 - Held-out receiver generalization and concept-level reference games are established prior work, including set/concept games (Mu & Goodman, NeurIPS 2021) and asymmetric transfer across abstraction levels (Kobrock et al., Findings ACL 2025). The small ternary split is a reproducibility fixture, not a novel benchmark; the remaining candidate gap concerns direct LLM endpoints, heterogeneous-receiver transfer, and complete communication/inference costs. This gap still needs broader falsification before any novelty claim. See the [generalization prior audit](../research/EMERGENT_GENERALIZATION_PRIORS_AUDIT_V0_1.md).
+- The measured Private Match compression-horizon sweep extended five streams to 16,384 messages and did not amortize a 198-byte zlib dictionary once in any seed. A direct extension of the v0.2 seed reproduced its initial 128-message byte counts but showed no further dictionary savings. This invalidates the earlier linear break-even extrapolations only for that codec/task setup; it does not imply that protocol or learned-decoder setup never amortizes. No LLM tokens or inference costs were measured. See the [horizon report](../research/PRIVATE_MATCH_COMPRESSION_HORIZON_V0_1.md).
 
 The evidence thus sharpens the immediate research question: find or construct a task/receiver condition where the receiver can apply a delivered message reliably, demonstrate measurable communication necessity with exact no-message and centralized-oracle controls, and only then compare representations under matched policy and complete costs. Until those conditions are met, the project has no positive LLM language-superiority result.
 

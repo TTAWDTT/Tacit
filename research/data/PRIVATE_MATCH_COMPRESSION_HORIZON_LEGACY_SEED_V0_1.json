@@ -1,0 +1,206 @@
+{
+  "dictionary": {
+    "bytes": 198,
+    "setup_transfer_assumption": "one dictionary copy sent once to one receiver per independent stream",
+    "sha256": "512d5ff1ca5cdedcd5f19e32f7db0d06580bf8624e4c3f17a9a06ea9ebff87f2"
+  },
+  "llm_inference_cost_measured": false,
+  "llm_tokens_measured": false,
+  "pooled_results": [
+    {
+      "codec": "labeled_natural_language_template",
+      "horizon": 128,
+      "net_savings_bytes_mean": -159.0,
+      "net_savings_bytes_median": -159,
+      "net_savings_bytes_p95": -159,
+      "seed_count": 1,
+      "seeds_dictionary_wins": 0
+    },
+    {
+      "codec": "compact_json",
+      "horizon": 128,
+      "net_savings_bytes_mean": -195.0,
+      "net_savings_bytes_median": -195,
+      "net_savings_bytes_p95": -195,
+      "seed_count": 1,
+      "seeds_dictionary_wins": 0
+    },
+    {
+      "codec": "ordered_delimited_tuple",
+      "horizon": 128,
+      "net_savings_bytes_mean": -194.0,
+      "net_savings_bytes_median": -194,
+      "net_savings_bytes_p95": -194,
+      "seed_count": 1,
+      "seeds_dictionary_wins": 0
+    },
+    {
+      "codec": "fixed_width_mixed_radix_rank",
+      "horizon": 128,
+      "net_savings_bytes_mean": -202.0,
+      "net_savings_bytes_median": -202,
+      "net_savings_bytes_p95": -202,
+      "seed_count": 1,
+      "seeds_dictionary_wins": 0
+    },
+    {
+      "codec": "labeled_natural_language_template",
+      "horizon": 16384,
+      "net_savings_bytes_mean": -159.0,
+      "net_savings_bytes_median": -159,
+      "net_savings_bytes_p95": -159,
+      "seed_count": 1,
+      "seeds_dictionary_wins": 0
+    },
+    {
+      "codec": "compact_json",
+      "horizon": 16384,
+      "net_savings_bytes_mean": -195.0,
+      "net_savings_bytes_median": -195,
+      "net_savings_bytes_p95": -195,
+      "seed_count": 1,
+      "seeds_dictionary_wins": 0
+    },
+    {
+      "codec": "ordered_delimited_tuple",
+      "horizon": 16384,
+      "net_savings_bytes_mean": -194.0,
+      "net_savings_bytes_median": -194,
+      "net_savings_bytes_p95": -194,
+      "seed_count": 1,
+      "seeds_dictionary_wins": 0
+    },
+    {
+      "codec": "fixed_width_mixed_radix_rank",
+      "horizon": 16384,
+      "net_savings_bytes_mean": -202.0,
+      "net_savings_bytes_median": -202,
+      "net_savings_bytes_p95": -202,
+      "seed_count": 1,
+      "seeds_dictionary_wins": 0
+    }
+  ],
+  "schema_version": "tlu.private-match-compression-horizon.v1",
+  "seed_results": [
+    {
+      "dictionary_sha256": "512d5ff1ca5cdedcd5f19e32f7db0d06580bf8624e4c3f17a9a06ea9ebff87f2",
+      "episodes": 16384,
+      "first_observed_break_even_horizon": {
+        "compact_json": null,
+        "fixed_width_mixed_radix_rank": null,
+        "labeled_natural_language_template": null,
+        "ordered_delimited_tuple": null
+      },
+      "horizons": [
+        {
+          "codec": "labeled_natural_language_template",
+          "dictionary_setup_bytes": 198,
+          "dictionary_stream_bytes": 2179,
+          "dictionary_total_bytes": 2377,
+          "dictionary_wins": false,
+          "horizon": 128,
+          "net_savings_bytes_vs_no_dictionary": -159,
+          "no_dictionary_stream_bytes": 2218,
+          "raw_payload_bytes": 13056
+        },
+        {
+          "codec": "compact_json",
+          "dictionary_setup_bytes": 198,
+          "dictionary_stream_bytes": 2141,
+          "dictionary_total_bytes": 2339,
+          "dictionary_wins": false,
+          "horizon": 128,
+          "net_savings_bytes_vs_no_dictionary": -195,
+          "no_dictionary_stream_bytes": 2144,
+          "raw_payload_bytes": 8448
+        },
+        {
+          "codec": "ordered_delimited_tuple",
+          "dictionary_setup_bytes": 198,
+          "dictionary_stream_bytes": 1785,
+          "dictionary_total_bytes": 1983,
+          "dictionary_wins": false,
+          "horizon": 128,
+          "net_savings_bytes_vs_no_dictionary": -194,
+          "no_dictionary_stream_bytes": 1789,
+          "raw_payload_bytes": 3712
+        },
+        {
+          "codec": "fixed_width_mixed_radix_rank",
+          "dictionary_setup_bytes": 198,
+          "dictionary_stream_bytes": 1292,
+          "dictionary_total_bytes": 1490,
+          "dictionary_wins": false,
+          "horizon": 128,
+          "net_savings_bytes_vs_no_dictionary": -202,
+          "no_dictionary_stream_bytes": 1288,
+          "raw_payload_bytes": 384
+        },
+        {
+          "codec": "labeled_natural_language_template",
+          "dictionary_setup_bytes": 198,
+          "dictionary_stream_bytes": 241117,
+          "dictionary_total_bytes": 241315,
+          "dictionary_wins": false,
+          "horizon": 16384,
+          "net_savings_bytes_vs_no_dictionary": -159,
+          "no_dictionary_stream_bytes": 241156,
+          "raw_payload_bytes": 1671168
+        },
+        {
+          "codec": "compact_json",
+          "dictionary_setup_bytes": 198,
+          "dictionary_stream_bytes": 230114,
+          "dictionary_total_bytes": 230312,
+          "dictionary_wins": false,
+          "horizon": 16384,
+          "net_savings_bytes_vs_no_dictionary": -195,
+          "no_dictionary_stream_bytes": 230117,
+          "raw_payload_bytes": 1081344
+        },
+        {
+          "codec": "ordered_delimited_tuple",
+          "dictionary_setup_bytes": 198,
+          "dictionary_stream_bytes": 202727,
+          "dictionary_total_bytes": 202925,
+          "dictionary_wins": false,
+          "horizon": 16384,
+          "net_savings_bytes_vs_no_dictionary": -194,
+          "no_dictionary_stream_bytes": 202731,
+          "raw_payload_bytes": 475136
+        },
+        {
+          "codec": "fixed_width_mixed_radix_rank",
+          "dictionary_setup_bytes": 198,
+          "dictionary_stream_bytes": 163733,
+          "dictionary_total_bytes": 163931,
+          "dictionary_wins": false,
+          "horizon": 16384,
+          "net_savings_bytes_vs_no_dictionary": -202,
+          "no_dictionary_stream_bytes": 163729,
+          "raw_payload_bytes": 49152
+        }
+      ],
+      "seed": 5000,
+      "task_sequence_sha256": "f35dad6deea13e1ad94b1b020b8ef7382681846f103978288f89b91f7bb6812c"
+    }
+  ],
+  "task_parameters": {
+    "candidate_count": 8,
+    "episodes_per_seed": 16384,
+    "feature_count": 5,
+    "horizons": [
+      128,
+      16384
+    ],
+    "seeds": [
+      5000
+    ],
+    "vocabulary_size": 16
+  },
+  "task_schema_version": "tlu.private-match.v1",
+  "zlib": {
+    "level": 9,
+    "runtime_version": "1.2.13"
+  }
+}

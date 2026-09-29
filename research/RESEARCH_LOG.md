@@ -607,3 +607,13 @@ ceil) worst-case bits: 9, 10, and 11 for the three lengths. This predicts a comp
 - Three read-only host CPU samples at two-second spacing were 27.85%, 32.48%, and 46.90% (35.74% mean). GPU use was 21% with 975 MiB used; free system memory was 3,693 MiB.
 - The frozen gate requires mean CPU below 20%, every sample below 30%, GPU below 25%, GPU memory below 1,800 MiB, and at least 6,000 MiB free RAM. It rejected on CPU and free memory. The experiment launcher was not invoked; no port check, model artifact hash/read, service, or inference request occurred.
 - Record: experiments/index_v0_3/PRECHECK_ATTEMPT_9.json. Do not repeat the measurement in this turn or relax thresholds; continue repository and literature work until host conditions materially change.
+
+
+## 2026-09-29 - Measure shared-dictionary cost across actual reuse horizons
+
+- **Preregistration:** froze the five-seed task set, four codecs, 14 horizons through 16,384 episodes, exact zlib stream settings, and setup-inclusive byte delta in experiments/private_match_v0_1/compression_horizon_prereg_v0_1.json; commit 478f413 was pushed before execution.
+- **Run:** generated 81,920 model-free Private Match episodes and measured 280 seed/horizon/codec cells. Each serialized stream was decompressed and compared byte-for-byte. The report records per-seed task-sequence hashes. No model, API, GPU, or service was used.
+- **Result:** the 198-byte shared dictionary did not beat persistent zlib without a dictionary at any measured horizon in any of five seeds. Mean stream-only savings from the dictionary were nearly flat from H=128 to H=16,384: 38.2 to 38.4 bytes for labeled text, 2.2 to 2.4 for JSON, 3.8 to 3.8 for the delimited tuple, and -4.0 to -4.0 for packed rank.
+- **Replication/correction:** an extension of the v0.2 seed-5000 sequence exactly reproduced the four H=128 compressed-stream byte pairs, then extended to H=16,384 without additional stream savings. Therefore the old projected break-even values (650, 8,448, 6,336) are withdrawn; they wrongly treated a startup effect as a constant marginal per-message saving. Updated the v0.2 report, private-match README, experiment plan, thesis, and theory to require exact cumulative curves for stateful codecs.
+- **Validation:** all streams round-trip; result audit confirmed five seeds, 280 rows, zero dictionary wins, and exact v0.2 prefix equality. Full offline suite: 56 tests passed in 11.3 seconds.
+- **Scope:** this corrects one zlib/dictionary estimate on one synthetic distribution, not a language or LLM result. No asymptotic non-amortization claim is made beyond the measured horizon.
