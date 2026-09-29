@@ -1,6 +1,23 @@
 {
   "schema": "tlu.preregistration.v1",
   "experiment_id": "emergent_ood_receiver_utility_v0_3_capability",
+  "preregistration_revision": 3,
+  "amendment_history": [
+    {
+      "revision": 2,
+      "date": "2026-09-29",
+      "change": "Moved the full-information gate to a calibration block with episode IDs disjoint from evaluation.",
+      "rationale": "Using full-information outcomes to filter the evaluation block would change the task-population estimand.",
+      "data_collected_before_amendment": false
+    },
+    {
+      "revision": 3,
+      "date": "2026-09-29",
+      "change": "Declared the seed-level balanced candidate-set block as the independent inference unit and added cluster-aware paired bootstrap support.",
+      "rationale": "The five target-balanced episodes within one candidate set share stimuli and are dependent; treating rows as independent understates uncertainty.",
+      "data_collected_before_amendment": false
+    }
+  ],
   "status": "frozen_runner_no_model_execution",
   "date_frozen": "2026-09-29",
   "purpose": "Establish receiver task capability and end-to-end message plumbing before any protocol ranking.",
@@ -13,7 +30,7 @@
     "evaluation_seed": 18,
     "candidate_count": 5,
     "episode_count": 5,
-    "sampling": "Select one held-out candidate set and enumerate each of its five meanings exactly once as private target; keep identical candidate order in each episode.",
+    "sampling": "For each generation seed, select the lexicographically first generated held-out candidate subset and enumerate each of its five meanings exactly once as private target; keep identical candidate order in each episode. This deterministic subset is a fixed feasibility fixture, not a probability sample of candidate subsets. The five episodes form one seed-level inference cluster.",
     "analytic_no_message_accuracy": 0.2,
     "candidate_order_side_channel": "eliminated and tested; ordering is independent of target"
   },
@@ -59,10 +76,11 @@
   "outcomes": {
     "primary": ["strict candidate-ID validity", "exact receiver selection", "paired episode IDs"],
     "costs": ["serialized application bytes", "complete reported input/output tokens per model call", "model call count", "service and wall latency"],
-    "claim_limit": "Five episodes are a capability screen and cannot estimate a stable generalization rate or support equal-budget protocol superiority."
+    "claim_limit": "Five episodes from one candidate-set block are one independent cluster; they are a capability screen and cannot estimate a stable generalization rate or support equal-budget protocol superiority."
   },
-  "follow_up_gate": "Only after disjoint-calibration full-information success and plumbing validation, preregister a larger held-out comparison with development-tuned natural language, valid JSON, compact structured text, symbolic code with setup charged, no-message and oracle controls, multiple receiver families, and equal byte/token budget curves.",
+  "follow_up_gate": "Only after disjoint-calibration full-information success and plumbing validation, preregister a larger held-out comparison with multiple independently sampled candidate-set blocks. Sample candidate subsets uniformly from the eligible held-out subset space using a deterministic seed-based sampler, or enumerate a preregistered balanced subset design; do not use the lexicographically first subset as a population sample. Include development-tuned natural language, valid JSON, compact structured text, symbolic code with setup charged, no-message and oracle controls, multiple receiver families, and equal byte/token budget curves. Analyze and bootstrap at the independent block level.",
   "capability_gate_sampling": "Calibration and evaluation episode IDs must be disjoint. The full-information calibration result is an eligibility check only; evaluation episodes are retained regardless of their full-information outcomes. Any evaluation full_information arm is a comparator and must not be reused as the gate.",
+  "inference_unit": "One generation-seed candidate-set block; episode rows within the block are repeated target-balanced outcomes, not independent observations. Each tlu.costs.v3 row records the shared inference_cluster_id. The current evaluation contains one block and supports descriptive outcomes only.",
   "implementation": {
     "runner": "experiments/emergent_ood_v0_3/runner.py",
     "resource_preflight": "experiments/emergent_ood_v0_3/resource_preflight.ps1",

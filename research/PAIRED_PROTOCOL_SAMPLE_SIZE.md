@@ -19,10 +19,22 @@ The scenarios below are assumptions, not estimates. The second family-wise colum
 | 0.15 | 0.25 | .20 / .05 | 92 | 135 |
 | 0.20 | 0.30 | .25 / .05 | 61 | 90 |
 
-Each reported sample size is the smallest integer meeting 80% power in the enumerated calculation; the preceding integer is below target. The calculations assume independent sampled episodes and a fixed paired effect. Dependence among episodes, model sampling variability, multiple model families, missing calls, adaptive stopping, or a different confirmatory endpoint can change power and require a revised design.
+Each reported sample size is the smallest integer meeting 80% power in the enumerated calculation; the preceding integer is below target. The calculations assume independent sampled episode pairs and a fixed paired effect. That assumption does **not** match every current task runner. Emergent OOD v0.3 chooses one fixed candidate set per generation seed, then evaluates each member of that set once as target. Its five episode rows therefore form one balanced task block, not five independent draws. The current five-row evaluation has one independent block. The reported `N` values cannot be read as the number of OOD episode rows required: translating per-episode `(Δ,q)` into block-level power requires the joint within-block outcome distribution, which is unknown before a pilot. For that task, collect multiple independently sampled blocks, retain each complete block, and resample/analyze at the block level. Dependence, model sampling variability, multiple model families, missing calls, adaptive stopping, or a different confirmatory endpoint can change power and require a revised design.
 
 ## Implication for the project
 
-Keep the current 4/5-case runs in the feasibility and capability-calibration role. Do not describe their format outcomes as evidence of stable superiority. First use small pilots to validate the task, endpoint behavior, paired scoring, and variance sources. Then estimate `q` from pilot data without selecting only favorable tasks; choose a practically meaningful `Δ`; freeze the number of contrasts, episode-generation process, stopping rule, and analysis; and collect a separate held-out confirmatory set. If the likely effect is only five percentage points, the illustrative sample sizes show that a credible claim may be expensive even on this small task family.
+Keep the current 4/5-case runs in the feasibility and capability-calibration role. Do not describe their format outcomes as evidence of stable superiority. First use small pilots to validate the task, endpoint behavior, paired scoring, and variance sources. Then estimate `q` from pilot data without selecting only favorable tasks; choose a practically meaningful `Δ`; freeze the number of contrasts, episode-generation process, stopping rule, and analysis; and collect a separate held-out confirmatory set. For target-balanced task blocks, the independent unit is the independently generated block, and a cluster-aware power analysis must replace the independent-episode table. If the likely effect is only five percentage points, the illustrative independent-episode sample sizes show that a credible claim may be expensive even on this small task family.
 
-The analysis follows matched-pair power guidance emphasizing the discordance parameter (Lennox, [Statistics in Medicine, 2009](https://doi.org/10.1002/sim.3683)). The need to guard against performance selection is also discussed in the companion [capability-gate audit](CAPABILITY_GATE_SELECTION_BIAS_AUDIT.md), with reference to Cawley and Talbot ([JMLR, 2010](https://www.jmlr.org/papers/v11/cawley10a.html)).
+```mermaid
+flowchart LR
+  Seed[Independent seed / task draw] --> Block[One candidate-set block]
+  Block --> E1[Target episode 1]
+  Block --> E2[Target episode 2]
+  Block --> EK[Target episode k]
+  E1 --> B[Resample whole blocks]
+  E2 --> B
+  EK --> B
+  B --> CI[Cluster-level uncertainty]
+```
+
+The analysis follows matched-pair power guidance emphasizing the discordance parameter (Lennox, [Statistics in Medicine, 2009](https://onlinelibrary.wiley.com/doi/10.1002/sim.3683)). Whole-cluster resampling preserves within-block dependence, but ordinary cluster-bootstrap intervals can still be unreliable with few independent clusters; Cameron and Miller note that "few" can range from below 20 to below 50 depending on the setting ([Journal of Human Resources, 2015](https://doi.org/10.3368/jhr.50.2.317)). The tool's fewer-than-20 flag is a warning only, not a sufficiency threshold. The need to guard against performance selection is also discussed in the companion [capability-gate audit](CAPABILITY_GATE_SELECTION_BIAS_AUDIT.md), with reference to Cawley and Talbot ([JMLR, 2010](https://www.jmlr.org/papers/v11/cawley10a.html)).

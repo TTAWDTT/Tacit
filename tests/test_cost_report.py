@@ -146,6 +146,66 @@ class CostReportContractTests(unittest.TestCase):
             "code_differs": True,
         })
 
+    def test_paired_report_bootstraps_complete_inference_clusters(self) -> None:
+        left_rows = []
+        right_rows = []
+        for cluster_id, episode_ids, left_success, right_success in (
+            ("block-a", ("a1", "a2"), True, False),
+            ("block-b", ("b1", "b2"), False, True),
+        ):
+            for episode_id in episode_ids:
+                left = _record(episode_id, version="tlu.costs.v3")
+                right = copy.deepcopy(left)
+                left["protocol"]["code_id"] = "left"
+                right["protocol"]["code_id"] = "right"
+                left["inference_cluster_id"] = cluster_id
+                right["inference_cluster_id"] = cluster_id
+                left["outcome"]["joint_success"] = left_success
+                right["outcome"]["joint_success"] = right_success
+                left_rows.append(left)
+                right_rows.append(right)
+
+        report = paired_report(left_rows + right_rows, replicates=500, seed=23)
+        comparison = report["comparisons"][0]
+        success = comparison["metrics"]["joint_success"]
+        self.assertEqual(comparison["paired_episode_count"], 4)
+        self.assertEqual(comparison["paired_inference_cluster_count"], 2)
+        self.assertEqual(success["independent_clusters"], 2)
+        self.assertTrue(success["few_independent_units_warning"])
+        self.assertEqual(success["mean_left_minus_right"], 0.0)
+        self.assertEqual((success["ci95_low"], success["ci95_high"]), (-1.0, 1.0))
+
+    def test_paired_report_omits_interval_with_one_explicit_cluster(self) -> None:
+        left = _record("one-a", version="tlu.costs.v3")
+        right = copy.deepcopy(left)
+        left["protocol"]["code_id"] = "left"
+        right["protocol"]["code_id"] = "right"
+        left["inference_cluster_id"] = right["inference_cluster_id"] = "one-block"
+        report = paired_report([left, right], replicates=100)
+        metric = report["comparisons"][0]["metrics"]["joint_success"]
+        self.assertEqual(metric["independent_clusters"], 1)
+        self.assertTrue(metric["few_independent_units_warning"])
+        self.assertIsNone(metric["ci95_low"])
+        self.assertIsNone(metric["ci95_high"])
+
+    def test_paired_report_rejects_cluster_mismatch_across_conditions(self) -> None:
+        left = _record("same-episode", version="tlu.costs.v3")
+        right = copy.deepcopy(left)
+        left["protocol"]["code_id"] = "left"
+        right["protocol"]["code_id"] = "right"
+        left["inference_cluster_id"] = "block-a"
+        right["inference_cluster_id"] = "block-b"
+        with self.assertRaisesRegex(RecordError, "mismatched inference_cluster_id"):
+            paired_report([left, right], replicates=100)
+
+    def test_cost_records_validate_optional_inference_cluster_id(self) -> None:
+        record = _record("clustered", version="tlu.costs.v3")
+        record["inference_cluster_id"] = "seed-block-1"
+        aggregate([record])
+        record["inference_cluster_id"] = "  "
+        with self.assertRaisesRegex(RecordError, "inference_cluster_id: expected non-empty string"):
+            aggregate([record])
+
     def test_paired_report_is_reproducible_and_reports_unmatched_episodes(self) -> None:
         left = _record("shared")
         left["protocol"]["code_id"] = "left"

@@ -107,6 +107,12 @@ def _validate_record(record: Any, line_number: int) -> dict[str, Any]:
     if input_version not in {LEGACY_SCHEMA_VERSION, SCHEMA_VERSION, ENCODING_SCHEMA_VERSION}:
         raise RecordError(f"{prefix}: unsupported schema_version {input_version!r}")
     _string(record.get("episode_id"), f"{prefix}.episode_id")
+    inference_cluster_id = record.get("inference_cluster_id")
+    if inference_cluster_id is not None:
+        if input_version != ENCODING_SCHEMA_VERSION:
+            raise RecordError(f"{prefix}.inference_cluster_id: supported only by tlu.costs.v3 records")
+        _string(inference_cluster_id, f"{prefix}.inference_cluster_id")
+    record["_normalized_inference_cluster_id"] = inference_cluster_id
 
     if input_version in {SCHEMA_VERSION, ENCODING_SCHEMA_VERSION}:
         stratum = _object(record.get("stratum"), f"{prefix}.stratum")

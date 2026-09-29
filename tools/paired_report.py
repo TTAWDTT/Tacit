@@ -118,6 +118,11 @@ def _episode_metric(record: dict[str, Any], name: str) -> float | None:
     raise RecordError(f"unsupported paired metric {name!r}")
 
 
+def _inference_cluster(record: dict[str, Any], episode_id: str) -> tuple[str, str]:
+    cluster_id = record.get("_normalized_inference_cluster_id")
+    return ("declared", cluster_id) if cluster_id is not None else ("episode", episode_id)
+
+
 def _quantile(sorted_values: list[float], probability: float) -> float:
     if len(sorted_values) == 1:
         return sorted_values[0]
@@ -129,22 +134,40 @@ def _quantile(sorted_values: list[float], probability: float) -> float:
 
 
 def _paired_bootstrap(
-    differences: list[float], *, replicates: int, rng: random.Random
+    differences: list[float], cluster_ids: list[tuple[str, str]], *, replicates: int, rng: random.Random
 ) -> dict[str, float | int | None]:
     if not differences:
-        return {"paired_episodes": 0, "mean_left_minus_right": None, "ci95_low": None, "ci95_high": None}
+        return {
+            "paired_episodes": 0, "independent_clusters": 0,
+            "few_independent_units_warning": True,
+            "mean_left_minus_right": None, "ci95_low": None, "ci95_high": None,
+        }
+    if len(differences) != len(cluster_ids):
+        raise RecordError("paired differences and inference-cluster IDs must have equal lengths")
     count = len(differences)
     mean = sum(differences) / count
-    if count == 1:
-        low = high = differences[0]
+    cluster_values: dict[tuple[str, str], list[float]] = defaultdict(list)
+    for cluster_id, difference in zip(cluster_ids, differences):
+        cluster_values[cluster_id].append(difference)
+    clusters = sorted(cluster_values)
+    if len(clusters) < 2:
+        low = high = None
     else:
         samples = []
         for _ in range(replicates):
-            samples.append(sum(differences[rng.randrange(count)] for _ in range(count)) / count)
+            sampled = [clusters[rng.randrange(len(clusters))] for _ in clusters]
+            sampled_differences = [
+                difference
+                for cluster_id in sampled
+                for difference in cluster_values[cluster_id]
+            ]
+            samples.append(sum(sampled_differences) / len(sampled_differences))
         samples.sort()
         low, high = _quantile(samples, 0.025), _quantile(samples, 0.975)
     return {
         "paired_episodes": count,
+        "independent_clusters": len(clusters),
+        "few_independent_units_warning": len(clusters) < 20,
         "mean_left_minus_right": mean,
         "ci95_low": low,
         "ci95_high": high,
@@ -184,6 +207,15 @@ def paired_report(
             left = groups[(task_key, left_protocol_key, left_stratum_key)]
             right = groups[(task_key, right_protocol_key, right_stratum_key)]
             common_ids = sorted(set(left) & set(right))
+            paired_clusters: dict[str, str] = {}
+            for episode_id in common_ids:
+                left_cluster = _inference_cluster(left[episode_id], episode_id)
+                right_cluster = _inference_cluster(right[episode_id], episode_id)
+                if left_cluster != right_cluster:
+                    raise RecordError(
+                        f"episode {episode_id!r} has mismatched inference_cluster_id across paired conditions"
+                    )
+                paired_clusters[episode_id] = left_cluster
             left_tokenizers = _tokenizer_units(left)
             right_tokenizers = _tokenizer_units(right)
             tokenizer_units = left_tokenizers | right_tokenizers
@@ -194,10 +226,11 @@ def paired_report(
             metrics: dict[str, Any] = {}
             for metric_index, metric_name in enumerate(BOOTSTRAP_METRICS):
                 deltas = []
+                delta_clusters = []
                 missing_pairs = 0
                 if metric_name in {"input_tokens", "output_tokens"} and not token_deltas_comparable:
                     metrics[metric_name] = {
-                        **_paired_bootstrap(deltas, replicates=replicates, rng=random.Random(seed)),
+                        **_paired_bootstrap(deltas, [], replicates=replicates, rng=random.Random(seed)),
                         "missing_pairs": len(common_ids),
                     }
                     continue
@@ -208,9 +241,11 @@ def paired_report(
                         missing_pairs += 1
                     else:
                         deltas.append(left_value - right_value)
+                        delta_clusters.append(paired_clusters[episode_id])
                 metrics[metric_name] = {
                     **_paired_bootstrap(
                         deltas,
+                        delta_clusters,
                         replicates=replicates,
                         rng=random.Random(seed + len(comparisons) * len(BOOTSTRAP_METRICS) + metric_index),
                     ),
@@ -239,6 +274,8 @@ def paired_report(
                     if next(iter(versions)) == "tlu.costs.v1"
                     else "shared_task_stratum_and_episode_id"
                 ),
+                "uncertainty_unit": "inference_cluster_id when supplied; otherwise episode_id",
+                "paired_inference_cluster_count": len(set(paired_clusters.values())),
                 "left_protocol": dict(zip(PROTOCOL_FIELDS, left_protocol_key)),
                 "right_protocol": dict(zip(PROTOCOL_FIELDS, right_protocol_key)),
                 "left_only_episodes": len(set(left) - set(right)),
@@ -250,7 +287,7 @@ def paired_report(
     return {
         "schema_version": REPORT_SCHEMA_VERSION,
         "input_schema_version": next(iter(versions)),
-        "method": "paired episode bootstrap; percentile 95% interval; left minus right",
+        "method": "paired bootstrap resampling whole inference clusters when supplied, otherwise episodes; percentile 95% interval; left minus right; intervals omitted with fewer than two independent clusters",
         "bootstrap_replicates": replicates,
         "seed": seed,
         "comparisons": comparisons,

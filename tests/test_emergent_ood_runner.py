@@ -8,6 +8,7 @@ from pathlib import Path
 
 from tacit.runtime import ChatCompletion
 from tools.cost_report import aggregate
+from tools.paired_report import paired_report
 
 
 MODULE_PATH = Path(__file__).resolve().parents[1] / "experiments" / "emergent_ood_v0_3" / "runner.py"
@@ -108,9 +109,26 @@ class EmergentOODRunnerTests(unittest.TestCase):
         self.assertEqual(sum(row["outcome"]["joint_success"] for row in rows), 1)
         self.assertTrue(all(row["transmissions"] == [] for row in rows))
 
+    def test_paired_report_treats_balanced_target_rows_as_one_cluster(self):
+        no_message_rows, _ = self._run_all("no_message")
+        english_rows, _ = self._run_all("natural_language", sender=FakeSender())
+        report = paired_report(no_message_rows + english_rows, replicates=100)
+        self.assertEqual(len(report["comparisons"]), 1)
+        comparison = report["comparisons"][0]
+        self.assertEqual(comparison["paired_episode_count"], 5)
+        self.assertEqual(comparison["paired_inference_cluster_count"], 1)
+        success = comparison["metrics"]["joint_success"]
+        self.assertEqual(success["independent_clusters"], 1)
+        self.assertIsNone(success["ci95_low"])
+        self.assertIsNone(success["ci95_high"])
+
     def test_natural_language_delivers_verbatim_message_and_valid_cost_rows(self):
         sender = FakeSender()
         rows, _ = self._run_all("natural_language", sender=sender)
+        self.assertEqual(
+            {row["inference_cluster_id"] for row in rows},
+            {"eood-v0.3|generation_seed=17"},
+        )
         self.assertTrue(all(row["outcome"]["joint_success"] for row in rows))
         self.assertEqual(len(sender.calls), 5)
         self.assertTrue(all(len(row["transmissions"]) == 1 for row in rows))

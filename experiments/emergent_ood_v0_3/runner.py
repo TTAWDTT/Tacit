@@ -407,6 +407,7 @@ def run_condition(
     return {
         "schema_version": "tlu.costs.v3",
         "episode_id": episode_id,
+        "inference_cluster_id": f"eood-v0.3|generation_seed={episode['episode_seed']}",
         "stratum": {
             "experiment_id": EXPERIMENT_ID,
             "task_id": "three-attribute-heldout-reference-v1",
