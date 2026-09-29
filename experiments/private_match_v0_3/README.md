@@ -216,6 +216,34 @@ The current episode generator still samples uniform coordinates, so this is a
 theoretical calculator and future experiment control, not a claim about the
 present generated shards.
 
+### Exact prior-shift episode control (model-free)
+
+`prior_shift.py` builds a deterministic, exactly stratified cohort for rational
+independent target-coordinate priors. It uses real role-separated candidate
+tables and scorer records, permutes target order with a keyed HMAC stream, and
+compares a frozen training-prior codebook with a codebook retrained for the
+evaluation prior at identical per-sender bit widths. The API enforces a maximum
+cohort size before constructing episodes. This is an exact finite design, not a
+random sample and not a population confidence interval.
+
+For a fresh local task key, then the four-value example from Theory §15:
+
+```powershell
+python -m experiments.private_match_v0_3.generate_tasks `
+  --create-task-key --task-key-file .cache/private_match_v0_3/task.key
+python -m experiments.private_match_v0_3.prior_shift `
+  --task-key-file .cache/private_match_v0_3/task.key `
+  --train-x '1/2,1/4,1/8,1/8' --train-y '1/4,1/4,1/4,1/4' `
+  --eval-x '1/8,1/8,1/2,1/4' --eval-y '1/4,1/4,1/4,1/4' `
+  --bits-x 1 --bits-y 2
+```
+
+The exact cohort has 32 episodes. The frozen codebook scores 8/32 and the
+evaluation-adapted codebook scores 24/32, matching their exact expected rates
+of 1/4 and 3/4. Codebook/prior setup is free in this oracle control; no LLM
+calls, tokenization, framing, or inference costs are included. Keep the task key
+outside version control and model-visible context.
+
 ## Planned model comparison (not run)
 
 The future paired comparison should retain every generated episode and include

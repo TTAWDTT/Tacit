@@ -34,6 +34,31 @@ against every denominator-eight prior inside a `1/8` shift ball. Uniform
 rational priors reduce to the existing uniform frontier. The episode generator
 remains uniform, and no model inference or heavy compute was run.
 
+**Task connection.** Added designated-target episode construction that leaves
+the ordinary uniform generator's HMAC table/ID streams unchanged. The
+prior-shift runner makes the exact product-weighted rational cohort, keyed
+permutes its target order, and evaluates frozen versus evaluation-adapted
+codebooks through complete candidate tables and the exact candidate-ID scorer.
+On the preregisterable q=4 example, all 32 stratified episodes reproduce 8/32
+frozen and 24/32 adapted success exactly. A compatibility test reconstructs an
+ordinary uniform episode through the designated-target path and compares all
+four role views. This finite exact cohort is not a random evaluation sample and
+licenses no model or language claim.
+
+**Verification.** All 18 focused Private Match v0.3 tests pass; Python
+compilation, preregistration JSON parsing, and `git diff --check` pass. The
+documented CLI was smoke-run with a temporary project-local key: it generated
+32 role-separated episodes and reported exact `1/4` versus `3/4` results. The
+temporary key directory was removed after verifying it remained inside the
+workspace. No model, endpoint, GPU workload, or network inference was used.
+
+**Literature check.** Anti-efficient encoding shows frequency skew can alter
+message lengths during emergent learning; work on abstract concept transfer
+studies different semantic/OOD shifts. The new control isolates target-prior
+shift with fixed support and payload widths. It is complementary, not a
+replacement for those learning and compositional-generalization studies (see
+the [related-work audit](RELATED_WORK.md#emergent-communication-compositionality-and-iterated-learning)).
+
 ## 2026-09-29 — Use unbiased keyed streams for task sampling
 
 - **Assumption audit:** the ideal frontier assumes independent-uniform table order, candidate IDs, and target, while generator v0.3.2 seeded Python's non-cryptographic `random.Random` from HMAC output. That was adequate for seed secrecy but left the sampling mechanism less directly aligned with the registered prior than necessary.

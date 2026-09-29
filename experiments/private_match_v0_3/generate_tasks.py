@@ -126,19 +126,9 @@ class _HMACRandom:
             values[index], values[other] = values[other], values[index]
 
 
-def generate_episode(*, episode_id: str, seed: int, q: int,
-                     task_key: bytes) -> tuple[dict[str, Any], ...]:
-    """Return x-sender, y-sender, receiver, and gold views for one episode."""
-    if not isinstance(episode_id, str) or not episode_id.strip():
-        raise ValueError("episode_id must be a non-empty string")
-    if isinstance(seed, bool) or not isinstance(seed, int) or seed < 0:
-        raise ValueError("seed must be a non-negative integer")
-    _validate_q(q)
-    _validate_task_key(task_key)
-
+def _candidate_table(*, seed: int, q: int, task_key: bytes) -> list[dict[str, Any]]:
     row_rng = _HMACRandom(task_key, domain="table-order", seed=seed)
     candidate_id_rng = _HMACRandom(task_key, domain="candidate-ids", seed=seed)
-    target_rng = _HMACRandom(task_key, domain="target", seed=seed)
     xs = [f"x{i:04d}" for i in range(q)]
     ys = [f"y{i:04d}" for i in range(q)]
     rows = [(x, y) for x in xs for y in ys]
@@ -149,11 +139,18 @@ def generate_episode(*, episode_id: str, seed: int, q: int,
         {"candidate_id": candidate_id, "record": {"x": x, "y": y}}
         for candidate_id, (x, y) in zip(candidate_ids, rows)
     ]
-    target_index = target_rng.randbelow(q * q)
-    target = candidates[target_index]
-    x_value = target["record"]["x"]
-    y_value = target["record"]["y"]
+    return candidates
 
+
+def _episode_views(*, episode_id: str, q: int, candidates: list[dict[str, Any]],
+                   x_value: str, y_value: str) -> tuple[dict[str, Any], ...]:
+    target_matches = [
+        row for row in candidates
+        if row["record"] == {"x": x_value, "y": y_value}
+    ]
+    if len(target_matches) != 1:
+        raise ValueError("target coordinates must identify exactly one candidate")
+    target = target_matches[0]
     shared = {"schema_version": SCHEMA_VERSION, "episode_id": episode_id, "q": q}
     sender_x = {**shared, "role": "sender_x", "coordinate": "x", "private_value": x_value}
     sender_y = {**shared, "role": "sender_y", "coordinate": "y", "private_value": y_value}
@@ -165,6 +162,53 @@ def generate_episode(*, episode_id: str, seed: int, q: int,
     gold = {**shared, "target_candidate_id": target["candidate_id"]}
     validate_episode(sender_x, sender_y, receiver, gold)
     return sender_x, sender_y, receiver, gold
+
+
+def generate_episode(*, episode_id: str, seed: int, q: int,
+                     task_key: bytes) -> tuple[dict[str, Any], ...]:
+    """Return x-sender, y-sender, receiver, and gold views for one episode."""
+    if not isinstance(episode_id, str) or not episode_id.strip():
+        raise ValueError("episode_id must be a non-empty string")
+    if isinstance(seed, bool) or not isinstance(seed, int) or seed < 0:
+        raise ValueError("seed must be a non-negative integer")
+    _validate_q(q)
+    _validate_task_key(task_key)
+
+    candidates = _candidate_table(seed=seed, q=q, task_key=task_key)
+    target_rng = _HMACRandom(task_key, domain="target", seed=seed)
+    target_index = target_rng.randbelow(q * q)
+    target = candidates[target_index]
+    x_value = target["record"]["x"]
+    y_value = target["record"]["y"]
+    return _episode_views(
+        episode_id=episode_id, q=q, candidates=candidates,
+        x_value=x_value, y_value=y_value,
+    )
+
+
+def generate_episode_for_target(*, episode_id: str, seed: int, q: int,
+                                task_key: bytes, x_index: int,
+                                y_index: int) -> tuple[dict[str, Any], ...]:
+    """Build a valid episode for a designated target pair.
+
+    This is for exact stratified controls and counterfactual scoring. It is not
+    a random target draw; callers must define the target weighting separately.
+    Candidate order and IDs remain keyed and independent of the target pair.
+    """
+    if not isinstance(episode_id, str) or not episode_id.strip():
+        raise ValueError("episode_id must be a non-empty string")
+    if isinstance(seed, bool) or not isinstance(seed, int) or seed < 0:
+        raise ValueError("seed must be a non-negative integer")
+    _validate_q(q)
+    _validate_task_key(task_key)
+    for name, value in (("x_index", x_index), ("y_index", y_index)):
+        if isinstance(value, bool) or not isinstance(value, int) or not 0 <= value < q:
+            raise ValueError(f"{name} must be an integer in [0, q)")
+    candidates = _candidate_table(seed=seed, q=q, task_key=task_key)
+    return _episode_views(
+        episode_id=episode_id, q=q, candidates=candidates,
+        x_value=f"x{x_index:04d}", y_value=f"y{y_index:04d}",
+    )
 
 
 def validate_episode(

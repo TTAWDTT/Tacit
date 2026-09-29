@@ -19,7 +19,10 @@ from experiments.private_match_v0_3.runner import (
     episode_id_for_seed, main as runner_main, planned_model_calls, run_condition,
     validate_capability_ledger,
 )
-from experiments.private_match_v0_3.generate_tasks import model_visible_view
+from experiments.private_match_v0_3.generate_tasks import (
+    generate_episode_for_target, model_visible_view,
+)
+from experiments.private_match_v0_3.prior_shift import evaluate_prior_shift
 from contextlib import redirect_stdout
 from experiments.private_match_v0_3.bit_frontier import (
     frontier as triadic_bit_frontier, optimal_nonuniform_success_probability,
@@ -452,6 +455,57 @@ class PrivateMatchV03Tests(unittest.TestCase):
         self.assertNotIn("target_candidate_id", receiver)
         self.assertIn("target_candidate_id", gold)
         self.assertEqual(sender_x["episode_id"], sender_y["episode_id"])
+
+    def test_designated_target_preserves_uniform_generator_and_table_randomness(self):
+        ordinary = module.generate_episode(
+            episode_id="preserve-uniform", seed=7001, q=4, task_key=TEST_TASK_KEY,
+        )
+        sender_x, sender_y = ordinary[:2]
+        designated = generate_episode_for_target(
+            episode_id="preserve-uniform", seed=7001, q=4, task_key=TEST_TASK_KEY,
+            x_index=int(sender_x["private_value"][1:]),
+            y_index=int(sender_y["private_value"][1:]),
+        )
+        self.assertEqual(ordinary, designated)
+
+        other_target = generate_episode_for_target(
+            episode_id="other-target", seed=7001, q=4, task_key=TEST_TASK_KEY,
+            x_index=3, y_index=2,
+        )
+        self.assertEqual(ordinary[2]["candidates"], other_target[2]["candidates"])
+        self.assertEqual(
+            other_target[3]["target_candidate_id"],
+            module.oracle_answer(other_target[2], "x0003", "y0002"),
+        )
+
+    def test_exact_prior_shift_cohort_matches_frozen_and_adapted_theory(self):
+        result = evaluate_prior_shift(
+            task_key=TEST_TASK_KEY,
+            probabilities_x_train=(Fraction(1, 2), Fraction(1, 4), Fraction(1, 8), Fraction(1, 8)),
+            probabilities_y_train=(Fraction(1, 4),) * 4,
+            probabilities_x_eval=(Fraction(1, 8), Fraction(1, 8), Fraction(1, 2), Fraction(1, 4)),
+            probabilities_y_eval=(Fraction(1, 4),) * 4,
+            payload_bits_x=1,
+            payload_bits_y=2,
+            seed=910_000,
+        )
+        self.assertEqual(result["episode_count"], 32)
+        self.assertEqual(result["conditions"]["frozen_training_codebook"]["successes"], 8)
+        self.assertEqual(result["conditions"]["frozen_training_codebook"]["success_fraction"], "1/4")
+        self.assertEqual(result["conditions"]["evaluation_adapted_codebook"]["successes"], 24)
+        self.assertEqual(result["conditions"]["evaluation_adapted_codebook"]["success_fraction"], "3/4")
+        with self.assertRaisesRegex(ValueError, "over cap"):
+            evaluate_prior_shift(
+                task_key=TEST_TASK_KEY,
+                probabilities_x_train=(Fraction(1, 4),) * 4,
+                probabilities_y_train=(Fraction(1, 4),) * 4,
+                probabilities_x_eval=(Fraction(1, 8), Fraction(1, 8), Fraction(1, 2), Fraction(1, 4)),
+                probabilities_y_eval=(Fraction(1, 4),) * 4,
+                payload_bits_x=1,
+                payload_bits_y=1,
+                seed=910_000,
+                max_episodes=31,
+            )
 
     def test_task_key_file_is_256_bit_private_and_refuses_accidental_replacement(self):
         with tempfile.TemporaryDirectory() as temporary:
