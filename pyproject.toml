@@ -11,5 +11,8 @@ requires-python = ">=3.10"
 license = { file = "LICENSE" }
 dependencies = []
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
 [tool.setuptools.packages.find]
 include = ["tacit*"]
