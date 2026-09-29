@@ -52,6 +52,15 @@ def optimal_success_probability(
     )
 
 
+def large_space_limit_success_probability(*, candidate_count: int, message_count: int) -> Fraction:
+    """Limit of the exact frontier as N grows with k and B fixed."""
+    _integer("candidate_count", candidate_count, 2)
+    _integer("message_count", message_count, 1)
+    return Fraction(message_count, candidate_count) * (
+        1 - Fraction(message_count - 1, message_count) ** candidate_count
+    )
+
+
 def bit_budget_frontier(*, space_size: int, candidate_count: int, max_bits: int) -> list[dict[str, int | str | float]]:
     """Evaluate the optimum for every fixed-width payload budget 0..max_bits."""
     _integer("max_bits", max_bits, 0)
@@ -63,11 +72,17 @@ def bit_budget_frontier(*, space_size: int, candidate_count: int, max_bits: int)
             candidate_count=candidate_count,
             message_count=messages,
         )
+        asymptotic = large_space_limit_success_probability(
+            candidate_count=candidate_count,
+            message_count=messages,
+        )
         output.append({
             "payload_bits": bits,
             "available_messages": messages,
             "success_fraction": f"{exact.numerator}/{exact.denominator}",
             "success_probability": float(exact),
+            "large_space_limit_fraction": f"{asymptotic.numerator}/{asymptotic.denominator}",
+            "large_space_limit_probability": float(asymptotic),
         })
     return output
 

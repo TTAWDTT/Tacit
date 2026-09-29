@@ -323,3 +323,25 @@ P=\frac{1}{k}\left[B'-\frac{\sum_i\binom{N-s_i}{k}}{\binom Nk}\right].
 The function (h(s)=\binom{N-s}{k}) is discretely convex: its second forward difference is (\binom{N-s-2}{k-2}\ge0), taking out-of-domain binomial coefficients as zero. Therefore (\sum_i h(s_i)) is minimized, for fixed sum (N), by balanced integer class sizes. Substitution yields the stated optimum, attained by the balanced encoder and Bayes decoder. Randomized encoders and decoders are mixtures of deterministic strategies and cannot exceed this optimum. \(\square\)
 
 This task-specific result predicts the ideal success ceiling as distinguishable-message count grows, before model errors, codebook setup, and channel framing. It is neither a universal language bound nor an LLM result. The exact rational calculator is [`experiments/private_match_v0_2/code_bounds.py`](../experiments/private_match_v0_2/code_bounds.py); tests compare the formula to exhaustive encoder enumeration on small spaces. Future codec trials should report this oracle next to no-message, full-information, and operational formats, while keeping bits, UTF-8 bytes, and model tokens as separate cost axes.
+
+### Scaling with choice-set size and message capacity
+
+For fixed (k) and (B), as (N\to\infty) the balanced class sizes grow and the hypergeometric collision probability converges to independent collisions with probability (1/B). The exact frontier therefore converges to
+
+\[
+P^*_\infty(k,B)=\frac{B}{k}\left[1-\left(1-\frac1B\right)^k\right].
+\]
+
+This yields two scaling predictions. With (k) fixed and (B\to\infty),
+
+\[
+P^*_\infty(k,B)=1-\frac{k-1}{2B}+O(B^{-2}),
+\]
+
+so the ideal error falls inversely with the number of message symbols. If both scale with fixed ratio (\lambda=k/B), then as (k,B\to\infty),
+
+\[
+P^*_\infty(k,B)\to\frac{1-e^{-\lambda}}{\lambda}.
+\]
+
+Thus keeping a constant number of payload bits while the number of candidate choices grows gives success proportional to (B/k); keeping a fixed bits-per-choice ratio instead gives a nonzero limiting accuracy below one. These are scaling laws for the ideal private-record task and balanced codebooks, not for model inference or natural-language length. The calculator reports both the exact finite-(N) value and this large-record-space limit. A falsifiable model experiment must vary (k) and measured serialized-byte budgets while holding the record prior and receiver capability fixed; deviation from the oracle can arise from codebook, model, or framing constraints, all of which must be reported rather than folded into a language claim.

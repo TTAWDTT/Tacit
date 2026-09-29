@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import copy
+from math import e
+from fractions import Fraction
 from itertools import combinations, product
 import json
 import io
@@ -13,7 +15,10 @@ from unittest.mock import patch
 
 from experiments.private_match_v0_1.generate_tasks import generate_episode
 from experiments.private_match_v0_2.protocols import PROTOCOL_IDS, protocol_by_id
-from experiments.private_match_v0_2.code_bounds import bit_budget_frontier, optimal_success_probability
+from experiments.private_match_v0_2.code_bounds import (
+    bit_budget_frontier, large_space_limit_success_probability,
+    optimal_success_probability,
+)
 from experiments.private_match_v0_2.report import main as report_main, private_match_report
 from experiments.private_match_v0_2.runner import (
     CAPABILITY_CONDITION, MAX_MODEL_CALLS_PER_BATCH, _loopback_url, _message_diagnostics,
@@ -249,6 +254,26 @@ class PrivateMatchV02Tests(unittest.TestCase):
         self.assertTrue(all(entry["available_messages"] == min(2 ** entry["payload_bits"], 16 ** 5) for entry in frontier))
         with self.assertRaises(ValueError):
             optimal_success_probability(space_size=8, candidate_count=9, message_count=2)
+
+    def test_large_space_frontier_scales_with_candidate_to_message_ratio(self):
+        self.assertEqual(
+            large_space_limit_success_probability(candidate_count=8, message_count=8),
+            1 - Fraction(7, 8) ** 8,
+        )
+        self.assertEqual(
+            large_space_limit_success_probability(candidate_count=8, message_count=1),
+            Fraction(1, 8),
+        )
+        finite_ratio = float(large_space_limit_success_probability(candidate_count=8, message_count=8))
+        growing_ratio = float(large_space_limit_success_probability(candidate_count=1000, message_count=1000))
+        poisson_limit = 1 - 1 / e
+        self.assertLess(abs(growing_ratio - poisson_limit), abs(finite_ratio - poisson_limit))
+        self.assertLess(abs(growing_ratio - poisson_limit), 1e-3)
+        finite = optimal_success_probability(
+            space_size=10**12, candidate_count=8, message_count=8,
+        )
+        limit = large_space_limit_success_probability(candidate_count=8, message_count=8)
+        self.assertLess(abs(float(finite - limit)), 1e-10)
 
     def test_hex_nibble_mapping_is_exact_for_registered_domain(self):
         for value in range(16):

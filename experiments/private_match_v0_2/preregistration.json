@@ -1,7 +1,7 @@
 {
   "experiment_id": "private-match-v0.2",
   "status": "runner implemented; inference requires resource and receiver-capability gates",
-  "preregistration_revision": 5,
+  "preregistration_revision": 6,
   "amendment_history": [
     {
       "revision": 2,
@@ -29,6 +29,13 @@
       "date": "2026-09-29",
       "change": "Added an exact model-free average-accuracy frontier for finite message alphabets under the task's uniform private candidate-set distribution.",
       "rationale": "The worst-case zero-error payload floor does not predict the success-versus-message-capacity curve when protocols may incur collisions. The finite frontier supplies a falsifiable ideal reference before prompting or model inference.",
+      "data_collected_before_amendment": false
+    },
+    {
+      "revision": 6,
+      "date": "2026-09-29",
+      "change": "Added the large-record-space limit and candidate-count/message-capacity scaling predictions for the exact Bayes frontier.",
+      "rationale": "The project requires scaling analysis rather than a single operating point. The finite formula has a closed asymptotic limit when the record space grows with candidate count and message alphabet declared separately.",
       "data_collected_before_amendment": false
     }
   ],
@@ -59,7 +66,7 @@
     "no_message_exact_bayes_accuracy": "1 / candidate_count",
     "paired_unit": "episode_id",
     "frontier": "report success against application bytes, reported model tokens, and wall time; do not combine these into a scalar unless a cost model is specified",
-    "model_free_reference": "Report the exact balanced-codebook Bayes success frontier from experiments/private_match_v0_2/code_bounds.py for the declared record-space size, candidate count, and payload alphabet. It excludes shared-codebook setup, physical framing, model inference, and LLM decoding errors; never present it as a language or LLM result.",
+    "model_free_reference": "Report the exact balanced-codebook Bayes success frontier and its large-record-space limit from experiments/private_match_v0_2/code_bounds.py for the declared record-space size, candidate count, and payload alphabet. It excludes shared-codebook setup, physical framing, model inference, and LLM decoding errors; never present it as a language or LLM result.",
     "claims": "No superiority claim from this pilot alone; compare operational formats to the model-free frontier, report confidence intervals, and repeat across model populations and task scales before making general claims."
   }
 }

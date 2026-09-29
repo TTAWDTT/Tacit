@@ -30,9 +30,10 @@ errors, and model cost are excluded. Generate it without model calls:
 python experiments/private_match_v0_2/code_bounds.py --features 5 --vocabulary-size 16 --candidates 8 --max-bits 12
 ```
 
-Use the reference as an information-theoretic ceiling alongside measured
-conditions; do not report it as a discovered LLM language or operational
-compression result. The derivation and assumptions are in
+The output includes the exact finite-space curve and the large-record-space
+limit used for task-scaling predictions. Use these as information-theoretic
+ceilings alongside measured conditions; do not report them as a discovered
+LLM language or operational compression result. The derivation and assumptions are in
 [`THEORY.md` §13](../../docs/THEORY.md).
 
 For the frozen default (`N=16^5`, `k=8`), the ideal Bayes accuracy is 12.5%
