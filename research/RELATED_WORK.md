@@ -84,6 +84,12 @@ Learns to remove redundant agents and communication edges dynamically across rou
 
 Uses autoregressive latent thoughts and a shared latent working memory; the paper reports results across nine benchmarks, five Qwen3/Llama3 backbones, and sequential/hierarchical settings, including up to 14.6% higher accuracy, 70.8–83.7% fewer output tokens, and 4–4.3× faster inference. The implementation passes and trims `past_key_values` between agents, so “zero text tokens” is not zero communication: the experiment must count the transferred tensor/cache elements, dtype, serialization, device/network movement, and receiver-side compute. The paper's shared-memory and same-backbone paths are not equivalent to an independently deployed heterogeneous-agent wire protocol. This is a serious upper-bound systems baseline when internal access and compatible runtimes are available.
 
+### Zheng et al. (2025), *Thought Communication in Multiagent Collaboration* (ThoughtComm), NeurIPS 2025 Spotlight
+
+[NeurIPS paper](https://proceedings.neurips.cc/paper_files/paper/2025/file/b2b502c3629beadda06311386d2c6f73-Paper-Conference.pdf) · [arXiv full text](https://arxiv.org/html/2510.20733v1)
+
+Uses a sparsity-regularized autoencoder to infer shared/private latent dimensions and their agent dependency structure, then routes dimensions and injects a learned prefix. Its identifiability result is bounded by invertible generative-process, variation, and sparse-Jacobian assumptions; it does not guarantee semantic grounding or finite-sample recovery for arbitrary hidden states. The paper reports strong MATH/GSM8K debate results (e.g. Qwen3-1.7B MATH 93.0% vs 75.8% Multiagent Finetuning), but each agent receives the same benchmark question, so necessary private-evidence transfer is not established. Its experiments use 500 training and 500 evaluation examples and a single node with eight H100s. No serialized payload-byte or complete cross-process cost frontier is reported. Treat as a serious trained latent collaboration baseline when internals and training are available; count communicated coordinates/bytes, both endpoints, adapters, and setup. See the [source audit](THOUGHTCOMM_AUDIT_V0_1.md).
+
 ### Du et al. (2026), *Enabling Agents to Communicate Entirely in Latent Space* (Interlat), ACL 2026
 
 [ACL Anthology](https://aclanthology.org/2026.acl-long.1248/) · [official code](https://github.com/XiaoDu-flying/Interlat)

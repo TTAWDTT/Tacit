@@ -695,3 +695,10 @@ ceil) worst-case bits: 9, 10, and 11 for the three lengths. This predicts a comp
 - Added a realized-sequence proposition to docs/THEORY.md: a reusable protocol repays one-time setup A through horizon H exactly when cumulative marginal savings S_H=sum_t(b_t-l_t) reaches A.
 - This condition permits message costs to depend on stream history and cleanly distinguishes a stationary per-message crossover from a transient startup effect. For stochastic streams, the theory now calls for the distribution across independent sequences, not only one expected horizon.
 - This formalization is motivated by the compression-horizon result but is general to adaptive formats and online-learned protocols. It does not establish that their marginal savings vanish or that a particular protocol is cheaper. Documentation-only update; no tests were rerun.
+
+
+## 2026-09-29 - Audit ThoughtComm as a structured latent communication baseline
+
+- Read the NeurIPS 2025 Spotlight paper, arXiv full text, and proceedings version. ThoughtComm factorizes agent states into latent dimensions with an inferred shared/private dependency structure, then routes dimensions and injects a learned prefix. Its identifiability result relies on an invertible generative process, sufficient variation, and sparse-Jacobian assumptions; it does not establish semantic grounding or channel efficiency.
+- The paper reports strong MATH/GSM8K debate results over five models, using 500 training and 500 evaluation examples on one node with eight H100s. Agents receive the same question; the benchmark therefore does not establish necessary transfer of private facts. The paper reports no serialized payload-byte or cross-process cost frontier, and its arXiv page does not link official code.
+- Added [ThoughtComm audit v0.1](THOUGHTCOMM_AUDIT_V0_1.md), a conditional latent baseline entry, and controls for receiver-need tasks, shuffled routing masks, and complete payload/setup cost. No models, datasets, or third-party implementations were downloaded or run.
