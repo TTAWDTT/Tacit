@@ -202,6 +202,12 @@
 - Found a second scope constraint: the official runtime shares one Qwen3-4B model instance among all three role wrappers, and all see the same question. It tests query-conditioned computation/role prompting, not transfer of sender-private evidence over a portable link. TFlow remains a useful co-located weight-space systems baseline.
 - Added [TFlow audit v0.2](TFLOW_AUDIT_V0_2.md), kept the prior v0.1 summary intact, and updated related work and the baseline plan with token, transport, and receiver-need controls. No models, checkpoints, or datasets were downloaded or run.
 
+## 2026-09-29 — Audit Cache-to-Cache as a cross-model KV baseline
+
+- Reviewed the ICLR 2026 paper and pinned the official Rosetta implementation at `9fa85d35a20e20469af3e282926491222f4f11e0`. Static only; no checkpoints, datasets, or models were downloaded or run.
+- C2C is a serious heterogeneous internal-state baseline: it projects a sharer's KV cache into a receiver cache, reports cross-family pairs and longer-context results, and includes two-sided prefill plus a 90 ms cache-fusion step in its A100 latency accounting. The public example nevertheless loads the models and applies the projector on the same device; no serialized network protocol or payload-byte measurement is provided. The benchmark generally gives both models the same input, so it does not prove private-information transfer is necessary.
+- The paper reports 500k OpenHermes examples for general fuser training and up to 44.72 GPU-hours at 1,929 steps for one pair; 300-step MMLU scores can be comparable to or exceed the final checkpoint. Added [C2C audit v0.1](C2C_AUDIT_V0_1.md), related-work entry, and evaluation criteria requiring receiver-need controls plus serialized-cache accounting. C2C remains locally unreplicated.
+
 ## 2026-09-29 — Factor learned selection policy from message representation
 
 - **Observation:** the OPTiMACS audit shows that recent systems jointly vary task categorization, format inventory, and format selection. Existing shorthand such as “language wins” can therefore conflate changing which content/turn is chosen with changing how fixed content is encoded.

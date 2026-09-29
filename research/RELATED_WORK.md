@@ -46,6 +46,12 @@ FOFO reports that open-weight models lag closed models in complex format adheren
 
 ## Latent and hidden-state transfer
 
+### Fu et al. (2026), *Cache-to-Cache: Direct Semantic Communication Between Large Language Models* (C2C), ICLR 2026
+
+[arXiv paper](https://arxiv.org/abs/2510.03215) · [official code](https://github.com/thu-nics/C2C) · [detailed audit](C2C_AUDIT_V0_1.md)
+
+C2C projects a sharer's KV cache into a receiver's cache space and fuses it with a learned residual/gating adapter. The paper reports higher accuracy and lower latency than text handoff across multiple heterogeneous Qwen/Llama/Gemma pairs; its timing counts both model prefill paths and a 90 ms local cache-fusion step. The released Rosetta wrapper loads sharer, receiver, and projector in one process/device and defines no serialized network payload. Main benchmark agents prefill the same shared input, so the results show learned cross-model representation enrichment, not communication necessary to convey private facts. Charge full KV bytes by sequence/layers/dtype, transfer/framing and synchronization, both model passes, fuser training/storage, and test on a receiver-need partition. Context-length accuracy trends are not an equal-byte communication scaling law. See the [C2C audit](C2C_AUDIT_V0_1.md).
+
 ### Bao et al. (2026), *Good Agentic Friends Do Not Just Give Verbal Advice: They Can Update Your Weights* (TFlow)
 
 [arXiv paper](https://arxiv.org/abs/2605.13839) · [official code and inference checkpoint](https://github.com/BWR-hhh/TFlow) · [detailed audit](TFLOW_AUDIT_V0_1.md)
