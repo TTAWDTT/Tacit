@@ -163,6 +163,12 @@ nothing in 1/4 gives success `49/64`; a fixed-width protocol can use the same
 lottery. This is a budget-policy reference, not a variable-length-language
 gain, and its 4-bit tail violates a 3-bit per-episode cap.
 
+For every power-of-two q, the payload-only common-coin frontier is the chord
+`P ≤ 1/q² + (1 - 1/q²) C/(2 log₂ q)` for expected payload `0 ≤ C ≤ 2 log₂ q`.
+The silence/full-disclosure lottery attains equality. The entropy argument is
+in [Theory §14](../../docs/THEORY.md#14-exact-bit-budget-frontier-for-complementary-coordinate-matching);
+the executable oracle's q=2,4,8,16,32 hulls match its endpoints.
+
 ## Frozen feasibility protocols and runner (model calls not run)
 
 `protocols.py` freezes prompt/parser/context revision `pmt3-prompts-6` and seven

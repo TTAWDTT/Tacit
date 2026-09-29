@@ -71,6 +71,23 @@ class PrivateMatchPrefixFrontierTests(unittest.TestCase):
         segment = bound["mixing_segments"][0]
         self.assertEqual(segment["higher_cost_protocol_probability"], "(B - 0) / (4 - 0)")
 
+    def test_power_of_two_oracle_hulls_match_the_closed_form_through_q32(self):
+        for q in (2, 4, 8, 16, 32):
+            with self.subTest(q=q):
+                bound = prefix_code_frontier(q)["free_shared_randomness_upper_bound"]
+                self.assertEqual(
+                    [(point["expected_payload_bits"], point["joint_success"])
+                     for point in bound["vertices"]],
+                    [("0", f"1/{q * q}"), (str(2 * (q.bit_length() - 1)), "1")],
+                )
+                expected_budget = Fraction(3 * 2 * (q.bit_length() - 1), 4)
+                no_message = Fraction(1, q * q)
+                expected_success = no_message + Fraction(3, 4) * (1 - no_message)
+                self.assertEqual(
+                    randomized_success_at_expected_budget(q, expected_budget),
+                    expected_success,
+                )
+
     def test_prefix_code_rejects_invalid_messages_and_oversized_search(self):
         code = optimal_prefix_partition(4, 3)
         with self.assertRaisesRegex(ValueError, "not a codeword"):

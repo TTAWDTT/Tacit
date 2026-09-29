@@ -44,7 +44,7 @@ A model-free [three-agent Private Match task family](experiments/private_match_v
 
 ## Scope
 
-Private Match v0.3 now includes a model-free [lossy prefix-code and shared-randomness frontier](experiments/private_match_v0_3/README.md#lossy-self-delimiting-prefix-code-reference), derived from task-oriented functional compression. Under free shared randomness and expected bit cost, the q=4 analytic bound reaches `49/64` at 3 expected bits by mixing no message with full disclosure; that is a policy randomization bound, not a language gain or LLM result. The [related-work audit](research/RELATED_WORK.md) records the established graph-coloring/function-computation prior art.
+Private Match v0.3 now includes a model-free [lossy prefix-code and shared-randomness frontier](experiments/private_match_v0_3/README.md#lossy-self-delimiting-prefix-code-reference), derived from task-oriented functional compression. For power-of-two q, its payload-only expected-budget theorem is an endpoint chord; q=2 through 32 finite frontiers agree. At q=4, success reaches `49/64` at 3 expected bits by mixing silence with full disclosure. That is a policy-randomization bound, not a language gain or LLM result. The [related-work audit](research/RELATED_WORK.md) records the established graph-coloring/function-computation prior art.
 
 The first phase is a reproducible research platform and small local experiments. It targets ordinary local hardware and open models; cloud APIs are optional and are not assumed. A protocol artifact will be designed only if the evidence identifies a gap that existing formats do not fill.
 

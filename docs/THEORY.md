@@ -418,6 +418,39 @@ For `q=4`, the deterministic prefix points all lie below the chord from no messa
 
 **Falsifiable prediction P9 — q=4 shared-randomness upper bound.** Under the same uniform task and a free task-independent shared coin, the exact prefix-oracle hull has only the no-message and full-disclosure vertices. At expected payload 3 bits its success is `49/64`, achieved by full disclosure in 3/4 of episodes and no message in 1/4; no deterministic intermediate point reaches that value. An independent exact enumeration of all class partitions and all convex combinations must reproduce this value. This bound is ineligible as an operational result unless the complete coin/selection and protocol costs are included and the evaluation genuinely constrains expected rather than per-episode payload.
 
+### Exact shared-randomness frontier for powers-of-two alphabets
+
+The q=4 chord generalizes to every registered alphabet `q=2^w`. Consider any deterministic sender encoder that partitions its uniform `q`-value coordinate into `K` nonempty message classes. Let `H` be the entropy in bits of the class message. The most concentrated class-size distribution for fixed `K` is `(r,1,…,1)/q`, where `r=q-K+1`; entropy is Schur-concave, so
+
+\[
+H \ge \log_2 q - \frac{r}{q}\log_2 r
+  \ge \log_2 q\,\frac{K-1}{q-1}.
+\]
+
+For the second inequality, set `g(x)=x ln(x)/(x-1)` with `g(1)=1`. Its derivative is `(x-1-ln x)/(x-1)^2 ≥ 0`, so `g(r)≤g(q)`, which is equivalent to the displayed bound.
+
+For the two senders, write `u=(K_x-1)/(q-1)` and `v=(K_y-1)/(q-1)`. Under the uniform Cartesian prior and exact-row loss, the best decoder succeeds with probability `K_x K_y/q²`: each nonempty class-pair cell contains one selected correct row among q² equally likely targets. Algebra gives
+
+\[
+\frac{K_xK_y-1}{q^2-1}
+ =\frac{u+v+(q-1)uv}{q+1}
+ \le \frac{u+v}{2}
+ \le \frac{H_x+H_y}{2\log_2 q}
+ \le \frac{C}{2\log_2 q},
+\]
+
+where `2uv≤u+v` for `u,v∈[0,1]`, `H_x+H_y` is the sum of source-message entropies, and `C` is the sum expected self-delimiting prefix payload. The final inequality is Shannon's source-coding bound. Therefore every deterministic protocol, and every mixture of them, satisfies
+
+\[
+P_{\rm exact} \le \frac{1}{q^2}+
+  \left(1-\frac1{q^2}\right)\frac{C}{2\log_2 q}
+\quad (0\le C\le 2\log_2 q).
+\]
+
+For `q=2^w`, this bound is tight at every expected budget `C`: a shared task-independent coin selects full fixed-width disclosure (cost `2 log₂ q`, success 1) with probability `C/(2 log₂ q)`, and silence otherwise (cost 0, success `1/q²`). Thus the exact average-payload frontier with free common randomness is the endpoint chord; no intermediate deterministic or randomized prefix protocol can exceed it. Under a per-episode hard cap, this lottery is unavailable and the integer fixed-width frontier remains the relevant reference. If codebook/coin setup, model calls, tokens, or tail costs are charged, this payload-only theorem is only an upper-bound control. The result is preregistered as P10 and numerically checked by the finite oracle for `q=2,4,8,16,32`; those finite checks supplement, but do not replace, the proof.
+
+**Falsifiable prediction P10 — power-of-two expected-budget optimum.** For every power-of-two `q`, exact-row success under any deterministic prefix encoding with a free shared random mixture and mean payload budget `C` cannot exceed the affine bound above; the silence/full-disclosure lottery attains equality. Finite enumeration for `q≤32` must report only the two endpoint hull vertices. A counterexample must identify a violated assumption or refute the entropy/class-count inequality. The statement makes no claim about equal complete LLM cost, independent private coins, or per-episode caps.
+
 **Scaling prediction.** For fixed `B` and `q ≥ 2^{B/2}`, `A*(q,B) = 2^B/q²`, so ideal accuracy falls as `q⁻²` while receiver-table size grows as `q²`. If payload scales as a fraction `ρ ∈ [0,1]` of the zero-error budget, `B ≈ 2ρ log₂(q)`, then ideal success scales as `q^{2ρ−2}`, up to integer-budget rounding. These are predictions for the noiseless payload-only task; table-context tokens, framing, codebook exposition, model errors, and inference compute are excluded. They are not an LLM scaling law. An empirical study should vary q and total payload caps, measure complete model and channel costs separately, and compare outcomes with this oracle rather than treating the ideal curve as an expected model result.
 
 ## 15. Exact frontier for independent non-uniform coordinate priors
