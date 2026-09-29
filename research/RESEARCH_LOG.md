@@ -1,5 +1,13 @@
 # Research log
 
+## 2026-09-29 — Make triadic representation comparisons reportable
+
+- **Analysis audit:** the initial v0.3 runner encoded each message format into `policy_id`. The shared paired-report tool therefore marked format conditions as having different policies, weakening the intended fixed-schedule representation comparison.
+- **Correction:** the runner now assigns the same `fixed-x-then-y-unicast-v1` policy ID to all both-source arms, while distinct code and decoder IDs include the frozen prompt revision. The report explicitly leaves decoder mismatch visible: these are end-to-end representation-plus-decoder comparisons, not a claim that the tokenizer/decoder factor was independently held constant.
+- **Artifact:** added a v0.3 report command that accepts multiple separately executed ledger files. It reconstructs each task from its seed, re-scores answers, verifies schedule/routes/call counts and exact logical message-byte metadata, summarizes format/fidelity diagnostics without mixing task/model strata, and delegates paired costs and Pareto frontiers to the shared v3 tools.
+- **Validation:** fake-client ledgers for all four formats produce six paired comparisons; tests verify matched policy, distinct code/decoder IDs, exact-score and wire-metadata corruption rejection, report CLI output, and frontier integration. No model or endpoint was started or contacted.
+- **Limit:** reporting code proves internal consistency of the recorded pilot and computes descriptive analyses. It does not establish language superiority, make the pilot statistically powered, or compensate for the pending optimized natural-language baseline and model/resource gates.
+
 ## 2026-09-29 — Derive the triadic fixed-width bit-budget frontier
 
 - **Question:** for the q-by-q complete-table task, how much exact-match accuracy can two complementary senders achieve when only a total payload-bit budget is fixed?

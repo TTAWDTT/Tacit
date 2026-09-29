@@ -75,7 +75,11 @@ def protocol_by_id(name: str, q: int) -> Protocol:
         )
         code, decoder = f"pmt3-fixed-{width}-bit-v1", f"pmt3-fixed-{width}-bit-decoder-v1"
     return Protocol(
-        f"{name}:{PROMPT_REVISION}:q{q}", code, decoder, sender, receiver
+        f"{name}:{PROMPT_REVISION}:q{q}",
+        f"{PROMPT_REVISION}:{code}",
+        f"{PROMPT_REVISION}:{decoder}",
+        sender,
+        receiver,
     )
 
 

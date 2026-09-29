@@ -15,7 +15,9 @@ from urllib.parse import urlparse
 
 from experiments.emergent_ood_v0_3.runner import _endpoint_port, validate_resource_preflight
 from experiments.private_match_v0_3.generate_tasks import generate_episode, score_answer
-from experiments.private_match_v0_3.protocols import PROTOCOL_IDS, Protocol, parse_coordinate_message, protocol_by_id
+from experiments.private_match_v0_3.protocols import (
+    PROMPT_REVISION, PROTOCOL_IDS, Protocol, parse_coordinate_message, protocol_by_id,
+)
 from tacit import ChatCompletion, OpenAICompatibleClient, exchange_dialogue
 
 
@@ -154,10 +156,23 @@ def run_condition(*, seed: int, q: int, condition: str, protocol: Protocol,
             "scorer_id": SCORER_ID,
         },
         "protocol": {
-            "policy_id": (condition if condition in {"no_message", "full_information"}
-                          else f"{condition}:{protocol.protocol_id.split(':', 1)[0]}"),
+            "representation_id": (
+                None if condition in {"full_information", "no_message"}
+                else protocol.protocol_id.split(":", 1)[0]
+            ),
+            "prompt_revision": None if condition in {"full_information", "no_message"} else PROMPT_REVISION,
+            "policy_id": {
+                "full_information": "full-information-control-v1",
+                "no_message": "no-message-v1",
+                "sender_x_only": "sender-x-only-fixed-v1",
+                "sender_y_only": "sender-y-only-fixed-v1",
+                "both_sources": "fixed-x-then-y-unicast-v1",
+            }[condition],
             "code_id": "none" if condition in {"no_message", "full_information"} else protocol.code_id,
-            "decoder_id": protocol.decoder_id,
+            "decoder_id": {
+                "full_information": "direct-target-record-v1",
+                "no_message": "uniform-candidate-prior-v1",
+            }.get(condition, protocol.decoder_id),
         },
         "outcome": {"joint_success": success, "answer_score": float(success)},
         "diagnostics": {
@@ -202,7 +217,7 @@ def validate_capability_ledger(path: Path | None, *, episodes: int, seed: int, q
         episode_seed = diag.get("generation_seed")
         if row.get("episode_id") != episode_id_for_seed(episode_seed):
             raise ValueError("calibration episode ID does not match generation seed")
-        if (row.get("protocol", {}).get("policy_id") != "full_information"
+        if (row.get("protocol", {}).get("policy_id") != "full-information-control-v1"
                 or diag.get("condition") != "full_information"
                 or row.get("outcome", {}).get("joint_success") is not True
                 or row.get("transmissions") != [] or len(calls) != 1):

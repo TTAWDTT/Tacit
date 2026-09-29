@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import copy
 import importlib.util
 import io
 import json
@@ -21,6 +22,10 @@ from contextlib import redirect_stdout
 from experiments.private_match_v0_3.bit_frontier import (
     frontier as triadic_bit_frontier, optimal_success_probability,
 )
+from experiments.private_match_v0_3.report import main as report_main, private_match_report
+from tools.cost_report import RecordError
+from tools.frontier_report import frontier_report
+from tools.paired_report import paired_report
 
 
 MODULE_PATH = (
@@ -174,6 +179,41 @@ class PrivateMatchV03Tests(unittest.TestCase):
             self.assertEqual(len(row["transmissions"]), 2 if condition == "both_sources" else 0)
             self.assertEqual(row["outcome"]["joint_success"], condition in {"full_information", "both_sources"})
             self.assertEqual(row["diagnostics"]["generation_seed"], 304001)
+
+    def test_representation_arms_share_policy_but_version_code_and_decoder(self):
+        rows = [run_condition(seed=304002, q=4, condition="both_sources",
+            protocol=protocol_by_id(name, 4), sender_model=FrozenFormatSender(name),
+            receiver_model=FrozenFormatReceiver(), sender_tokenizer_id="fake-tokenizer",
+            receiver_tokenizer_id="fake-tokenizer", model_population_id="fake-population-v1")
+            for name in PROTOCOL_IDS]
+        self.assertEqual({row["protocol"]["policy_id"] for row in rows}, {"fixed-x-then-y-unicast-v1"})
+        self.assertEqual(len({row["protocol"]["code_id"] for row in rows}), len(PROTOCOL_IDS))
+        self.assertEqual(len({row["protocol"]["decoder_id"] for row in rows}), len(PROTOCOL_IDS))
+        paired = paired_report(rows, replicates=100, seed=4)
+        self.assertEqual(len(paired["comparisons"]), 6)
+        self.assertTrue(all(item["control_alignment"]["policy_matched"] for item in paired["comparisons"]))
+        self.assertTrue(all(not item["control_alignment"]["decoder_matched"] for item in paired["comparisons"]))
+        self.assertTrue(all(item["control_alignment"]["code_differs"] for item in paired["comparisons"]))
+        frontier = frontier_report(rows)
+        self.assertEqual(len(frontier["groups"]), 1)
+        report = private_match_report(rows, replicates=100, seed=5)
+        self.assertEqual(report["schema_version"], "tlu.private-match-report.v2")
+        self.assertEqual(len(report["representation_diagnostics"]), len(PROTOCOL_IDS))
+        corrupted_outcome = copy.deepcopy(rows)
+        corrupted_outcome[0]["outcome"]["joint_success"] = not corrupted_outcome[0]["outcome"]["joint_success"]
+        with self.assertRaisesRegex(RecordError, "exact scorer"):
+            private_match_report(corrupted_outcome, replicates=100, seed=5)
+        corrupted_wire = copy.deepcopy(rows)
+        corrupted_wire[0]["transmissions"][0]["payload_metadata"]["logical_text_utf8_bytes"] += 1
+        with self.assertRaisesRegex(RecordError, "logical text byte count"):
+            private_match_report(corrupted_wire, replicates=100, seed=5)
+        with tempfile.TemporaryDirectory() as temporary:
+            ledger = Path(temporary) / "batch.jsonl"
+            output = Path(temporary) / "report.json"
+            ledger.write_text("".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8")
+            self.assertEqual(report_main([str(ledger), "--replicates", "100", "--output", str(output)]), 0)
+            self.assertEqual(json.loads(output.read_text(encoding="utf-8"))["schema_version"],
+                             "tlu.private-match-report.v2")
 
     def test_runner_defaults_to_dry_run_and_capability_ledger_is_seed_disjoint(self):
         output = io.StringIO()

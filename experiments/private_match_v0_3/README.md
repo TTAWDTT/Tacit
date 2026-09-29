@@ -131,6 +131,33 @@ The exact endpoint/model and tokenizer settings remain pending. No inference
 has been authorized or run by this preregistration. The default run path is a
 dry-run summary and makes no model request.
 
+### Analyze completed ledger batches
+
+After collecting every evaluation arm into its own JSONL file, pass all of
+those files to the v0.3 report command:
+
+```powershell
+python -m experiments.private_match_v0_3.report `
+  .cache/private_match_v0_3/no_message.jsonl `
+  .cache/private_match_v0_3/sender_x_only.jsonl `
+  .cache/private_match_v0_3/sender_y_only.jsonl `
+  .cache/private_match_v0_3/both_nl.jsonl `
+  .cache/private_match_v0_3/both_kv.jsonl `
+  .cache/private_match_v0_3/both_json.jsonl `
+  .cache/private_match_v0_3/both_binary.jsonl `
+  --output .cache/private_match_v0_3/report.json
+```
+
+The report reconstructs each task from its seed, re-scores the exact answer,
+checks prompt revision, schedule, route, transmitted text-size metadata, parser
+diagnostics, and model-call counts, then delegates cost aggregation, paired
+uncertainty, and Pareto-frontier calculations to the repository's shared
+`tlu.costs.v3` tools. It keeps calibration and evaluation strata separate,
+preserves model strata, and reports decoder alignment explicitly. Natural-
+language format/fidelity is marked missing by design until an independently
+frozen semantic-judging method exists. No diagnostic pools distinct task/model
+strata.
+
 ## Planned model comparison (not run)
 
 The future paired comparison should retain every generated episode and include
