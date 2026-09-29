@@ -100,6 +100,29 @@ the desired diagnostic behavior: incompatible salient supports erase the
 guarantee instead of promising near-zero error. The executable reproduces both
 the invalid per-query claim and this shared-support sufficient bound.
 
+### Exact sparse-salience scaling prediction
+
+The same distinction yields an exact toy scaling law. Let each of `m` queries
+have one salient context position `s_i`, with `r` distinct salient positions
+across the query set, and attention
+`alpha_i(j) = (1 - epsilon) 1[j = s_i] + epsilon/T` over `T` positions. For
+any `1 <= K <= T`, every query independently has
+`rho_query = 1 - epsilon + epsilon K/T`. For one shared support, however,
+
+`rho_shared = 1 - epsilon + epsilon K/T` when `r <= K`,
+
+and
+
+`rho_shared = epsilon K/T` when `r > K`.
+
+Thus per-query attention remains equally sparse, while the common-support
+bound changes sharply when the number of distinct salient positions crosses
+the message capacity. Repeated queries do not hurt if they reuse the same
+salient positions; spreading salient positions across the context does.
+This exact result is a model-free capacity prediction for the audit's toy
+family, not evidence about learned attention in LLMs. Run it with
+`python experiments/condenseflow_audit_v0_1/counterexample.py --show-support-scaling`.
+
 ## Falsifiable predictions for a future latent arm
 
 1. Construct receiver query sets whose per-query top-`K` supports are disjoint.
