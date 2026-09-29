@@ -2,6 +2,8 @@
 
 **Status:** design proposal; not preregistered and not executed. The most recent local resource gate rejected inference. This design does not change the frozen Emergent OOD v0.3 feasibility runner or authorize model calls.
 
+**Boundary update (2026-09-29):** this proposal predates GlossoGen's direct evidence for productive LLM-agent languages and usage-only newcomer transmission. Treat its broad language-emergence motivation as superseded; consult the [GlossoGen audit](GLOSSOGEN_AUDIT_V0_1.md) and current [experiment plan](../docs/EXPERIMENT_PLAN.md) before implementing any arm. v0.4's disjoint train-only receiver screen is now implemented, but the local inference resource gate remains mandatory.
+
 ## Question and choice of task
 
 Can a reusable, LLM-generated compositional dialect let a sender communicate a held-out meaning to an independently prompted receiver more efficiently than strong text, schema, and code baselines?

@@ -35,6 +35,24 @@ The runner uses the repository's protocol-neutral runtime and leaves model serve
 
 Available conditions are `no_message`, `full_information`, `natural_language`, `json`, `symbolic`, and `shared_protocol_card`. The English arm is a plain baseline, not development-optimized natural language. The symbolic condition is a fixed four-axis digit code and a strong handcrafted control; it is not Tacit's learned language. `shared_protocol_card` evaluates a previously frozen sender/receiver instruction artifact using this JSON schema: `{"schema":"tlu.shared_protocol_card.v1","protocol_id":"...","sender_instruction":"...","receiver_instruction":"..."}`. The runner hashes and applies the card unchanged, but does not yet discover or evolve cards. The receiver must return an exact candidate ID. Malformed/truncated answers remain failures. Reported token totals are `null` when any call lacks provider usage, with per-call missingness preserved. The run records tokenizer/model IDs, generated versus delivered bytes, the full loopback application envelope, call/service/wall costs, sender-format audits, and an exact small-batch conflict-graph coloring floor. Temperature is fixed at zero; sender/receiver completion caps are 160/48 tokens.
 
+### Disjoint receiver capability screen
+
+Before any message condition (`natural_language`, `json`, `symbolic`, or `shared_protocol_card`) executes, the same receiver must pass a 12/12 full-information screen on three complete candidate sets from the **training meaning partition**. The runner checks the result-file hash and run manifest, exact episode and candidate identities, exact answers, and receiver model/tokenizer/population. It also verifies that calibration meanings and candidate tuples do not occur in the held-out evaluation block. The screen is a strict eligibility check for basic task execution; it does not establish performance on unseen compositions or estimate a stable success rate. Evaluation rows are never retained or removed according to this screen. Full-information runs on validation/test remain descriptive controls and cannot replace the train-only screen.
+
+The training-stage command is intentionally limited to this 12-call calibration batch:
+
+```powershell
+python -m experiments.emergent_ood_v0_4.runner --input-dir .cache/emergent_ood_v0_4/episodes --split-seed 17 --stage train --sets 3 --conditions full_information --output .cache/emergent_ood_v0_4/runs/capability.jsonl --execute --resource-preflight .cache/emergent_ood_v0_4/resource_preflight.json
+```
+
+Every message-condition batch then supplies that ledger:
+
+```powershell
+python -m experiments.emergent_ood_v0_4.runner --input-dir .cache/emergent_ood_v0_4/episodes --split-seed 17 --stage validation --conditions natural_language --capability-ledger .cache/emergent_ood_v0_4/runs/capability.jsonl --output .cache/emergent_ood_v0_4/runs/validation-natural-language.jsonl --execute --resource-preflight .cache/emergent_ood_v0_4/resource_preflight.json
+```
+
+The current local resource gate has not passed; these commands document the workflow and are not permission to launch inference. Run the dry-run form by omitting `--execute` before a future model batch.
+
 Dry-run is the default and makes no model request:
 
 ```powershell
@@ -55,7 +73,7 @@ python experiments/emergent_ood_v0_3/resource_preflight.ps1 -Output .cache/emerg
 python -m experiments.emergent_ood_v0_4.runner --input-dir .cache/emergent_ood_v0_4/episodes --stage validation --conditions no_message natural_language --sender-base-url http://127.0.0.1:8000/v1 --receiver-base-url http://127.0.0.1:8001/v1 --execute --resource-preflight .cache/emergent_ood_v0_4/resource_preflight.json
 ```
 
-The runner computes the exact chromatic number only for batch graphs with at most 20 observed meanings; larger graphs are marked non-exact rather than approximated as a theorem. The full-information arm is currently descriptive; there is no disjoint capability-calibration artifact, so it must not be used to filter evaluation episodes. Validation results are development data and test-stage protocols must be frozen before they are run. The 12-call hard batch cap is a feasibility safeguard, not a confirmatory-study design. No protocol superiority claim follows from this runner.
+The runner computes the exact chromatic number only for batch graphs with at most 20 observed meanings; larger graphs are marked non-exact rather than approximated as a theorem. Message conditions require the verified disjoint train-stage capability ledger before any endpoint client is constructed. Validation results are development data and test-stage protocols must be frozen before they are run. The 12-call hard batch cap is a feasibility safeguard, not a confirmatory-study design. No protocol superiority claim follows from this runner.
 
 Run focused model-free checks:
 
@@ -67,4 +85,4 @@ python -m unittest discover -s tests -p "test_emergent_ood_v04_*.py" -v
 
 The task asks a sender to communicate a private meaning so a receiver can select its match from a balanced candidate set. Training exposes lower-order combinations while validation/test targets are disjoint held-out compositions. The proposed CLSR-inspired method may induce a reusable dialect from training episodes, select/profile only on validation, then freeze before final evaluation.
 
-The artifact provides a first strict task scorer and local runner, but no learned dialect, protocol-induction workflow, disjoint receiver-capability calibration, cross-model transfer experiment, or performance evidence. Canonical-label fidelity for English is a conservative string audit, not a general semantic judge. See the [CLSR transfer experiment design](../../research/CLSR_TRANSFER_EXPERIMENT_DESIGN_V0_1.md) and [CLSR prior audit](../../research/CLSR_AUDIT_V0_1.md).
+The artifact provides a first strict task scorer and local runner, plus a model-free tested gate for future disjoint receiver-capability calibration. It still has no learned dialect, protocol-induction workflow, cross-model transfer experiment, or performance evidence. Canonical-label fidelity for English is a conservative string audit, not a general semantic judge. See the [CLSR transfer experiment design](../../research/CLSR_TRANSFER_EXPERIMENT_DESIGN_V0_1.md), [CLSR prior audit](../../research/CLSR_AUDIT_V0_1.md), and [GlossoGen boundary audit](../../research/GLOSSOGEN_AUDIT_V0_1.md).

@@ -36,6 +36,7 @@ CONDITIONS = ("full_information", "no_message", "natural_language", "json", "sym
 CALLS_PER_EPISODE = {"full_information": 1, "no_message": 1, "natural_language": 2, "json": 2, "symbolic": 2, "shared_protocol_card": 2}
 MAX_MODEL_CALLS_PER_BATCH = 12
 MAX_CANDIDATE_SETS_PER_BATCH = 3
+CAPABILITY_CALIBRATION_SETS = 3
 MAX_EXACT_COLORING_VERTICES = 20
 MAX_COLORING_SEARCH_NODES_PER_COLOR_COUNT = 10000
 REQUEST_TIMEOUT_SECONDS = 45.0
@@ -250,6 +251,132 @@ def select_candidate_sets(bundle: dict[str, Any], stage: str, set_count: int) ->
     if len(picked) != set_count * expected_k:
         raise ValueError("selected candidate sets are incomplete or the stage has too few sets")
     return picked
+
+
+def validate_capability_ledger(
+    path: Path | None,
+    *,
+    expected_calibration_episodes: Sequence[dict[str, Any]],
+    evaluation_episodes: Sequence[dict[str, Any]],
+    input_manifest_sha256: str,
+    split_seed: int,
+    split_sha256: str,
+    task_seed: int,
+    task_key_id: str,
+    receiver_model: str,
+    receiver_tokenizer_id: str,
+    model_population_id: str,
+) -> None:
+    """Require a verified, all-correct train-only receiver screen before comparison runs."""
+    if path is None:
+        raise ValueError("communication conditions require --capability-ledger from a disjoint train-stage full_information screen")
+    candidate_count = (
+        len(expected_calibration_episodes[0]["receiver"]["candidates"])
+        if expected_calibration_episodes else 0
+    )
+    if candidate_count < 2 or len(expected_calibration_episodes) != CAPABILITY_CALIBRATION_SETS * candidate_count:
+        raise ValueError("expected calibration episodes must contain exactly three complete balanced candidate sets")
+    evaluation_candidate_count = (
+        len(evaluation_episodes[0]["receiver"]["candidates"]) if evaluation_episodes else 0
+    )
+    if candidate_count != evaluation_candidate_count:
+        raise ValueError("capability and evaluation candidate counts differ")
+    try:
+        result_path = _inside_project(path)
+        rows = _jsonl(result_path)
+        manifest_path = _inside_project(result_path.with_suffix(result_path.suffix + ".manifest.json"))
+        run_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError, ValueError) as exc:
+        raise ValueError(f"could not read capability result and manifest: {path}") from exc
+    payload = result_path.read_bytes()
+    if (
+        not isinstance(run_manifest, dict)
+        or run_manifest.get("schema") != "tlu.emergent-ood-run-manifest.v0.4"
+        or run_manifest.get("results_file") != result_path.name
+        or run_manifest.get("results_sha256") != hashlib.sha256(payload).hexdigest()
+        or run_manifest.get("result_records") != len(rows)
+    ):
+        raise ValueError("capability result manifest or result hash is invalid")
+    if len(rows) != len(expected_calibration_episodes):
+        raise ValueError("capability ledger must contain exactly three complete balanced train candidate sets")
+    expected_rows = {episode["gold"]["episode_id"]: episode for episode in expected_calibration_episodes}
+    indexed = {row.get("episode_id"): row for row in rows}
+    if len(indexed) != len(rows) or set(indexed) != set(expected_rows):
+        raise ValueError("capability episode IDs do not match the expected training-only calibration block")
+    eval_ids = {episode["gold"]["episode_id"] for episode in evaluation_episodes}
+    eval_meanings = {episode["gold"]["meaning_id"] for episode in evaluation_episodes}
+    eval_candidate_tuples = {
+        json.dumps(candidate["attributes"], ensure_ascii=False, sort_keys=True)
+        for episode in evaluation_episodes
+        for candidate in episode["receiver"]["candidates"]
+    }
+    if set(indexed) & eval_ids:
+        raise ValueError("capability episodes overlap evaluation episode IDs")
+    calibration_meanings = {episode["gold"]["meaning_id"] for episode in expected_calibration_episodes}
+    calibration_candidate_tuples = {
+        json.dumps(candidate["attributes"], ensure_ascii=False, sort_keys=True)
+        for episode in expected_calibration_episodes
+        for candidate in episode["receiver"]["candidates"]
+    }
+    if calibration_meanings & eval_meanings or calibration_candidate_tuples & eval_candidate_tuples:
+        raise ValueError("train-stage capability meanings or candidates overlap held-out evaluation semantics")
+    expected_manifest_fields = {
+        "experiment_id": EXPERIMENT_ID,
+        "stage": "train",
+        "conditions": ["full_information"],
+        "candidate_sets": CAPABILITY_CALIBRATION_SETS,
+        "candidate_count": candidate_count,
+        "split_seed": split_seed,
+        "split_sha256": split_sha256,
+        "task_seed": task_seed,
+        "task_key_id": task_key_id,
+        "input_episode_manifest_sha256": input_manifest_sha256,
+        "receiver_model": receiver_model,
+        "receiver_tokenizer_id": receiver_tokenizer_id,
+        "model_population_id": model_population_id,
+    }
+    for key, expected_value in expected_manifest_fields.items():
+        if run_manifest.get(key) != expected_value:
+            raise ValueError(f"capability run manifest {key} does not match this evaluation run")
+
+    for episode_id, episode in expected_rows.items():
+        row = indexed[episode_id]
+        calls = row.get("model_calls", [])
+        expected_candidates = [
+            candidate["candidate_id"] for candidate in episode["receiver"]["candidates"]
+        ]
+        expected_target = next(
+            candidate["attributes"]
+            for candidate in episode["receiver"]["candidates"]
+            if candidate["candidate_id"] == episode["gold"]["candidate_id"]
+        )
+        if (
+            row.get("stage") != "train"
+            or row.get("condition") != "full_information"
+            or row.get("protocol", {}).get("policy_id") != "full_information"
+            or row.get("experiment_id") != EXPERIMENT_ID
+            or row.get("stratum", {}).get("task_id") != "four-attribute-higher-order-meaning-matching-v1"
+            or row.get("stratum", {}).get("scorer_id") != SCORER_ID
+            or row.get("outcome", {}).get("joint_success") is not True
+            or row.get("outcome", {}).get("answer_format_valid") is not True
+            or row.get("outcome", {}).get("answer_candidate_id") != episode["gold"]["candidate_id"]
+            or row.get("meaning_id") != episode["gold"]["meaning_id"]
+            or row.get("split_seed") != split_seed
+            or row.get("task_seed") != task_seed
+            or row.get("candidate_set_id") != episode["gold"]["candidate_set_id"]
+            or row.get("trace", {}).get("candidate_ids_in_receiver_order") != expected_candidates
+            or row.get("trace", {}).get("target_tuple_for_evaluator") != expected_target
+            or row.get("transmissions") != []
+            or len(calls) != 1
+            or calls[0].get("agent") != "receiver"
+            or calls[0].get("stage") != "final_answer"
+            or calls[0].get("model") != receiver_model
+            or calls[0].get("tokenizer") != receiver_tokenizer_id
+            or calls[0].get("truncated") is not False
+            or row.get("stratum", {}).get("model_population_id") != model_population_id
+            or row.get("stratum", {}).get("task_parameters", {}).get("target_support_size") != 192
+        ):
+            raise ValueError("capability ledger is not a perfect, format-valid, matching full-information receiver screen")
 
 
 def _meaning_id_from_values(values: Sequence[str]) -> str:
@@ -605,6 +732,7 @@ def main() -> int:
     parser.add_argument("--conditions", nargs="+", choices=CONDITIONS, default=["natural_language"])
     parser.add_argument("--protocol-card", type=Path, help="shared sender/receiver card JSON for the shared_protocol_card condition")
     parser.add_argument("--output", type=Path, default=Path(".cache/emergent_ood_v0_4/runs/validation.jsonl"))
+    parser.add_argument("--capability-ledger", type=Path, help="verified train-only full_information screen required before message conditions")
     parser.add_argument("--execute", action="store_true", help="contact the configured local loopback model endpoints")
     parser.add_argument("--resource-preflight", type=Path)
     parser.add_argument("--force", action="store_true")
@@ -630,6 +758,14 @@ def main() -> int:
         parser.error("shared_protocol_card requires --protocol-card")
     if args.protocol_card is not None and "shared_protocol_card" not in args.conditions:
         parser.error("--protocol-card is only valid with shared_protocol_card")
+    if args.stage == "train" and (
+        args.conditions != ["full_information"] or args.sets != CAPABILITY_CALIBRATION_SETS
+    ):
+        parser.error(
+            f"train stage is reserved for exactly {CAPABILITY_CALIBRATION_SETS} full-information capability sets"
+        )
+    if args.capability_ledger is not None and args.stage == "train":
+        parser.error("train-stage calibration cannot consume another capability ledger")
     calls_planned = len(episodes) * sum(CALLS_PER_EPISODE[name] for name in args.conditions)
     if calls_planned > MAX_MODEL_CALLS_PER_BATCH:
         parser.error(f"batch plans {calls_planned} model calls; hard cap is {MAX_MODEL_CALLS_PER_BATCH}")
@@ -656,6 +792,30 @@ def main() -> int:
         parser.error("--execute requires --receiver-model")
     if not args.receiver_tokenizer_id:
         parser.error("--execute requires --receiver-tokenizer-id")
+    needs_capability = any(
+        condition in {"natural_language", "json", "symbolic", "shared_protocol_card"}
+        for condition in args.conditions
+    )
+    if needs_capability:
+        try:
+            calibration_episodes = select_candidate_sets(bundle, "train", CAPABILITY_CALIBRATION_SETS)
+            validate_capability_ledger(
+                args.capability_ledger,
+                expected_calibration_episodes=calibration_episodes,
+                evaluation_episodes=episodes,
+                input_manifest_sha256=hashlib.sha256(
+                    (_inside_project(args.input_dir) / "manifest.json").read_bytes()
+                ).hexdigest(),
+                split_seed=args.split_seed,
+                split_sha256=split["split_sha256"],
+                task_seed=bundle["manifest"]["task_seed"],
+                task_key_id=bundle["manifest"]["task_key_id"],
+                receiver_model=args.receiver_model,
+                receiver_tokenizer_id=args.receiver_tokenizer_id,
+                model_population_id=args.model_population_id,
+            )
+        except (OSError, ValueError) as exc:
+            parser.error(str(exc))
     needs_sender = any(condition in {"natural_language", "json", "symbolic"} for condition in args.conditions)
     if needs_sender and not args.sender_model:
         parser.error("message conditions require --sender-model")
