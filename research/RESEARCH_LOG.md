@@ -1,5 +1,12 @@
 # Research log
 
+## 2026-09-29 — Publish executable coordinate codecs
+
+- **Artifact gap:** the v0.3 pilot specified model prompts and deterministic format checks, but users lacked callable encoders for constructing exact reference messages outside a model run.
+- **Change:** added `encode_coordinate_message(...)` for concise NL, compact KV, canonical JSON, and q-dependent fixed-width binary. All four share explicit role/domain validation and retain coordinate semantics; decoding diagnostics recognize the exact canonical NL template but leave unrecognized paraphrases unknown.
+- **Versioning:** advanced prompt/parser revision to `pmt3-prompts-2` and amended the preregistration before any model observations. The change makes canonical NL output mechanically checkable without turning broad semantic judgment into a parser claim.
+- **Falsification:** every coordinate value for q ∈ {2, 4, 8, 16, 64} round-trips through all four encoders and parsers; role mismatch and out-of-domain values fail closed. This validates the reference codecs only, not LLM emission, comprehension, or language superiority. No inference was run.
+
 ## 2026-09-29 — Make triadic representation comparisons reportable
 
 - **Analysis audit:** the initial v0.3 runner encoded each message format into `policy_id`. The shared paired-report tool therefore marked format conditions as having different policies, weakening the intended fixed-schedule representation comparison.

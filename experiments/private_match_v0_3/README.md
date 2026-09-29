@@ -102,13 +102,29 @@ python -m experiments.private_match_v0_3.bit_frontier --q 4 --max-bits 8
 
 ## Frozen feasibility protocols and runner (model calls not run)
 
-`protocols.py` freezes prompt revision `pmt3-prompts-1` and four representation
-IDs: `concise_nl`, `compact_kv`, `strict_json`, and `fixed_binary`. The parser
-accepts only canonical compact KV/JSON strings and exactly `log2(q)` binary
-digits. Natural-language format and semantic fidelity are recorded as unknown
-until a separate blinded judging procedure is preregistered. `concise_nl` is a
+`protocols.py` freezes prompt/parser revision `pmt3-prompts-2` and four representation
+IDs: `concise_nl`, `compact_kv`, `strict_json`, and `fixed_binary`. It now
+provides deterministic encoders alongside the model prompts and decoders. The
+parser accepts canonical compact KV/JSON strings, exactly `log2(q)` binary
+digits, and the exact frozen NL template. Noncanonical English paraphrases
+remain unknown pending a separate blinded semantic judge. `concise_nl` is a
 feasibility arm; it has not been optimized and must not be described as the
 strong natural-language baseline.
+
+The deterministic encoder can be used directly without a model:
+
+```python
+from experiments.private_match_v0_3.protocols import encode_coordinate_message
+
+encode_coordinate_message("compact_kv", q=4, sender="sender_x", value="x0002")
+# 'x=x0002'
+encode_coordinate_message("fixed_binary", q=4, sender="sender_y", value="y0003")
+# '11'
+```
+
+All formats encode the same coordinate meaning; only their surface channel
+representation changes. These functions are reference codecs and test
+fixtures. Model conditions still ask the LLM to emit and interpret the format.
 
 The runner is dry-run by default:
 

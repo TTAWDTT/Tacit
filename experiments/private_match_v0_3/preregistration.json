@@ -61,10 +61,10 @@
   ],
   "protocol_freeze": {
     "status": "prompts_parsers_and_code_ids_frozen; model_endpoint_settings_pending",
-    "revision": "pmt3-prompts-1",
+    "revision": "pmt3-prompts-2",
     "specification": "experiments/private_match_v0_3/protocols.py",
     "protocol_ids": ["concise_nl", "compact_kv", "strict_json", "fixed_binary"],
-    "parser_policy": "compact_kv and strict_json require exact canonical strings; fixed_binary requires exactly log2(q) bits; concise_nl syntax and semantic fidelity remain undecidable by the deterministic parser and are reported null pending a separately frozen blinded judging procedure.",
+    "parser_policy": "compact_kv and strict_json require exact canonical strings; fixed_binary requires exactly log2(q) bits; concise_nl accepts only the exact frozen canonical sentence as mechanically decidable, while paraphrases remain null pending a separately frozen blinded semantic-judging procedure.",
     "decode_limits": {"sender_max_tokens": 48, "receiver_max_tokens": 32, "temperature": 0.0, "top_p": "omitted; endpoint default", "timeout_seconds": 30, "redirects": false},
     "execution_gate": "No inference until model IDs, tokenizer IDs, endpoint settings, resource preflight, and disjoint perfect full-information ledger are supplied and validated."
   },

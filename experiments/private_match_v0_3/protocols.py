@@ -11,8 +11,12 @@ import re
 from typing import Any
 
 
-PROMPT_REVISION = "pmt3-prompts-1"
+PROMPT_REVISION = "pmt3-prompts-2"
 PROTOCOL_IDS = ("concise_nl", "compact_kv", "strict_json", "fixed_binary")
+
+
+def _decimal_width(q: int) -> int:
+    return max(4, len(str(q - 1)))
 
 
 @dataclass(frozen=True)
@@ -83,19 +87,55 @@ def protocol_by_id(name: str, q: int) -> Protocol:
     )
 
 
+def encode_coordinate_message(name: str, *, q: int, sender: str, value: str) -> str:
+    """Encode one valid private coordinate with the registered format."""
+    if name not in PROTOCOL_IDS:
+        raise ValueError(f"unknown protocol: {name}")
+    if isinstance(q, bool) or not isinstance(q, int) or q < 2 or q & (q - 1):
+        raise ValueError("q must be a power of two >= 2")
+    coordinate = {"sender_x": "x", "sender_y": "y"}.get(sender)
+    if coordinate is None:
+        raise ValueError("sender must be sender_x or sender_y")
+    digits = _decimal_width(q)
+    if not isinstance(value, str) or not re.fullmatch(rf"{coordinate}\d{{{digits}}}", value):
+        raise ValueError(f"value must use {digits} decimal digits and match the sender role")
+    index = int(value[1:])
+    if index >= q:
+        raise ValueError("coordinate value is outside the registered q domain")
+    if name == "concise_nl":
+        return f"The {coordinate} coordinate is {value}."
+    elif name == "compact_kv":
+        return f"{coordinate}={value}"
+    if name == "strict_json":
+        return json.dumps({coordinate: value}, ensure_ascii=True, separators=(",", ":"))
+    return f"{index:0{q.bit_length() - 1}b}"
+
+
 def parse_coordinate_message(name: str, message: str, *, q: int, sender: str) -> tuple[bool | None, bool | None, str | None]:
     """Return (format-valid, semantic-fidelity-decidable, decoded-value).
 
-    Natural-language fidelity is deliberately left undecidable without a
-    separate blinded semantic judge; format validity is not used to score it.
+    Exact canonical natural-language template messages are mechanically
+    decidable. Other natural-language strings stay unknown rather than being
+    mislabeled invalid or semantically unfaithful.
     """
     coordinate = {"sender_x": "x", "sender_y": "y"}.get(sender)
     if coordinate is None or name not in PROTOCOL_IDS:
         raise ValueError("unknown protocol or sender")
+    if isinstance(q, bool) or not isinstance(q, int) or q < 2 or q & (q - 1):
+        raise ValueError("q must be a power of two >= 2")
+    if not isinstance(message, str):
+        raise ValueError("message must be a string")
     if name == "concise_nl":
-        return None, None, None
-    if name == "compact_kv":
-        match = re.fullmatch(r"([xy])=(x|y)(\d{4})", message)
+        digits = _decimal_width(q)
+        match = re.fullmatch(rf"The ([xy]) coordinate is ([xy]\d{{{digits}}})\.", message)
+        if not match:
+            return None, None, None
+        if match.group(1) != coordinate or match.group(2)[0] != coordinate:
+            return False, True, None
+        index = int(match.group(2)[1:])
+    elif name == "compact_kv":
+        digits = _decimal_width(q)
+        match = re.fullmatch(rf"([xy])=(x|y)(\d{{{digits}}})", message)
         if not match or match.group(1) != coordinate or match.group(2) != coordinate:
             return False, True, None
         index = int(match.group(3))
@@ -109,7 +149,8 @@ def parse_coordinate_message(name: str, message: str, *, q: int, sender: str) ->
         if message != json.dumps(value, ensure_ascii=True, separators=(",", ":")):
             return False, True, None
         raw = value[coordinate]
-        if not isinstance(raw, str) or not re.fullmatch(rf"{coordinate}\d{{4}}", raw):
+        digits = _decimal_width(q)
+        if not isinstance(raw, str) or not re.fullmatch(rf"{coordinate}\d{{{digits}}}", raw):
             return False, True, None
         index = int(raw[1:])
     else:
@@ -119,4 +160,4 @@ def parse_coordinate_message(name: str, message: str, *, q: int, sender: str) ->
         index = int(message, 2)
     if not 0 <= index < q:
         return False, True, None
-    return True, True, f"{coordinate}{index:04d}"
+    return True, True, f"{coordinate}{index:0{_decimal_width(q)}d}"

@@ -13,7 +13,7 @@ from itertools import product
 
 from tacit import ChatCompletion, exchange_dialogue
 from experiments.private_match_v0_3.protocols import (
-    PROTOCOL_IDS, parse_coordinate_message, protocol_by_id,
+    PROTOCOL_IDS, encode_coordinate_message, parse_coordinate_message, protocol_by_id,
 )
 from experiments.private_match_v0_3.runner import (
     main as runner_main, planned_model_calls, run_condition, validate_capability_ledger,
@@ -163,8 +163,36 @@ class PrivateMatchV03Tests(unittest.TestCase):
                 self.assertEqual(parse_coordinate_message(name, valid, q=4, sender="sender_x"), (True, True, "x0002"))
                 self.assertFalse(parse_coordinate_message(name, valid + " ", q=4, sender="sender_x")[0])
                 protocol = protocol_by_id(name, 4)
-                self.assertIn("pmt3-prompts-1", protocol.protocol_id)
-        self.assertEqual(parse_coordinate_message("concise_nl", "The x coordinate is x0002.", q=4, sender="sender_x"), (None, None, None))
+                self.assertIn("pmt3-prompts-2", protocol.protocol_id)
+        self.assertEqual(parse_coordinate_message("concise_nl", "The x coordinate is x0002.", q=4, sender="sender_x"), (True, True, "x0002"))
+        self.assertEqual(parse_coordinate_message("concise_nl", "x is probably 0002", q=4, sender="sender_x"), (None, None, None))
+
+    def test_registered_encoders_roundtrip_every_value_across_q(self):
+        for q in (2, 4, 8, 16, 64):
+            for name in PROTOCOL_IDS:
+                for sender, coordinate in (("sender_x", "x"), ("sender_y", "y")):
+                    for index in range(q):
+                        value = f"{coordinate}{index:04d}"
+                        message = encode_coordinate_message(name, q=q, sender=sender, value=value)
+                        with self.subTest(q=q, name=name, sender=sender, value=value):
+                            self.assertEqual(
+                                parse_coordinate_message(name, message, q=q, sender=sender),
+                                (True, True, value),
+                            )
+        for args in (
+            ("compact_kv", 4, "sender_x", "y0001"),
+            ("fixed_binary", 4, "sender_x", "x0004"),
+        ):
+            with self.subTest(args=args), self.assertRaises(ValueError):
+                encode_coordinate_message(args[0], q=args[1], sender=args[2], value=args[3])
+        for name in PROTOCOL_IDS:
+            message = encode_coordinate_message(
+                name, q=16384, sender="sender_x", value="x10000"
+            )
+            self.assertEqual(
+                parse_coordinate_message(name, message, q=16384, sender="sender_x"),
+                (True, True, "x10000"),
+            )
 
     def test_model_free_runner_rows_cover_calibration_no_message_and_both_sources(self):
         for condition, planned in (("full_information", 1), ("no_message", 1), ("both_sources", 3)):

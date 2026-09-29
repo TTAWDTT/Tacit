@@ -116,18 +116,17 @@ def run_condition(*, seed: int, q: int, condition: str, protocol: Protocol,
     success = score_answer(receiver, gold, answer)
     formats: list[dict[str, Any]] = []
     for turn in dialogue.turns:
+        parsed = parse_coordinate_message(
+            protocol.protocol_id.split(":", 1)[0], turn.completion.text,
+            q=q, sender=turn.speaker,
+        )
+        source_view = sender_x if turn.speaker == "sender_x" else sender_y
         formats.append({
             "sender": turn.speaker,
             "message": turn.completion.text,
-            "format_valid": parse_coordinate_message(
-                protocol.protocol_id.split(":", 1)[0], turn.completion.text,
-                q=q, sender=turn.speaker,
-            )[0],
+            "format_valid": parsed[0],
             "semantic_fidelity": (
-                None if protocol.protocol_id.startswith("concise_nl:") else parse_coordinate_message(
-                    protocol.protocol_id.split(":", 1)[0], turn.completion.text,
-                    q=q, sender=turn.speaker,
-                )[2] == (sender_x if turn.speaker == "sender_x" else sender_y)["private_value"]
+                None if parsed[2] is None else parsed[2] == source_view["private_value"]
             ),
         })
     tokenizers = {"receiver": receiver_tokenizer_id}
