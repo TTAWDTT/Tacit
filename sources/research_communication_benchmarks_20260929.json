@@ -34,7 +34,31 @@
         "30 algorithmic tasks spanning aggregation, mesh, and global-shuffle complexity levels",
         "Six agent counts from 2 through 100 and three communication infrastructures yield 54 configurations",
         "The paper defines token consumption as generated output tokens per communication round and also reports base-prompt, local-shard, and accumulated-message token profiles",
-        "Reported experiments used large locally hosted models and over 500 GPU-hour equivalents per experiment"
+        "Reported experiments used large locally hosted models and over 500 GPU-hour equivalents per experiment",
+        "Official repository README describes Python 3.13+ and dependencies including openai, pydantic, pyyaml, srsly, and tenacity; its README says Unlicense while LICENSE text says Unlicense and pyproject.toml declares MIT",
+        "Static inspection of public I-01_n2.json: agent 0 local maximum 827 equals expected global maximum 827, so this exact seed is locally solvable and ineligible for a communication-dependent ranking"
+      ],
+      "artifact_checks": [
+        {
+          "title": "SILO-BENCH official repository README",
+          "url": "https://github.com/jwyjohn/acl26-silo-bench",
+          "kind": "official repository; configuration and installation documentation"
+        },
+        {
+          "title": "SILO-BENCH pyproject.toml",
+          "url": "https://github.com/jwyjohn/acl26-silo-bench/blob/master/pyproject.toml",
+          "kind": "official repository metadata; declares MIT"
+        },
+        {
+          "title": "SILO-BENCH LICENSE",
+          "url": "https://github.com/jwyjohn/acl26-silo-bench/blob/master/LICENSE",
+          "kind": "official repository license text; Unlicense"
+        },
+        {
+          "title": "SILO-BENCH I-01 n=2 instance",
+          "url": "https://github.com/jwyjohn/acl26-silo-bench/blob/master/benchmarks/I-01_n2.json",
+          "kind": "official task JSON; static local-answer sufficiency check"
+        }
       ]
     },
     {
