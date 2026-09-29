@@ -1,5 +1,11 @@
 # Research log
 
+## 2026-09-29 — Reconcile root project status with frozen v0.3 artifact
+
+- **Documentation audit:** root `README.md` still described the v0.3 prompts as not yet frozen and cited the original six-test count. Since then, the prompt/parser/context revision was frozen as `pmt3-prompts-3`, executable reference codecs and reporting were added, and evaluator-keyed task generation was committed.
+- **Correction:** updated the public overview to describe the current frozen artifact and to state the actual remaining gates: endpoint settings, resource preflight, and a disjoint full-information capability ledger. The text continues to state that no model has run on v0.3.
+- **Verification:** checked the working tree against the public remote, confirmed no `.cache` files or task keys are tracked, and confirmed `main` matched `origin/main` before this documentation correction. No model or endpoint was run.
+
 ## 2026-09-29 — Key task generation against public-seed reconstruction
 
 - **Adversarial follow-up:** stripping the seed-bearing episode ID from prompts removed the direct leak, but a tool-enabled receiver could still enumerate the preregistered public seed range against the deterministic candidate permutation and infer the hidden target. Prompt sanitization alone was insufficient.
