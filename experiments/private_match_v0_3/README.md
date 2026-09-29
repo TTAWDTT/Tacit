@@ -242,7 +242,10 @@ eight-episode-amortized calls, bytes, tokens, service time, and wall time.
 The end-to-end operational Pareto scope includes these setup dimensions as
 separate axes; setup is shown separately from episode bootstrap uncertainty.
 Without the manifest, both English candidate points are omitted from the Pareto
-frontier instead of being treated as zero-setup.
+cost summary, frontier, and paired cost report instead of being treated as
+zero-setup. With the manifest, the selected arm's fixed amortized setup-byte
+charge is carried into paired cost deltas; the raw setup vector and other setup
+axes remain available separately in the report.
 
 The report reconstructs each task from its seed and evaluator key, re-scores
 the exact answer, checks prompt revision, schedule, route, transmitted text-size metadata, parser

@@ -200,7 +200,6 @@ def private_match_report(records: list[dict[str, Any]], *, replicates: int = 500
                     and row["diagnostics"].get("condition") == "both_sources"
                     and row["diagnostics"].get("split") == "evaluation"):
                 row["setup"] = [*row.get("setup", []), artifact]
-    cost_summary = aggregate(report_records)
     frontier_records = report_records
     frontier_note = ""
     prereg = json.loads(Path(__file__).with_name("preregistration.json").read_text(encoding="utf-8"))
@@ -223,6 +222,11 @@ def private_match_report(records: list[dict[str, Any]], *, replicates: int = 500
             "The selected natural-language point includes amortized development-selector setup. "
             "The unselected NL candidate is omitted because its development results were used only for selection."
         )
+    cost_summary = aggregate(frontier_records) if frontier_records else {
+        "schema_version": "tlu.cost-report.v1",
+        "groups": [],
+        "excluded_reason": "No cost points remain after removing NL candidates with unreported selector setup.",
+    }
     return {
         "schema_version": "tlu.private-match-report.v2",
         "experiment_id": EXPERIMENT_ID,
@@ -231,7 +235,12 @@ def private_match_report(records: list[dict[str, Any]], *, replicates: int = 500
         "representation_diagnostics": _representation_diagnostics(records),
         "cost_summary": cost_summary,
         "natural_language_selection_setup": selection_setup,
-        "paired_comparisons": paired_report(records, replicates=replicates, seed=seed),
+        "paired_comparisons": paired_report(frontier_records, replicates=replicates, seed=seed)
+        if frontier_records else {
+            "schema_version": "tlu.paired-report.v1",
+            "comparisons": [],
+            "excluded_reason": "No paired points remain after removing NL candidates with unreported selector setup.",
+        },
         "empirical_frontiers": frontier_report(frontier_records) if frontier_records else {
             "schema_version": "tlu.frontier-report.v1",
             "groups": [],

@@ -97,11 +97,13 @@ def _setup_tokens(records: list[dict[str, Any]]) -> float | None:
     if len(tokenizer_ids) > 1:
         return None
     tokenizer = next(iter(tokenizer_ids), None)
-    return sum(
-        (artifact["one_time_tokens"].get(tokenizer, 0) if tokenizer else 0)
-        / artifact["reuse_horizon"]
-        for artifact in unique.values()
-    )
+    total = 0.0
+    for artifact in unique.values():
+        count = artifact["one_time_tokens"].get(tokenizer, 0) if tokenizer else 0
+        if count is None:
+            return None
+        total += count / artifact["reuse_horizon"]
+    return total
 
 
 def _episode_metrics(record: dict[str, Any]) -> dict[str, float | None]:
