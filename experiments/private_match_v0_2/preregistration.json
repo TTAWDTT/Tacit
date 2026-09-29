@@ -1,7 +1,7 @@
 {
   "experiment_id": "private-match-v0.2",
   "status": "runner implemented; inference requires resource and receiver-capability gates",
-  "preregistration_revision": 6,
+  "preregistration_revision": 7,
   "amendment_history": [
     {
       "revision": 2,
@@ -37,6 +37,13 @@
       "change": "Added the large-record-space limit and candidate-count/message-capacity scaling predictions for the exact Bayes frontier.",
       "rationale": "The project requires scaling analysis rather than a single operating point. The finite formula has a closed asymptotic limit when the record space grows with candidate count and message alphabet declared separately.",
       "data_collected_before_amendment": false
+    },
+    {
+      "revision": 7,
+      "date": "2026-09-29",
+      "change": "Moved the full-information capability gate to seed-disjoint calibration episodes and explicitly retained every evaluation episode regardless of evaluation full-information outcome.",
+      "rationale": "Using gold-scored full-information success to select the same episodes later used for protocol comparison changes the evaluation estimand and can bias results toward an easier receiver-solvable subset. Calibration must establish feasibility on independent episodes.",
+      "data_collected_before_amendment": false
     }
   ],
   "hypothesis": "Explicit low-overhead codes may reduce measured application-layer communication while preserving exact matching accuracy on a fixed, shared task. This pilot cannot establish general superiority.",
@@ -56,9 +63,9 @@
   "resource_gate": {
     "required": "Before any model execution, satisfy all thresholds in experiments/index_v0_3/preregistration.json on the current machine; no remote/cloud inference.",
     "runner_default": "dry-run",
-    "execution_requires": "explicit --execute, a passing same-host --resource-preflight report sampled within five minutes while every configured loopback endpoint port was free, and for every non-full_information condition a --capability-ledger with exact successful full-information rows for the same episode IDs, task parameters, receiver model, tokenizer, and model population; one shared or separate sender/receiver loopback endpoint(s); redirects and non-loopback hosts are rejected; no batch may exceed 12 planned model requests; each request times out after 30 seconds",
-    "capability_gate": "First run full_information for every episode and require strict-valid, exact, untruncated answers on all episodes. Save that ledger privately. Every later condition must use the exact same receiver task episodes and receiver model/tokenizer/model population; no partial or mismatched capability ledger is accepted.",
-    "staged_execution": "For four episodes, run a full_information-only batch (4 requests). After a 4/4 pass, run no_message plus one message protocol together (12 requests), then add one message protocol per batch (8 requests); run a fresh resource gate before each batch and use distinct output ledgers.",
+    "execution_requires": "explicit --execute, a passing same-host --resource-preflight report sampled within five minutes while every configured loopback endpoint port was free, and for every non-full_information condition a --capability-ledger with exact successful full-information rows from a seed-disjoint calibration block with matching task parameters, receiver model, tokenizer, and model population; one shared or separate sender/receiver loopback endpoint(s); redirects and non-loopback hosts are rejected; no batch may exceed 12 planned model requests; each request times out after 30 seconds",
+    "capability_gate": "First run full_information on a calibration episode block whose episode IDs are disjoint from every later evaluation block. Require strict-valid, exact, untruncated answers on all calibration episodes and save the ledger privately. Later conditions must match its task parameters, receiver model/tokenizer, and model population, but must use new evaluation episode IDs. Never exclude an evaluation episode because its full_information outcome failed; an evaluation-set full_information arm is a comparator, not a filter.",
+    "staged_execution": "For four episodes, run full_information on a calibration-only seed block (4 requests). After a 4/4 pass, evaluate on a distinct four-episode seed block: run no_message plus one message protocol together (12 requests), then add one message protocol per batch (8 requests); all comparison conditions share the evaluation seeds, the calibration ledger stays out of evaluation reports, and each batch gets a fresh resource gate and distinct output ledger.",
     "episode_identity": "Episode IDs are derived from generation seeds so batches for the same seed pair and batches for distinct seeds can be combined without collisions.",
     "model_execution_performed_for_this_artifact": false
   },
@@ -67,6 +74,7 @@
     "paired_unit": "episode_id",
     "frontier": "report success against application bytes, reported model tokens, and wall time; do not combine these into a scalar unless a cost model is specified",
     "model_free_reference": "Report the exact balanced-codebook Bayes success frontier and its large-record-space limit from experiments/private_match_v0_2/code_bounds.py for the declared record-space size, candidate count, and payload alphabet. It excludes shared-codebook setup, physical framing, model inference, and LLM decoding errors; never present it as a language or LLM result.",
+    "capability_gate_sampling": "Calibration and evaluation episode IDs must be disjoint. The calibration result qualifies the fixed receiver but does not select evaluation examples. Retain all preregistered evaluation episodes regardless of their evaluation full_information control outcomes.",
     "claims": "No superiority claim from this pilot alone; compare operational formats to the model-free frontier, report confidence intervals, and repeat across model populations and task scales before making general claims."
   }
 }

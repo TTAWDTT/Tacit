@@ -133,9 +133,11 @@ def validate_capability_ledger(
     receiver_tokenizer_id: str,
     model_population_id: str,
 ) -> None:
-    """Require a perfect, same-receiver full-information ledger before follow-ups."""
+    """Require a perfect, disjoint calibration ledger before evaluation follow-ups."""
+    if not episodes:
+        raise ValueError("evaluation episode block cannot be empty")
     if path is None:
-        raise ValueError("later stages require --capability-ledger from the full_information stage")
+        raise ValueError("later stages require --capability-ledger from a disjoint full_information calibration stage")
     try:
         rows = [
             json.loads(line)
@@ -144,33 +146,71 @@ def validate_capability_ledger(
         ]
     except (OSError, json.JSONDecodeError) as exc:
         raise ValueError(f"could not read capability ledger: {path}") from exc
-    expected = {episode["sender"]["episode_id"]: episode for episode in episodes}
     indexed = {row.get("episode_id"): row for row in rows if isinstance(row, dict)}
-    if len(indexed) != len(rows) or set(indexed) != set(expected):
-        raise ValueError("capability ledger must contain exactly the five current paired episode IDs")
+    if len(indexed) != len(rows) or len(rows) != len(episodes):
+        raise ValueError("capability ledger must contain exactly one calibration block matching the evaluation block size")
+    evaluation_ids = {episode["sender"]["episode_id"] for episode in episodes}
+    if set(indexed) & evaluation_ids:
+        raise ValueError("capability calibration episodes must be disjoint from evaluation episodes to prevent selection bias")
+    calibration_seeds = {
+        row.get("diagnostics", {}).get("generation_seed")
+        for row in rows
+        if isinstance(row, dict) and isinstance(row.get("diagnostics"), dict)
+    }
+    if len(calibration_seeds) != 1:
+        raise ValueError("capability ledger must come from one complete calibration candidate-set block")
+    calibration_seed = next(iter(calibration_seeds))
+    if isinstance(calibration_seed, bool) or not isinstance(calibration_seed, int) or calibration_seed < 0:
+        raise ValueError("capability calibration generation seed must be a non-negative integer")
+    calibration_episodes = balanced_block(calibration_seed, len(episodes[0]["receiver"]["candidates"]))
+    expected = {episode["sender"]["episode_id"]: episode for episode in calibration_episodes}
+    if set(indexed) != set(expected):
+        raise ValueError("capability ledger episode IDs do not match the generated calibration block")
     for episode_id, episode in expected.items():
         row = indexed[episode_id]
         diagnostics = row.get("diagnostics", {})
         calls = row.get("model_calls", [])
+        stratum = row.get("stratum", {})
         receiver_calls = [call for call in calls if isinstance(call, dict) and call.get("agent") == "receiver"]
         if row.get("protocol", {}).get("policy_id") != "full_information_capability_control":
             raise ValueError("capability ledger contains a non-full-information condition")
         if row.get("outcome", {}).get("joint_success") is not True or diagnostics.get("answer_format_valid") is not True:
             raise ValueError("all five full-information episodes must be exact and format-valid")
+        if diagnostics.get("answer_candidate_id") != episode["gold"]["target_id"]:
+            raise ValueError("full-information answer does not match the generated calibration target")
+        if row.get("transmissions") != [] or len(calls) != 1:
+            raise ValueError("full-information calibration rows must have one receiver call and no transmission")
         if diagnostics.get("condition") != "full_information":
             raise ValueError("capability ledger condition labels are invalid")
+        if diagnostics.get("generation_seed") != calibration_seed:
+            raise ValueError("capability ledger calibration seed differs within the block")
         if diagnostics.get("sender_target_id") != episode["sender"]["private_target_id"]:
             raise ValueError("capability ledger target does not match this episode")
         expected_candidates = [row["candidate_id"] for row in episode["receiver"]["candidates"]]
         if diagnostics.get("candidate_ids_in_receiver_order") != expected_candidates:
-            raise ValueError("capability ledger candidate view does not match this episode")
-        if len(receiver_calls) != 1 or receiver_calls[0].get("stage") != "full_information_answer":
-            raise ValueError("each capability episode must contain exactly one full-information receiver call")
+            raise ValueError("capability ledger candidate view does not match the calibration episode")
+        task_parameters = stratum.get("task_parameters", {})
+        if task_parameters.get("candidate_count") != len(episode["receiver"]["candidates"]):
+            raise ValueError("capability task candidate count differs from the evaluation task")
+        if task_parameters.get("target_count") != 9:
+            raise ValueError("capability task target domain differs from the evaluation task")
+        if (
+            stratum.get("experiment_id") != EXPERIMENT_ID
+            or stratum.get("task_id") != "three-attribute-heldout-reference-v1"
+            or stratum.get("split") != "heldout-composition"
+            or stratum.get("scorer_id") != SCORER_ID
+        ):
+            raise ValueError("capability task family or scorer differs from the evaluation task")
+        if (
+            len(receiver_calls) != 1
+            or receiver_calls[0].get("stage") != "full_information_answer"
+            or receiver_calls[0].get("truncated") is not False
+        ):
+            raise ValueError("each capability episode must contain one untruncated full-information receiver call")
         if receiver_calls[0].get("tokenizer") != receiver_tokenizer_id:
             raise ValueError("receiver tokenizer differs from the successful capability screen")
         if receiver_calls[0].get("model") != receiver_model:
             raise ValueError("receiver call model differs from the successful capability screen")
-        stratum = row.get("stratum", {})
         if stratum.get("model_population_id") != model_population_id:
             raise ValueError("receiver model population differs from the successful capability screen")
         if stratum.get("agent_models", {}).get("receiver") != receiver_model:

@@ -9,6 +9,8 @@
   "task": {
     "source": "experiments/emergent_ood_v0_2/episodes.py",
     "seed": 17,
+    "seed_role": "full_information calibration block only; it is disjoint from evaluation seed 18",
+    "evaluation_seed": 18,
     "candidate_count": 5,
     "episode_count": 5,
     "sampling": "Select one held-out candidate set and enumerate each of its five meanings exactly once as private target; keep identical candidate order in each episode.",
@@ -38,7 +40,7 @@
       "purpose": "end-to-end message-pipeline feasibility, not a protocol ranking"
     }
   ],
-  "stopping_rule": "Execute full_information first. Continue to no_message and natural_language only if all five full_information outputs are strict-valid and exactly correct. Otherwise stop this task/model pair and diagnose capability or output-contract failure. The runner enforces this rule for executed follow-up batches by requiring a full-information ledger with exactly these five episode IDs, targets, and candidate orders, all exact and format-valid, and the same receiver model, tokenizer, and model population.",
+  "stopping_rule": "Execute full_information on a calibration seed block disjoint from evaluation episodes. Continue to evaluation only if all five calibration outputs are strict-valid and exactly correct; otherwise stop this task/model pair and diagnose capability or output-contract failure. The runner requires a complete calibration block from the same task family and receiver model/tokenizer/population, and rejects overlap with evaluation episode IDs. Do not filter evaluation episodes by full-information correctness; an evaluation-set full_information arm, if collected, is an outcome control and is not used to select episodes.",
   "execution": {
     "staging": [
       {"batch": "full_information", "requests": 5},
@@ -59,7 +61,8 @@
     "costs": ["serialized application bytes", "complete reported input/output tokens per model call", "model call count", "service and wall latency"],
     "claim_limit": "Five episodes are a capability screen and cannot estimate a stable generalization rate or support equal-budget protocol superiority."
   },
-  "follow_up_gate": "Only after full-information success and plumbing validation, preregister a larger held-out comparison with development-tuned natural language, valid JSON, compact structured text, symbolic code with setup charged, no-message and oracle controls, multiple receiver families, and equal byte/token budget curves.",
+  "follow_up_gate": "Only after disjoint-calibration full-information success and plumbing validation, preregister a larger held-out comparison with development-tuned natural language, valid JSON, compact structured text, symbolic code with setup charged, no-message and oracle controls, multiple receiver families, and equal byte/token budget curves.",
+  "capability_gate_sampling": "Calibration and evaluation episode IDs must be disjoint. The full-information calibration result is an eligibility check only; evaluation episodes are retained regardless of their full-information outcomes. Any evaluation full_information arm is a comparator and must not be reused as the gate.",
   "implementation": {
     "runner": "experiments/emergent_ood_v0_3/runner.py",
     "resource_preflight": "experiments/emergent_ood_v0_3/resource_preflight.ps1",

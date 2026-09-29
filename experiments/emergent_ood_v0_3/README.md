@@ -8,7 +8,7 @@ The default batch has five paired episodes. They share one fixed ordered candida
 - `no_message`: one receiver call sees only candidates. Across this five-episode block, a fixed positional guess is correct once; the analytic Bayes accuracy is 20%.
 - `natural_language`: one sender call produces ordinary English, then the exact text passes through Tacit's measured loopback channel to one receiver call.
 
-The first stage is full-information only. Proceed to no-message and English runs only if the receiver gets all five full-information cases exactly right. This conservative gate prevents interpreting format behavior when the receiver cannot do the task even with the relevant information. Five episodes do not establish a stable success rate or a protocol ranking.
+The first stage is a full-information calibration block on seed 17. Proceed to the seed-18 evaluation conditions only if the receiver gets all five calibration cases exactly right. The independent gate checks basic task eligibility; it does not filter the evaluation episodes. Five calibration cases do not establish a stable success rate or a protocol ranking.
 
 ## Staged dry runs
 
@@ -16,11 +16,12 @@ The CLI is dry-run by default and reports prompts' planned call counts without c
 
 ```powershell
 python experiments/emergent_ood_v0_3/runner.py --conditions full_information --seed 17 --output .cache/emergent_ood_v0_3/full_information.jsonl
-python experiments/emergent_ood_v0_3/runner.py --conditions no_message --seed 17 --output .cache/emergent_ood_v0_3/no_message.jsonl
-python experiments/emergent_ood_v0_3/runner.py --conditions natural_language --seed 17 --output .cache/emergent_ood_v0_3/natural_language.jsonl
+python experiments/emergent_ood_v0_3/runner.py --conditions full_information --seed 18 --output .cache/emergent_ood_v0_3/full_information_eval.jsonl
+python experiments/emergent_ood_v0_3/runner.py --conditions no_message --seed 18 --output .cache/emergent_ood_v0_3/no_message.jsonl
+python experiments/emergent_ood_v0_3/runner.py --conditions natural_language --seed 18 --output .cache/emergent_ood_v0_3/natural_language.jsonl
 ```
 
-Each batch has a hard maximum of 12 model requests and 30-second request timeouts. These three commands plan 5, 5, and 10 calls. The same `--seed` generates identical paired episode IDs in every ledger. Dry-runs do not require either gate ledger. Before launching the endpoint, create a fresh read-only host report while the intended endpoint ports are still free:
+Each batch has a hard maximum of 12 model requests and 30-second request timeouts. The first command is a calibration-only full-information screen on seed 17. The remaining three commands evaluate a separate seed-18 block; those evaluation ledgers share paired episode IDs. Keep the calibration ledger out of the evaluation report. A perfect calibration result qualifies the fixed receiver for the follow-up, but must not choose which evaluation episodes are retained. Dry-runs do not require either gate ledger. Before launching the endpoint, create a fresh read-only host report while the intended endpoint ports are still free:
 
 ```powershell
 ./experiments/emergent_ood_v0_3/resource_preflight.ps1 -Ports 8000
@@ -28,7 +29,7 @@ Each batch has a hard maximum of 12 model requests and 30-second request timeout
 
 For separate sender and receiver endpoints, list both ports, for example `-Ports 8000,8001`. The script records three CPU samples, GPU use/memory, free system memory, checked ports, host name, and UTC time. It writes a report under `.cache/` even when the gate rejects, and exits nonzero on rejection. It reads no model files and starts no service. After a passing report, start the local endpoint within five minutes and supply `.cache/emergent_ood_v0_3/resource_preflight.json` with `--resource-preflight` to the executing runner command; the runner verifies freshness, host, exact frozen thresholds, measurements, and endpoint ports before output creation or network requests. The unchanged thresholds are in [`index_v0_3/preregistration.json`](../index_v0_3/preregistration.json).
 
-For execution, the full-information stage must first write the ledger shown above; the runner validates that all five exact, format-valid rows use the same receiver model, tokenizer, model population, seed, episode IDs, and candidate order before any later-stage endpoint is contacted. Supply it to each follow-up execution with `--capability-ledger .cache/emergent_ood_v0_3/full_information.jsonl`. A missing or failed capability gate is also rejected before output creation or network requests.
+For execution, first write the seed-17 calibration ledger and require all five exact, format-valid rows. Use that seed-disjoint ledger for seed-18 follow-ups with `--capability-ledger .cache/emergent_ood_v0_3/full_information.jsonl`; the runner checks the task family, receiver model/tokenizer/population, complete calibration block, and that calibration and evaluation episode IDs do not overlap. The separate seed-18 full-information ledger is an evaluation control, not the capability gate. A missing, failed, or overlapping capability ledger is rejected before output creation or network requests.
 
 After the preflight passes and the local OpenAI-compatible server is running, configure `TLU_BASE_URL` or separate sender/receiver loopback URLs, model IDs, tokenizer IDs, and `TLU_MODEL_POPULATION_ID`, then add `--execute --resource-preflight .cache/emergent_ood_v0_3/resource_preflight.json` to exactly one staged command. Follow-up commands also require `--capability-ledger .cache/emergent_ood_v0_3/full_information.jsonl`. Non-loopback endpoints and HTTP redirects are rejected. The preflight is a launch gate, not a live resource monitor: keep the externally managed model server's own stop safeguards active. This runner never starts a model server, downloads weights, or calls a cloud endpoint. It has only been exercised with fake clients.
 

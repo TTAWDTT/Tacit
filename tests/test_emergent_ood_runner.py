@@ -142,7 +142,20 @@ class EmergentOODRunnerTests(unittest.TestCase):
                 self.assertEqual(module._parse_choice(invalid, ["s0-c0-q0"]), (None, False))
 
     def test_capability_ledger_gate_requires_perfect_same_receiver_block(self):
-        rows, _ = self._run_all("full_information")
+        calibration_receiver = FakeReceiver()
+        calibration_episodes = module.balanced_block(18, 5)
+        rows = [
+            module.run_condition(
+                episode=episode,
+                condition="full_information",
+                sender_model=None,
+                receiver_model=calibration_receiver,
+                sender_tokenizer_id=None,
+                receiver_tokenizer_id="fake-tokenizer-receiver",
+                model_population_id="fake-pair-v1",
+            )
+            for episode in calibration_episodes
+        ]
         with tempfile.TemporaryDirectory() as temp_dir:
             ledger = Path(temp_dir) / "full_information.jsonl"
             ledger.write_text("".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8")
@@ -152,6 +165,16 @@ class EmergentOODRunnerTests(unittest.TestCase):
                 receiver_tokenizer_id="fake-tokenizer-receiver",
                 model_population_id="fake-pair-v1",
             )
+            overlapping_rows, _ = self._run_all("full_information")
+            ledger.write_text("".join(json.dumps(row) + "\n" for row in overlapping_rows), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "disjoint from evaluation episodes"):
+                module.validate_capability_ledger(
+                    ledger, self.episodes,
+                    receiver_model="fake-receiver-v1",
+                    receiver_tokenizer_id="fake-tokenizer-receiver",
+                    model_population_id="fake-pair-v1",
+                )
+            ledger.write_text("".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "later stages require --capability-ledger"):
                 module.validate_capability_ledger(
                     None, self.episodes,

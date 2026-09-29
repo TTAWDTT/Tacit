@@ -184,7 +184,7 @@ class PrivateMatchV02Tests(unittest.TestCase):
         self.assertTrue(whitespace_row["outcome"]["joint_success"])
         self.assertFalse(whitespace_row["diagnostics"]["answer_format_valid"])
 
-    def test_capability_ledger_requires_all_exact_matching_episodes_and_models(self):
+    def test_capability_ledger_requires_disjoint_perfect_calibration_block_and_matching_models(self):
         rows = []
         for seed in range(200, 204):
             episode_id = episode_id_for_seed(seed)
@@ -206,7 +206,7 @@ class PrivateMatchV02Tests(unittest.TestCase):
                 path = Path(directory) / "capability.jsonl"
                 path.write_text("".join(json.dumps(row) + "\n" for row in rows_to_check), encoding="utf-8")
                 parameters = {
-                    "episodes": 4, "seed": 200, "candidate_count": 8, "feature_count": 5,
+                    "episodes": 4, "seed": 300, "candidate_count": 8, "feature_count": 5,
                     "vocabulary_size": 16, "receiver_model": "receiver-v1",
                     "receiver_tokenizer_id": "receiver-tok-v1", "model_population_id": "population-v1",
                 }
@@ -214,6 +214,8 @@ class PrivateMatchV02Tests(unittest.TestCase):
                 return validate_capability_ledger(path, **parameters)
 
         validate(rows)
+        with self.assertRaisesRegex(ValueError, "disjoint from evaluation episodes"):
+            validate(rows, seed=202)
         failed = copy.deepcopy(rows)
         failed[2]["outcome"]["joint_success"] = False
         with self.assertRaisesRegex(ValueError, "did not pass every episode"):

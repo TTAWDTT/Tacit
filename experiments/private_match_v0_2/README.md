@@ -1,11 +1,13 @@
 # Private Match v0.2: local model pilot runner
 
 This milestone turns the role-separated calibration task into a runnable,
-paired communication experiment. It compares no-message, concise natural
+paired communication experiment. Evaluation conditions share episode IDs,
+candidate tables, and targets; a separate calibration block qualifies the
+receiver without filtering evaluation cases. It compares no-message, concise natural
 language, compact key-value text, JSON, ordered tuple, a fixed hex-nibble code,
 and a sender-selected form. The hex condition is a task-specific coded baseline, not a claim of a
-new language. Conditions share generated episode IDs, candidate tables, and
-hidden target records.
+new language. Paired evaluation conditions share generated episode IDs,
+candidate tables, and hidden target records.
 
 The runner delivers the sender's exact response through Tacit's measured
 length-prefixed loopback TCP channel. The recorded boundary counts the UTF-8
@@ -56,28 +58,31 @@ calls); execution rejects that oversized batch before creating an output file
 or calling an endpoint. The `full_information` stage must pass for all four
 episodes before any protocol-comparison condition may execute.
 
-For the first batch, run the preflight while the endpoint port is free. After
-it passes, start the local endpoint and submit the report to the runner:
+First run a full-information **calibration** block on seeds that will never
+appear in evaluation. This avoids selecting evaluation episodes based on
+whether the receiver got their hidden gold answer right. The example reserves
+seed 20260929 for four calibration episodes and seed 20261000 for the paired
+evaluation block. Run the resource preflight while endpoint ports are free,
+then start the local endpoint and execute the calibration:
 
 ```powershell
 ./experiments/emergent_ood_v0_3/resource_preflight.ps1 -Ports 8000
-python experiments/private_match_v0_2/runner.py --execute --protocols full_information --episodes 4 --seed 20260929 --resource-preflight .cache/emergent_ood_v0_3/resource_preflight.json --output .cache/private_match_v0_2/full_information.jsonl
+python experiments/private_match_v0_2/runner.py --execute --protocols full_information --episodes 4 --seed 20260929 --resource-preflight .cache/emergent_ood_v0_3/resource_preflight.json --output .cache/private_match_v0_2/capability_calibration.jsonl
 ```
 
-After all four full-information answers pass, rerun the resource preflight and
-use the private capability ledger for the paired no-message and first
-representation batch:
+After all four calibration answers pass, rerun the resource preflight and use
+the private capability ledger for a **disjoint** paired evaluation block:
 
 ```powershell
 ./experiments/emergent_ood_v0_3/resource_preflight.ps1 -Ports 8000
-python experiments/private_match_v0_2/runner.py --execute --protocols no_message concise_nl --episodes 4 --seed 20260929 --resource-preflight .cache/emergent_ood_v0_3/resource_preflight.json --capability-ledger .cache/private_match_v0_2/full_information.jsonl --output .cache/private_match_v0_2/baseline_concise.jsonl
+python experiments/private_match_v0_2/runner.py --execute --protocols no_message concise_nl --episodes 4 --seed 20261000 --resource-preflight .cache/emergent_ood_v0_3/resource_preflight.json --capability-ledger .cache/private_match_v0_2/capability_calibration.jsonl --output .cache/private_match_v0_2/baseline_concise.jsonl
 ```
 
-An additional protocol uses the same seed and episode count but a new ledger:
+An additional protocol uses the same evaluation seed and episode count but a new ledger:
 
 ```powershell
 ./experiments/emergent_ood_v0_3/resource_preflight.ps1 -Ports 8000
-python experiments/private_match_v0_2/runner.py --execute --protocols compact_kv --episodes 4 --seed 20260929 --resource-preflight .cache/emergent_ood_v0_3/resource_preflight.json --capability-ledger .cache/private_match_v0_2/full_information.jsonl --output .cache/private_match_v0_2/compact_kv.jsonl
+python experiments/private_match_v0_2/runner.py --execute --protocols compact_kv --episodes 4 --seed 20261000 --resource-preflight .cache/emergent_ood_v0_3/resource_preflight.json --capability-ledger .cache/private_match_v0_2/capability_calibration.jsonl --output .cache/private_match_v0_2/compact_kv.jsonl
 ```
 
 Repeat that additional-condition form for each registered protocol. Before
@@ -87,14 +92,18 @@ endpoint before running the CLI. `--execute` fails closed on a
 missing, rejected, stale, other-host, port-incomplete, or threshold-mismatched
 report before creating output or initializing an endpoint client. Every
 non-full-information run also requires a passing same-task/model/tokenizer
-capability ledger before output creation. For separate
+capability ledger on seed-disjoint calibration episodes before output
+creation. Never include the calibration ledger in the paired evaluation
+report. To retain a full-information **evaluation control**, run that condition
+separately on the evaluation seed and report it with the other evaluation
+conditions; it must not determine which evaluation episodes are included. For separate
 sender and receiver endpoints, include both ports, e.g. `-Ports 8000,8001`,
 and use the same report path in `--resource-preflight`. Never use `--force` to
 reuse a ledger when combining staged runs.
 
-The full-information ledger contains verbatim model answers and candidate
-ordering diagnostics. Keep it local in the ignored `.cache` directory; do not
-publish it with experiment artifacts.
+The capability calibration ledger contains verbatim model answers and
+candidate-order diagnostics. Keep it local in the ignored `.cache` directory;
+do not publish it with experiment artifacts.
 
 Run the paired fidelity/task/cost analysis after collecting the ledgers:
 
@@ -112,9 +121,10 @@ CLI accepts one or more ledgers and rejects duplicate condition/episode rows.
 The CLI is dry-run by default and never launches a model process. Model
 requests require `--execute`, explicit model IDs and tokenizer IDs, a fresh
 passing same-host resource report, and for protocol comparisons a 100%
-full-information capability ledger. Both gates validate before output or
-endpoint-client creation. `full_information` must be run as its own first
-stage. The CLI uses a loopback OpenAI-compatible endpoint.
+full-information capability ledger from disjoint calibration seeds. Both
+gates validate before output or endpoint-client creation. The CLI rejects a
+capability ledger that overlaps the current evaluation seeds. The CLI uses a
+loopback OpenAI-compatible endpoint.
 Cloud endpoint URLs and HTTP redirects
 are rejected. This runner was implemented and tested with fake clients only;
 no model was run.
@@ -130,8 +140,8 @@ From the repository root, inspect the plan without making any model calls:
 python experiments/private_match_v0_2/runner.py
 ```
 
-Once the separately documented resource and capability gates have passed and
-a local endpoint is already running, configure `TLU_BASE_URL` (or separate
+Once the separately documented disjoint-calibration and resource gates have
+passed and a local endpoint is already running, configure `TLU_BASE_URL` (or separate
 `TLU_SENDER_BASE_URL` and `TLU_RECEIVER_BASE_URL`), `TLU_SENDER_MODEL`,
 `TLU_RECEIVER_MODEL`, `TLU_SENDER_TOKENIZER_ID`, and
 `TLU_RECEIVER_TOKENIZER_ID`, then add `--execute`. The separate loopback

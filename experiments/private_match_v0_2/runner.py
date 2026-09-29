@@ -280,19 +280,36 @@ def validate_capability_ledger(
     receiver_tokenizer_id: str,
     model_population_id: str,
 ) -> None:
-    """Require exact, successful full-information rows for this task/model pair."""
+    """Require a successful, disjoint calibration block for this task/model pair."""
+    if episodes < 1:
+        raise ValueError("episode count must be positive")
     if path is None:
-        raise ValueError("later protocol batches require --capability-ledger from a 100% full_information batch")
+        raise ValueError("later protocol batches require --capability-ledger from a 100% calibration full_information batch")
     try:
         rows = [json.loads(line) for line in path.read_text(encoding="utf-8-sig").splitlines() if line.strip()]
     except (OSError, json.JSONDecodeError) as exc:
         raise ValueError(f"could not read capability ledger: {path}") from exc
-    expected_seeds = list(range(seed, seed + episodes))
-    expected_ids = {episode_id_for_seed(value) for value in expected_seeds}
     by_id = {row.get("episode_id"): row for row in rows if isinstance(row, dict)}
-    if len(rows) != episodes or len(by_id) != episodes or set(by_id) != expected_ids:
-        raise ValueError("capability ledger must contain exactly the current episode IDs")
-    for episode_seed in expected_seeds:
+    if len(rows) != episodes or len(by_id) != episodes:
+        raise ValueError("capability ledger must contain exactly the requested number of calibration episodes")
+    evaluation_ids = {episode_id_for_seed(value) for value in range(seed, seed + episodes)}
+    calibration_seeds: list[int] = []
+    for row in rows:
+        diagnostics = row.get("diagnostics") if isinstance(row, dict) else None
+        episode_seed = diagnostics.get("generation_seed") if isinstance(diagnostics, dict) else None
+        if isinstance(episode_seed, bool) or not isinstance(episode_seed, int) or episode_seed < 0:
+            raise ValueError("capability ledger generation seeds must be non-negative integers")
+        if row.get("episode_id") != episode_id_for_seed(episode_seed):
+            raise ValueError("capability ledger episode IDs must match their generation seeds")
+        calibration_seeds.append(episode_seed)
+    if len(set(calibration_seeds)) != episodes:
+        raise ValueError("capability ledger calibration seeds must be unique")
+    calibration_seeds.sort()
+    if calibration_seeds != list(range(calibration_seeds[0], calibration_seeds[0] + episodes)):
+        raise ValueError("capability ledger must contain one contiguous calibration seed block")
+    if set(by_id) & evaluation_ids:
+        raise ValueError("capability calibration episodes must be disjoint from evaluation episodes to prevent selection bias")
+    for episode_seed in calibration_seeds:
         episode_id = episode_id_for_seed(episode_seed)
         row = by_id[episode_id]
         _sender_view, receiver_view, gold = generate_episode(
