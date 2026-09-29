@@ -1,0 +1,56 @@
+{
+  "retrieved_at": "2026-09-29",
+  "purpose": "Assess recent symbolic-protocol and action-compression work against Tacit's LLM-to-LLM communication estimand.",
+  "sources": [
+    {
+      "title": "When LLMs Develop Languages: Symbolic Communication for Efficient Multi-Agent Reasoning",
+      "authors": ["Zhengqi Pei", "Qingming Huang", "Shuhui Wang"],
+      "version": "arXiv:2606.29354v1, 2026-06-28; authors' code repository identifies ICML 2026",
+      "paper_url": "https://arxiv.org/abs/2606.29354",
+      "full_text_url": "https://arxiv.org/html/2606.29354",
+      "code_url": "https://github.com/pzqpzq/LSF_MDia",
+      "kind": "primary paper and official code",
+      "facts_used": [
+        "CLSR evolves reusable LSF lexicons, grammars, and usage constraints from exemplars; profiles them and routes, ensembles, or composes them at inference time",
+        "Reports seven reasoning benchmarks and four open-weight backbones; the Qwen3-8B table reports MMLU-Pro 60.4/96 completion tokens for CLSR versus 60.2/276 for Raw CoT, GPQA-Main 47.7/228 versus 49.1/1085, and MATH500 86.8/257 versus 87.2/878",
+        "Main cost counts all online generated completion tokens including router and intermediate outputs, while input tokens are excluded; appendix introduces a cache-aware diagnostic and notes LSF/profile/router input overhead can be around 0.5 to 2k tokens",
+        "Paper uses 200 to 2000 training exemplars for LSF synthesis, LSF cards range about 500 to 2000 tokens, and offline evolution takes several days on 8 RTX 4090s; authors frame this as one-time amortizable setup but omit it from the headline serving frontier",
+        "The official repository distinguishes offline fixture, adapter run, and exact paper protocol reproduction and says named table reproduction requires exact manifests, model revisions, evaluators, seeds, and release artifacts",
+        "The official repository states MIT license"
+      ],
+      "interpretation_limit": "Reasoning-transcript compression is not the same estimand as exact communication between agents with complementary private observations; reported results were not independently reproduced."
+    },
+    {
+      "title": "MOC: Multi-Order Communication in LLM-based Multi-Agent Systems",
+      "authors": ["Yao Guan", "Lin Wang", "Zhihu Lu", "Ziyi Wang", "Wenzhu Yan", "Qiang Duan"],
+      "version": "arXiv:2606.02359, 2026-06",
+      "paper_url": "https://arxiv.org/abs/2606.02359",
+      "full_text_url": "https://arxiv.org/html/2606.02359",
+      "code_url": "https://github.com/yao-guan/MOC",
+      "kind": "primary preprint and official code",
+      "facts_used": [
+        "MOC changes topology-aware multi-hop message exposure and uses semantic-topological distillation to consolidate context",
+        "Paper evaluates with Gemma-2-27B-Instruct, Qwen2.5-32B-Instruct, and DeepSeek-V3.2-685B-Chat",
+        "At 20 agents, paper reports 1.249 million input tokens with consolidation versus 1.369 million for vanilla MAS",
+        "One seven-agent MMLU sample reports 79.7 seconds of distillation at one configuration; Gemma2-9B-Instruct is used as distiller and experiments use RTX 4090 hardware",
+        "Official code quick start describes local Gemma2 27B and Gemma2 9B distillation models"
+      ],
+      "interpretation_limit": "Method jointly changes topology, context composition, and distillation, so it is a policy/context comparator rather than an isolated semantic codec baseline."
+    },
+    {
+      "title": "Agent Action Compression Protocol (AACP) Version 1.4",
+      "author": "Andrew Mackay",
+      "version": "IETF Internet-Draft draft-mackay-aacp-03, 2026-06-17",
+      "draft_url": "https://www.ietf.org/archive/id/draft-mackay-aacp-03.html",
+      "datatracker_url": "https://datatracker.ietf.org/doc/draft-mackay-aacp/",
+      "kind": "individual informational Internet-Draft",
+      "facts_used": [
+        "Defines typed pipe-delimited action/domain coordination packets with deterministic rules and LLM fallback for novel instructions",
+        "Author reports about 23 percent lower coordination token count than verbose English and workflow cost reductions in four integrations",
+        "The Datatracker document is an Internet-Draft and explicitly states such drafts are working documents without formal standing in the IETF standards process"
+      ],
+      "interpretation_limit": "Author-reported results were not independently verified; domain-action packets are not arbitrary private-evidence message compression."
+    }
+  ],
+  "scope_note": "Source-level research only; no repository was cloned, no dependencies or data were downloaded, and no code or model was run. Detailed analysis is in research/CLSR_AUDIT_V0_1.md."
+}

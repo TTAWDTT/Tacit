@@ -1,8 +1,8 @@
-# Related work map (initial)
+# Related work map
 
 The layer distinction used in this project is documented in [Protocol layers and comparability](PROTOCOL_LAYERS_AND_COMPARABILITY_2026_09.md): interaction policy, content representation, and transport/system protocol are separate experimental factors. In particular, Agora/ProtocolBench/DALA are important adjacent system baselines but do not by themselves test which semantic message representation an LLM should use.
 
-**Research date:** 2026-09-29. Claims below are short summaries of public abstracts/specifications and need full-paper review before being used as experimental facts. Search is ongoing; this is not a systematic review.
+**Research date:** 2026-09-29. This evolving map is not a systematic review. Claims that set experiment boundaries are linked to source-level audits; reported empirical values remain attributed until independently reproduced.
 
 ## Directly relevant: representations and formats
 
@@ -31,6 +31,12 @@ This result weakens any claim that the open problem is simply to make natural-la
 OPTiMACS learns a task-conditioned representation-selection policy from complete multi-agent trajectories. It uses an LLM task categorizer, an expanding inventory of formats, and a behavior policy mixing Q-value exploitation, LLM-proposed formats, and diversity exploration. On its reported datasets it improves task scores over vanilla/AutoForm in many settings and reduces message-token totals on GSM+, WikiHop, and HotPotQA, but increases NarrativeQA tokens by 19.3%. The paper explicitly does not target OOD generalization and leaves transfer to related datasets as future work. Its headline efficiency tables do not give a call-level ledger for task categorization/format discovery, serialized channel bytes, or total setup and receiver-prompt cost; the reported numbers must not be treated as a complete end-to-end frontier. No official implementation link was located in the ACL record or this audit.
 
 This directly challenges any claim that Tacit is the first to learn adaptive message representations. It belongs in the learned-format baseline family, separately from a reusable protocol artifact. Tacit's remaining research question must be narrower and testable: do stable, compositional representations improve the complete frontier under held-out tasks, heterogeneous receivers, equal schedule/budget, and measured selection/setup costs? See the [OPTiMACS source audit](OPTIMACS_AUDIT_V0_1.md).
+
+### Pei et al. (2026), *When LLMs Develop Languages: Symbolic Communication for Efficient Multi-Agent Reasoning* (CLSR), ICML 2026
+
+[arXiv paper](https://arxiv.org/abs/2606.29354) · [official LSF/MDia code](https://github.com/pzqpzq/LSF_MDia) · [detailed audit](CLSR_AUDIT_V0_1.md)
+
+CLSR is the closest prior to the project's original premise: LLMs invent, evolve, profile, and reuse compact symbolic Language Symbolism Frameworks, then route or compose them against an accuracy/token budget. Autonomous symbolic protocol invention, compositional LSF cards, and adaptive dialect routing are therefore established prior art. The published tasks primarily compress reasoning transcripts for benchmark QA and count online generated tokens; they do not establish exact transfer between separately situated LLM endpoints holding complementary private evidence. The main metric excludes input tokens, while an appendix provides a cache-aware diagnostic and notes substantial router/LSF input overhead. Evolution and profile setup must also be amortized for a complete-cost claim. **Tacit must distinguish itself on direct communication, held-out receiver transfer, and complete cost—not on the fact that a model invented a compact dialect.**
 
 ### Tang et al. (2025), *Augmenting Multi-Agent Communication with State Delta Trajectory* (SDE), EMNLP
 
@@ -222,6 +228,12 @@ DALA treats communication opportunities as a scarce resource and selects message
 
 The paper specifies a centralized auction whose actor proposes messages and whose critic estimates value density; an actor-critic system is trained using MAPPO, with communication cost in the reward. The official proceedings page reviewed here links the PDF but not a code repository. That trained scheduler is materially heavier than an inference-time message filter and is not a practical first local baseline for this repository's resource-constrained setup.
 
+### Mackay (2026), *Agent Action Compression Protocol* (AACP v1.4), individual Internet-Draft
+
+[IETF draft](https://www.ietf.org/archive/id/draft-mackay-aacp-03.html) · [Datatracker status](https://datatracker.ietf.org/doc/draft-mackay-aacp/) · [comparability audit](CLSR_AUDIT_V0_1.md#adjacent-but-distinct-baselines)
+
+AACP specifies deterministic typed packets for repetitive business workflow actions and reports author-measured token and workflow savings. It is a practical candidate where agents exchange typed delegation commands using shared registries, not a general protocol for arbitrary hidden evidence. The draft is an individual informational submission and the results have not been independently reproduced here; include it only in workflow/delegation comparisons and count registry, setup, and prompt costs.
+
 ### Nguyen et al. (2026), *Hear Both Sides: Efficient Multi-Agent Debate via Diversity-Aware Message Retention* (DAR)
 
 [arXiv paper](https://arxiv.org/abs/2603.20640) · [MIT implementation](https://github.com/DA2I2-SLM/DAR)
@@ -251,6 +263,12 @@ Compares reasoning methods under matched query, token, and monetary budgets. The
 [ACL Anthology](https://aclanthology.org/2025.emnlp-main.623/)
 
 Studies the communication graph/topology and information/error propagation. Topology and message encoding interact, but topology is not the core novelty target here.
+
+### Guan et al. (2026), *MOC: Multi-Order Communication in LLM-based Multi-Agent Systems*
+
+[arXiv paper](https://arxiv.org/abs/2606.02359) · [official code](https://github.com/yao-guan/MOC) · [comparability audit](CLSR_AUDIT_V0_1.md#adjacent-but-distinct-baselines)
+
+MOC makes upstream multi-hop evidence visible to downstream agents and distills similar messages under a context budget. It changes topology, context composition, and LLM distillation together, so it is a strong policy/context baseline for long-context networks rather than a representation-only codec. Its reported large-model setup makes it a later conditional baseline, not a first local experiment.
 
 ### Wu et al. (2023), *AutoGen: Enabling Next-Gen LLM Applications via Multi-Agent Conversation*
 
