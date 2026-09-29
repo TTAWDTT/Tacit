@@ -46,6 +46,26 @@ def hoeffding_radius(*, clusters: int, alpha: float) -> float:
     return math.sqrt(2 * math.log(2 / alpha) / clusters)
 
 
+def empirical_bernstein_radius(*, split_effects: np.ndarray, alpha: float) -> float:
+    """Two-sided empirical-Bernstein radius for independent effects in [-1, 1].
+
+    Transform D in [-1, 1] to Z=(D+1)/2 in [0, 1], apply the one-sided
+    Maurer-Pontil empirical Bernstein bound to each tail at alpha/2, and
+    transform the radius back to D. The sample variance uses ddof=1.
+    """
+    values = np.asarray(split_effects, dtype=float)
+    if values.ndim != 1 or len(values) < 2:
+        raise ValueError("at least two one-dimensional split effects are required")
+    if not np.all(np.isfinite(values)) or np.any(values < -1) or np.any(values > 1):
+        raise ValueError("split effects must be finite and lie in [-1, 1]")
+    if not 0 < alpha < 1:
+        raise ValueError("alpha must be between 0 and 1")
+    n = len(values)
+    log_term = math.log(4 / alpha)
+    sample_variance = float(np.var(values, ddof=1))
+    return math.sqrt(2 * sample_variance * log_term / n) + 14 * log_term / (3 * (n - 1))
+
+
 def validate_scenario(name: str, support: list[dict[str, float]]) -> tuple[np.ndarray, np.ndarray]:
     if not name or not support:
         raise ValueError("each scenario needs a non-empty name and support")
@@ -69,29 +89,47 @@ def validate_scenario(name: str, support: list[dict[str, float]]) -> tuple[np.nd
 def scenario_power(
     *, support: list[dict[str, float]], clusters: int, alpha: float,
     replicates: int, rng: np.random.Generator, chunk_size: int = 256,
-) -> dict[str, float | int]:
-    """Estimate rejection probability under a discrete split-effect scenario."""
+    interval_method: str = "hoeffding",
+) -> dict[str, float | int | str]:
+    """Estimate rejection probability under an assumed split-effect scenario."""
     if replicates < 1 or chunk_size < 1:
         raise ValueError("replicates and chunk_size must be positive")
+    if not 0 < alpha < 1:
+        raise ValueError("alpha must be between 0 and 1")
+    if clusters < 1 or (interval_method == "empirical_bernstein" and clusters < 2):
+        raise ValueError("clusters must be positive; empirical Bernstein requires at least two")
+    if interval_method not in {"hoeffding", "empirical_bernstein"}:
+        raise ValueError("interval_method must be 'hoeffding' or 'empirical_bernstein'")
     values, probabilities = validate_scenario("scenario", support)
-    radius = hoeffding_radius(clusters=clusters, alpha=alpha)
     rejected = 0
     completed = 0
+    radius_values: list[float] = []
     while completed < replicates:
         batch = min(chunk_size, replicates - completed)
         draws = rng.choice(values, size=(batch, clusters), p=probabilities)
         means = draws.mean(axis=1)
-        rejected += int(np.count_nonzero((means > radius) | (means < -radius)))
+        if interval_method == "hoeffding":
+            radii = np.full(batch, hoeffding_radius(clusters=clusters, alpha=alpha))
+        else:
+            variances = draws.var(axis=1, ddof=1)
+            log_term = math.log(4 / alpha)
+            radii = np.sqrt(2 * variances * log_term / clusters) + 14 * log_term / (3 * (clusters - 1))
+        radius_values.extend(float(value) for value in radii)
+        rejected += int(np.count_nonzero((means > radii) | (means < -radii)))
         completed += batch
     estimate = rejected / replicates
-    return {
+    result: dict[str, float | int | str] = {
+        "interval_method": interval_method,
         "clusters": clusters,
-        "hoeffding_radius": radius,
+        "median_radius": float(np.median(radius_values)),
         "rejections": rejected,
         "replicates": replicates,
         "estimated_power_or_type1": estimate,
         "monte_carlo_se": math.sqrt(estimate * (1 - estimate) / replicates),
     }
+    if interval_method == "hoeffding":
+        result["hoeffding_radius"] = hoeffding_radius(clusters=clusters, alpha=alpha)
+    return result
 
 
 def analyze(
@@ -109,24 +147,44 @@ def analyze(
         values, probabilities = validate_scenario(name, support)
         mean = float(np.dot(values, probabilities))
         variance = float(np.dot((values - mean) ** 2, probabilities))
+        by_method = {
+            method: [
+                (
+                    {
+                        "interval_method": method,
+                        "clusters": n,
+                        "estimated_power_or_type1": None,
+                        "unavailable_reason": "empirical Bernstein requires at least two clusters",
+                    }
+                    if method == "empirical_bernstein" and n < 2
+                    else scenario_power(
+                        support=support, clusters=n, alpha=alpha,
+                        replicates=replicates, rng=rng, interval_method=method,
+                    )
+                )
+                for n in cluster_counts
+            ]
+            for method in ("hoeffding", "empirical_bernstein")
+        }
         output[name] = {
             "assumed_mean_difference": mean,
             "assumed_split_effect_sd": math.sqrt(variance),
             "support": support,
-            "operating_characteristics": [
-                scenario_power(
-                    support=support, clusters=n, alpha=alpha,
-                    replicates=replicates, rng=rng,
-                )
-                for n in cluster_counts
-            ],
+            "operating_characteristics": by_method["hoeffding"],
+            "operating_characteristics_by_interval": by_method,
         }
     return {
-        "schema": "tlu.split-mean-power-sensitivity.v1",
+        "schema": "tlu.split-mean-power-sensitivity.v2",
         "estimand": "mean paired difference in split-level exact-selection rates",
         "independent_unit": "independently generated composition split",
         "outcome_bound": [-1, 1],
-        "interval": "two-sided Hoeffding interval for iid bounded split effects",
+        "intervals": {
+            "hoeffding": "two-sided Hoeffding interval for iid bounded split effects",
+            "empirical_bernstein": (
+                "two-sided Maurer-Pontil empirical Bernstein interval for independent bounded "
+                "split effects, using the unbiased sample variance"
+            ),
+        },
         "alpha": alpha,
         "cluster_counts": list(cluster_counts),
         "monte_carlo_replicates": replicates,
@@ -135,7 +193,9 @@ def analyze(
             "Sensitivity analysis only. Discrete split-effect distributions are assumptions, "
             "not estimates from model data. Hoeffding coverage requires independent split draws; "
             "the bound may be very conservative. estimated_power_or_type1 is Monte Carlo power "
-            "for nonzero-mean scenarios and type-I rejection probability for a zero-mean scenario."
+            "for nonzero-mean scenarios and type-I rejection probability for a zero-mean scenario. "
+            "Empirical-Bernstein results are a secondary variance-adaptive sensitivity analysis, "
+            "not a data-driven license to choose whichever interval gives significance."
         ),
         "scenarios": output,
     }
