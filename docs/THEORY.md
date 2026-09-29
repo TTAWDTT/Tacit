@@ -259,3 +259,17 @@ fixed-length bits in the worst case. This is achievable by sending a fixed share
 The no-message Bayes accuracy under the stated uniform target-index prior is exactly \(1/n\), while a centralized receiver given the target record scores 1.0. The achievable rank-code floor assumes the vocabulary ordering is already shared. A compact variable-length or learned code can improve *average* bytes under a nonuniform record distribution, or trade exactness for expected task utility, but cannot beat this worst-case zero-error payload floor without changing the side-information boundary, adding setup, or allowing error. LLM tokens are not bits; every experimental result must also report actual serialized payload bytes, receiver-tokenizer use, complete inference cost, and task success.
 
 **Falsifiable implementation check.** On fresh tasks, compare the fixed-width rank code, optimized natural language, JSON, delimited tuples, and any learned code under exact-answer scoring. If a purported zero-error one-way protocol transmits fewer than \(\lceil d\log_2V\rceil\) payload bits on a worst-case-valid task while still covering all possible tuples, either its shared state, task distribution, error rate, or measured channel boundary differs from this model. Report that difference explicitly. This task calibrates encoding efficiency and receiver use; it does not test multi-turn dialogue or broad reasoning.
+
+## 11. Amdahl limit for shared-state prefill reuse
+
+Prompt Choreography can reuse key/value encodings already resident in a compatible model runtime. That reduces one component of inference work; it does not shorten the logical message or its serialized network payload. The following is the ordinary Amdahl decomposition applied to that deployment setting, not a new communication-complexity theorem. See the [source audit](../research/PROMPT_CHOREOGRAPHY_AUDIT_V0_1.md).
+
+**Model.** Let baseline end-to-end wall time be `T`. Let `p` in `[0,1]` be the fraction spent re-encoding context that the shared cache would reuse. Suppose reuse accelerates that fraction by `s >= 1`, leaves other work and outputs unchanged, and adds cache/masking overhead `h*T`, where `h >= 0`. Then normalized optimized time is
+
+`Tprime/T = (1-p) + p/s + h`, and `S_e2e = 1 / ((1-p) + p/s + h)`.
+
+Reuse improves end-to-end latency if and only if `h < p(1 - 1/s)`. With zero overhead, the maximum speedup is bounded by `1/(1-p)`, even if repeated prefill becomes free. For example, if reusable prefill was only 5% of baseline runtime and that part becomes 3x faster, total speedup is at most `1/(0.95 + 0.05/3) = 1.034` (3.4%).
+
+**Falsifiable prediction.** Within a fixed-output, fixed-call-count workflow, measure baseline repeated-prefill fraction `p`, its local speedup `s`, cache/masking overhead `h`, and end-to-end time. The formula predicts the total latency ratio from those quantities. If observed speedup exceeds the bound, another component changed (e.g. decoding, scheduling, output length, or batching), or the measured boundary is incomplete; attribute and record that change rather than crediting cache reuse alone. If measured overhead reaches `p(1 - 1/s)`, the cache cannot improve end-to-end time under this model.
+
+**Scope.** This predicts compute/latency tradeoffs for compatible shared-runtime workflows. It says nothing about semantic fidelity, privacy, serialized KV-transfer bytes, or whether a compact message language is better. Those require separate task and transport outcomes.

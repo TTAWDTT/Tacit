@@ -1,5 +1,11 @@
 # Research log
 
+## 2026-09-29 — Formalize the end-to-end ceiling for KV reuse
+
+- **State correction:** updated the thesis' resource-gate status to include attempt 10 and its actual measurements; no model artifacts were read and the frozen gate remains unchanged.
+- **Theory:** applied Amdahl's decomposition to shared prefill reuse. If fraction `p` of baseline runtime is reusable prefill, its speedup is `s`, and cache/masking overhead is `h` of baseline time, predicted total speedup is `1 / ((1-p) + p/s + h)`; break-even requires `h < p(1 - 1/s)`. At `p=0.05`, `s=3`, and zero overhead the end-to-end ceiling is 1.034x.
+- **Prediction / scope:** measure the repeated-prefill share, local speedup, overhead, and complete wall time in a fixed-output/fixed-call workflow. This is a systems-cost prediction, not a new theorem about message-language efficiency; it does not change Private Match's current codec comparison or any inference/resource gate. See [theory §11](../docs/THEORY.md#11-amdahl-limit-for-shared-state-prefill-reuse) and [Prompt Choreography audit](PROMPT_CHOREOGRAPHY_AUDIT_V0_1.md).
+
 ## 2026-09-29 — Separate shared KV reuse from message-language efficiency
 
 - **Question:** does a strong internal-state reuse baseline invalidate or supersede a text message-format experiment? Read the full TACL 2026 Prompt Choreography paper and its linked reference implementation.
