@@ -38,3 +38,19 @@ flowchart LR
 ```
 
 The analysis follows matched-pair power guidance emphasizing the discordance parameter (Lennox, [Statistics in Medicine, 2009](https://onlinelibrary.wiley.com/doi/10.1002/sim.3683)). Whole-cluster resampling preserves within-block dependence, but ordinary cluster-bootstrap intervals can still be unreliable with few independent clusters; Cameron and Miller note that "few" can range from below 20 to below 50 depending on the setting ([Journal of Human Resources, 2015](https://doi.org/10.3368/jhr.50.2.317)). The tool's fewer-than-20 flag is a warning only, not a sufficiency threshold. The need to guard against performance selection is also discussed in the companion [capability-gate audit](CAPABILITY_GATE_SELECTION_BIAS_AUDIT.md), with reference to Cawley and Talbot ([JMLR, 2010](https://www.jmlr.org/papers/v11/cawley10a.html)).
+
+## Split-level finite-sample sensitivity tool
+
+`split_mean_power.py` provides a separate, deliberately conservative option for the v0.4 estimand. For each independent split, compute the paired difference in exact-selection rates, `D_s = Y(s,A,b) - Y(s,B,b)`, which is bounded in `[-1,1]`. Under independent split draws, Hoeffding's inequality gives the two-sided interval
+
+`mean(D) ∈ [mean(D_s) − r, mean(D_s) + r]`, where `r = sqrt(2 log(2/alpha) / n_splits)`.
+
+This finite-sample interval does not require normally distributed split effects; its main cost is that it can be extremely wide. The tool estimates its operating power by Monte Carlo under user-editable discrete distributions over `D_s`. The defaults compare three hypothetical distributions with the same 0.10 mean but different heterogeneity, plus a zero-mean null scenario. They are sensitivity assumptions and contain no model-derived nuisance estimates. Report the Monte Carlo standard error; do not call the output a model-specific sample-size recommendation. The coverage argument follows Hoeffding's bounded-independent-summand inequality ([Hoeffding, 1963](https://doi.org/10.1080/01621459.1963.10500830)).
+
+Example, using only a small local calculation:
+
+```powershell
+python research/split_mean_power.py --clusters 25 50 100 250 500 1000 --replicates 2000 --seed 0
+```
+
+This is not a drop-in correction to McNemar or the cluster bootstrap. It answers a different, explicit question: how often would a distribution-free interval for the **mean split-level effect** exclude zero under stated split-effect distributions? Confirmatory planning still requires a justified effect distribution or validation pilot, a frozen multiplicity family, and independent evaluation splits. See [`EMERGENT_OOD_CLUSTERED_ANALYSIS_AUDIT_V0_1.md`](EMERGENT_OOD_CLUSTERED_ANALYSIS_AUDIT_V0_1.md).
