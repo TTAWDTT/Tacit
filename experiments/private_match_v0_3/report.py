@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import math
 from pathlib import Path
 import sys
 from typing import Any
@@ -160,7 +162,8 @@ def validate_private_match_records(records: list[dict[str, Any]], *, task_key: b
 
 
 def private_match_report(records: list[dict[str, Any]], *, replicates: int = 5000,
-                         seed: int = 1729, task_key: bytes) -> dict[str, Any]:
+                         seed: int = 1729, task_key: bytes,
+                         selection_manifest: dict[str, Any] | None = None) -> dict[str, Any]:
     validate_private_match_records(records, task_key=task_key)
     if any(
         (row.get("_normalized_stratum") or row["stratum"]).get("split") == "development"
@@ -169,7 +172,54 @@ def private_match_report(records: list[dict[str, Any]], *, replicates: int = 500
         raise RecordError(
             "development records are selection-only and cannot enter evaluation reports"
         )
-    cost_summary = aggregate(records)
+    report_records = records
+    selection_setup: dict[str, Any] = {
+        "status": "missing",
+        "note": "The natural-language development selector setup is not included; NL efficiency comparisons are incomplete.",
+    }
+    if selection_manifest is not None:
+        selection_setup = _validate_selection_manifest(
+            selection_manifest, records, task_key=task_key
+        )
+        report_records = [dict(row) for row in records]
+        selected_id = selection_setup["selected_protocol_id"]
+        artifact = {
+            "artifact_id": f"private-match-v0.3-nl-selector:{selection_setup['manifest_sha256']}",
+            "one_time_bytes": selection_setup["raw"]["wire_bytes"],
+            "reuse_horizon": selection_setup["reuse_horizon_evaluation_episodes"],
+            "one_time_tokens": {
+                tokenizer: values["input_tokens"] + values["output_tokens"]
+                for tokenizer, values in selection_setup["raw"]["model_tokens_by_tokenizer"].items()
+            },
+        }
+        for row in report_records:
+            if (row["protocol"].get("representation_id") == selected_id
+                    and row["diagnostics"].get("condition") == "both_sources"
+                    and row["diagnostics"].get("split") == "evaluation"):
+                row["setup"] = [*row.get("setup", []), artifact]
+    cost_summary = aggregate(report_records)
+    frontier_records = report_records
+    frontier_note = ""
+    prereg = json.loads(Path(__file__).with_name("preregistration.json").read_text(encoding="utf-8"))
+    nl_ids = set(prereg["protocol_freeze"]["development_natural_language_candidates"])
+    if selection_manifest is None:
+        frontier_records = [row for row in report_records
+                            if row["protocol"].get("representation_id") not in nl_ids]
+        frontier_note = (
+            "Natural-language candidate points are omitted because the selection manifest was not supplied; "
+            "their development selection costs are unknown, so treating them as zero would bias the frontier."
+        )
+    else:
+        selected_id = selection_setup["selected_protocol_id"]
+        frontier_records = [
+            row for row in report_records
+            if row["protocol"].get("representation_id") not in nl_ids
+            or row["protocol"].get("representation_id") == selected_id
+        ]
+        frontier_note = (
+            "The selected natural-language point includes amortized development-selector setup. "
+            "The unselected NL candidate is omitted because its development results were used only for selection."
+        )
     return {
         "schema_version": "tlu.private-match-report.v2",
         "experiment_id": EXPERIMENT_ID,
@@ -177,9 +227,132 @@ def private_match_report(records: list[dict[str, Any]], *, replicates: int = 500
         "analytic_controls": _analytic_controls(records),
         "representation_diagnostics": _representation_diagnostics(records),
         "cost_summary": cost_summary,
+        "natural_language_selection_setup": selection_setup,
         "paired_comparisons": paired_report(records, replicates=replicates, seed=seed),
-        "empirical_frontiers": frontier_report(records),
+        "empirical_frontiers": frontier_report(frontier_records) if frontier_records else {
+            "schema_version": "tlu.frontier-report.v1",
+            "groups": [],
+            "excluded_reason": "No frontier points remain after removing NL candidates with unreported selector setup.",
+        },
+        "frontier_note": frontier_note,
         "claim_limit": "A feasibility pilot report is descriptive. It does not establish population superiority; inspect policy/decoder alignment and complete cost coverage for every comparison.",
+    }
+
+
+def _validate_selection_manifest(
+    manifest: dict[str, Any], records: list[dict[str, Any]], *, task_key: bytes,
+) -> dict[str, Any]:
+    """Validate and expose the fixed development optimizer cost for the chosen NL arm."""
+    _require(manifest.get("schema_version") == "tlu.private-match-nl-selection.v1",
+             "unsupported NL selection manifest schema")
+    _require(manifest.get("selection_split") == "development_only"
+             and manifest.get("evaluation_data_used") is False,
+             "NL selector must be development-only")
+    _require(manifest.get("task_key_id") == task_key_id(task_key),
+             "NL selector uses a different evaluator task key")
+    _require(manifest.get("prompt_revision") == PROMPT_REVISION,
+             "NL selector prompt revision differs from the registered protocol")
+    prereg_path = Path(__file__).with_name("preregistration.json")
+    protocols_path = Path(__file__).with_name("protocols.py")
+    _require(manifest.get("preregistration_sha256") == hashlib.sha256(prereg_path.read_bytes()).hexdigest(),
+             "NL selector preregistration hash is stale")
+    _require(manifest.get("protocols_py_sha256") == hashlib.sha256(protocols_path.read_bytes()).hexdigest(),
+             "NL selector protocol source hash is stale")
+    prereg = json.loads(prereg_path.read_text(encoding="utf-8"))
+    pilot = prereg["default_pilot"]
+    freeze = prereg["protocol_freeze"]
+    candidates = set(freeze["development_natural_language_candidates"])
+    selected = manifest.get("selected_protocol_id")
+    _require(selected in candidates, "NL selector chose an unregistered candidate")
+    expected_dev_ids = {
+        f"pmt3-{seed:012d}"
+        for seed in range(pilot["development_seed_start"],
+                          pilot["development_seed_start"] + pilot["development_episodes"])
+    }
+    _require(set(manifest.get("development_episode_ids", [])) == expected_dev_ids,
+             "NL selector development episodes differ from the preregistered shard")
+    expected_eval_ids = {
+        f"pmt3-{seed:012d}"
+        for seed in range(pilot["evaluation_seed_start"],
+                          pilot["evaluation_seed_start"] + pilot["evaluation_episodes"])
+    }
+    selected_rows = [
+        row for row in records
+        if row["protocol"].get("representation_id") == selected
+        and row["diagnostics"].get("condition") == "both_sources"
+    ]
+    _require({row["episode_id"] for row in selected_rows} == expected_eval_ids,
+             "NL selection setup can only be attached to the complete preregistered evaluation shard")
+    _require(all(row["diagnostics"].get("split") == "evaluation" for row in selected_rows),
+             "NL selection setup may only be attached to evaluation records")
+    signatures = {
+        tuple((call.get("agent"), call.get("model"), call.get("tokenizer"))
+              for call in row["model_calls"])
+        for row in selected_rows
+    }
+    expected_signature = tuple(tuple(item) for item in manifest.get("model_and_tokenizer_signature", []))
+    _require(len(signatures) == 1 and next(iter(signatures)) == expected_signature,
+             "NL selector and evaluation model/tokenizer signatures differ")
+    setup = manifest.get("optimizer_setup_cost")
+    _require(isinstance(setup, dict) and setup.get("account_as_optimizer_setup") is True,
+             "NL selector manifest is missing optimizer setup accounting")
+    horizon = freeze.get("development_selection_reuse_horizon_evaluation_episodes")
+    _require(setup.get("reuse_horizon_evaluation_episodes") == horizon
+             and horizon == pilot["evaluation_episodes"],
+             "NL selector reuse horizon differs from the preregistered pilot horizon")
+    integer_fields = (
+        "development_model_calls", "development_wire_bytes",
+        "development_model_input_tokens", "development_model_output_tokens",
+    )
+    for field in integer_fields:
+        value = setup.get(field)
+        _require(isinstance(value, int) and not isinstance(value, bool) and value >= 0,
+                 f"NL selector setup has invalid {field}")
+    tokenizer_counts = setup.get("development_model_tokens_by_tokenizer")
+    _require(isinstance(tokenizer_counts, dict), "NL selector setup is missing per-tokenizer totals")
+    expected_tokenizers = {item[2] for item in expected_signature}
+    _require(set(tokenizer_counts) == expected_tokenizers,
+             "NL selector per-tokenizer totals differ from its model signature")
+    for tokenizer, values in tokenizer_counts.items():
+        _require(isinstance(values, dict), f"NL selector totals for {tokenizer} must be an object")
+        for field in ("input_tokens", "output_tokens"):
+            value = values.get(field)
+            _require(isinstance(value, int) and not isinstance(value, bool) and value >= 0,
+                     f"NL selector has invalid {tokenizer} {field}")
+    for field in ("development_model_service_seconds", "development_wall_seconds"):
+        value = setup.get(field)
+        _require(isinstance(value, (int, float)) and not isinstance(value, bool)
+                 and math.isfinite(value) and value >= 0,
+                 f"NL selector setup has invalid {field}")
+    raw = {
+        "model_calls": setup["development_model_calls"],
+        "wire_bytes": setup["development_wire_bytes"],
+        "model_tokens_by_tokenizer": tokenizer_counts,
+        "model_service_seconds": setup.get("development_model_service_seconds"),
+        "wall_seconds": setup.get("development_wall_seconds"),
+    }
+    return {
+        "status": "included",
+        "selected_protocol_id": selected,
+        "manifest_sha256": hashlib.sha256(json.dumps(
+            manifest, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+        ).encode("utf-8")).hexdigest(),
+        "reuse_horizon_evaluation_episodes": horizon,
+        "raw": raw,
+        "amortized_per_evaluation_episode": {
+            "model_calls": raw["model_calls"] / horizon,
+            "wire_bytes": raw["wire_bytes"] / horizon,
+            "model_tokens_by_tokenizer": {
+                tokenizer: (counts["input_tokens"] + counts["output_tokens"]) / horizon
+                for tokenizer, counts in tokenizer_counts.items()
+            },
+            "model_service_seconds": (
+                None if raw["model_service_seconds"] is None
+                else raw["model_service_seconds"] / horizon
+            ),
+            "wall_seconds": None if raw["wall_seconds"] is None else raw["wall_seconds"] / horizon,
+        },
+        "limitation": "Fixed setup is reported separately from episode bootstrap uncertainty; amortization uses the preregistered eight-episode pilot horizon, not a deployment lifetime.",
     }
 
 
@@ -251,14 +424,21 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--task-key-file", type=Path,
                         default=Path(".cache/private_match_v0_3/task.key"),
                         help="evaluator-only task key used to reconstruct private targets")
+    parser.add_argument("--nl-selection-manifest", type=Path,
+                        help="development-only natural-language selection manifest; required for a complete selected-NL cost frontier")
     args = parser.parse_args(argv)
     if args.replicates < 100:
         parser.error("--replicates must be at least 100")
     try:
         records = [record for path in args.inputs for record in read_jsonl(path)]
         task_key = load_task_key(args.task_key_file)
+        selection_manifest = (
+            json.loads(args.nl_selection_manifest.read_text(encoding="utf-8"))
+            if args.nl_selection_manifest else None
+        )
         report = private_match_report(records, replicates=args.replicates,
-                                      seed=args.seed, task_key=task_key)
+                                      seed=args.seed, task_key=task_key,
+                                      selection_manifest=selection_manifest)
     except (OSError, RecordError, ValueError) as exc:
         parser.error(str(exc))
     encoded = json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True) + "\n"

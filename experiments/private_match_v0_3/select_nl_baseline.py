@@ -52,9 +52,13 @@ def _candidate_summary(protocol_id: str, records: list[dict[str, Any]]) -> dict[
     input_tokens = 0
     output_tokens = 0
     payload_bytes = 0
+    serialized_payload_bytes = 0
+    framing_bytes = 0
     faithful_messages = 0
     message_count = 0
     call_count = 0
+    service_seconds = 0.0
+    tokens_by_tokenizer: dict[str, dict[str, int]] = {}
     wall_seconds = 0.0
     successes = 0
     for row in records:
@@ -68,8 +72,22 @@ def _candidate_summary(protocol_id: str, records: list[dict[str, Any]]) -> dict[
             input_tokens += call["input_tokens"]
             output_tokens += call["output_tokens"]
             call_count += 1
+            service_value = call.get("service_seconds")
+            if isinstance(service_value, bool) or not isinstance(service_value, (int, float)) or service_value < 0:
+                raise ValueError("selection requires complete non-negative service_seconds telemetry")
+            service_seconds += float(service_value)
+            tokenizer = call["tokenizer"]
+            counts = tokens_by_tokenizer.setdefault(tokenizer, {"input_tokens": 0, "output_tokens": 0})
+            counts["input_tokens"] += call["input_tokens"]
+            counts["output_tokens"] += call["output_tokens"]
         for transmission in row["transmissions"]:
             payload_bytes += transmission["payload_metadata"]["logical_text_utf8_bytes"]
+            for field in ("payload_bytes", "framing_bytes"):
+                value = transmission.get(field)
+                if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+                    raise ValueError(f"selection requires complete non-negative {field} telemetry")
+            serialized_payload_bytes += transmission["payload_bytes"]
+            framing_bytes += transmission["framing_bytes"]
         for message in row["diagnostics"]["message_diagnostics"]:
             message_count += 1
             faithful_messages += message["semantic_fidelity"] is True
@@ -84,7 +102,12 @@ def _candidate_summary(protocol_id: str, records: list[dict[str, Any]]) -> dict[
         "model_input_tokens": input_tokens,
         "model_output_tokens": output_tokens,
         "complete_model_tokens": input_tokens + output_tokens,
+        "model_tokens_by_tokenizer": tokens_by_tokenizer,
         "logical_payload_bytes": payload_bytes,
+        "serialized_payload_bytes": serialized_payload_bytes,
+        "framing_bytes": framing_bytes,
+        "wire_bytes": serialized_payload_bytes + framing_bytes,
+        "model_service_seconds": service_seconds,
         "wall_seconds": wall_seconds,
     }
 
@@ -160,11 +183,18 @@ def select_natural_language_baseline(
     if any(episode_set != episode_sets[0] for episode_set in episode_sets[1:]):
         raise ValueError("candidate protocols must be paired on identical episodes")
 
+    tokenizer_order = sorted({
+        tokenizer for summary in summaries.values()
+        for tokenizer in summary["model_tokens_by_tokenizer"]
+    })
     ordered = sorted(
         summaries.values(),
         key=lambda item: (
             -item["joint_successes"],
-            item["complete_model_tokens"],
+            tuple(
+                sum(item["model_tokens_by_tokenizer"].get(tokenizer, {}).values())
+                for tokenizer in tokenizer_order
+            ),
             item["logical_payload_bytes"],
             item["protocol_id"],
         ),
@@ -175,7 +205,23 @@ def select_natural_language_baseline(
         "development_model_input_tokens": sum(item["model_input_tokens"] for item in summaries.values()),
         "development_model_output_tokens": sum(item["model_output_tokens"] for item in summaries.values()),
         "development_logical_payload_bytes": sum(item["logical_payload_bytes"] for item in summaries.values()),
+        "development_serialized_payload_bytes": sum(item["serialized_payload_bytes"] for item in summaries.values()),
+        "development_framing_bytes": sum(item["framing_bytes"] for item in summaries.values()),
+        "development_wire_bytes": sum(item["wire_bytes"] for item in summaries.values()),
+        "development_model_service_seconds": sum(item["model_service_seconds"] for item in summaries.values()),
         "development_wall_seconds": sum(item["wall_seconds"] for item in summaries.values()),
+        "development_model_tokens_by_tokenizer": {
+            tokenizer: {
+                field: sum(summary["model_tokens_by_tokenizer"].get(tokenizer, {}).get(field, 0)
+                           for summary in summaries.values())
+                for field in ("input_tokens", "output_tokens")
+            }
+            for tokenizer in sorted({
+                tokenizer for summary in summaries.values()
+                for tokenizer in summary["model_tokens_by_tokenizer"]
+            })
+        },
+        "reuse_horizon_evaluation_episodes": freeze["development_selection_reuse_horizon_evaluation_episodes"],
         "account_as_optimizer_setup": True,
     }
     protocols_path = Path(__file__).with_name("protocols.py")

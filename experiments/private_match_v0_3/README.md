@@ -200,12 +200,16 @@ python -m experiments.private_match_v0_3.select_nl_baseline `
 ```
 
 The selector verifies exact development IDs, pairing, task key and shape,
-model/tokenizer population, and complete token telemetry. It maximizes exact
-joint success, then minimizes complete inference tokens, logical UTF-8 payload
-bytes, and protocol ID. Its manifest hashes the ledgers, preregistration, and
-protocol implementation and totals both candidates' calls and costs as
-optimizer setup. The held-out evaluation shard is seeds 304000–304007 and must
-not be used by the selector.
+model/tokenizer population, and complete token, service-time, and serialized
+transmission telemetry. It maximizes exact joint success, then minimizes the
+per-tokenizer input-plus-output token vector in tokenizer-ID order, logical
+UTF-8 payload bytes, and protocol ID. It never adds unlike tokenizer counts.
+Its manifest hashes the ledgers, preregistration, and protocol implementation
+and totals both candidates' calls, serialized payload/framing bytes, tokens by
+tokenizer, service time, and wall time as optimizer setup. The preregistered
+pilot amortization horizon is eight evaluation episodes; this is a pilot
+accounting convention, not a deployment-lifetime estimate. The held-out
+evaluation shard is seeds 304000–304007 and must not be used by the selector.
 
 ### Analyze completed ledger batches
 
@@ -225,8 +229,19 @@ python -m experiments.private_match_v0_3.report `
   .cache/private_match_v0_3/both_strict_json.jsonl `
   .cache/private_match_v0_3/both_fixed_binary.jsonl `
   --task-key-file .cache/private_match_v0_3/task.key `
+  --nl-selection-manifest .cache/private_match_v0_3/nl_selection.json `
   --output .cache/private_match_v0_3/report.json
 ```
+
+Supplying the selection manifest is required for a complete selected-English
+efficiency comparison. The report validates its hashes, key, prompt revision,
+development IDs, model/tokenizer signature, and evaluation coverage. It charges
+the one-time selector's serialized channel bytes and per-tokenizer model tokens
+as a setup artifact on the selected English arm, and publishes raw plus
+eight-episode-amortized calls, bytes, tokens, service time, and wall time.
+Fixed setup is shown separately from episode bootstrap uncertainty. Without the
+manifest, both English candidate points are omitted from the Pareto frontier
+instead of being treated as zero-setup.
 
 The report reconstructs each task from its seed and evaluator key, re-scores
 the exact answer, checks prompt revision, schedule, route, transmitted text-size metadata, parser
