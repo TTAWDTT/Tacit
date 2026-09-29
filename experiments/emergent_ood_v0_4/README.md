@@ -26,6 +26,14 @@ python -m experiments.emergent_ood_v0_4.episodes generate --ontology experiments
 
 The episode manifest carries the ordered ontology and split specification; the runner reconstructs it, verifies the split hash and stage supports, and records an ontology-specific task ID in each result. This permits matched evaluation across different value vocabularies and attribute meanings. Split seeds only repartition one ontology, and the included ontologies are hand-selected synthetic domains; they are not independent samples of natural tasks or evidence of broad transfer. For smaller spaces, choose `k` no larger than the smallest validation/test support.
 
+The exact scaling oracle reports support sizes, lower-order coverage counts, no-message accuracy, and the ideal one-way zero-error payload floor:
+
+```powershell
+python research/emergent_ood_scaling.py --dimensions 4 --values 4 --candidates 4
+```
+
+Its formulas and limits are in [Theory §17](../../docs/THEORY.md). They calibrate task geometry; they do not predict LLM token efficiency or success.
+
 ## Keyed communication episodes
 
 Create a local evaluator-only 256-bit key once, then generate role ledgers:
