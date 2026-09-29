@@ -134,6 +134,31 @@ If (c_B\le c_L), no finite reuse horizon repays setup under this cost measure. T
 
 This closed-form crossover assumes stationary per-episode costs. For stateful compression or adaptive protocols, let (C_L(H)) and (C_B(H)) be the cumulative costs through horizon (H); the exact condition is (A+C_L(H)\le C_B(H)). Do not extrapolate a finite-horizon average saving unless a stable marginal saving is justified. The Private Match dictionary follow-up found its stream savings nearly flat between 128 and 16,384 records, which falsified the linear break-even projection from the earlier 128-record sample in that specific setup; see the [horizon report](../research/PRIVATE_MATCH_COMPRESSION_HORIZON_V0_1.md).
 
+### Vector-valued setup and selector break-even
+
+The scalar condition is insufficient when setup and inference trade one resource for another. Let (j\in\mathcal J) index separately measured cost units, such as serialized channel bytes, tokens for a specific tokenizer, model calls, service seconds, and wall seconds. Let (A_j\ge0) be the one-time setup cost, (b_j) the baseline's stationary per-episode cost, and (\ell_j) the candidate's stationary per-episode cost. Write (\delta_j=b_j-\ell_j). The candidate is no more costly in every declared dimension after (H) episodes exactly when
+
+\[
+  A_j+H\ell_j\le Hb_j\quad\text{for all }j,
+  \quad\Longleftrightarrow\quad
+  H\delta_j\ge A_j\quad\text{for all }j.
+\]
+
+For positive integer reuse horizons (H), a finite componentwise crossover exists exactly when no dimension has (\delta_j<0) and every dimension with (\delta_j=0) has (A_j=0). Under that condition, the smallest horizon is
+
+\[
+  H^*_{\mathrm{vec}}=\max\left(\{1\}\cup
+  \left\{\left\lceil\frac{A_j}{\delta_j}\right\rceil:\delta_j>0\right\}\right).
+\]
+
+If any dimension has (\delta_j<0), or has (\delta_j=0) while (A_j>0), there is no finite horizon at which the candidate is no more costly in every dimension. A candidate may still be useful on a Pareto frontier, but calling it “amortized” does not remove a persistent token, latency, or compute disadvantage. These statements concern cost only; the candidate must also preserve or improve task utility to dominate the baseline.
+
+For a selector that evaluates (m) candidates before choosing one, (A_j) includes the actual selection work across all candidates (deduplicating genuinely shared setup artifacts), not only the winning candidate's work. For the Private Match natural-language selector, this makes (A_j) the combined development cost of concise- and short-template trials. The registered eight-episode horizon reports (A_j/8); it is a pilot deployment scenario, not a universal break-even estimate. Once per-episode evaluation costs are available, the vector equation tests whether selection setup can ever be repaid without inventing exchange rates between bytes, tokenizer units, calls, and time.
+
+The exact-rational implementation is [`research/vector_setup_break_even.py`](../research/vector_setup_break_even.py). Its interface requires the three cost vectors to name the same dimensions and rejects floating-point values; tokenizers should be separate keys rather than combined counts.
+
+**Falsifiable prediction P6 — no scalar break-even under a persistent trade-off.** If the selected representation requires positive selector setup in a tokenizer shared with the baseline and consumes at least as many inference tokens per episode in that tokenizer, then amortizing development selection can never make it componentwise dominate that baseline on the byte-and-token vector: bytes may cross their setup threshold, while the token dimension cannot. The end-to-end frontier should therefore retain a trade-off point or show domination by another arm, not report a single overall break-even. A measured token saving in every compared tokenizer removes this impossibility condition and makes a finite vector crossover testable, subject to the stationary-cost assumption.
+
 **Proposition (cumulative reuse condition).** For a realized sequence of (H) transmissions, let (b_t) be the baseline's incremental cost and (ell_t) the reusable protocol's incremental cost at step (t), including state-dependent framing or encoding cost but excluding its fixed setup (A). Define (Delta_t=b_t-ell_t) and (S_H=sum_{t=1}^{H}Delta_t). Then the reusable protocol has lower total cost through (H) exactly when
 
 \[

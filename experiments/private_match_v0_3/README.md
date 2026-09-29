@@ -247,6 +247,12 @@ zero-setup. With the manifest, the selected arm's fixed amortized setup-byte
 charge is carried into paired cost deltas; the raw setup vector and other setup
 axes remain available separately in the report.
 
+The cost-only vector crossover calculation is available as
+`research.vector_setup_break_even.vector_setup_break_even(...)`. It uses exact
+rational arithmetic and returns either the smallest positive episode horizon
+or the specific dimensions that prevent componentwise break-even. It does not
+convert cost into utility or combine tokenizer units.
+
 The report reconstructs each task from its seed and evaluator key, re-scores
 the exact answer, checks prompt revision, schedule, route, transmitted text-size metadata, parser
 diagnostics, and model-call counts, then delegates cost aggregation, paired
