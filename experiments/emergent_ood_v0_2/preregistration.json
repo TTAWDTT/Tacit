@@ -1,0 +1,59 @@
+{
+  "schema": "tlu.preregistration.v1",
+  "experiment_id": "emergent_ood_receiver_utility_v0_2",
+  "status": "task_generator_frozen_model_inference_not_started",
+  "date_frozen": "2026-09-29",
+  "question": "Can a sender's message let an independent receiver identify a private target among equally likely held-out semantic candidates?",
+  "scope": "Deterministic task, role-view, and analytic no-message reference validation only. No language comparison or model inference is part of this revision.",
+  "task": {
+    "meaning_space": "3 x 3 x 3 Cartesian product over shape, color, quantity",
+    "split_source": "experiments/emergent_ood_v0_1/split.py",
+    "train_meanings": 18,
+    "held_out_meanings": 9,
+    "generalization_axis": "all unary values and pairwise combinations are present in training; held-out triples are novel",
+    "default_candidate_count": 5,
+    "candidate_support": "all candidates are distinct held-out meanings",
+    "episode_sampling": "For every candidate_count-sized subset of the held-out set, enumerate each member once as the private target.",
+    "default_episode_count": "5 * choose(9,5) = 630",
+    "no_message_bayes_accuracy": "1 / candidate_count; exactly 0.2 for the default five-candidate task"
+  },
+  "role_boundary": {
+    "sender": ["private target meaning", "protocol instructions added by a later frozen experiment"],
+    "receiver": ["candidate meanings", "protocol instructions and shared training examples added by a later frozen experiment"],
+    "gold": ["correct target identity", "candidate order", "target position"],
+    "gold_visibility": "Never included in sender or receiver model input."
+  },
+  "primary_endpoint_for_future_model_study": "Exact receiver candidate_id selection, paired by episode_id.",
+  "validation_requirements": [
+    "role ledgers have identical unique episode IDs",
+    "receiver rows contain no target label",
+    "target is exactly one candidate and is balanced within each candidate set",
+    "candidate order is recorded and gold target position agrees",
+    "the analytic no-message Bayes reference is recomputed from the declared sampling process",
+    "every candidate is a held-out meaning and all episodes share the frozen split hash"
+  ],
+  "future_comparison_arms_to_freeze_before_inference": [
+    "no_message",
+    "full_information_capability_control",
+    "optimized_natural_language",
+    "valid_structured_text",
+    "compositional_symbol_control",
+    "train_only_holistic_lookup",
+    "emergent_protocol_if_separately_learned_and_frozen"
+  ],
+  "future_costs": [
+    "serialized payload and framing bytes",
+    "receiver-native payload tokens",
+    "complete sender and receiver input/output tokens",
+    "model calls and latency",
+    "protocol training, prompt/codebook setup, negotiation, and reuse horizon",
+    "invalid output, semantic fidelity, and receiver task success separately"
+  ],
+  "resource_policy": "Local model inference remains subject to the frozen host-resource gate; this preregistration does not relax it.",
+  "novelty_boundary": "This is a task/scorer fixture that operationalizes receiver-side utility for the project's experiments. Held-out composition and independent receiver evaluation are established prior methods; no novel benchmark or language claim is made.",
+  "implementation": {
+    "generator": "experiments/emergent_ood_v0_2/episodes.py",
+    "test_file": "tests/test_emergent_ood_episodes.py",
+    "seed_for_validation": 17
+  }
+}

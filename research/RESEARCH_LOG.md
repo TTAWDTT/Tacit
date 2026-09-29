@@ -728,3 +728,15 @@ ceil) worst-case bits: 9, 10, and 11 for the three lengths. This predicts a comp
 
 - **Artifact update:** added `LocalTCPFrameChannel` (`tlu.frame.v1`) for bounded raw-byte payloads with explicit media type, encoding, and JSON metadata. Its cost record partitions exact payload bytes from the length prefix, metadata header, and callback acknowledgment. Existing text channel/API remains compatible.
 - **Scope:** this is transport infrastructure for testing representations, not a discovered language or an LLM-readable latent interface; a codec/model adapter and its compute/setup costs remain the experiment's responsibility. Added offline tests for non-UTF-8 round trips, cost-report schema, validation, and callback failure. No model, API, training, or benchmark ran.
+
+## 2026-09-29 - Correct the emergent-communication candidate-count audit
+
+- Rechecked the primary COLING 2025 PDF, including methods §3 and results §5.2. Methods specifies one target plus four distractors (five choices, implying 20% uniform-guess chance); the results text states 25% chance (four choices). This is a contradiction, not an unspecified methods description.
+- No official implementation link appears in the paper or ACL record, so source text cannot identify which candidate generator was executed. Updated the audit, related-work entry, and experiment plan to preserve this uncertainty and require candidate-derived chance baselines. No benchmark, model, or runtime was executed.
+
+## 2026-09-29 - Add held-out receiver-utility episodes with an exact no-message reference
+
+- **Task design:** extended the existing ternary 18/9 composition split to private-target sender and independent candidate-choice receiver ledgers. For each candidate subset of size k, every member appears once as target; therefore the conditional target posterior given that receiver set is exactly uniform and no-message Bayes accuracy is exactly 1/k.
+- **Frozen default:** k=5 to stress a five-choice task; 5 × C(9,5) = 630 paired episodes per split seed. Sender, receiver, and gold are serialized to separate JSONL files; the verifier checks role separation, held-out membership, candidate ordering, target balance, and split hashes.
+- **Validation:** six focused tests pass. CLI generation for seed 17 emitted 630 rows in each role ledger with analytic chance 0.2 and split SHA-256 `b558cc4994007d66e52d5bd792b6f47c749dc9d9bcb196fdca077477f134291a`. `git diff --check` passes. No model, API, training, or benchmark comparison ran.
+- **Scope:** this creates a receiver-utility task fixture, not a novel benchmark or a language result. Future protocol prompts, parsers, costs, model pairs, and a passing local-resource gate must be frozen independently before inference.

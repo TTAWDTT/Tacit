@@ -20,7 +20,7 @@ The held-out test block asks agents to generate signals for unseen combinations.
 
 The paper does not report an equal-token or equal-byte frontier against optimized natural language, valid JSON, fixed symbolic composition, or a holistic lookup code. Signals lengthen during communication, and the paper reports no complete prompt/completion, inference-compute, latency, or serialized-channel accounting. Its results establish emergence under a particular scaffold and model, not a communication-cost advantage or reusable protocol across receiver models.
 
-The methods text says the listener distinguishes one target from four distractors, while the results call chance performance 25%. Those descriptions do not uniquely specify the number of choices. A replication must state the actual candidate count and derive its chance baseline from the generated episode rather than copy the percentage.
+The paper is internally inconsistent about the candidate count. Section 3 explicitly says one target plus four distractor stimuli, which is five choices and implies 20% uniform-guess chance. Section 5.2 labels chance performance as 25%, which corresponds to four choices. No official code link is provided in the paper/ACL record, and the text alone cannot establish which candidate generator was used in the executed runs. Preserve both statements as a source discrepancy; do not silently treat 25% as verified. A replication must report the candidate-set cardinality from its actual episode generator and derive chance from that set and its target-sampling distribution.
 
 ## Updated falsifiable test
 
