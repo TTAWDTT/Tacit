@@ -1,5 +1,13 @@
 # Research log
 
+## 2026-09-29 — Separate adaptive routing from representation under matched compute
+
+- **Question:** do recent adaptive multi-agent protocols provide evidence for a new message language, and what must Tacit control to isolate representation quality?
+- **Literature:** audited Proxifield (arXiv:2609.20889) and the equal-thinking-token comparison by Tran & Kiela (arXiv:2604.02460), against Tacit's existing layered-comparability rules. Proxifield varies routing, disclosure/request policy, interaction rounds, and call count together; each round can use 2N–3N model calls plus batched `text-embedding-3-large` routing and periodic memory summaries. Its large-scale claims use OpenRouter-hosted Qwen3.5 models up to 397B. It is a serious routing/system baseline, but does not isolate a text representation effect or fit local reproduction constraints. Tran & Kiela report that single-agent systems can match or beat multi-agent systems on multi-hop tasks under equal reasoning-token budgets, while predicting multi-agent value where context utilization degrades or extra compute is available.
+- **Decision:** primary message-representation comparisons will freeze topology, schedule, models, prompts, and output contract, then compare optimized natural language, structured text, and candidate representations across equal channel budgets. Report complete inference tokens/calls separately from delivered message cost; evaluate adaptive routing as a separate end-to-end system intervention. A task must demonstrate receiver need and retain all held-out episodes independent of calibration outcomes.
+- **Falsifiable prediction:** if an apparent representation benefit is actually due to extra routes, rounds, or inference compute, it should shrink under matched topology and total inference-token budgets. A remaining benefit that transfers to a held-out receiver/model family would support the representation hypothesis.
+- **Resource status:** literature audit only. No inference/code execution from either paper, no model calls, and no change to the existing local resource gates. See [layering and cost audit](PROTOCOL_ROUTING_AND_BUDGET_AUDIT_V0_1.md).
+
 ## 2026-09-29 — Bound raw KV-state transfer volume for the local model family
 
 - **Question:** if shared-cache inference state were serialized between Tacit endpoints, would it be a bandwidth-equivalent substitute for a compact text message?
