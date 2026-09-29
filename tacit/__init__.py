@@ -8,6 +8,7 @@ from .runtime import (
     TextProtocol,
     exchange_once,
 )
+from .channel import LocalTCPMessageChannel, Transmission
 
 __all__ = [
     "ChatCompletion",
@@ -16,4 +17,6 @@ __all__ = [
     "OpenAICompatibleClient",
     "TextProtocol",
     "exchange_once",
+    "LocalTCPMessageChannel",
+    "Transmission",
 ]

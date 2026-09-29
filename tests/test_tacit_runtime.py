@@ -5,7 +5,8 @@ from unittest.mock import patch
 import json
 from urllib.request import Request
 
-from tacit import ChatCompletion, OpenAICompatibleClient, exchange_once
+from tacit import ChatCompletion, LocalTCPMessageChannel, OpenAICompatibleClient, exchange_once
+from tools.cost_report import aggregate
 
 
 class FakeProtocol:
@@ -25,6 +26,80 @@ class FakeModel:
 
 
 class TacitRuntimeTests(unittest.TestCase):
+    def test_loopback_channel_delivers_exact_utf8_and_partitions_wire_body(self) -> None:
+        received = []
+        message = '事实: "café" 🧪\\line\n'
+        with LocalTCPMessageChannel(received.append) as channel:
+            transmission = channel.send(
+                message,
+                protocol_id="json-envelope-test-v1",
+                round_number=2,
+                sender="A",
+                recipient="B",
+            )
+
+        self.assertEqual(received[0]["payload"], message)
+        self.assertEqual(transmission.message, message)
+        self.assertEqual(transmission.logical_payload_bytes, len(message.encode("utf-8")))
+        self.assertEqual(
+            transmission.total_application_bytes,
+            transmission.serialized_payload_bytes + transmission.framing_bytes,
+        )
+        record = transmission.cost_record()
+        self.assertEqual(record["payload_bytes"] + record["framing_bytes"], transmission.total_application_bytes)
+        self.assertEqual(record["transport_boundary"], "network")
+        self.assertEqual(record["payload_metadata"]["protocol_id"], "json-envelope-test-v1")
+        episode = {
+            "schema_version": "tlu.costs.v3",
+            "episode_id": "loopback-test-episode",
+            "stratum": {
+                "experiment_id": "loopback-test",
+                "task_id": "toy@1",
+                "split": "test",
+                "task_parameters": {},
+                "model_population_id": "fake",
+                "agent_models": {"A": "fake-v1", "B": "fake-v1"},
+                "scorer_id": "exact-v1",
+            },
+            "protocol": {
+                "policy_id": "fixed",
+                "code_id": record["payload_metadata"]["protocol_id"],
+                "decoder_id": "test-decoder-v1",
+            },
+            "outcome": {"joint_success": True, "answer_score": 1.0},
+            "transmissions": [record],
+            "model_calls": [],
+            "runtime": {},
+            "setup": [],
+        }
+        report = aggregate([episode])
+        self.assertEqual(report["groups"][0]["channel"]["wire_bytes"]["observed_sum"],
+                         transmission.total_application_bytes)
+
+    def test_loopback_channel_surfaces_receiver_callback_failure(self) -> None:
+        def reject(_envelope):
+            raise ValueError("receiver rejected frame")
+
+        with LocalTCPMessageChannel(reject) as channel:
+            with self.assertRaisesRegex(RuntimeError, "callback failed"):
+                channel.send(
+                    "payload",
+                    protocol_id="test-v1",
+                    round_number=1,
+                    sender="A",
+                    recipient="B",
+                )
+
+    def test_loopback_channel_rejects_invalid_frame_fields(self) -> None:
+        with LocalTCPMessageChannel(lambda _envelope: None) as channel:
+            for fields in (
+                {"message": "x", "protocol_id": "p", "round_number": 0, "sender": "A", "recipient": "B"},
+                {"message": 7, "protocol_id": "p", "round_number": 1, "sender": "A", "recipient": "B"},
+                {"message": "x", "protocol_id": " ", "round_number": 1, "sender": "A", "recipient": "B"},
+            ):
+                with self.subTest(fields=fields), self.assertRaises(ValueError):
+                    channel.send(**fields)
+
     def test_exchange_delivers_the_exact_sender_string_and_counts_utf8(self) -> None:
         payload = "事实: café 🧪\n"
         sender = FakeModel(ChatCompletion(payload, "sender-v1", 11, 7, 0.2))
