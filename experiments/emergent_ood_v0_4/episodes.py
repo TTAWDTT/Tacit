@@ -10,6 +10,7 @@ import hashlib
 import hmac
 import json
 import secrets
+from itertools import combinations
 from pathlib import Path
 from typing import Any, Sequence
 
@@ -30,6 +31,10 @@ def _inside_project(path: Path) -> Path:
     except ValueError as exc:
         raise ValueError("output and key paths must stay inside the project directory") from exc
     return resolved
+
+
+def _json_bytes(value: Any) -> bytes:
+    return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
 
 
 def _key(task_key: bytes) -> None:
@@ -176,23 +181,62 @@ def generate_ledgers(
                     "candidate_set_id": set_id,
                 })
 
+    value_to_id = {tuple(row["values"]): row["meaning_id"] for row in split["meanings"]}
+    graph_diagnostics = {}
+    for stage in partitions:
+        candidate_sets_by_id: dict[str, set[str]] = {}
+        vertices: set[str] = set()
+        for receiver_row, gold_row in zip(receiver[stage], gold[stage]):
+            candidate_meanings = {
+                value_to_id[tuple(candidate["attributes"][attribute] for attribute in split["attributes"])]
+                for candidate in receiver_row["candidates"]
+            }
+            vertices.update(candidate_meanings)
+            candidate_sets_by_id.setdefault(gold_row["candidate_set_id"], candidate_meanings)
+        observed_pairs = {
+            pair
+            for candidate_meanings in candidate_sets_by_id.values()
+            for pair in combinations(sorted(candidate_meanings), 2)
+        }
+        possible_pairs = len(vertices) * (len(vertices) - 1) // 2
+        pool_pairs = len(partitions[stage]) * (len(partitions[stage]) - 1) // 2
+        graph_diagnostics[stage] = {
+            "available_target_support_size": len(partitions[stage]),
+            "observed_target_vertices": len(vertices),
+            "cooccurring_target_pairs": len(observed_pairs),
+            "possible_pairs_among_observed_vertices": possible_pairs,
+            "observed_pair_coverage": (len(observed_pairs) / possible_pairs) if possible_pairs else 1.0,
+            "possible_pairs_in_available_support": pool_pairs,
+            "available_support_pair_coverage": (len(observed_pairs) / pool_pairs) if pool_pairs else 1.0,
+            "complete_conflict_graph_on_observed_vertices": len(observed_pairs) == possible_pairs,
+        }
+
     safe_meta = {
         "schema": SCHEMA,
         "split_sha256": split["split_sha256"],
+        "attributes": list(split["attributes"]),
         "task_key_id": hashlib.sha256(task_key).hexdigest()[:16],
         "task_seed": task_seed,
         "k": k,
         "sets_per_stage": sets_per_stage,
         "partition_sizes": {name: len(ids) for name, ids in partitions.items()},
         "episodes_per_stage": {name: len(rows) for name, rows in sender.items()},
+        "conflict_graph_coverage": graph_diagnostics,
         "chance_accuracy": 1.0 / k,
         "warning": "Keep gold ledgers evaluator-only. Do not expose episode IDs or task-key-derived assignments to model tools.",
     }
     return {"sender": sender, "receiver": receiver, "gold": gold, "manifest": safe_meta}
 
 
-def write_ledgers(bundle: dict[str, Any], output_dir: Path) -> dict[str, Any]:
+def write_ledgers(bundle: dict[str, Any], output_dir: Path, *, force: bool = False) -> dict[str, Any]:
     output_dir = _inside_project(output_dir)
+    expected_outputs = [
+        output_dir / f"{role}_{stage}.jsonl"
+        for role in ("sender", "receiver", "gold")
+        for stage in bundle[role]
+    ] + [output_dir / "manifest.json"]
+    if not force and any(path.exists() for path in expected_outputs):
+        raise FileExistsError(f"refusing to overwrite existing episode bundle: {output_dir}")
     output_dir.mkdir(parents=True, exist_ok=True)
     manifest = dict(bundle["manifest"])
     files = {}
@@ -213,6 +257,9 @@ def verify_ledgers(bundle: dict[str, Any]) -> None:
     if set(sender) != set(receiver) or set(sender) != set(gold):
         raise ValueError("role ledgers have different stage sets")
     heldout_ids_by_stage: dict[str, set[str]] = {}
+    attributes = bundle.get("manifest", {}).get("attributes")
+    if not isinstance(attributes, list) or not attributes or len(set(attributes)) != len(attributes):
+        raise ValueError("episode manifest must declare unique attribute order")
     for stage in sender:
         srows, rrows, grows = sender[stage], receiver[stage], gold[stage]
         if not (len(srows) == len(rrows) == len(grows)):
@@ -226,8 +273,15 @@ def verify_ledgers(bundle: dict[str, Any]) -> None:
             if len(ids) != len(set(ids)) or grow["candidate_id"] not in ids:
                 raise ValueError("invalid candidate IDs or target")
             target = next(row for row in candidates if row["candidate_id"] == grow["candidate_id"])
+            if set(target.get("attributes", {})) != set(attributes):
+                raise ValueError("target attributes do not match manifest order")
             if target["attributes"] != srow["private_meaning"]:
                 raise ValueError("sender meaning does not match evaluator target")
+            target_tuple = [target["attributes"][attribute] for attribute in attributes]
+            canonical_tuple = json.dumps(target_tuple, ensure_ascii=False, separators=(",", ":"))
+            expected_meaning_id = "m-" + hashlib.sha256(canonical_tuple.encode("utf-8")).hexdigest()[:16]
+            if grow["meaning_id"] != expected_meaning_id:
+                raise ValueError("evaluator meaning ID does not match target tuple")
             targets_by_set.setdefault(grow["candidate_set_id"], []).append(grow["candidate_id"])
             signature = candidates_by_set.setdefault(grow["candidate_set_id"], candidates)
             if signature != candidates:
@@ -257,6 +311,7 @@ def main() -> None:
     gen.add_argument("--k", type=int, default=4)
     gen.add_argument("--sets-per-stage", type=int, default=16)
     gen.add_argument("--output-dir", type=Path, default=Path(".cache/emergent_ood_v0_4/episodes"))
+    gen.add_argument("--force", action="store_true", help="overwrite an existing local episode bundle")
     args = parser.parse_args()
     if args.command == "keygen":
         print(create_task_key(args.key))
@@ -265,7 +320,7 @@ def main() -> None:
     key = load_task_key(args.key)
     bundle = generate_ledgers(split=split, task_key=key, task_seed=args.task_seed, k=args.k, sets_per_stage=args.sets_per_stage)
     verify_ledgers(bundle)
-    print(json.dumps(write_ledgers(bundle, args.output_dir), indent=2))
+    print(json.dumps(write_ledgers(bundle, args.output_dir, force=args.force), indent=2))
 
 
 if __name__ == "__main__":
