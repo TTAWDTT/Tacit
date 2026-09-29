@@ -1159,3 +1159,9 @@ ceil) worst-case bits: 9, 10, and 11 for the three lengths. This predicts a comp
 - **Prediction and falsification:** registered P10 before any Private Match v0.3 model inference. A counterexample must violate a declared prior/loss/channel assumption or the entropy/class-count inequality; the finite q≤32 executable check is secondary evidence, not the general proof.
 - **Verification:** the q=2,4,8,16,32 exact-oracle sweep reported only the two predicted hull vertices at every size. All seven focused `test_private_match_prefix_frontier` tests pass, including exact 3/4-budget interpolation across those five q values. No model, server, endpoint, or GPU inference was used. `git diff --check` and preregistration JSON parsing remain part of the final commit check.
 - **Limit:** shared randomness, codebooks, task schedule, and setup are treated as free; the theorem concerns expected self-delimiting payload only. The silence/full-disclosure lottery violates intermediate per-episode hard caps and is format-independent, so it is not a language-efficiency result.
+
+## 2026-09-29 - Restore the offline suite's selector telemetry fixture
+
+- **Validation finding:** the full offline suite initially ran 167 tests and exposed one error in the Private Match v0.3 natural-language selector test. The selector correctly rejects missing `service_seconds` because its frozen setup-cost manifest requires complete service-time telemetry; the fake sender/receiver completions in that test had left the optional field unset.
+- **Correction:** updated only the fake model responses used by the selector test to report a deterministic `0.01` service seconds per call. The production validation and telemetry requirement were retained.
+- **Verification:** the previously failing selector test passes, then the complete suite passes: 167 tests in 20.641 seconds. No model was loaded, no server or endpoint was started, and no inference request was made.

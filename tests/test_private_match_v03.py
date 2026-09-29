@@ -114,7 +114,9 @@ class FrozenFormatSender:
             text = f"{int(value[1:]):02b}"
         else:
             text = f"The {coordinate} coordinate is {value}."
-        return ChatCompletion(text, self.model_name, input_tokens=10, output_tokens=4)
+        return ChatCompletion(
+            text, self.model_name, input_tokens=10, output_tokens=4, service_seconds=0.01,
+        )
 
 
 class FrozenFormatReceiver:
@@ -151,7 +153,9 @@ class FrozenFormatReceiver:
                 answer = module.oracle_answer(view, values["x"], values["y"])
             else:
                 answer = view["candidates"][0]["candidate_id"]
-        return ChatCompletion(answer, self.model_name, input_tokens=20, output_tokens=1)
+        return ChatCompletion(
+            answer, self.model_name, input_tokens=20, output_tokens=1, service_seconds=0.01,
+        )
 
 
 class PrivateMatchV03Tests(unittest.TestCase):
@@ -546,7 +550,10 @@ class PrivateMatchV03Tests(unittest.TestCase):
                 index = int(value[1:])
                 wrong_value = f"x{(index + 1) % 4:04d}" if coordinate == "x" else value
                 text = f"The {coordinate} coordinate is {wrong_value}."
-                return ChatCompletion(text, self.model_name, input_tokens=10, output_tokens=4)
+                return ChatCompletion(
+                    text, self.model_name, input_tokens=10, output_tokens=4,
+                    service_seconds=0.01,
+                )
 
         rows_by_protocol = {"concise_nl": [], "short_nl": []}
         for protocol_id in rows_by_protocol:
