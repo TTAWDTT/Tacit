@@ -80,6 +80,14 @@ bits. The two coordinates attain this bound. This is a bound for this
 finite, noiseless, simultaneous task model; it says nothing about LLM token
 cost, decoding errors, instructions, or setup cost.
 
+For the registered uniform `q=2^w` prior, replacing either code with a
+self-delimiting binary prefix code cannot reduce expected payload below `w`
+bits per source: each source needs `q` distinct codewords and the source
+entropy is `log₂(q)=w`. Thus fixed-width binary already attains the minimum
+expected prefix-free payload of `2w` bits. Packet-boundary-aware variable
+strings use a different channel model; count any serialized length or framing
+signal in the wire cost. See [Theory §14](../../docs/THEORY.md#14-exact-bit-budget-frontier-for-complementary-coordinate-matching).
+
 ### Exact fixed-width bit-budget frontier
 
 `bit_frontier.py` extends the zero-error endpoint to every integer total
