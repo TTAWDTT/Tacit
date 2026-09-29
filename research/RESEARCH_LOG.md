@@ -1,5 +1,11 @@
 # Research log
 
+## 2026-09-29 — Update the experiment sequence for Private Match v0.3
+
+- **Plan audit:** `docs/EXPERIMENT_PLAN.md` described the older model-free codec/scaling work but did not capture the newer three-agent complementary-evidence extension, frozen `pmt3-prompts-3` representation arms, evaluator-keyed generation, or the real remaining execution gates.
+- **Correction:** added v0.3 as a stronger exact communication-necessity control while preserving its limits: synthetic finite task, no LLM result, and no language-superiority claim. Recorded the sequence of resource preflight, frozen model/tokenizer settings, and disjoint full-information calibration before evaluation.
+- **Research decision:** do not create another broad benchmark or run inference under a failed resource gate. First obtain a valid model-backed capability result on the existing controlled task; revisit broader ecological-validity tasks only after representation effects can be isolated.
+
 ## 2026-09-29 — Align task-shard and runner episode identity
 
 - **Reproducibility finding:** `generate_dataset(...)` assigned IDs from the row index (`pmt3-000000`), while runner records encoded the public task seed (`pmt3-000000003000`). The same key/seed generated the same task content, but the separate IDs prevented direct joins between offline role shards and runner ledgers.
