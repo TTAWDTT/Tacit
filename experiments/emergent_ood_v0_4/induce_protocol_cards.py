@@ -29,6 +29,7 @@ REQUEST_TIMEOUT_SECONDS = 45.0
 DEFAULT_EXAMPLES = 32
 DEFAULT_CANDIDATES = 4
 MAX_CANDIDATES = 8
+PROTOCOL_FAMILIES = ("compositional_symbolic", "plain_english")
 
 
 def sample_training_examples(
@@ -60,9 +61,12 @@ def sample_training_examples(
 
 def build_induction_messages(
     *, split: dict[str, Any], examples: list[dict[str, str]], candidate_count: int = DEFAULT_CANDIDATES,
+    protocol_family: str = "compositional_symbolic",
 ) -> list[dict[str, str]]:
     if isinstance(candidate_count, bool) or not isinstance(candidate_count, int) or not 2 <= candidate_count <= MAX_CANDIDATES:
         raise ValueError(f"candidate_count must be in 2..{MAX_CANDIDATES}")
+    if protocol_family not in PROTOCOL_FAMILIES:
+        raise ValueError(f"protocol_family must be one of {', '.join(PROTOCOL_FAMILIES)}")
     allowed_ids = set(split["train_meaning_ids"])
     if not examples or len(examples) > len(allowed_ids):
         raise ValueError("training example set is empty or too large")
@@ -84,6 +88,30 @@ def build_induction_messages(
         "This is offline protocol synthesis; do not claim any candidate has been tested. "
         "Return only one valid JSON object matching the requested output schema, with no markdown or commentary."
     )
+    if protocol_family == "compositional_symbolic":
+        family_goal = (
+            "Use a compact non-English symbolic or artificial code with reusable attribute/value primitives, "
+            "explicit composition, and an exact deterministic decoder. Do not merely relabel natural language or JSON."
+        )
+        family_constraints = [
+            "Use symbolic/artificial primitives and a deterministic composition rule.",
+            "Do not use ordinary English sentences, JSON, Markdown tables, or source code as the wire language.",
+            "Define the stable meaning of each symbolic primitive and the deterministic field order/boundaries in both role instructions.",
+            "Prefer reusable attribute/value primitives over any whole-tuple dictionary.",
+        ]
+    else:
+        family_goal = (
+            "Design prompt candidates for a plain-English communication baseline. The transmitted message must be "
+            "ordinary, concise English that explicitly describes all attribute names and values. Optimize clarity and "
+            "reliable semantic matching, not character count by inventing codes."
+        )
+        family_constraints = [
+            "The sender must communicate the full tuple in ordinary English prose using the canonical attribute names and values.",
+            "Do not use abbreviations, artificial symbols, codewords, JSON, tables, equations, or source code in the message.",
+            "The receiver must use ordinary English semantics to match the description against its candidate table.",
+            "Vary instruction wording and disambiguation strategy, not the underlying natural-language message family.",
+            "Use complete grammatical sentences with explicit canonical attribute names; do not define artificial token primitives or a codebook.",
+        ]
     user_payload = {
         "task": (
             "A sender sees one private four-attribute meaning. A receiver sees a candidate table of meanings and one message "
@@ -92,10 +120,12 @@ def build_induction_messages(
         ),
         "shared_attribute_vocabulary": vocabulary,
         "sampled_training_meanings_only": examples,
+        "candidate_family": protocol_family,
+        "family_goal": family_goal,
         "design_constraints": [
-            "Propose distinct, compact, unambiguous, compositional protocols; do not just restate ordinary English or valid JSON.",
-            "Define stable meaning for every emitted primitive and a deterministic composition/decoding rule in both role instructions.",
-            "Represent every attribute and exact value; use explicit boundaries/order so unrelated messages cannot merge ambiguously.",
+            *family_constraints,
+            "Propose distinct, unambiguous, compositional sender/receiver instruction pairs.",
+            "Represent every attribute and exact value so unrelated messages cannot merge ambiguously.",
             "The sender may use only its private meaning. The receiver may use only its candidate table and the received message.",
             "Do not encode candidate IDs, episode IDs, split/task seeds, or a table mapping complete four-value tuples to labels.",
             "Do not assume shared conversation history, hidden state, tools, extra turns, or a response from the sender.",
@@ -111,8 +141,8 @@ def build_induction_messages(
     }
     user = (
         "Create exactly " + str(candidate_count) + " genuinely different candidate protocol cards. "
-        "Do not reproduce a full-tuple lookup from the examples. Prefer reusable attribute/value primitives, clear composition, "
-        "and a fixed decoding procedure; each receiver instruction must explain how to choose one candidate_id.\n\n"
+        "Do not reproduce a full-tuple lookup from the examples. Follow the specified candidate_family constraints, "
+        "and make each receiver instruction explain how to choose one candidate_id.\n\n"
         + json.dumps(user_payload, ensure_ascii=False, separators=(",", ":"))
     )
     return [{"role": "system", "content": system}, {"role": "user", "content": user}]
@@ -159,13 +189,17 @@ def _read_inside(path: Path) -> bytes:
 def run_induction(
     *, split_seed: int, task_key_path: Path, example_count: int, candidate_count: int,
     output_dir: Path, execute: bool, model: str = "", tokenizer_id: str = "",
+    protocol_family: str = "compositional_symbolic",
     base_url: str = "http://127.0.0.1:8002/v1", resource_preflight: Path | None = None,
     temperature: float = 0.7, max_tokens: int = 4096,
 ) -> dict[str, Any]:
     split = build_split(seed=split_seed)
     task_key = _read_inside(task_key_path)
     examples = sample_training_examples(split=split, task_key=task_key, example_count=example_count)
-    messages = build_induction_messages(split=split, examples=examples, candidate_count=candidate_count)
+    messages = build_induction_messages(
+        split=split, examples=examples, candidate_count=candidate_count,
+        protocol_family=protocol_family,
+    )
     prompt_bytes = json.dumps(messages, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
     plan = {
         "schema": OUTPUT_SCHEMA,
@@ -179,6 +213,7 @@ def run_induction(
             for row in examples
         )).encode("utf-8")).hexdigest(),
         "candidate_count": candidate_count,
+        "protocol_family": protocol_family,
         "prompt_sha256": hashlib.sha256(prompt_bytes).hexdigest(),
         "prompt_utf8_bytes": len(prompt_bytes),
         "test_examples_in_prompt": 0,
@@ -301,6 +336,10 @@ def main() -> int:
     parser.add_argument("--task-key", type=Path, default=Path(".cache/emergent_ood_v0_4/evaluator.key"))
     parser.add_argument("--training-examples", type=int, default=DEFAULT_EXAMPLES)
     parser.add_argument("--candidates", type=int, default=DEFAULT_CANDIDATES)
+    parser.add_argument(
+        "--protocol-family", choices=PROTOCOL_FAMILIES, default="compositional_symbolic",
+        help="propose a symbolic protocol or plain-English prompt candidates",
+    )
     parser.add_argument("--output-dir", type=Path, default=Path(".cache/emergent_ood_v0_4/induced-cards"))
     parser.add_argument("--base-url", default=os.environ.get("TLU_PROTOCOL_INDUCER_URL", "http://127.0.0.1:8002/v1"))
     parser.add_argument("--model", default=os.environ.get("TLU_PROTOCOL_INDUCER_MODEL", ""))
@@ -315,6 +354,7 @@ def main() -> int:
             split_seed=args.split_seed, task_key_path=args.task_key,
             example_count=args.training_examples, candidate_count=args.candidates,
             output_dir=args.output_dir, execute=args.execute, model=args.model,
+            protocol_family=args.protocol_family,
             tokenizer_id=args.tokenizer_id, base_url=args.base_url,
             resource_preflight=args.resource_preflight, temperature=args.temperature,
             max_tokens=args.max_tokens,

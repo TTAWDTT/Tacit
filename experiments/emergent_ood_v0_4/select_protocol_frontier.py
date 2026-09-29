@@ -16,7 +16,9 @@ from pathlib import Path
 from typing import Any
 
 from experiments.emergent_ood_v0_4.episodes import SCHEMA as EPISODE_SCHEMA
-from experiments.emergent_ood_v0_4.induce_protocol_cards import OUTPUT_SCHEMA as INDUCER_SCHEMA
+from experiments.emergent_ood_v0_4.induce_protocol_cards import (
+    OUTPUT_SCHEMA as INDUCER_SCHEMA, PROTOCOL_FAMILIES,
+)
 from experiments.emergent_ood_v0_4.runner import (
     EXPERIMENT_ID, ROOT, SCORER_ID, _meaning_id_from_values, load_protocol_card,
 )
@@ -400,6 +402,7 @@ def _induction_setup(
             "service_seconds": None,
             "prompt_completion_utf8_bytes": None,
             "induction_manifest_sha256": [],
+            "candidate_protocol_families": {},
         }
     total_calls = 0
     input_tokens: dict[str, int] = {}
@@ -409,7 +412,7 @@ def _induction_setup(
     service_complete = True
     prompt_completion_bytes = 0
     manifests_seen: set[str] = set()
-    verified_cards: dict[str, str] = {}
+    verified_cards: dict[str, tuple[str, str]] = {}
     manifest_digests: list[str] = []
 
     for value in paths:
@@ -434,7 +437,10 @@ def _induction_setup(
         tokenizer = manifest.get("tokenizer_id")
         if not isinstance(model, str) or not model or not isinstance(tokenizer, str) or not tokenizer:
             raise ValueError("induction manifest lacks its model/tokenizer identity")
-        call_key = f"protocol_inducer|{model}|{tokenizer}"
+        family = manifest.get("protocol_family")
+        if family not in PROTOCOL_FAMILIES:
+            raise ValueError("induction manifest lacks a supported protocol family")
+        call_key = f"protocol_inducer|{family}|{model}|{tokenizer}"
         total_calls += manifest["model_calls"]
         for source_name, totals in (("input_tokens", input_tokens), ("output_tokens", output_tokens)):
             count = manifest.get(source_name)
@@ -477,14 +483,14 @@ def _induction_setup(
                 or entry.get("bytes") != len(card_payload)
             ):
                 raise ValueError("induced protocol card does not match its content hash/identity")
-            if protocol_id in verified_cards and verified_cards[protocol_id] != card_digest:
-                raise ValueError("induction manifests assign conflicting content to one protocol ID")
-            verified_cards[protocol_id] = card_digest
+            if protocol_id in verified_cards and verified_cards[protocol_id] != (card_digest, family):
+                raise ValueError("induction manifests assign conflicting content/family to one protocol ID")
+            verified_cards[protocol_id] = (card_digest, family)
         manifest_digests.append(digest)
 
     for protocol_id, expected_digest in expected_cards.items():
-        actual_digest = verified_cards.get(protocol_id)
-        if actual_digest != expected_digest:
+        actual = verified_cards.get(protocol_id)
+        if actual is None or actual[0] != expected_digest:
             raise ValueError(f"candidate {protocol_id!r} is not covered by the supplied induction manifest(s)")
     return {
         "status": "verified_induction_manifests",
@@ -495,6 +501,9 @@ def _induction_setup(
         "service_seconds": service_seconds if service_complete else None,
         "prompt_completion_utf8_bytes": prompt_completion_bytes,
         "induction_manifest_sha256": manifest_digests,
+        "candidate_protocol_families": {
+            protocol_id: verified_cards[protocol_id][1] for protocol_id in expected_cards
+        },
     }
 
 
@@ -543,6 +552,8 @@ def freeze_protocol_frontier(spec_path: Path) -> dict[str, Any]:
         split_seed=split_seed,
         expected_cards={candidate["protocol_id"]: candidate["protocol_card_sha256"] for candidate in candidates},
     )
+    for candidate in candidates:
+        candidate["protocol_family"] = induction_setup["candidate_protocol_families"].get(candidate["protocol_id"])
 
     signatures = {tuple(tuple(call) for call in candidate["call_signature"]) for candidate in candidates}
     budgets = {candidate["communication_budget_bytes"] for candidate in candidates}

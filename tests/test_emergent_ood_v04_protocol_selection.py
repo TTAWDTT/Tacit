@@ -129,6 +129,7 @@ class EmergentOODProtocolSelectionTests(unittest.TestCase):
             "split_seed": self.split_seed,
             "split_sha256": self.bundle["manifest"]["split_sha256"],
             "task_key_id": self.bundle["manifest"]["task_key_id"],
+            "protocol_family": "compositional_symbolic",
             "inducer_model": "generator-model",
             "tokenizer_id": "generator-tokenizer",
             "input_tokens": 123,
@@ -203,13 +204,17 @@ class EmergentOODProtocolSelectionTests(unittest.TestCase):
         self.assertEqual(induction["status"], "verified_induction_manifests")
         self.assertEqual(induction["model_calls"], 1)
         self.assertEqual(induction["input_tokens_by_model_tokenizer"], {
-            "protocol_inducer|generator-model|generator-tokenizer": 123,
+            "protocol_inducer|compositional_symbolic|generator-model|generator-tokenizer": 123,
         })
         self.assertEqual(induction["prompt_completion_utf8_bytes"], 39)
+        self.assertEqual(induction["candidate_protocol_families"], {
+            "accurate-costly": "compositional_symbolic",
+            "compact-lower-accuracy": "compositional_symbolic",
+        })
         amortized = report["selection_setup_cost"]["amortized_protocol_induction_cost_per_reuse_episode"]
         self.assertAlmostEqual(amortized["model_calls"], 0.01)
         self.assertEqual(amortized["model_output_tokens_by_model_tokenizer"], {
-            "protocol_inducer|generator-model|generator-tokenizer": 0.45,
+            "protocol_inducer|compositional_symbolic|generator-model|generator-tokenizer": 0.45,
         })
 
     def test_rejects_incomplete_or_repeated_validation_batch_coverage(self):

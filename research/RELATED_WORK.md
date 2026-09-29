@@ -32,6 +32,14 @@ OPTiMACS learns a task-conditioned representation-selection policy from complete
 
 This directly challenges any claim that Tacit is the first to learn adaptive message representations. It belongs in the learned-format baseline family, separately from a reusable protocol artifact. Tacit's remaining research question must be narrower and testable: do stable, compositional representations improve the complete frontier under held-out tasks, heterogeneous receivers, equal schedule/budget, and measured selection/setup costs? See the [OPTiMACS source audit](OPTIMACS_AUDIT_V0_1.md).
 
+### Yang et al. (2023), *Large Language Models as Optimizers* (OPRO)
+
+[arXiv paper](https://arxiv.org/abs/2309.03409) · [official Google DeepMind repository](https://github.com/google-deepmind/opro) · [small-model replication and limitations](https://arxiv.org/abs/2405.10276)
+
+OPRO iteratively generates candidate solutions from prior candidates and their measured scores; its prompt-optimization experiments report gains over human-written instructions on several benchmarks. A later study focused on smaller optimizers reports limited effectiveness when model capability is weak and recommends direct, explicit instructions as a robust low-cost baseline. This establishes iterative prompt search as prior art, while warning that a small local model may be a poor optimizer and that search calls must be measured. It also shows why merely asking one model to invent instructions is not the same as optimizing them.
+
+For v0.4, the training-only inducer can now propose either compact symbolic candidates or ordinary-English prompt candidates. The latter must communicate the complete tuple in natural prose and cannot use abbreviations, codewords, JSON, or tables. A complete validation set may retain a Pareto shortlist, but this is one-shot hypothesis generation followed by held-out model selection—not OPRO's iterative score-feedback loop. Do not call the English family "optimized" until a preregistered search procedure is executed and its cumulative generator, validation, and selection costs are charged. AutoForm remains a separate prompt-selected-format baseline, and the fixed English instruction remains unoptimized.
+
 ### Pei et al. (2026), *When LLMs Develop Languages: Symbolic Communication for Efficient Multi-Agent Reasoning* (CLSR), ICML 2026
 
 [arXiv paper](https://arxiv.org/abs/2606.29354) · [official LSF/MDia code](https://github.com/pzqpzq/LSF_MDia) · [detailed audit](CLSR_AUDIT_V0_1.md)

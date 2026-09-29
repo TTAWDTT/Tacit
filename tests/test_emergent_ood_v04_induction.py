@@ -68,6 +68,18 @@ class EmergentOODProtocolInductionTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "unexpected schema"):
             parse_candidate_cards(json.dumps({"schema": OUTPUT_SCHEMA, "protocols": [], "rationale": "bad"}), candidate_count=0)
 
+    def test_plain_english_candidates_are_constrained_to_the_natural_language_family(self):
+        examples = sample_training_examples(split=self.split, task_key=self.key, example_count=8)
+        messages = build_induction_messages(
+            split=self.split, examples=examples, candidate_count=2, protocol_family="plain_english",
+        )
+        payload = json.loads(messages[1]["content"].split("\n\n", 1)[1])
+        constraints = " ".join(payload["design_constraints"])
+        self.assertEqual(payload["candidate_family"], "plain_english")
+        self.assertIn("ordinary, concise English", payload["family_goal"])
+        self.assertIn("Do not use abbreviations", constraints)
+        self.assertNotIn("Do not use ordinary English sentences", constraints)
+
     def test_dry_run_reports_training_only_plan_without_writing_or_calling(self):
         cache_root = Path(__file__).resolve().parents[1] / ".cache"
         cache_root.mkdir(exist_ok=True)
@@ -117,6 +129,7 @@ class EmergentOODProtocolInductionTests(unittest.TestCase):
                     split_seed=31, task_key_path=key_path, example_count=16, candidate_count=2,
                     output_dir=output_dir, execute=True, model="mock-requested-model",
                     tokenizer_id="mock-tokenizer", resource_preflight=preflight_path,
+                    protocol_family="plain_english",
                 )
 
             preflight.assert_called_once()
@@ -124,6 +137,7 @@ class EmergentOODProtocolInductionTests(unittest.TestCase):
             client_type.return_value.complete.assert_called_once()
             self.assertTrue(manifest["inference_started"])
             self.assertEqual(manifest["model_calls"], 1)
+            self.assertEqual(manifest["protocol_family"], "plain_english")
             self.assertEqual(manifest["input_tokens"], 310)
             self.assertEqual(manifest["output_tokens"], 80)
             self.assertEqual(len(manifest["candidate_cards"]), 2)
