@@ -21,6 +21,16 @@ sender-selected semantic fidelity are left null instead of being guessed.
 This makes failed messages auditable while keeping the synthetic target out of
 the scorer fields.
 
+Run the paired fidelity/task/cost analysis after collecting a ledger:
+
+```powershell
+python experiments/private_match_v0_2/report.py .cache/private_match_v0_2/pilot.jsonl --output .cache/private_match_v0_2/report.json
+```
+
+Task parameters contain fixed task-scale settings; episode seeds are stored
+under diagnostics so independent episodes pool into the same task/model
+stratum and paired bootstrap intervals use the full episode set.
+
 ## Safe behavior
 
 The CLI is dry-run by default and never launches a model process. Model

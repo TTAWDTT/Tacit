@@ -8,6 +8,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 import time
 from pathlib import Path
@@ -71,11 +72,15 @@ def _message_diagnostics(
     try:
         if protocol_id == "json":
             decoded = json.loads(message)
-            valid = isinstance(decoded, dict)
+            valid = (
+                isinstance(decoded, dict)
+                and set(decoded) == set(target_record)
+                and all(isinstance(value, str) for value in decoded.values())
+            )
             return valid, valid and decoded == target_record
         if protocol_id == "tuple":
             values = message.split(",")
-            valid = len(values) == len(feature_order) and all(values)
+            valid = len(values) == len(feature_order) and all(re.fullmatch(r"v\d{4}", value) for value in values)
             decoded = dict(zip(feature_order, values)) if valid else None
             return valid, valid and decoded == target_record
         if protocol_id == "hex_nibbles":
@@ -157,7 +162,6 @@ def run_condition(
                 "candidate_count": candidate_count,
                 "feature_count": feature_count,
                 "vocabulary_size": vocabulary_size,
-                "seed": seed,
             },
             "model_population_id": model_population_id,
             "agent_models": {
@@ -169,12 +173,13 @@ def run_condition(
         "protocol": {"policy_id": policy_id, "code_id": code_id, "decoder_id": decoder_id},
         "outcome": {"joint_success": success, "answer_score": 1.0 if success else 0.0},
         "diagnostics": {
+            "generation_seed": seed,
             "message_text": message,
             "answer_text": answer,
             "answer_is_candidate_id": answer in {row["candidate_id"] for row in receiver_view["candidates"]},
             "message_format_valid": format_valid,
             "message_semantic_fidelity": message_fidelity,
-            "sender_truncated": bool(calls[0]["truncated"]) if sender_model is not None else False,
+            "sender_truncated": bool(calls[0]["truncated"]) if sender_model is not None else None,
             "receiver_truncated": bool(calls[-1]["truncated"]),
         },
         "transmissions": transmissions,

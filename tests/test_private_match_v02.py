@@ -7,6 +7,7 @@ from pathlib import Path
 
 from experiments.private_match_v0_1.generate_tasks import generate_episode
 from experiments.private_match_v0_2.protocols import PROTOCOL_IDS, protocol_by_id
+from experiments.private_match_v0_2.report import private_match_report
 from experiments.private_match_v0_2.runner import _message_diagnostics, run_condition
 from tacit.runtime import ChatCompletion
 from tools.cost_report import read_jsonl
@@ -41,7 +42,9 @@ class PrivateMatchV02Tests(unittest.TestCase):
         target = {"f0": "v0002", "f1": "v0010"}
         self.assertEqual(_message_diagnostics("json", '{"f0":"v0002","f1":"v0010"}', target, fields, 16), (True, True))
         self.assertEqual(_message_diagnostics("json", '{"f0":"v0002","f1":"v0009"}', target, fields, 16), (True, False))
+        self.assertEqual(_message_diagnostics("json", '{"f0":"v0002"}', target, fields, 16), (False, False))
         self.assertEqual(_message_diagnostics("tuple", "v0002,v0010", target, fields, 16), (True, True))
+        self.assertEqual(_message_diagnostics("tuple", "v0002, v0010", target, fields, 16), (False, False))
         self.assertEqual(_message_diagnostics("hex_nibbles", "2a", target, fields, 16), (True, True))
         self.assertEqual(_message_diagnostics("hex_nibbles", "2z", target, fields, 16), (False, False))
         self.assertEqual(_message_diagnostics("concise_nl", "record: ...", target, fields, 16), (None, None))
@@ -71,6 +74,8 @@ class PrivateMatchV02Tests(unittest.TestCase):
             receiver_tokenizer_id="fake-receiver-tokenizer-v1", model_population_id="fake-population",
         )
         self.assertTrue(row["outcome"]["joint_success"])
+        self.assertNotIn("seed", row["stratum"]["task_parameters"])
+        self.assertEqual(row["diagnostics"]["generation_seed"], 92)
         self.assertEqual(row["model_calls"][0]["tokenizer"], "fake-sender-tokenizer-v1")
         self.assertEqual(row["model_calls"][1]["tokenizer"], "fake-receiver-tokenizer-v1")
         self.assertEqual(len(row["transmissions"]), 1)
@@ -98,7 +103,50 @@ class PrivateMatchV02Tests(unittest.TestCase):
         self.assertEqual(len(row["model_calls"]), 1)
         self.assertEqual(row["protocol"]["policy_id"], "no_message")
         self.assertIsNone(row["diagnostics"]["message_text"])
-        self.assertFalse(row["diagnostics"]["sender_truncated"])
+        self.assertIsNone(row["diagnostics"]["sender_truncated"])
+
+    def test_report_separates_fidelity_from_success_and_pairs_by_episode(self):
+        rows = []
+        for index, seed in enumerate((111, 222)):
+            episode_id = f"report-{index}"
+            sender_view, receiver_view, gold = generate_episode(
+                episode_id=episode_id, seed=seed, candidate_count=8,
+                feature_count=5, vocabulary_size=16,
+            )
+            target = sender_view["target_record"]
+            correct_id = gold["target_candidate_id"]
+
+            no_message = run_condition(
+                episode_id=episode_id, seed=seed, candidate_count=8,
+                feature_count=5, vocabulary_size=16, protocol=protocol_by_id("no_message"),
+                sender_model=None, receiver_model=FakeModel("receiver", lambda _: "bad-id"),
+                sender_tokenizer_id=None, receiver_tokenizer_id="receiver-tok",
+                model_population_id="pair-v1",
+            )
+            json_row = run_condition(
+                episode_id=episode_id, seed=seed, candidate_count=8,
+                feature_count=5, vocabulary_size=16, protocol=protocol_by_id("json"),
+                sender_model=FakeModel("sender", lambda _: json.dumps(target, separators=(",", ":"))),
+                receiver_model=FakeModel("receiver", lambda messages: correct_id),
+                sender_tokenizer_id="sender-tok", receiver_tokenizer_id="receiver-tok",
+                model_population_id="pair-v1",
+            )
+            rows.extend((no_message, json_row))
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "rows.jsonl"
+            path.write_text("".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8")
+            report = private_match_report(read_jsonl(path), replicates=100)
+
+        json_condition = next(item for item in report["conditions"] if item["protocol"]["policy_id"] == "json")
+        self.assertEqual(json_condition["episodes"], 2)
+        self.assertEqual(json_condition["diagnostics"]["message_semantic_fidelity"]["rate"], 1.0)
+        self.assertEqual(json_condition["task"]["joint_success_rate"], 1.0)
+        comparison = next(item for item in report["paired_comparisons"] if item["paired_episode_count"] == 2)
+        self.assertFalse(comparison["model_strata_matched"])
+        self.assertEqual(comparison["metrics"]["joint_success"]["mean_left_minus_right"], 1.0)
+        self.assertEqual(comparison["metrics"]["message_semantic_fidelity"]["paired_episodes"], 0)
+        self.assertEqual(comparison["metrics"]["message_semantic_fidelity"]["missing_pairs"], 2)
 
 
 if __name__ == "__main__":

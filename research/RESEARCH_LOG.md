@@ -1,5 +1,12 @@
 # Research log
 
+## 2026-09-29 — Correct Private Match episode stratification and add diagnostic analysis
+
+- **Failure found:** the first v0.2 report test showed that putting the random generation seed inside `task_parameters` split each replicate into its own stratum. Paired records still shared IDs one at a time, but episodes could not pool for condition summaries or confidence intervals. This is an analysis-design error, not a model result.
+- **Correction:** moved the generation seed into the episode diagnostics while keeping only fixed task-scale values in the stratum. A regression now checks that two independently generated seeds pool into one condition summary and a two-episode paired comparison.
+- **Analysis artifact:** added [`experiments/private_match_v0_2/report.py`](../experiments/private_match_v0_2/report.py), which validates the diagnostics ledger, reports task success separately from format validity and exact message fidelity, summarizes generated-text bytes, and produces paired episode bootstrap contrasts. It embeds the existing paired success/cost report and marks model-stratum mismatches (such as no-message versus sender/receiver arms) rather than calling them representation-only contrasts.
+- **Limits:** semantic fidelity is reported only for mechanically decodable codes; free-form natural language remains unscored by that diagnostic. Bootstrap output is an exploratory estimator; small pilot sample sizes do not establish stable superiority. No model inference or host-resource preflight was run.
+
 ## 2026-09-29 — Instrument paired Private Match formats without running inference
 
 - **Task / rationale:** the existing v0.1 synthetic task has a proved one-way coding floor and exact no-message prior, but no paired model runner that accounts for the serialized message boundary. The latest experiment plan still requires a suitable receiver and an idle-resource pass before inference.
