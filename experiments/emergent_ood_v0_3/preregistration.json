@@ -1,0 +1,67 @@
+{
+  "schema": "tlu.preregistration.v1",
+  "experiment_id": "emergent_ood_receiver_utility_v0_3_capability",
+  "status": "frozen_runner_no_model_execution",
+  "date_frozen": "2026-09-29",
+  "purpose": "Establish receiver task capability and end-to-end message plumbing before any protocol ranking.",
+  "hypothesis": "If the receiver cannot solve the five paired episodes with the correct target supplied directly, then observed communication-format differences on this task are not interpretable as protocol utility.",
+  "scope": "A staged local capability screen only. The plain-English arm is a feasibility reference, not an optimized natural-language baseline. No language superiority claim is possible from this screen.",
+  "task": {
+    "source": "experiments/emergent_ood_v0_2/episodes.py",
+    "seed": 17,
+    "candidate_count": 5,
+    "episode_count": 5,
+    "sampling": "Select one held-out candidate set and enumerate each of its five meanings exactly once as private target; keep identical candidate order in each episode.",
+    "analytic_no_message_accuracy": 0.2,
+    "candidate_order_side_channel": "eliminated and tested; ordering is independent of target"
+  },
+  "conditions": [
+    {
+      "id": "full_information",
+      "model_calls_per_episode": 1,
+      "receiver_view": "candidate set plus direct English description of the private target",
+      "transmissions": 0,
+      "purpose": "receiver capability ceiling; not a communication condition"
+    },
+    {
+      "id": "no_message",
+      "model_calls_per_episode": 1,
+      "receiver_view": "candidate set only",
+      "transmissions": 0,
+      "purpose": "empirical model behavior against the analytic 20% Bayes reference"
+    },
+    {
+      "id": "natural_language",
+      "model_calls_per_episode": 2,
+      "receiver_view": "candidate set plus exact sender-produced plain-English message",
+      "transmissions": 1,
+      "purpose": "end-to-end message-pipeline feasibility, not a protocol ranking"
+    }
+  ],
+  "stopping_rule": "Execute full_information first. Continue to no_message and natural_language only if all five full_information outputs are strict-valid and exactly correct. Otherwise stop this task/model pair and diagnose capability or output-contract failure. The runner enforces this rule for executed follow-up batches by requiring a full-information ledger with exactly these five episode IDs, targets, and candidate orders, all exact and format-valid, and the same receiver model, tokenizer, and model population.",
+  "execution": {
+    "staging": [
+      {"batch": "full_information", "requests": 5},
+      {"batch": "no_message", "requests": 5},
+      {"batch": "natural_language", "requests": 10}
+    ],
+    "maximum_requests_per_batch": 12,
+    "request_timeout_seconds": 30,
+    "runner_default": "dry-run",
+    "requires_explicit_execute": true,
+    "endpoints": "loopback OpenAI-compatible server must already be running; non-loopback endpoints and redirects are rejected",
+    "resource_gate": "Pass the unchanged read-only resource gate before each model batch; local inference only; this preregistration does not authorize bypassing it.",
+    "model_or_training_run_performed": false
+  },
+  "outcomes": {
+    "primary": ["strict candidate-ID validity", "exact receiver selection", "paired episode IDs"],
+    "costs": ["serialized application bytes", "complete reported input/output tokens per model call", "model call count", "service and wall latency"],
+    "claim_limit": "Five episodes are a capability screen and cannot estimate a stable generalization rate or support equal-budget protocol superiority."
+  },
+  "follow_up_gate": "Only after full-information success and plumbing validation, preregister a larger held-out comparison with development-tuned natural language, valid JSON, compact structured text, symbolic code with setup charged, no-message and oracle controls, multiple receiver families, and equal byte/token budget curves.",
+  "implementation": {
+    "runner": "experiments/emergent_ood_v0_3/runner.py",
+    "test_file": "tests/test_emergent_ood_runner.py",
+    "follow_up_gate": "--capability-ledger; validated before creating output files or contacting endpoints"
+  }
+}
