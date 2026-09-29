@@ -82,8 +82,13 @@ def validate_private_match_records(records: list[dict[str, Any]], *, task_key: b
                  f"{prefix}: invalid generation_seed")
         episode_id = f"pmt3-{seed:012d}"
         _require(row.get("episode_id") == episode_id, f"{prefix}: episode ID differs from seed")
-        split = "calibration" if condition == "full_information" else "evaluation"
-        _require(stratum.get("split") == split, f"{prefix}: split does not match condition")
+        expected_split = (
+            "calibration" if condition == "full_information" else diag.get("split")
+        )
+        _require(expected_split in {"calibration", "development", "evaluation"},
+                 f"{prefix}: unknown data split")
+        _require(stratum.get("split") == expected_split,
+                 f"{prefix}: split does not match diagnostics")
 
         episode = generate_episode(episode_id=episode_id, seed=seed, q=q,
                                    task_key=task_key)

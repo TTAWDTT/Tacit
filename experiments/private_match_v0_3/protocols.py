@@ -11,8 +11,10 @@ import re
 from typing import Any
 
 
-PROMPT_REVISION = "pmt3-prompts-4"
-PROTOCOL_IDS = ("concise_nl", "compact_kv", "decimal_index", "strict_json", "fixed_binary")
+PROMPT_REVISION = "pmt3-prompts-5"
+PROTOCOL_IDS = (
+    "concise_nl", "short_nl", "compact_kv", "decimal_index", "strict_json", "fixed_binary",
+)
 
 
 def _decimal_width(q: int) -> int:
@@ -48,6 +50,16 @@ def protocol_by_id(name: str, q: int) -> Protocol:
             "and exact value from each message, match the pair to one candidate record, and return only its candidate_id."
         )
         code, decoder = "pmt3-concise-nl-v1", "pmt3-nl-coordinate-v1"
+    elif name == "short_nl":
+        sender = sender_common + (
+            'Write exactly one short English sentence in this form: "x is x0001." '
+            'Replace x and the example value with the coordinate and value in your private context.'
+        )
+        receiver = (
+            "Each message is one short English sentence such as x is x0001. Read the coordinate and exact value, "
+            "combine the two messages, match the candidate table, and return only candidate_id."
+        )
+        code, decoder = "pmt3-short-nl-v1", "pmt3-short-nl-coordinate-v1"
     elif name == "compact_kv":
         sender = sender_common + (
             'Return exactly one key-value string, such as x=x0001 or y=y0001. No spaces, punctuation, or explanation.'
@@ -117,6 +129,8 @@ def encode_coordinate_message(name: str, *, q: int, sender: str, value: str) -> 
         raise ValueError("coordinate value is outside the registered q domain")
     if name == "concise_nl":
         return f"The {coordinate} coordinate is {value}."
+    elif name == "short_nl":
+        return f"{coordinate} is {value}."
     elif name == "compact_kv":
         return f"{coordinate}={value}"
     elif name == "decimal_index":
@@ -143,6 +157,14 @@ def parse_coordinate_message(name: str, message: str, *, q: int, sender: str) ->
     if name == "concise_nl":
         digits = _decimal_width(q)
         match = re.fullmatch(rf"The ([xy]) coordinate is ([xy]\d{{{digits}}})\.", message)
+        if not match:
+            return None, None, None
+        if match.group(1) != coordinate or match.group(2)[0] != coordinate:
+            return False, True, None
+        index = int(match.group(2)[1:])
+    elif name == "short_nl":
+        digits = _decimal_width(q)
+        match = re.fullmatch(rf"([xy]) is ([xy]\d{{{digits}}})\.", message)
         if not match:
             return None, None, None
         if match.group(1) != coordinate or match.group(2)[0] != coordinate:

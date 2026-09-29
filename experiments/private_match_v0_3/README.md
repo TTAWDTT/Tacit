@@ -124,14 +124,15 @@ python -m experiments.private_match_v0_3.bit_frontier --q 4 --max-bits 8
 
 ## Frozen feasibility protocols and runner (model calls not run)
 
-`protocols.py` freezes prompt/parser/context revision `pmt3-prompts-4` and five representation
-IDs: `concise_nl`, `compact_kv`, `decimal_index`, `strict_json`, and `fixed_binary`. It now
-provides deterministic encoders alongside the model prompts and decoders. The
-parser accepts canonical compact KV/JSON strings, exactly `log2(q)` binary
-digits, canonical zero-based decimal indices, and the exact frozen NL template.
-Noncanonical English paraphrases remain unknown pending a separate blinded
-semantic judge. `concise_nl` is a feasibility arm; it has not been optimized
-and must not be described as the strong natural-language baseline.
+`protocols.py` freezes prompt/parser/context revision `pmt3-prompts-5` and six representation
+IDs: `concise_nl`, `short_nl`, `compact_kv`, `decimal_index`, `strict_json`, and
+`fixed_binary`. It provides deterministic encoders alongside the model prompts
+and decoders. The parser accepts canonical compact KV/JSON strings, exactly
+`log2(q)` binary digits, canonical zero-based decimal indices, and the exact
+frozen sentences for both English templates. Noncanonical English paraphrases
+remain unknown pending a separate blinded semantic judge. The English baseline
+is selected from these two frozen templates using development outcomes only;
+neither development result is evaluation evidence.
 
 The deterministic encoder can be used directly without a model:
 
@@ -144,6 +145,8 @@ encode_coordinate_message("fixed_binary", q=4, sender="sender_y", value="y0003")
 # '11'
 encode_coordinate_message("decimal_index", q=4, sender="sender_y", value="y0003")
 # '3'
+encode_coordinate_message("short_nl", q=4, sender="sender_y", value="y0003")
+# 'y is y0003.'
 ```
 
 All formats encode the same coordinate meaning; only their surface channel
@@ -175,6 +178,27 @@ The exact endpoint/model and tokenizer settings remain pending. No inference
 has been authorized or run by this preregistration. The default run path is a
 dry-run summary and makes no model request. Before execution, create the key
 above; the runner reads it from `--task-key-file` (defaulting to the same path).
+
+The development shard is seeds 302000–302007. Run it in two four-episode
+`both_sources` batches (12 model calls each), using the passing calibration
+ledger and `--split development`; collect one ledger per English candidate.
+Once both ledgers exist, select and freeze the candidate without any model call:
+
+```powershell
+python -m experiments.private_match_v0_3.select_nl_baseline `
+  --task-key-file .cache/private_match_v0_3/task.key `
+  --concise-ledger .cache/private_match_v0_3/development_concise_nl.jsonl `
+  --short-ledger .cache/private_match_v0_3/development_short_nl.jsonl `
+  --output .cache/private_match_v0_3/nl_selection.json
+```
+
+The selector verifies exact development IDs, pairing, task key and shape,
+model/tokenizer population, and complete token telemetry. It maximizes exact
+joint success, then minimizes complete inference tokens, logical UTF-8 payload
+bytes, and protocol ID. Its manifest hashes the ledgers, preregistration, and
+protocol implementation and totals both candidates' calls and costs as
+optimizer setup. The held-out evaluation shard is seeds 304000–304007 and must
+not be used by the selector.
 
 ### Analyze completed ledger batches
 

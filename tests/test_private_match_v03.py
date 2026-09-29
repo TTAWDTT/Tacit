@@ -23,6 +23,7 @@ from experiments.private_match_v0_3.generate_tasks import (
     generate_episode_for_target, model_visible_view,
 )
 from experiments.private_match_v0_3.prior_shift import evaluate_prior_shift
+from experiments.private_match_v0_3.select_nl_baseline import select_natural_language_baseline
 from contextlib import redirect_stdout
 from experiments.private_match_v0_3.bit_frontier import (
     frontier as triadic_bit_frontier, optimal_nonuniform_success_probability,
@@ -102,6 +103,8 @@ class FrozenFormatSender:
             text = f"{coordinate}={value}"
         elif self.protocol_id == "decimal_index":
             text = str(int(value[1:]))
+        elif self.protocol_id == "short_nl":
+            text = f"{coordinate} is {value}."
         elif self.protocol_id == "strict_json":
             text = json.dumps({coordinate: value}, separators=(",", ":"))
         elif self.protocol_id == "fixed_binary":
@@ -318,10 +321,11 @@ class PrivateMatchV03Tests(unittest.TestCase):
         )
 
     def test_frozen_protocols_have_strict_decoders_and_fail_closed(self):
-        self.assertEqual(len(PROTOCOL_IDS), 5)
+        self.assertEqual(len(PROTOCOL_IDS), 6)
         expected = {
             "compact_kv": "x=x0002",
             "decimal_index": "2",
+            "short_nl": "x is x0002.",
             "strict_json": '{"x":"x0002"}',
             "fixed_binary": "10",
         }
@@ -330,9 +334,11 @@ class PrivateMatchV03Tests(unittest.TestCase):
                 self.assertEqual(parse_coordinate_message(name, valid, q=4, sender="sender_x"), (True, True, "x0002"))
                 self.assertFalse(parse_coordinate_message(name, valid + " ", q=4, sender="sender_x")[0])
                 protocol = protocol_by_id(name, 4)
-                self.assertIn("pmt3-prompts-4", protocol.protocol_id)
+                self.assertIn("pmt3-prompts-5", protocol.protocol_id)
         self.assertEqual(parse_coordinate_message("concise_nl", "The x coordinate is x0002.", q=4, sender="sender_x"), (True, True, "x0002"))
         self.assertEqual(parse_coordinate_message("concise_nl", "x is probably 0002", q=4, sender="sender_x"), (None, None, None))
+        self.assertEqual(parse_coordinate_message("short_nl", "x is x0002.", q=4, sender="sender_x"), (True, True, "x0002"))
+        self.assertEqual(parse_coordinate_message("short_nl", "x is probably x0002", q=4, sender="sender_x"), (None, None, None))
         for malformed in ("", " 2", "02", "+2", "2.0", "4"):
             self.assertFalse(parse_coordinate_message(
                 "decimal_index", malformed, q=4, sender="sender_x",
@@ -390,7 +396,7 @@ class PrivateMatchV03Tests(unittest.TestCase):
         self.assertEqual(len({row["protocol"]["code_id"] for row in rows}), len(PROTOCOL_IDS))
         self.assertEqual(len({row["protocol"]["decoder_id"] for row in rows}), len(PROTOCOL_IDS))
         paired = paired_report(rows, replicates=100, seed=4)
-        self.assertEqual(len(paired["comparisons"]), 10)
+        self.assertEqual(len(paired["comparisons"]), 15)
         self.assertTrue(all(item["control_alignment"]["policy_matched"] for item in paired["comparisons"]))
         self.assertTrue(all(not item["control_alignment"]["decoder_matched"] for item in paired["comparisons"]))
         self.assertTrue(all(item["control_alignment"]["code_differs"] for item in paired["comparisons"]))
@@ -517,6 +523,74 @@ class PrivateMatchV03Tests(unittest.TestCase):
                 payload_bits_y=1,
                 seed=910_000,
                 max_episodes=31,
+            )
+
+    def test_nl_baseline_selector_uses_only_paired_development_ledgers(self):
+        class WrongConciseSender(FrozenFormatSender):
+            def complete(self, messages):
+                request = json.loads(messages[1]["content"])
+                view = json.loads(request["private_context"])
+                coordinate = view["coordinate"]
+                value = view["private_value"]
+                index = int(value[1:])
+                wrong_value = f"x{(index + 1) % 4:04d}" if coordinate == "x" else value
+                text = f"The {coordinate} coordinate is {wrong_value}."
+                return ChatCompletion(text, self.model_name, input_tokens=10, output_tokens=4)
+
+        rows_by_protocol = {"concise_nl": [], "short_nl": []}
+        for protocol_id in rows_by_protocol:
+            protocol = protocol_by_id(protocol_id, 4)
+            sender = (WrongConciseSender(protocol_id) if protocol_id == "concise_nl"
+                      else FrozenFormatSender(protocol_id))
+            receiver = FrozenFormatReceiver(protocol_id)
+            for seed in range(302000, 302008):
+                rows_by_protocol[protocol_id].append(run_condition(
+                    seed=seed, q=4, condition="both_sources", protocol=protocol,
+                    sender_model=sender, receiver_model=receiver,
+                    sender_tokenizer_id="fake-tokenizer", receiver_tokenizer_id="fake-tokenizer",
+                    model_population_id="fake-population-v1", task_key=TEST_TASK_KEY,
+                    split="development",
+                ))
+
+        with tempfile.TemporaryDirectory() as temporary:
+            paths = {}
+            for protocol_id, rows in rows_by_protocol.items():
+                path = Path(temporary) / f"{protocol_id}.jsonl"
+                path.write_text("".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8")
+                paths[protocol_id] = path
+            selection = select_natural_language_baseline(
+                ledger_paths=paths, task_key=TEST_TASK_KEY,
+            )
+            evaluation_rows = copy.deepcopy(rows_by_protocol["short_nl"])
+            for row in evaluation_rows:
+                row["stratum"]["split"] = "evaluation"
+                row["diagnostics"]["split"] = "evaluation"
+            evaluation_path = Path(temporary) / "evaluation-short-nl.jsonl"
+            evaluation_path.write_text(
+                "".join(json.dumps(row) + "\n" for row in evaluation_rows),
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(ValueError, "development records only"):
+                select_natural_language_baseline(
+                    ledger_paths={"concise_nl": paths["concise_nl"], "short_nl": evaluation_path},
+                    task_key=TEST_TASK_KEY,
+                )
+        self.assertEqual(selection["selected_protocol_id"], "short_nl")
+        self.assertEqual(selection["candidate_metrics"][0]["joint_successes"], 0)
+        self.assertEqual(selection["candidate_metrics"][1]["joint_successes"], 8)
+        self.assertEqual(selection["optimizer_setup_cost"]["development_model_calls"], 48)
+        self.assertTrue(selection["optimizer_setup_cost"]["account_as_optimizer_setup"])
+        self.assertFalse(selection["evaluation_data_used"])
+
+    def test_full_information_cannot_be_labeled_as_development(self):
+        with self.assertRaisesRegex(ValueError, "are calibration"):
+            run_condition(
+                seed=303000, q=4, condition="full_information",
+                protocol=protocol_by_id("concise_nl", 4), sender_model=None,
+                receiver_model=None, sender_tokenizer_id=None,
+                receiver_tokenizer_id="fake-tokenizer",
+                model_population_id="fake-population-v1", task_key=TEST_TASK_KEY,
+                split="development",
             )
 
     def test_task_key_file_is_256_bit_private_and_refuses_accidental_replacement(self):

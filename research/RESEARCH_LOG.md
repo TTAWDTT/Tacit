@@ -1,5 +1,37 @@
 # Research log
 
+## 2026-09-29 — Freeze a development-only English-template selector
+
+**Observation.** The decimal-index audit showed that concise English alone is a
+weak natural-language baseline: prior senders spontaneously emitted decimal
+shorthand instead. Selecting an English baseline on evaluation data would leak
+selection into the comparison, while open-ended prompt search would create a
+large unbudgeted optimizer.
+
+**Hypothesis and design.** A small, preregistered choice between two frozen
+English templates can strengthen the baseline without touching the held-out
+evaluation shard. Added `short_nl` (`x is x0001.`) beside `concise_nl`, eight
+development episodes on seeds 302000–302007, and prompt/parser revision
+`pmt3-prompts-5`. A pure ledger selector accepts development rows only, checks
+that candidates are paired and share task/model/tokenizer settings, chooses by
+joint success then complete model tokens, delivered payload bytes, and protocol
+ID, and hashes the sources and input ledgers in a freeze manifest. Every
+candidate call is counted as optimizer setup. The 15 preregistered pairwise
+format contrasts are updated for six representations.
+
+**Prediction.** If English wording materially changes receiver reliability,
+the two templates may differ on development success. That selection is
+exploratory and must not be counted as confirmatory evidence; the frozen winner
+must be evaluated on disjoint seeds 304000–304007. The selector makes no model
+calls and cannot establish that the winner beats optimized natural language,
+AutoForm, or a learned protocol.
+
+**Verification.** The Private Match v0.3 fake-client suite passes all 20 tests;
+Python compilation, preregistration/protocol/split consistency, and whitespace
+checks pass. A four-episode short-NL development dry run reports 12 planned
+calls and `inference_started=false`. No model inference or training was run for
+this amendment.
+
 ## 2026-09-29 — Add the observed decimal-shorthand baseline
 
 **Observation.** The prior DuoSum v0.6 audit found the model emitted decimal-only

@@ -80,9 +80,14 @@ def _private_contexts(episode: tuple[dict[str, Any], ...], condition: str) -> di
 def run_condition(*, seed: int, q: int, condition: str, protocol: Protocol,
                   sender_model: Any | None, receiver_model: Any,
                   sender_tokenizer_id: str | None, receiver_tokenizer_id: str,
-                  model_population_id: str, task_key: bytes) -> dict[str, Any]:
+                  model_population_id: str, task_key: bytes,
+                  split: str = "evaluation") -> dict[str, Any]:
     if condition not in CONDITIONS:
         raise ValueError("unknown condition")
+    if split not in {"development", "evaluation"}:
+        raise ValueError("split must be development or evaluation")
+    if condition == "full_information" and split != "evaluation":
+        raise ValueError("full_information records are calibration, not development/evaluation")
     episode_id = episode_id_for_seed(seed)
     episode = generate_episode(episode_id=episode_id, seed=seed, q=q, task_key=task_key)
     sender_x, sender_y, receiver, gold = episode
@@ -146,7 +151,7 @@ def run_condition(*, seed: int, q: int, condition: str, protocol: Protocol,
         "stratum": {
             "experiment_id": EXPERIMENT_ID,
             "task_id": "triadic-complementary-coordinate-match-v1",
-            "split": "calibration" if condition == "full_information" else "evaluation",
+            "split": "calibration" if condition == "full_information" else split,
             "task_parameters": {"q": q, "candidate_count": q * q, "agent_count": 3,
                                 "task_key_id": task_key_id(task_key)},
             "model_population_id": model_population_id,
@@ -179,6 +184,7 @@ def run_condition(*, seed: int, q: int, condition: str, protocol: Protocol,
         "outcome": {"joint_success": success, "answer_score": float(success)},
         "diagnostics": {
             "condition": condition, "generation_seed": seed,
+            "split": "calibration" if condition == "full_information" else split,
             "answer_text": answer, "answer_text_verbatim": answer_raw,
             "answer_candidate_id": answer if answer in {r["candidate_id"] for r in receiver["candidates"]} else None,
             "answer_format_valid": answer_raw == answer and answer in {r["candidate_id"] for r in receiver["candidates"]},
@@ -255,6 +261,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--execute", action="store_true", help="contact the configured loopback model endpoint")
     parser.add_argument("--condition", choices=CONDITIONS, default="full_information")
     parser.add_argument("--protocol", choices=PROTOCOL_IDS, default="compact_kv")
+    parser.add_argument("--split", choices=("development", "evaluation"), default="evaluation",
+                        help="development ledgers may select prompts but must never be reported as evaluation")
     parser.add_argument("--episodes", type=int, default=4)
     parser.add_argument("--seed", type=int, default=303000)
     parser.add_argument("--q", type=int, default=4)
@@ -275,10 +283,13 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if args.episodes < 1 or args.seed < 0 or args.q < 2 or args.q & (args.q - 1):
         parser.error("episodes and seed must be valid; q must be a power of two >= 2")
+    if args.condition == "full_information" and args.split != "evaluation":
+        parser.error("full_information calibration cannot be labeled development")
     calls = planned_model_calls(args.episodes, args.condition)
     if not args.execute:
         print(json.dumps({"mode": "dry-run", "condition": args.condition,
-                          "protocol": args.protocol, "planned_model_calls": calls,
+                          "protocol": args.protocol, "split": args.split,
+                          "planned_model_calls": calls,
                           "maximum_model_calls_per_batch": MAX_MODEL_CALLS_PER_BATCH,
                           "fits_call_cap": calls <= MAX_MODEL_CALLS_PER_BATCH,
                           "inference_started": False, "resource_preflight_required": True}, indent=2))
@@ -331,6 +342,7 @@ def main(argv: list[str] | None = None) -> int:
                 protocol=protocol, sender_model=sender, receiver_model=receiver,
                 sender_tokenizer_id=args.sender_tokenizer_id or None,
                 receiver_tokenizer_id=args.receiver_tokenizer_id,
+                split=args.split,
                 model_population_id=args.model_population_id, task_key=task_key)
             output.write(json.dumps(row, ensure_ascii=False, sort_keys=True) + "\n")
             output.flush()
