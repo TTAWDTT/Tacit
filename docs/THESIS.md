@@ -1,6 +1,6 @@
 # Research thesis
 
-**Status:** v0.6, updated 2026-09-29 after the emergent-communication held-out-utility audit and eighth failed local resource gate. This is a falsifiable research position, not a conclusion.
+**Status:** v0.7, updated 2026-09-29 after checking concept-level generalization prior work. This is a falsifiable research position, not a conclusion.
 
 ## Thesis
 
@@ -31,6 +31,7 @@ The first research goal is therefore not to invent notation or duplicate AutoFor
 - The local `INDEX_m` model screen has failed its frozen CPU/GPU/free-memory launch gate on eight checks. The latest read-only sample measured 32.93% mean CPU, 37.54% peak CPU, 21% GPU utilization, 1,016 MiB GPU memory use, and 2,938 MiB free system memory. These are host-state observations, not negative model or language results. Do not relax the gate. A format study still requires a newly eligible task/receiver condition and fresh held-out episodes, in addition to a resource-safe, preregistered run.
 - The audit of Kouwenhoven et al.'s LLM emergent-communication study narrows what its held-out results support: agents generate signals for unseen combinations, but the held-out block does not test independent receiver selection on those combinations. Structure correlations and training-partner success therefore do not establish OOD task utility or cost efficiency. A future emergent protocol comparison must include held-out receiver choice, a holistic-code control, and matched channel budgets; the paper's stated distractor count and chance rate also need reconciliation before replication. See the [audit](../research/EMERGENT_OOD_UTILITY_AUDIT_V0_1.md).
 - The model-free [`emergent_ood_v0_1` split fixture](../experiments/emergent_ood_v0_1/README.md) makes one compositionality test executable: it withholds nine triples while retaining every unary and pairwise combination in the 18-meaning training set. This guarantees third-order novelty at the meaning level, but no sender/receiver task has run; it is a dataset-design control, not language evidence.
+- Held-out receiver generalization and concept-level reference games are established prior work, including set/concept games (Mu & Goodman, NeurIPS 2021) and asymmetric transfer across abstraction levels (Kobrock et al., Findings ACL 2025). The small ternary split is a reproducibility fixture, not a novel benchmark; the remaining candidate gap concerns direct LLM endpoints, heterogeneous-receiver transfer, and complete communication/inference costs. This gap still needs broader falsification before any novelty claim. See the [generalization prior audit](../research/EMERGENT_GENERALIZATION_PRIORS_AUDIT_V0_1.md).
 
 The evidence thus sharpens the immediate research question: find or construct a task/receiver condition where the receiver can apply a delivered message reliably, demonstrate measurable communication necessity with exact no-message and centralized-oracle controls, and only then compare representations under matched policy and complete costs. Until those conditions are met, the project has no positive LLM language-superiority result.
 

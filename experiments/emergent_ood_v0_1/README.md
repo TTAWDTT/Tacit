@@ -1,9 +1,11 @@
 # Emergent OOD split v0.1
 
 This model-free fixture defines a controlled held-out-composition split for a
-three-attribute meaning space. It responds to an evaluation gap in the LLM
-emergent-communication literature: generating a signal for an unseen meaning
-does not show that another agent can decode it correctly.
+three-attribute meaning space. Held-out receiver generalization is an
+established evaluation idea; this small split exists only to validate a
+reproducible third-order partition. It is not a novel benchmark contribution.
+In particular, generating a signal for an unseen meaning does not show that
+another agent can decode it correctly.
 
 ## Split contract
 
@@ -43,4 +45,5 @@ symbolic, holistic training-set lookup, no-message, and full-information
 controls. The held-out receiver endpoint and complete channel/inference costs
 remain prerequisites for any protocol claim.
 
-See the [research audit](../../research/EMERGENT_OOD_UTILITY_AUDIT_V0_1.md).
+See the [held-out utility audit](../../research/EMERGENT_OOD_UTILITY_AUDIT_V0_1.md)
+and [generalization prior audit](../../research/EMERGENT_GENERALIZATION_PRIORS_AUDIT_V0_1.md).
