@@ -68,6 +68,8 @@ class FakeReceiver:
         elif self.condition == "no_message":
             return ChatCompletion(candidates[0]["candidate_id"], self.model, 30, 1, 0.01)
         else:
+            if not request["visible_transcript"]:
+                return ChatCompletion(candidates[0]["candidate_id"], self.model, 30, 1, 0.01)
             message = request["visible_transcript"][0]["message"]
             if self.condition == "natural_language":
                 meaning = {}
@@ -96,7 +98,7 @@ class EmergentOODV04RunnerTests(unittest.TestCase):
         self.attributes = self.split["attributes"]
         self.values = self.split["values_by_attribute"]
 
-    def _run(self, condition, episode=None, stage="validation"):
+    def _run(self, condition, episode=None, stage="validation", wire_budget_bytes=4096):
         episode = self.episode if episode is None else episode
         mock_condition = "json" if condition == "shared_protocol_card" else condition
         sender = None if condition in {"full_information", "no_message"} else FakeSender(mock_condition, self.attributes, self.values)
@@ -122,6 +124,7 @@ class EmergentOODV04RunnerTests(unittest.TestCase):
             split_seed=17,
             task_seed=9,
             model_population_id="fake-test-population",
+            wire_budget_bytes=wire_budget_bytes,
         )
         return row, sender, receiver
 
@@ -151,6 +154,20 @@ class EmergentOODV04RunnerTests(unittest.TestCase):
                     receiver_prompt = receiver.prompts[0][0]["content"]
                     self.assertIn("medium other than ordinary prose", sender_prompt)
                     self.assertIn("no fixed syntax is guaranteed", receiver_prompt)
+
+    def test_wire_budget_records_generated_but_undelivered_message_cost(self):
+        complete, _, _ = self._run("json")
+        payload_bytes = complete["costs"]["generated_message_bytes"]
+        envelope_bytes = complete["costs"]["application_wire_bytes"] - payload_bytes
+        budget = envelope_bytes + payload_bytes - 1
+        row, _, _ = self._run("json", wire_budget_bytes=budget)
+        self.assertEqual(row["communication_budget_bytes"], budget)
+        self.assertEqual(row["costs"]["communication_budget_bytes"], budget)
+        self.assertGreater(row["costs"]["generated_message_bytes"], 0)
+        self.assertFalse(row["costs"]["message_delivered"])
+        self.assertEqual(row["costs"]["delivered_payload_bytes"], 0)
+        self.assertEqual(row["costs"]["application_wire_bytes"], 0)
+        self.assertEqual(row["trace"]["stop_reason"], "wire_budget_exhausted")
 
     def test_message_conditions_keep_private_roles_and_evaluator_labels_separate(self):
         row, sender, receiver = self._run("json")

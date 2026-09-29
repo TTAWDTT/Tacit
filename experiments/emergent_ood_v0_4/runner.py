@@ -561,6 +561,7 @@ def run_condition(
     attributes: Sequence[str], values: Mapping[str, Sequence[str]],
     protocol_card: dict[str, str] | None = None,
     split_seed: int, task_seed: int, model_population_id: str,
+    wire_budget_bytes: int = DEFAULT_WIRE_BUDGET_BYTES,
 ) -> dict[str, Any]:
     if condition not in CONDITIONS:
         raise ValueError(f"unsupported condition: {condition}")
@@ -600,7 +601,7 @@ def run_condition(
         schedule=schedule,
         task="Select the candidate ID whose full tuple is the sender's private meaning.",
         max_turns=1,
-        wire_budget_bytes=DEFAULT_WIRE_BUDGET_BYTES,
+        wire_budget_bytes=wire_budget_bytes,
         final_answer_agent="receiver",
         final_answer_instruction="Return only the exact candidate_id of your selected candidate for external scoring.",
     )
@@ -639,6 +640,7 @@ def run_condition(
         "candidate_set_id": gold["candidate_set_id"],
         "meaning_id": gold["meaning_id"],
         "condition": condition,
+        "communication_budget_bytes": wire_budget_bytes,
         "protocol_id": protocol.protocol_id,
         "outcome": {
             "answer_format_valid": answer_valid,
@@ -669,6 +671,7 @@ def run_condition(
             "complete_reported_service_seconds": complete_service_total,
             "calls_with_service_time": sum(row["service_seconds"] is not None for row in calls),
             "wall_seconds": wall_seconds,
+            "communication_budget_bytes": wire_budget_bytes,
             "protocol_card_bytes": {
                 "sender_instruction": len(protocol.agent_instructions["sender"].encode("utf-8")),
                 "receiver_instruction": len(protocol.agent_instructions["receiver"].encode("utf-8")),
@@ -692,6 +695,7 @@ def run_condition(
             "task_parameters": {
                 "candidate_count": len(candidate_ids),
                 "target_support_size": {"train": 192, "validation": 16, "test": 48}[stage],
+                "communication_budget_bytes": wire_budget_bytes,
             },
         },
         "transmissions": transmissions,
@@ -743,6 +747,10 @@ def main() -> int:
     parser.add_argument("--split-seed", type=int, default=17)
     parser.add_argument("--stage", choices=STAGES, default="validation")
     parser.add_argument("--sets", type=int, default=1)
+    parser.add_argument(
+        "--wire-budget-bytes", type=int, default=DEFAULT_WIRE_BUDGET_BYTES,
+        help="maximum complete application-layer message bytes per episode (default: 4096)",
+    )
     parser.add_argument("--conditions", nargs="+", choices=CONDITIONS, default=["natural_language"])
     parser.add_argument("--protocol-card", type=Path, help="shared sender/receiver card JSON for the shared_protocol_card condition")
     parser.add_argument("--output", type=Path, default=Path(".cache/emergent_ood_v0_4/runs/validation.jsonl"))
@@ -759,6 +767,8 @@ def main() -> int:
     parser.add_argument("--receiver-tokenizer-id", default=os.environ.get("TLU_RECEIVER_TOKENIZER_ID", ""))
     parser.add_argument("--model-population-id", default=os.environ.get("TLU_MODEL_POPULATION_ID", "local-unspecified"))
     args = parser.parse_args()
+    if args.wire_budget_bytes < 0:
+        parser.error("--wire-budget-bytes must be non-negative")
 
     try:
         bundle, split = load_episode_bundle(args.input_dir, split_seed=args.split_seed)
@@ -793,6 +803,7 @@ def main() -> int:
             "episodes": len(episodes),
             "candidate_count": bundle["manifest"]["k"],
             "analytic_no_message_accuracy": 1 / bundle["manifest"]["k"],
+            "wire_budget_bytes": args.wire_budget_bytes,
             "planned_model_calls": calls_planned,
             "maximum_model_calls_per_batch": MAX_MODEL_CALLS_PER_BATCH,
             "input_dir": str(_inside_project(args.input_dir)),
@@ -871,6 +882,7 @@ def main() -> int:
                 protocol_card=protocol_card if condition == "shared_protocol_card" else None,
                 split_seed=args.split_seed, task_seed=bundle["manifest"]["task_seed"],
                 model_population_id=args.model_population_id,
+                wire_budget_bytes=args.wire_budget_bytes,
             )
             row["stratum"]["candidate_suite_conflict_graph"] = candidate_graph
             rows.append(row)
@@ -886,6 +898,7 @@ def main() -> int:
             "protocol_card_sha256": protocol_card_digest,
             "candidate_sets": args.sets,
             "candidate_count": bundle["manifest"]["k"],
+            "communication_budget_bytes": args.wire_budget_bytes,
             "split_seed": args.split_seed,
             "split_sha256": split["split_sha256"],
             "task_seed": bundle["manifest"]["task_seed"],
