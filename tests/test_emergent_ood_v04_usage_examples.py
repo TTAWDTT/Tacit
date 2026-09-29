@@ -39,6 +39,28 @@ class InterruptAfterOneSender:
         return FakeSender().complete(messages)
 
 
+class InvalidThenGoodSender:
+    def __init__(self):
+        self.calls = 0
+
+    def complete(self, messages):
+        self.calls += 1
+        if self.calls == 1:
+            return ChatCompletion("not valid JSON", "fake-sender", 11, 2, 0.03)
+        return FakeSender().complete(messages)
+
+
+class SuccessThenInterruptSender:
+    def __init__(self):
+        self.calls = 0
+
+    def complete(self, messages):
+        self.calls += 1
+        if self.calls == 2:
+            raise RuntimeError("simulated request interruption")
+        return FakeSender().complete(messages)
+
+
 class UsageExampleGenerationTests(unittest.TestCase):
     def setUp(self):
         self.root = Path(__file__).resolve().parents[1]
@@ -157,7 +179,7 @@ class UsageExampleGenerationTests(unittest.TestCase):
             with patch.object(generator, "OpenAICompatibleClient", return_value=InterruptAfterOneSender()), patch.object(
                 generator, "validate_resource_preflight"
             ):
-                with self.assertRaisesRegex(RuntimeError, "simulated request interruption"):
+                with self.assertRaisesRegex(RuntimeError, "attempt and checkpoint were saved"):
                     generator.generate_usage_examples(
                         input_dir=bundle_dir, split_seed=17, task_key_path=key_path,
                         protocol_card_path=card_path, example_count=3, output_dir=output_dir,
@@ -177,8 +199,123 @@ class UsageExampleGenerationTests(unittest.TestCase):
                     base_url="http://127.0.0.1:8000/v1", execute=True,
                     resource_preflight=preflight, resume=True,
                 )
-            self.assertEqual(resumed["model_calls"], 3)
+            self.assertEqual(resumed["model_calls"], 4)
+            self.assertEqual(resumed["failed_attempts"], 1)
             self.assertFalse((output_dir / "generation.checkpoint.json").exists())
+
+    def test_invalid_completion_retry_is_preserved_and_charged_in_usage_artifact(self):
+        with tempfile.TemporaryDirectory(dir=self.cache_root) as temporary:
+            root = Path(temporary)
+            bundle_dir, key_path, card_path, preflight = self._inputs(root)
+            output_dir = root / "generated"
+            with patch.object(generator, "OpenAICompatibleClient", return_value=InvalidThenGoodSender()), patch.object(
+                generator, "validate_resource_preflight"
+            ):
+                with self.assertRaisesRegex(ValueError, "failed attempt and checkpoint were saved"):
+                    generator.generate_usage_examples(
+                        input_dir=bundle_dir, split_seed=17, task_key_path=key_path,
+                        protocol_card_path=card_path, example_count=1, output_dir=output_dir,
+                        model="fake-sender", tokenizer_id="fake-tokenizer",
+                        base_url="http://127.0.0.1:8000/v1", execute=True,
+                        resource_preflight=preflight,
+                    )
+            with patch.object(generator, "OpenAICompatibleClient", return_value=FakeSender()), patch.object(
+                generator, "validate_resource_preflight"
+            ):
+                manifest = generator.generate_usage_examples(
+                    input_dir=bundle_dir, split_seed=17, task_key_path=key_path,
+                    protocol_card_path=card_path, example_count=1, output_dir=output_dir,
+                    model="fake-sender", tokenizer_id="fake-tokenizer",
+                    base_url="http://127.0.0.1:8000/v1", execute=True,
+                    resource_preflight=preflight, resume=True,
+                )
+            artifact = json.loads((output_dir / "usage-examples.json").read_text(encoding="utf-8"))
+            self.assertEqual(artifact["acquisition"]["generation_calls"], 2)
+            self.assertEqual(artifact["acquisition"]["input_tokens"], 30)
+            self.assertEqual(artifact["acquisition"]["output_tokens"], 19)
+            self.assertEqual(manifest["failed_attempts"], 1)
+            trace = [
+                json.loads(line)
+                for line in (output_dir / "generation-trace.jsonl").read_text(encoding="utf-8").splitlines()
+            ]
+            self.assertEqual([row["status"] for row in trace], ["failed", "success"])
+
+    def test_resume_validates_old_failure_after_successful_prefix_advances(self):
+        with tempfile.TemporaryDirectory(dir=self.cache_root) as temporary:
+            root = Path(temporary)
+            bundle_dir, key_path, card_path, preflight = self._inputs(root)
+            output_dir = root / "generated"
+            with patch.object(generator, "OpenAICompatibleClient", return_value=InvalidThenGoodSender()), patch.object(
+                generator, "validate_resource_preflight"
+            ):
+                with self.assertRaises(ValueError):
+                    generator.generate_usage_examples(
+                        input_dir=bundle_dir, split_seed=17, task_key_path=key_path,
+                        protocol_card_path=card_path, example_count=3, output_dir=output_dir,
+                        model="fake-sender", tokenizer_id="fake-tokenizer",
+                        base_url="http://127.0.0.1:8000/v1", execute=True,
+                        resource_preflight=preflight,
+                    )
+            with patch.object(generator, "OpenAICompatibleClient", return_value=SuccessThenInterruptSender()), patch.object(
+                generator, "validate_resource_preflight"
+            ):
+                with self.assertRaisesRegex(RuntimeError, "attempt and checkpoint were saved"):
+                    generator.generate_usage_examples(
+                        input_dir=bundle_dir, split_seed=17, task_key_path=key_path,
+                        protocol_card_path=card_path, example_count=3, output_dir=output_dir,
+                        model="fake-sender", tokenizer_id="fake-tokenizer",
+                        base_url="http://127.0.0.1:8000/v1", execute=True,
+                        resource_preflight=preflight, resume=True,
+                    )
+            with patch.object(generator, "OpenAICompatibleClient", return_value=FakeSender()), patch.object(
+                generator, "validate_resource_preflight"
+            ):
+                manifest = generator.generate_usage_examples(
+                    input_dir=bundle_dir, split_seed=17, task_key_path=key_path,
+                    protocol_card_path=card_path, example_count=3, output_dir=output_dir,
+                    model="fake-sender", tokenizer_id="fake-tokenizer",
+                    base_url="http://127.0.0.1:8000/v1", execute=True,
+                    resource_preflight=preflight, resume=True,
+                )
+            artifact = json.loads((output_dir / "usage-examples.json").read_text(encoding="utf-8"))
+            self.assertEqual(artifact["acquisition"]["generation_calls"], 5)
+            self.assertIsNone(artifact["acquisition"]["input_tokens"])
+            self.assertEqual(manifest["failed_attempts"], 2)
+            trace = [
+                json.loads(line)
+                for line in (output_dir / "generation-trace.jsonl").read_text(encoding="utf-8").splitlines()
+            ]
+            self.assertEqual([row["status"] for row in trace], ["failed", "success", "failed", "success", "success"])
+
+    def test_cumulative_attempt_cap_stops_retries_before_an_extra_request(self):
+        with tempfile.TemporaryDirectory(dir=self.cache_root) as temporary:
+            root = Path(temporary)
+            bundle_dir, key_path, card_path, preflight = self._inputs(root)
+            output_dir = root / "generated"
+            with patch.object(generator, "MAX_CALLS_PER_BATCH", 1), patch.object(
+                generator, "OpenAICompatibleClient", return_value=InvalidThenGoodSender()
+            ), patch.object(generator, "validate_resource_preflight"):
+                with self.assertRaises(ValueError):
+                    generator.generate_usage_examples(
+                        input_dir=bundle_dir, split_seed=17, task_key_path=key_path,
+                        protocol_card_path=card_path, example_count=1, output_dir=output_dir,
+                        model="fake-sender", tokenizer_id="fake-tokenizer",
+                        base_url="http://127.0.0.1:8000/v1", execute=True,
+                        resource_preflight=preflight,
+                    )
+            retry_client = FakeSender()
+            with patch.object(generator, "MAX_CALLS_PER_BATCH", 1), patch.object(
+                generator, "OpenAICompatibleClient", return_value=retry_client
+            ), patch.object(generator, "validate_resource_preflight"):
+                with self.assertRaisesRegex(RuntimeError, "exhausted its 1 total request attempts"):
+                    generator.generate_usage_examples(
+                        input_dir=bundle_dir, split_seed=17, task_key_path=key_path,
+                        protocol_card_path=card_path, example_count=1, output_dir=output_dir,
+                        model="fake-sender", tokenizer_id="fake-tokenizer",
+                        base_url="http://127.0.0.1:8000/v1", execute=True,
+                        resource_preflight=preflight, resume=True,
+                    )
+            self.assertEqual(retry_client.prompts, [])
 
 
 if __name__ == "__main__":

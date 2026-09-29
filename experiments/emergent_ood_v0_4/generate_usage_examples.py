@@ -132,7 +132,9 @@ def _config_signature(config: dict[str, Any]) -> str:
 
 
 def _write_checkpoint(path: Path, checkpoint: dict[str, Any]) -> None:
-    checkpoint["results_sha256"] = _config_signature({"results": checkpoint["results"]})
+    checkpoint["results_sha256"] = _config_signature({
+        "results": checkpoint["results"], "failures": checkpoint["failures"],
+    })
     _atomic_json(path, checkpoint)
 
 
@@ -187,7 +189,7 @@ def generate_usage_examples(
             "\n".join(row["meaning_id"] for row in examples).encode("ascii")
         ).hexdigest(),
         "planned_model_calls": len(examples),
-        "maximum_model_calls_per_batch": MAX_CALLS_PER_BATCH,
+        "maximum_model_call_attempts_per_batch": MAX_CALLS_PER_BATCH,
         "model_loaded": False,
         "inference_started": False,
         "usage_artifact_path": artifact_path.relative_to(ROOT).as_posix(),
@@ -219,7 +221,10 @@ def generate_usage_examples(
             or checkpoint.get("config_signature") != signature
             or checkpoint.get("config") != config
             or not isinstance(checkpoint.get("results"), list)
-            or checkpoint.get("results_sha256") != _config_signature({"results": checkpoint.get("results")})
+            or not isinstance(checkpoint.get("failures"), list)
+            or checkpoint.get("results_sha256") != _config_signature({
+                "results": checkpoint.get("results"), "failures": checkpoint.get("failures"),
+            })
             or not isinstance(checkpoint.get("resource_preflight_sha256s"), list)
             or any(
                 not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest)
@@ -229,6 +234,45 @@ def generate_usage_examples(
         ):
             raise ValueError("usage-example checkpoint does not match this exact generation batch")
         results = checkpoint["results"]
+        failures = checkpoint["failures"]
+        if len(results) > len(examples):
+            raise ValueError("usage-example checkpoint failures are not attached to the next train row")
+        example_index_by_id = {row["meaning_id"]: index for index, row in enumerate(examples)}
+        for row in failures:
+            if not isinstance(row, dict) or row.get("meaning_id") not in example_index_by_id:
+                raise ValueError("usage-example checkpoint failure has an unknown training meaning ID")
+            failure_index = example_index_by_id[row["meaning_id"]]
+            if failure_index > len(results):
+                raise ValueError("usage-example checkpoint failure is not attached to completed or next train row")
+            expected_messages = _request_messages(card, examples[failure_index]["meaning"])
+            expected_prompt_sha256 = hashlib.sha256(
+                json.dumps(expected_messages, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+            ).hexdigest()
+            failure_fields = {
+                "meaning_id", "attempt_type", "error_type", "raw_completion", "model_reported",
+                "input_tokens", "output_tokens", "service_seconds", "wall_seconds",
+                "prompt_sha256", "completion_sha256",
+            }
+            if set(row) != failure_fields or row["prompt_sha256"] != expected_prompt_sha256:
+                raise ValueError("usage-example checkpoint failure trace does not match its prompt")
+            if row["attempt_type"] == "request_error":
+                if row["raw_completion"] is not None or row["completion_sha256"] is not None:
+                    raise ValueError("request-error checkpoint must not claim a completion")
+            elif row["attempt_type"] == "invalid_completion":
+                raw = row["raw_completion"]
+                if (
+                    not isinstance(raw, str)
+                    or hashlib.sha256(raw.encode("utf-8")).hexdigest() != row["completion_sha256"]
+                ):
+                    raise ValueError("invalid-completion checkpoint failed its content hash")
+                try:
+                    _parse_message(raw)
+                except ValueError:
+                    pass
+                else:
+                    raise ValueError("checkpoint labels a valid completion as invalid")
+            else:
+                raise ValueError("usage-example checkpoint has an unknown failure type")
         for index, row in enumerate(results):
             expected_fields = {
                 "meaning_id", "meaning", "message", "raw_completion", "model_reported",
@@ -266,8 +310,10 @@ def generate_usage_examples(
             "config_signature": signature,
             "config": config,
             "results": results,
+            "failures": [],
             "resource_preflight_sha256s": preflight_hashes,
         }
+        failures = checkpoint["failures"]
         _write_checkpoint(checkpoint_path, checkpoint)
 
     client = OpenAICompatibleClient(
@@ -275,21 +321,52 @@ def generate_usage_examples(
         max_tokens=MAX_TOKENS_PER_MESSAGE, follow_redirects=False, temperature=0.0,
     )
     preflight_sha256 = _digest_file(preflight_path)
-    all_started = time.perf_counter()
     for index in range(len(results), len(examples)):
+        if len(results) + len(failures) >= MAX_CALLS_PER_BATCH:
+            raise RuntimeError(
+                f"usage-example batch exhausted its {MAX_CALLS_PER_BATCH} total request attempts; checkpoint remains available for audit"
+            )
         example = examples[index]
         messages = _request_messages(card, example["meaning"])
         prompt_bytes = json.dumps(messages, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+        prompt_sha256 = hashlib.sha256(prompt_bytes).hexdigest()
         started = time.perf_counter()
-        completion = client.complete(messages)
+        try:
+            completion = client.complete(messages)
+        except Exception as exc:
+            call_wall_seconds = time.perf_counter() - started
+            failures.append({
+                "meaning_id": example["meaning_id"], "attempt_type": "request_error",
+                "error_type": type(exc).__name__, "raw_completion": None,
+                "model_reported": None, "input_tokens": None, "output_tokens": None,
+                "service_seconds": None, "wall_seconds": call_wall_seconds,
+                "prompt_sha256": prompt_sha256, "completion_sha256": None,
+            })
+            checkpoint["failures"] = failures
+            checkpoint["resource_preflight_sha256s"] = preflight_hashes
+            _write_checkpoint(checkpoint_path, checkpoint)
+            raise RuntimeError(
+                f"sender request for training example {index + 1} failed; attempt and checkpoint were saved"
+            ) from exc
         call_wall_seconds = time.perf_counter() - started
         try:
             message = _parse_message(completion.text)
         except ValueError as exc:
-            failure_path = output_dir / f"failed-completion-{index + 1:02d}.txt"
-            failure_path.parent.mkdir(parents=True, exist_ok=True)
-            failure_path.write_text(completion.text, encoding="utf-8")
-            raise ValueError(f"training example {index + 1} returned an invalid message; raw completion saved to {failure_path}") from exc
+            failures.append({
+                "meaning_id": example["meaning_id"], "attempt_type": "invalid_completion",
+                "error_type": type(exc).__name__, "raw_completion": completion.text,
+                "model_reported": completion.model or model,
+                "input_tokens": completion.input_tokens, "output_tokens": completion.output_tokens,
+                "service_seconds": completion.service_seconds, "wall_seconds": call_wall_seconds,
+                "prompt_sha256": prompt_sha256,
+                "completion_sha256": hashlib.sha256(completion.text.encode("utf-8")).hexdigest(),
+            })
+            checkpoint["failures"] = failures
+            checkpoint["resource_preflight_sha256s"] = preflight_hashes
+            _write_checkpoint(checkpoint_path, checkpoint)
+            raise ValueError(
+                f"training example {index + 1} returned an invalid message; failed attempt and checkpoint were saved"
+            ) from exc
         results.append({
             "meaning_id": example["meaning_id"],
             "meaning": example["meaning"],
@@ -300,18 +377,19 @@ def generate_usage_examples(
             "output_tokens": completion.output_tokens,
             "service_seconds": completion.service_seconds,
             "wall_seconds": call_wall_seconds,
-            "prompt_sha256": hashlib.sha256(prompt_bytes).hexdigest(),
+            "prompt_sha256": prompt_sha256,
             "completion_sha256": hashlib.sha256(completion.text.encode("utf-8")).hexdigest(),
         })
         checkpoint["results"] = results
         checkpoint["resource_preflight_sha256s"] = preflight_hashes
         _write_checkpoint(checkpoint_path, checkpoint)
 
-    total_wall_seconds = time.perf_counter() - all_started
-    input_token_values = [row["input_tokens"] for row in results]
-    output_token_values = [row["output_tokens"] for row in results]
-    service_values = [row["service_seconds"] for row in results]
+    attempts = [*results, *failures]
+    input_token_values = [row["input_tokens"] for row in attempts]
+    output_token_values = [row["output_tokens"] for row in attempts]
+    service_values = [row["service_seconds"] for row in attempts]
     model_names = {row["model_reported"] for row in results}
+    model_names.update(row["model_reported"] for row in failures if row["model_reported"] is not None)
     if len(model_names) != 1:
         raise ValueError("sender endpoint returned inconsistent model identifiers within one usage trace")
     artifact = {
@@ -324,11 +402,11 @@ def generate_usage_examples(
             "method": "model_generated",
             "model_id": next(iter(model_names)),
             "tokenizer_id": tokenizer_id,
-            "generation_calls": len(results),
+            "generation_calls": len(results) + len(failures),
             "input_tokens": sum(input_token_values) if all(value is not None for value in input_token_values) else None,
             "output_tokens": sum(output_token_values) if all(value is not None for value in output_token_values) else None,
             "service_seconds": sum(service_values) if all(value is not None for value in service_values) else None,
-            "wall_seconds": total_wall_seconds,
+            "wall_seconds": sum(row["wall_seconds"] for row in [*results, *failures]),
         },
         "examples": [
             {"meaning_id": row["meaning_id"], "meaning": row["meaning"], "message": row["message"]}
@@ -336,15 +414,28 @@ def generate_usage_examples(
         ],
     }
     _atomic_json(artifact_path, artifact)
+    failures_by_id: dict[str, list[dict[str, Any]]] = {}
+    for row in failures:
+        failures_by_id.setdefault(row["meaning_id"], []).append(row)
+    successes_by_id = {row["meaning_id"]: row for row in results}
+    trace_rows = []
+    for example in examples:
+        trace_rows.extend(
+            {"status": "failed", "meaning": example["meaning"], **row}
+            for row in failures_by_id.get(example["meaning_id"], [])
+        )
+        if example["meaning_id"] in successes_by_id:
+            trace_rows.append({"status": "success", **successes_by_id[example["meaning_id"]]})
     trace_bytes = "".join(
         json.dumps({
-            key: row[key] for key in (
-                "meaning_id", "meaning", "raw_completion", "prompt_sha256",
+            key: row.get(key) for key in (
+                "status", "meaning_id", "meaning", "attempt_type", "error_type",
+                "raw_completion", "prompt_sha256",
                 "completion_sha256", "input_tokens", "output_tokens",
                 "service_seconds", "wall_seconds",
             )
         }, ensure_ascii=False, sort_keys=True) + "\n"
-        for row in results
+        for row in trace_rows
     ).encode("utf-8")
     trace_temp = trace_path.with_suffix(trace_path.suffix + ".tmp")
     trace_temp.write_bytes(trace_bytes)
@@ -358,11 +449,13 @@ def generate_usage_examples(
         "resource_preflight_sha256s": preflight_hashes,
         "model_loaded": True,
         "inference_started": True,
-        "model_calls": len(results),
+        "model_calls": len(trace_rows),
+        "successful_example_calls": len(results),
+        "failed_attempts": len(failures),
         "input_tokens": artifact["acquisition"]["input_tokens"],
         "output_tokens": artifact["acquisition"]["output_tokens"],
         "service_seconds": artifact["acquisition"]["service_seconds"],
-        "wall_seconds": total_wall_seconds,
+        "wall_seconds": artifact["acquisition"]["wall_seconds"],
         "usage_artifact_sha256": _digest_file(artifact_path),
         "generation_trace_path": trace_path.relative_to(ROOT).as_posix(),
         "generation_trace_sha256": hashlib.sha256(trace_bytes).hexdigest(),
@@ -371,7 +464,7 @@ def generate_usage_examples(
                 "meaning_id", "prompt_sha256", "completion_sha256", "input_tokens",
                 "output_tokens", "service_seconds", "wall_seconds",
             )}
-            for row in results
+            for row in trace_rows
         ],
     }
     _atomic_json(manifest_path, generation_manifest)

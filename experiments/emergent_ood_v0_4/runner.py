@@ -266,8 +266,10 @@ def load_usage_examples(
         seen_ids.add(meaning_id)
         seen_meanings.add(meaning_tuple)
         clean.append({"meaning_id": meaning_id, "meaning": dict(meaning), "message": message})
-    if acquisition["method"] == "model_generated" and acquisition["generation_calls"] != len(clean):
-        raise ValueError("model-generated usage traces must account for one generation call per example")
+    if acquisition["method"] == "model_generated" and (
+        acquisition["generation_calls"] is None or acquisition["generation_calls"] < len(clean)
+    ):
+        raise ValueError("model-generated usage traces must count at least one attempt per example")
     if acquisition["method"] == "model_generated" and (
         not acquisition["model_id"].strip() or not acquisition["tokenizer_id"].strip()
     ):
