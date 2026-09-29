@@ -75,6 +75,29 @@ python -m experiments.emergent_ood_v0_4.shuffle_usage_examples `
 
 The utility preserves the meaning list, message multiset, and original acquisition ledger, but deterministically pairs each meaning with a different message; it makes no model calls. It writes a `.control.json` sidecar binding the transformed artifact hash to its source, seed, and row permutation. Run this artifact with the same episode sets, card, candidate order, and receiver settings as the correctly paired examples. Retain both artifacts and the sidecar so results can be joined by hash. If messages are too duplicated to form a complete mismatched pairing, the utility fails instead of quietly emitting a weak control.
 
+### Episode-level message-association replay
+
+Shuffling onboarding examples tests whether a newcomer uses the demonstrations; it does not establish that held-out task performance depends on the sender's episode-specific message. `replay_usage_messages.py` supplies that separate counterfactual. It matches each selected receiver episode to exactly one frozen sender output from a different episode, requires the donor's private meaning to be absent from the recipient's entire candidate table, and preserves the frozen message multiset. The receiver sees the original candidate table and onboarding examples, with only the delivered task message substituted. If no complete compatible permutation exists, it stops before inference.
+
+The primary runner caps each two-call episode batch at 12 model calls. With the default `k=4`, one completed source batch covers one candidate set, and messages from that same set cannot satisfy the candidate-disjoint rule. Run the existing primary runner with `--conditions usage_only_transfer --sets 1 --set-offset n` for each desired offset (subject to its resource and capability gates). Collect adjacent one-set results with the same bundle, stage, card, examples, model/tokenizers, endpoint, budget, and reuse horizon, then provide all of them to one replay batch. For example, collect offsets 0, 1, and 2 into separate frozen result/manifest pairs, then plan a three-set (12 receiver-call) replay:
+
+```powershell
+python -m experiments.emergent_ood_v0_4.replay_usage_messages `
+  --input-dir .cache/emergent_ood_v0_4/evaluation-23 `
+  --split-seed 23 --stage test --sets 3 --set-offset 0 `
+  --source-results .cache/emergent_ood_v0_4/runs/source-00.jsonl .cache/emergent_ood_v0_4/runs/source-01.jsonl .cache/emergent_ood_v0_4/runs/source-02.jsonl `
+  --protocol-card .cache/emergent_ood_v0_4/generated/protocol-card.json `
+  --usage-examples .cache/emergent_ood_v0_4/generated/usage-examples.json `
+  --usage-reuse-horizon 48 --seed 31 `
+  --output .cache/emergent_ood_v0_4/runs/message-deranged-plan.jsonl
+```
+
+The default is offline planning: it verifies every source result/manifest hash, exact episode coverage, shared frozen model settings, the deterministic one-to-one matching, and the candidate-disjoint constraint, then prints the assignment. It does not create the output JSONL until execution. For execution, add `--execute --max-replay-calls 12`, the same `--receiver-model`, `--receiver-tokenizer-id`, and `--model-population-id` as the frozen source run, plus the independent train-only capability bundle/ledger and a fresh passing `--resource-preflight`. The replay temperature and 48-token answer cap must match the source run. The executable does not start a model server. It calls only the receiver, atomically checkpoints each completed episode, records a `tlu.costs.v3` receiver call and the counterfactual channel's serialized bytes, and writes a manifest bound to all source hashes and the assignment. After an interruption, rerun the identical arguments with `--resume`, including a newly passing preflight and the same explicit call ceiling.
+
+Replay cost records deliberately exclude sender generation and mark it as reused from the source run. They are an attribution control, not a standalone deployment-cost estimate; join the frozen source sender costs when analyzing end-to-end cost. The matching and prompt-plumbing tests use synthetic records. No live LLM replay has been run, and a successful derangement does not establish a protocol advantage.
+
+For analysis, concatenate the selected source JSONL files with the replay JSONL, then pass that ledger to `tools.paired_report`. This pairs exact-selection and counterfactual channel-byte outcomes by the same episode IDs. Input/output token deltas are omitted when sender and receiver tokenizer units differ; the replay's one-call count remains a receiver-only diagnostic, not an end-to-end call-cost comparison.
+
 Example artifact (replace each placeholder with the exact digest/ID and observed message):
 
 ```json
