@@ -536,3 +536,23 @@ For a frozen codebook, let `E` be the set of source values decoded exactly, and 
 The event probability changes by at most total variation, giving the lower bound. It is tight: move up to `δ` mass from `E` to its nonempty complement; once the original `t` mass is exhausted, success reaches zero. If `E` is the full support, success remains one for every prior, so that perfect-code case is handled separately. For independent X and Y whose evaluation marginals may shift independently within radii `δ_X,δ_Y`, the frozen two-sender codebook has worst-case exact-row success equal to the product of the two one-coordinate bounds. This product statement does not cover dependent evaluation coordinates.
 
 The method `FixedWidthCodebook.worst_case_success_probability(...)` computes this exact one-coordinate robustness radius with rational arithmetic. Tests enumerate all denominator-eight priors within a `1/8` total-variation ball around the four-value example, verify the tight bound, and check the perfect-code exception. This supplies a model-free, falsifiable calibration for prior-shift experiments; finite data, prior estimation, and codebook setup uncertainty require additional treatment.
+
+## 16. Few-shot onboarding limit for a holistic protocol
+
+An independently trained symbolic protocol can be semantically valid within its community and still be opaque to a newcomer: permuting the symbols and permuting their meanings together preserves task success. Cope & McBurney make this symmetry explicit when motivating cooperative language acquisition: conventions learned by separate self-play communities need not interoperate ([primary preprint](https://arxiv.org/abs/2402.16247)). The finite result below quantifies one deliberately structure-free onboarding baseline; it is not a model of natural-language priors or compositional learning.
+
+**Model.** There are `M ≥ 1` meanings and `M` symbols. A community uses a fixed but newcomer-unknown bijection chosen uniformly from the `M!` possible meaning-to-symbol maps. Before a test, the newcomer receives `n` distinct, correct meaning-symbol examples (`0 ≤ n < M`). At test, the sender observes one uniformly sampled meaning and sends its symbol. The newcomer knows the examples, observes the symbol, and uses the Bayes-optimal decoder. Examples and decoding are noiseless; their communication, inference, and setup costs are not part of the accuracy formula.
+
+**Proposition (holistic onboarding accuracy).** The newcomer's expected exact-decoding accuracy is
+
+\[
+P_{\mathrm{holistic}}(M,n)=\frac{n+1}{M}.
+\]
+
+**Proof.** Each of the `n` demonstrated meanings is decoded exactly. For any other test meaning, its symbol is also unseen because the protocol is bijective. Conditional on the observed examples and that symbol, each of the remaining `M-n` meanings is equally likely to own it; the Bayes-optimal success probability is `1/(M-n)`. Averaging over the uniform test meaning gives `n/M + ((M-n)/M)(1/(M-n)) = (n+1)/M`. In particular, `M-1` examples suffice because bijectivity identifies the final pair by elimination. ∎
+
+The result applies to a one-to-one holistic lookup convention. It does not lower-bound all few-shot protocol learning: compositional rules, pretrained semantic alignment, task structure, candidate-set side information, or interactive queries can reduce the number of examples needed. It also counts examples, not their byte/token or adaptation-compute cost. Use it as a control against which exemplar-driven onboarding can be compared, and separately price the entire calibration exchange and adaptation work.
+
+The exact-rational calculator [`protocol_onboarding.py`](../research/protocol_onboarding.py) emits the full curve. Its tests exhaust all bijections on small meaning sets.
+
+**Falsifiable prediction P12.** When meanings are paired with symbols by a uniformly random holistic bijection and only `n` distinct pairs are shown, a Bayes decoder's mean held-out exact accuracy over uniformly sampled meanings is exactly `(n+1)/M`. A discrepancy falsifies an assumption or the scorer. In a separate matched-cost experiment, a learned compositional protocol that exceeds this curve on unseen combinations would show productive structure beyond memorizing holistic pairs; failure to exceed it would provide no evidence of productive onboarding. Count calibration examples, prompt/context tokens, adaptation inference or training, and test-use cost separately.
