@@ -1,5 +1,11 @@
 # Research log
 
+## 2026-09-29 — Bound raw KV-state transfer volume for the local model family
+
+- **Question:** if shared-cache inference state were serialized between Tacit endpoints, would it be a bandwidth-equivalent substitute for a compact text message?
+- **Derivation:** the official Qwen3-1.7B config gives 28 layers, 8 KV heads, head dimension 128, and BF16 model dtype. Assuming BF16 cache elements, dense key+value state is `2 * 28 * 8 * 128 * 2 = 114,688` bytes per token (112 KiB); 32 tokens imply 3.5 MiB before serialization overhead. An ideal one-byte element count halves this, but real quantization metadata and fidelity costs are excluded.
+- **Interpretation / limit:** this quantifies only a hypothetical serialized cross-process transfer. Prompt Choreography normally shares cache on-device and incurs no network transfer; it instead occupies shared memory. Real cache layout, compression, context dependence, and decoding must be measured. Do not rank this estimate as a protocol result. See [calculation and conditions](KV_STATE_TRANSFER_SIZE_BOUND_V0_1.md) and [Prompt Choreography audit](PROMPT_CHOREOGRAPHY_AUDIT_V0_1.md).
+
 ## 2026-09-29 — Formalize the end-to-end ceiling for KV reuse
 
 - **State correction:** updated the thesis' resource-gate status to include attempt 10 and its actual measurements; no model artifacts were read and the frozen gate remains unchanged.
