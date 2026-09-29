@@ -1,5 +1,32 @@
 # Research log
 
+## 2026-09-29 — Exact frontier with non-uniform independent priors
+
+**Observation.** The v0.3 exact bit-budget frontier assumed uniform coordinates,
+while practical collaboration tasks often have skewed fact frequencies. A
+payload-only oracle should distinguish gains from prior-specific coding from
+general protocol efficiency.
+
+**Hypothesis and formalization.** For independent X and Y with known rational
+marginal priors, the best K-class encoder retains the mass of the K most
+probable values. Since a fixed-width sender with b bits can form at most
+`min(q, 2^b)` classes, the exact two-sender Bayes frontier is the maximum over
+integer bit allocations of the product of the two retained masses. This
+requires independent coordinates, a complete Cartesian receiver table,
+noiseless fixed-width channels, and a shared codebook whose setup cost is
+excluded. It is not a language result.
+
+**Prediction.** Prior-specialized partitions should improve in-prior exact
+success under tight budgets, but lose that advantage when the evaluation prior
+flattens or shifts. A uniform partition may transfer more stably. Frequency
+discovery and codebook setup must be accounted for in operational comparisons.
+
+**Check.** Added an exact `Fraction` calculator and compared it against
+exhaustive encoder-pair enumeration for small supports and several bit budgets;
+the focused test passes. Uniform rational priors reduce to the existing
+uniform frontier. The episode generator remains uniform, and no model inference
+or heavy compute was run.
+
 ## 2026-09-29 — Use unbiased keyed streams for task sampling
 
 - **Assumption audit:** the ideal frontier assumes independent-uniform table order, candidate IDs, and target, while generator v0.3.2 seeded Python's non-cryptographic `random.Random` from HMAC output. That was adequate for seed secrecy but left the sampling mechanism less directly aligned with the registered prior than necessary.

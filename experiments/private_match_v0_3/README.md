@@ -200,6 +200,14 @@ language format/fidelity is marked missing by design until an independently
 frozen semantic-judging method exists. No diagnostic pools distinct task/model
 strata.
 
+For exact ideal references under independent non-uniform coordinate priors,
+`bit_frontier.py` also exposes
+`optimal_nonuniform_success_probability(probabilities_x=..., probabilities_y=..., total_payload_bits=...)`.
+It returns a `Fraction`; the assumptions and proof are in [Theory §15](../../docs/THEORY.md#15-exact-frontier-for-independent-non-uniform-coordinate-priors).
+The current episode generator still samples uniform coordinates, so this is a
+theoretical calculator and future experiment control, not a claim about the
+present generated shards.
+
 ## Planned model comparison (not run)
 
 The future paired comparison should retain every generated episode and include

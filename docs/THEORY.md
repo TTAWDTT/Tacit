@@ -366,3 +366,29 @@ A^*(q,B)=\max_{b_x+b_y\le B}\frac{\min(q,2^{b_x})\min(q,2^{b_y})}{q^2}
 The endpoint `B = 0` gives the no-message Bayes accuracy `1/q²`. At `B = w`, one source can be encoded exactly and the frontier is `1/q`; at `B = 2w = log₂(q²)`, both coordinates are exact and success is 1. For `q = 4`, the values for `B = 0,1,2,3,4` are `1/16, 1/8, 1/4, 1/2, 1`. The executable exact-rational calculator is [`bit_frontier.py`](../experiments/private_match_v0_3/bit_frontier.py); its q=4 results are checked against exhaustive encoder-pair enumeration in [`test_private_match_v03.py`](../tests/test_private_match_v03.py).
 
 **Scaling prediction.** For fixed `B` and `q ≥ 2^{B/2}`, `A*(q,B) = 2^B/q²`, so ideal accuracy falls as `q⁻²` while receiver-table size grows as `q²`. If payload scales as a fraction `ρ ∈ [0,1]` of the zero-error budget, `B ≈ 2ρ log₂(q)`, then ideal success scales as `q^{2ρ−2}`, up to integer-budget rounding. These are predictions for the noiseless payload-only task; table-context tokens, framing, codebook exposition, model errors, and inference compute are excluded. They are not an LLM scaling law. An empirical study should vary q and total payload caps, measure complete model and channel costs separately, and compare outcomes with this oracle rather than treating the ideal curve as an expected model result.
+
+## 15. Exact frontier for independent non-uniform coordinate priors
+
+Section 14 assumes uniform X and Y. When independent coordinate values have unequal frequencies, the optimal fixed-width partition should preserve high-probability values and merge lower-probability values. This result generalizes the triadic frontier without claiming that empirical LLMs will realize the optimal partition.
+
+**Model.** Let X and Y be independent with finite supports of sizes `q_x` and `q_y`, and exact rational marginal probabilities `p_X(x)` and `p_Y(y)`. The receiver observes the complete Cartesian candidate table and a uniform random candidate ID assignment independent of the hidden target. Each source sends one simultaneous noiseless fixed-width message; the schedule identifies each sender slot. The receiver outputs the most probable target row consistent with the two messages. The shared codebook is free in this payload-only bound; its storage, explanation, and inference costs belong in an operational comparison.
+
+Write the marginal probabilities in decreasing order as `p_X↓(1) ≥ … ≥ p_X↓(q_x)` and `p_Y↓(1) ≥ … ≥ p_Y↓(q_y)`, and define `S_X(K)=Σ_(i=1)^K p_X↓(i)` and `S_Y(K)=Σ_(j=1)^K p_Y↓(j)`. For a total integer payload budget `B`, the exact Bayes frontier is
+
+\[
+A^*_{p_X,p_Y}(B)=\max_{b_x+b_y\le B}
+S_X(\min(q_x,2^{b_x}))\,S_Y(\min(q_y,2^{b_y})).
+\]
+
+**Proof.** Fix any sender partitions into `K_x` and `K_y` nonempty message classes. For one class pair `A × C`, independence makes the most probable row have mass `max_(x∈A) p_X(x) × max_(y∈C) p_Y(y)`. Summing over all class pairs factorizes, so the Bayes success is
+
+\[
+\left(\sum_A \max_{x\in A}p_X(x)\right)
+\left(\sum_C \max_{y\in C}p_Y(y)\right).
+\]
+
+For a source with K classes, each class contributes the probability of one representative, so the sum cannot exceed the total mass of its K most probable values. This bound is attained by making the top K−1 values singleton classes and placing every remaining value in the final class, whose maximum is the Kth value. A `b`-bit message permits at most `min(q,2^b)` nonempty classes. Applying the one-source optimum independently to X and Y and maximizing over bit allocations proves the result. ∎
+
+For uniform marginals, `S_X(K)=K/q_x` and `S_Y(K)=K/q_y`, recovering Section 14 when `q_x=q_y=q=2^w`. With a fixed payload budget, the optimal allocation depends on the two marginal tails: another bit is valuable where it increases retained probability mass most. Thus a task-specific code can beat a uniform partition without establishing a reusable language advantage; frequency discovery and codebook setup must be charged, and transfer to a changed prior must be measured.
+
+**Executable check and prediction.** `optimal_nonuniform_success_probability(...)` in [`bit_frontier.py`](../experiments/private_match_v0_3/bit_frontier.py) computes this frontier exactly from rational priors. Exhaustively enumerate all encoder pairs on small supports and compare their Bayes success with the formula. Under a shift toward a flatter prior, an encoder optimized for a skewed development prior should lose some of its in-prior gain; a fixed uniform code should transfer more stably. This is falsifiable only with the same task semantics and matched setup/inference costs, and the theorem excludes model errors, framing, and non-independent X/Y priors.

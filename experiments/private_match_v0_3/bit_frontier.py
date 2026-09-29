@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 from fractions import Fraction
 import json
+from collections.abc import Sequence
 
 
 def _validate_q(q: int) -> None:
@@ -28,6 +29,48 @@ def optimal_success_probability(*, q: int, total_payload_bits: int) -> Fraction:
         raise ValueError("total_payload_bits must be a non-negative integer")
     useful_bits = min(total_payload_bits, 2 * (q.bit_length() - 1))
     return Fraction(1 << useful_bits, q * q)
+
+
+def _probability_vector(values: Sequence[int | Fraction], *, name: str) -> tuple[Fraction, ...]:
+    if not isinstance(values, Sequence) or not values:
+        raise ValueError(f"{name} must be a non-empty probability sequence")
+    if any(isinstance(value, bool) or not isinstance(value, (int, Fraction)) for value in values):
+        raise ValueError(f"{name} entries must be exact integers or fractions")
+    probabilities = tuple(Fraction(value) for value in values)
+    if any(value < 0 for value in probabilities) or sum(probabilities, Fraction(0)) != 1:
+        raise ValueError(f"{name} must contain non-negative probabilities that sum exactly to 1")
+    return probabilities
+
+
+def optimal_nonuniform_success_probability(
+    *, probabilities_x: Sequence[int | Fraction],
+    probabilities_y: Sequence[int | Fraction], total_payload_bits: int,
+) -> Fraction:
+    """Exact Bayes frontier for independent, non-uniform coordinate priors.
+
+    Each sender's source is independent, but values within a coordinate may
+    have arbitrary exact rational probabilities. Candidate tables are complete
+    Cartesian products, and fixed-width noiseless sender slots are known.
+    """
+    px = sorted(_probability_vector(probabilities_x, name="probabilities_x"), reverse=True)
+    py = sorted(_probability_vector(probabilities_y, name="probabilities_y"), reverse=True)
+    if (isinstance(total_payload_bits, bool) or not isinstance(total_payload_bits, int)
+            or total_payload_bits < 0):
+        raise ValueError("total_payload_bits must be a non-negative integer")
+
+    def retained_mass(prior: tuple[Fraction, ...], bits: int) -> Fraction:
+        return sum(prior[:min(len(prior), 1 << bits)], Fraction(0))
+
+    # More than ceil(log2(support)) bits cannot create additional classes.
+    max_x_bits = (len(px) - 1).bit_length()
+    max_y_bits = (len(py) - 1).bit_length()
+    useful_budget = min(total_payload_bits, max_x_bits + max_y_bits)
+    best = Fraction(0)
+    for x_bits in range(min(useful_budget, max_x_bits) + 1):
+        for y_bits in range(min(useful_budget - x_bits, max_y_bits) + 1):
+            candidate = retained_mass(px, x_bits) * retained_mass(py, y_bits)
+            best = max(best, candidate)
+    return best
 
 
 def optimal_allocation(*, q: int, total_payload_bits: int) -> dict[str, int]:

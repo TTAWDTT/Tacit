@@ -22,7 +22,8 @@ from experiments.private_match_v0_3.runner import (
 from experiments.private_match_v0_3.generate_tasks import model_visible_view
 from contextlib import redirect_stdout
 from experiments.private_match_v0_3.bit_frontier import (
-    frontier as triadic_bit_frontier, optimal_success_probability,
+    frontier as triadic_bit_frontier, optimal_nonuniform_success_probability,
+    optimal_success_probability,
 )
 from experiments.private_match_v0_3.report import main as report_main, private_match_report
 from tools.cost_report import RecordError
@@ -146,6 +147,59 @@ class PrivateMatchV03Tests(unittest.TestCase):
         self.assertEqual(rng.randbelow(1), 0)
         with self.assertRaises(ValueError):
             rng.randbelow(0)
+
+    def test_nonuniform_frontier_matches_exhaustive_small_encoder_pairs(self):
+        px = (Fraction(1, 2), Fraction(1, 3), Fraction(1, 6))
+        py = (Fraction(2, 3), Fraction(1, 3), Fraction(0, 1))
+
+        def classes(code):
+            grouped = {}
+            for index, label in enumerate(code):
+                grouped.setdefault(label, []).append(index)
+            return list(grouped.values())
+
+        for budget in range(5):
+            exhaustive = Fraction(0)
+            for x_bits in range(budget + 1):
+                for y_bits in range(budget - x_bits + 1):
+                    x_labels = min(len(px), 1 << x_bits)
+                    y_labels = min(len(py), 1 << y_bits)
+                    x_codes = list(product(range(x_labels), repeat=len(px)))
+                    y_codes = list(product(range(y_labels), repeat=len(py)))
+                    for x_code in x_codes:
+                        x_classes = classes(x_code)
+                        for y_code in y_codes:
+                            y_classes = classes(y_code)
+                            success = sum((
+                                max(px[x] * py[y] for x in x_group for y in y_group)
+                                for x_group in x_classes for y_group in y_classes
+                            ), Fraction(0))
+                            exhaustive = max(exhaustive, success)
+            actual = optimal_nonuniform_success_probability(
+                probabilities_x=px, probabilities_y=py, total_payload_bits=budget,
+            )
+            self.assertEqual(actual, exhaustive)
+            self.assertEqual(
+                optimal_nonuniform_success_probability(
+                    probabilities_x=(Fraction(1, 4),) * 4,
+                    probabilities_y=(Fraction(1, 4),) * 4,
+                    total_payload_bits=budget,
+                ),
+                optimal_success_probability(q=4, total_payload_bits=budget),
+            )
+        self.assertEqual(
+            optimal_nonuniform_success_probability(
+                probabilities_x=px, probabilities_y=py, total_payload_bits=10**6,
+            ),
+            Fraction(1, 1),
+        )
+        for invalid in ((Fraction(1, 2), Fraction(1, 3)),
+                        (Fraction(1, 2), Fraction(1, 2), Fraction(-1, 1)),
+                        (0.5, 0.5)):
+            with self.subTest(invalid=invalid), self.assertRaises(ValueError):
+                optimal_nonuniform_success_probability(
+                    probabilities_x=invalid, probabilities_y=py, total_payload_bits=1,
+                )
 
     def test_triadic_bit_frontier_matches_exhaustive_encoder_pairs(self):
         q = 4
