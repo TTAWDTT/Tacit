@@ -40,9 +40,9 @@ Available conditions are `no_message`, `full_information`, `natural_language`, `
 
 The `usage_only_transfer` condition tests in-context receiver onboarding. The sender receives the sender half of a frozen protocol card. A new receiver gets its candidate table and train-only meaning/message exemplars, but receives neither the card nor its decoder instruction. It must infer the convention from use. This is a one-message transfer comparison, not online adaptation or evidence that the protocol is compositional.
 
-Supply the frozen card with `--protocol-card` and a `--usage-examples` JSON artifact. The artifact has exactly these fields: `schema` (`tlu.usage_examples.v1`), `protocol_id`, `protocol_card_sha256`, `training_split_sha256`, `training_episode_manifest_sha256`, `acquisition`, and `examples`. Each example has exactly `meaning_id`, `meaning`, and `message`. The `acquisition` object has `method` (`model_generated`, `human_authored`, or `programmatic`), `model_id`, `generation_calls`, `input_tokens`, and `output_tokens`; unknown token usage is `null`. Model-generated traces must report one generation call per example.
+Supply the frozen card with `--protocol-card` and a `--usage-examples` JSON artifact. The artifact has exactly these fields: `schema` (`tlu.usage_examples.v1`), `protocol_id`, `protocol_card_sha256`, `training_split_sha256`, `training_episode_manifest_sha256`, `acquisition`, and `examples`. Each example has exactly `meaning_id`, `meaning`, and `message`. The `acquisition` object has `method` (`model_generated`, `human_authored`, or `programmatic`), `model_id`, `tokenizer_id`, `generation_calls`, `input_tokens`, `output_tokens`, `service_seconds`, and `wall_seconds`; unknown measurements are `null`. Model-generated traces must report one generation call per example and identify their model and tokenizer.
 
-Build the pairs only from training meanings under the frozen sender convention. The runner binds their claims to the exact card, split, and episode-manifest hashes, and checks every meaning against the sender training ledger. It strips IDs and provenance fields from the receiver prompt. These hashes validate artifact binding, not authorship: preserve the generation trace and audit it before making a transfer claim. The run manifest preserves the stated acquisition costs. `usage_example_bytes_per_receiver_request` reports the exemplar bytes, while provider input tokens already include the examples. Include acquisition/setup cost amortized over a preregistered reuse horizon in complete-cost comparisons.
+Build the pairs only from training meanings under the frozen sender convention. The runner binds their claims to the exact card, split, and episode-manifest hashes, and checks every meaning against the sender training ledger. It strips IDs and provenance fields from the receiver prompt. These hashes validate artifact binding, not authorship: preserve the generation trace and audit it before making a transfer claim. Supply `--usage-reuse-horizon H`, the preregistered number of evaluation episodes that will reuse this artifact. Each result carries the artifact in the standard `setup` array, so `tools.cost_report`, `tools.frontier_report`, and `tools.paired_report` deduplicate it by hash and amortize its one-time payload bytes, model calls, service/wall time, and tokenizer-indexed generation tokens over `H`. Setup bytes measure the serialized example payload for one conceptual onboarding transfer; HTTP framing and actual artifact transport are not measured by this runner. The run manifest also preserves acquisition input/output totals. `usage_example_bytes_per_receiver_request` reports repeated prompt context; provider input tokens already include it. Setup-distribution bytes and repeated inference-prompt costs are distinct accounting dimensions.
 
 Example artifact (replace each placeholder with the exact digest/ID and observed message):
 
@@ -56,9 +56,12 @@ Example artifact (replace each placeholder with the exact digest/ID and observed
   "acquisition": {
     "method": "model_generated",
     "model_id": "local-sender-id",
+    "tokenizer_id": "local-sender-tokenizer-revision",
     "generation_calls": 1,
     "input_tokens": null,
-    "output_tokens": null
+    "output_tokens": null,
+    "service_seconds": null,
+    "wall_seconds": null
   },
   "examples": [
     {"meaning_id": "<train meaning id>", "meaning": {"shape": "circle", "color": "amber", "quantity": "one", "texture": "smooth"}, "message": "<observed training message>"}
@@ -66,7 +69,7 @@ Example artifact (replace each placeholder with the exact digest/ID and observed
 }
 ```
 
-Run it with `--conditions usage_only_transfer --protocol-card ... --usage-examples ...`. It also requires the independent receiver capability ledger and fresh resource preflight used by other message conditions. It cannot run in the reserved `--stage train --conditions full_information` calibration batch.
+Run it with `--conditions usage_only_transfer --protocol-card ... --usage-examples ... --usage-reuse-horizon 100`. It also requires the independent receiver capability ledger and fresh resource preflight used by other message conditions. It cannot run in the reserved `--stage train --conditions full_information` calibration batch.
 
 ### Independent receiver capability screen
 

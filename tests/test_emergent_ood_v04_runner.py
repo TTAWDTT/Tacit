@@ -647,7 +647,9 @@ class EmergentOODV04RunnerTests(unittest.TestCase):
                 "training_episode_manifest_sha256": hashlib.sha256((evaluation_dir / "manifest.json").read_bytes()).hexdigest(),
                 "acquisition": {
                     "method": "model_generated", "model_id": "fake-sender",
+                    "tokenizer_id": "fake-sender-tokenizer-v1",
                     "generation_calls": 1, "input_tokens": 17, "output_tokens": 8,
+                    "service_seconds": 0.4, "wall_seconds": 0.5,
                 },
                 "examples": [{
                     "meaning_id": meaning_id, "meaning": train_meaning,
@@ -666,6 +668,7 @@ class EmergentOODV04RunnerTests(unittest.TestCase):
                 "--model-population-id", "fake-test-population", "--capability-ledger", str(capability_path),
                 "--capability-input-dir", str(calibration_dir), "--capability-split-seed", "17",
                 "--resource-preflight", str(preflight_path), "--output", str(output_path),
+                "--usage-reuse-horizon", "10",
             ]
             clients = [FakeSender("json", self.attributes, self.values), FakeReceiver("json", self.attributes, self.values)]
             with patch("sys.argv", args), patch.object(
@@ -679,6 +682,13 @@ class EmergentOODV04RunnerTests(unittest.TestCase):
             self.assertEqual(manifest["usage_example_metadata"]["acquisition"]["input_tokens"], 17)
             self.assertEqual(manifest["usage_example_metadata"]["example_count"], 1)
             self.assertTrue(all(row["costs"]["usage_example_bytes_per_receiver_request"] > 0 for row in rows))
+            self.assertTrue(all(row["setup"][0]["one_time_model_calls"] == 1 for row in rows))
+            self.assertTrue(all(row["setup"][0]["one_time_tokens"] == {"fake-sender-tokenizer-v1": 25} for row in rows))
+            point = frontier_report(rows)["groups"][0]["conditions"][0]
+            self.assertEqual(
+                point["costs"]["amortized_setup_bytes"]["mean"],
+                rows[0]["setup"][0]["one_time_bytes"] / 10,
+            )
 
     def test_incomplete_candidate_set_selection_is_rejected(self):
         corrupt = {**self.bundle, "gold": {**self.bundle["gold"]}}
@@ -790,6 +800,14 @@ class EmergentOODV04RunnerTests(unittest.TestCase):
             sender_tokenizer_id="fake-sender-tokenizer-v1", receiver_tokenizer_id="fake-receiver-tokenizer-v1",
             attributes=self.attributes, values=self.values, protocol_card=card,
             usage_examples=examples, split_seed=17, task_seed=9,
+            usage_examples_digest="a" * 64,
+            usage_acquisition={
+                "method": "model_generated", "model_id": "fake-sender",
+                "tokenizer_id": "fake-sender-tokenizer-v1", "generation_calls": 1,
+                "input_tokens": 10, "output_tokens": 5,
+                "service_seconds": 0.1, "wall_seconds": 0.1,
+            },
+            usage_reuse_horizon=10,
             model_population_id="fake-test-population",
         )
         self.assertTrue(row["outcome"]["exact_selection"])
@@ -835,7 +853,9 @@ class EmergentOODV04RunnerTests(unittest.TestCase):
                 "training_episode_manifest_sha256": training_manifest_hash,
                 "acquisition": {
                     "method": "model_generated", "model_id": "fake-sender",
+                    "tokenizer_id": "fake-sender-tokenizer-v1",
                     "generation_calls": 1, "input_tokens": 17, "output_tokens": 8,
+                    "service_seconds": 0.4, "wall_seconds": 0.5,
                 },
                 "examples": [example],
             }

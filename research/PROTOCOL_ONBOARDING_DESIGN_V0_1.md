@@ -38,7 +38,7 @@ Primary outcome is exact candidate selection. Report the full quality-versus-cos
 - fixed-card distribution bytes and any decoder/tool installation cost;
 - total cost at declared reuse horizons, with setup amortized as `setup_cost / H` only when the artifact is reused for exactly the declared `H` tasks.
 
-The runner's `communication_budget_bytes` currently caps the task message boundary, not onboarding context. Therefore plot message-cap frontiers and complete onboarding cost as distinct axes; do not imply equal total bytes when usage-example bytes differ. `usage_example_bytes_per_receiver_request` and the artifact acquisition ledger expose those terms, but a downstream report must add setup cost and horizon explicitly.
+The runner's `communication_budget_bytes` caps the task message boundary, not onboarding context. Therefore plot message-cap frontiers and complete onboarding cost as distinct axes; do not imply equal total bytes when usage-example bytes differ. Each result now carries the deduplicated exemplar artifact in the standard `setup` array, and `--usage-reuse-horizon` declares `H`; the existing end-to-end frontier and paired tools amortize setup bytes, model calls, tokenizer-indexed tokens, and time over `H`. `usage_example_bytes_per_receiver_request` separately reports the repeated prompt context, which is already included in inference input tokens.
 
 ## Controls and validity checks
 

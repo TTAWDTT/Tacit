@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import os
 import re
 import sys
@@ -212,16 +213,28 @@ def load_usage_examples(
     if artifact["training_episode_manifest_sha256"] != training_episode_manifest_sha256:
         raise ValueError("usage examples are not bound to this exact training episode manifest")
     acquisition = artifact["acquisition"]
-    if not isinstance(acquisition, dict) or set(acquisition) != {"method", "model_id", "generation_calls", "input_tokens", "output_tokens"}:
+    acquisition_fields = {
+        "method", "model_id", "tokenizer_id", "generation_calls", "input_tokens",
+        "output_tokens", "service_seconds", "wall_seconds",
+    }
+    if not isinstance(acquisition, dict) or set(acquisition) != acquisition_fields:
         raise ValueError("usage-example acquisition accounting is malformed")
     if acquisition["method"] not in {"model_generated", "human_authored", "programmatic"}:
         raise ValueError("usage-example acquisition method is invalid")
-    if not isinstance(acquisition["model_id"], str):
-        raise ValueError("usage-example acquisition model_id must be a string")
+    for field in ("model_id", "tokenizer_id"):
+        if not isinstance(acquisition[field], str):
+            raise ValueError(f"usage-example acquisition {field} must be a string")
     for field in ("generation_calls", "input_tokens", "output_tokens"):
         value = acquisition[field]
         if value is not None and (isinstance(value, bool) or not isinstance(value, int) or value < 0):
             raise ValueError(f"usage-example acquisition {field} must be a non-negative integer or null")
+    for field in ("service_seconds", "wall_seconds"):
+        value = acquisition[field]
+        if value is not None and (
+            isinstance(value, bool) or not isinstance(value, (int, float))
+            or not math.isfinite(value) or value < 0
+        ):
+            raise ValueError(f"usage-example acquisition {field} must be a non-negative number or null")
     examples = artifact["examples"]
     if not isinstance(examples, list) or not 1 <= len(examples) <= 192:
         raise ValueError("usage examples must contain between 1 and 192 rows")
@@ -255,6 +268,10 @@ def load_usage_examples(
         clean.append({"meaning_id": meaning_id, "meaning": dict(meaning), "message": message})
     if acquisition["method"] == "model_generated" and acquisition["generation_calls"] != len(clean):
         raise ValueError("model-generated usage traces must account for one generation call per example")
+    if acquisition["method"] == "model_generated" and (
+        not acquisition["model_id"].strip() or not acquisition["tokenizer_id"].strip()
+    ):
+        raise ValueError("model-generated usage traces must identify their model and tokenizer")
     digest = hashlib.sha256(payload).hexdigest()
     return clean, digest, {
         "acquisition": acquisition,
@@ -646,6 +663,9 @@ def run_condition(
     attributes: Sequence[str], values: Mapping[str, Sequence[str]],
     protocol_card: dict[str, str] | None = None,
     usage_examples: Sequence[dict[str, Any]] | None = None,
+    usage_examples_digest: str | None = None,
+    usage_acquisition: dict[str, Any] | None = None,
+    usage_reuse_horizon: int | None = None,
     split_seed: int, task_seed: int, model_population_id: str,
     wire_budget_bytes: int = DEFAULT_WIRE_BUDGET_BYTES,
 ) -> dict[str, Any]:
@@ -725,6 +745,32 @@ def run_condition(
     receiver_model_id = getattr(receiver_model, "model", getattr(receiver_model, "model_name", "unknown"))
     transmissions = result.transmission_records()
     wall_seconds = time.perf_counter() - started
+    setup: list[dict[str, Any]] = []
+    if condition == "usage_only_transfer":
+        if (
+            usage_examples_digest is None or usage_acquisition is None
+            or usage_reuse_horizon is None or usage_reuse_horizon < 1
+        ):
+            raise ValueError("usage_only_transfer requires hashed acquisition metadata and a positive reuse horizon")
+        acquisition_tokens: dict[str, int | None] = {}
+        if usage_acquisition["method"] == "model_generated":
+            input_tokens = usage_acquisition["input_tokens"]
+            output_tokens = usage_acquisition["output_tokens"]
+            acquisition_tokens[usage_acquisition["tokenizer_id"]] = (
+                input_tokens + output_tokens
+                if input_tokens is not None and output_tokens is not None else None
+            )
+        setup.append({
+            "artifact_id": f"usage-examples-sha256:{usage_examples_digest}",
+            "one_time_bytes": len(json.dumps(
+                receiver_context["training_examples"], ensure_ascii=False, separators=(",", ":")
+            ).encode("utf-8")),
+            "one_time_tokens": acquisition_tokens,
+            "one_time_model_calls": usage_acquisition["generation_calls"],
+            "one_time_service_seconds": usage_acquisition["service_seconds"],
+            "one_time_wall_seconds": usage_acquisition["wall_seconds"],
+            "reuse_horizon": usage_reuse_horizon,
+        })
     return {
         "schema_version": "tlu.costs.v3",
         "schema": "tlu.emergent-ood-run.v0.4",
@@ -804,7 +850,7 @@ def run_condition(
         "transmissions": transmissions,
         "model_calls": calls,
         "runtime": {"wall_seconds": wall_seconds},
-        "setup": [],
+        "setup": setup,
     }
 
 
@@ -917,6 +963,10 @@ def main() -> int:
     parser.add_argument("--conditions", nargs="+", choices=CONDITIONS, default=["natural_language"])
     parser.add_argument("--protocol-card", type=Path, help="shared sender/receiver card JSON for the shared_protocol_card condition")
     parser.add_argument("--usage-examples", type=Path, help="train-only meaning/message artifact required by usage_only_transfer")
+    parser.add_argument(
+        "--usage-reuse-horizon", type=int,
+        help="declared number of evaluation episodes over which usage-example acquisition is amortized",
+    )
     parser.add_argument("--output", type=Path, default=Path(".cache/emergent_ood_v0_4/runs/validation.jsonl"))
     parser.add_argument("--resume", action="store_true", help="resume the matching atomic checkpoint for this output path")
     parser.add_argument("--capability-ledger", type=Path, help="verified train-only full_information screen required before message conditions")
@@ -963,6 +1013,12 @@ def main() -> int:
         parser.error("--protocol-card requires shared_protocol_card or usage_only_transfer")
     if "usage_only_transfer" not in args.conditions and args.usage_examples is not None:
         parser.error("--usage-examples is only valid with usage_only_transfer")
+    if "usage_only_transfer" in args.conditions and (
+        args.usage_reuse_horizon is None or args.usage_reuse_horizon < 1
+    ):
+        parser.error("usage_only_transfer requires --usage-reuse-horizon with a positive episode count")
+    if "usage_only_transfer" not in args.conditions and args.usage_reuse_horizon is not None:
+        parser.error("--usage-reuse-horizon is only valid with usage_only_transfer")
     if args.stage == "train" and (
         args.conditions != ["full_information"] or args.sets != CAPABILITY_CALIBRATION_SETS
         or args.set_offset != 0
@@ -993,6 +1049,7 @@ def main() -> int:
             "protocol_card_sha256": protocol_card_digest,
             "usage_examples_sha256": usage_examples_digest,
             "usage_example_count": usage_metadata["example_count"] if usage_metadata else 0,
+            "usage_reuse_horizon": args.usage_reuse_horizon,
             "planned_model_calls": calls_planned,
             "maximum_model_calls_per_batch": MAX_MODEL_CALLS_PER_BATCH,
             "resume_supported": True,
@@ -1113,6 +1170,7 @@ def main() -> int:
         "input_episode_manifest_sha256": input_manifest_sha256,
         "protocol_card_sha256": protocol_card_digest,
         "usage_examples_sha256": usage_examples_digest,
+        "usage_reuse_horizon": args.usage_reuse_horizon,
         "capability_ledger_sha256": capability_ledger_sha256,
         "capability_ledger_manifest_sha256": capability_ledger_manifest_sha256,
         "capability_bundle_manifest_sha256": capability_bundle_manifest_sha256,
@@ -1185,6 +1243,9 @@ def main() -> int:
                 attributes=split["attributes"], values=split["values_by_attribute"],
                 protocol_card=protocol_card if condition in {"shared_protocol_card", "usage_only_transfer"} else None,
                 usage_examples=usage_examples if condition == "usage_only_transfer" else None,
+                usage_examples_digest=usage_examples_digest if condition == "usage_only_transfer" else None,
+                usage_acquisition=usage_metadata["acquisition"] if condition == "usage_only_transfer" else None,
+                usage_reuse_horizon=args.usage_reuse_horizon if condition == "usage_only_transfer" else None,
                 split_seed=args.split_seed, task_seed=bundle["manifest"]["task_seed"],
                 model_population_id=args.model_population_id,
                 wire_budget_bytes=args.wire_budget_bytes,
@@ -1207,6 +1268,7 @@ def main() -> int:
             "protocol_card_sha256": protocol_card_digest,
             "usage_examples_sha256": usage_examples_digest,
             "usage_example_metadata": usage_metadata,
+            "usage_reuse_horizon": args.usage_reuse_horizon,
             "candidate_sets": args.sets,
             "candidate_set_offset": args.set_offset,
             "candidate_count": bundle["manifest"]["k"],
