@@ -247,6 +247,9 @@ def _validate_record(record: Any, line_number: int) -> dict[str, Any]:
         for tokenizer, count in setup_tokens.items():
             _string(tokenizer, f"{where}.one_time_tokens key")
             _number(count, f"{where}.one_time_tokens.{tokenizer}", integer=True)
+        _number(artifact.get("one_time_model_calls"), f"{where}.one_time_model_calls", integer=True)
+        _number(artifact.get("one_time_service_seconds"), f"{where}.one_time_service_seconds")
+        _number(artifact.get("one_time_wall_seconds"), f"{where}.one_time_wall_seconds")
 
     return record
 
@@ -372,6 +375,20 @@ def aggregate(records: list[dict[str, Any]]) -> dict[str, Any]:
             ])
             for tokenizer in setup_tokenizers
         }
+        setup_scalar_metrics = {}
+        for source_name, output_name in (
+            ("one_time_model_calls", "model_calls"),
+            ("one_time_service_seconds", "service_seconds"),
+            ("one_time_wall_seconds", "wall_seconds"),
+        ):
+            setup_scalar_metrics[output_name] = {
+                "one_time": _metric([item.get(source_name) for item in setup_artifacts.values()]),
+                "amortized_per_episode_at_declared_horizons": _metric([
+                    None if item.get(source_name) is None
+                    else item[source_name] / item["reuse_horizon"]
+                    for item in setup_artifacts.values()
+                ]),
+            }
 
         reports.append({
             "stratum": json.loads(stratum_key) if stratum_key else None,
@@ -409,6 +426,7 @@ def aggregate(records: list[dict[str, Any]]) -> dict[str, Any]:
                 "amortized_bytes_per_episode_at_declared_horizons": amortized_setup_bytes,
                 "one_time_tokens_by_tokenizer": setup_tokens,
                 "amortized_tokens_per_episode_by_tokenizer": amortized_setup_tokens,
+                **setup_scalar_metrics,
             },
         })
     return {"schema_version": REPORT_SCHEMA_VERSION, "input_schema_version": input_version, "groups": reports}

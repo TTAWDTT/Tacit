@@ -27,6 +27,18 @@ FRONTIER_SCOPES = {
         "wire_bytes", "input_tokens", "output_tokens", "model_calls",
         "service_seconds", "wall_seconds", "critical_path_seconds", "amortized_setup_bytes",
     ),
+    "end_to_end_operational": (
+        "wire_bytes", "amortized_setup_bytes", "input_tokens", "output_tokens",
+        "amortized_setup_tokens", "model_calls", "amortized_setup_model_calls",
+        "service_seconds", "amortized_setup_service_seconds", "wall_seconds",
+        "amortized_setup_wall_seconds",
+    ),
+    "end_to_end_with_critical_path": (
+        "wire_bytes", "amortized_setup_bytes", "input_tokens", "output_tokens",
+        "amortized_setup_tokens", "model_calls", "amortized_setup_model_calls",
+        "service_seconds", "amortized_setup_service_seconds", "wall_seconds",
+        "amortized_setup_wall_seconds", "critical_path_seconds",
+    ),
 }
 
 
@@ -53,6 +65,10 @@ def _mean(values: list[float | None]) -> dict[str, Any]:
 
 
 def _setup_bytes(records: list[dict[str, Any]]) -> float | None:
+    return _setup_value(records, "one_time_bytes")
+
+
+def _setup_value(records: list[dict[str, Any]], field: str) -> float | None:
     unique: dict[str, dict[str, Any]] = {}
     for record in records:
         for artifact in record["setup"]:
@@ -62,11 +78,30 @@ def _setup_bytes(records: list[dict[str, Any]]) -> float | None:
             unique[artifact_id] = artifact
     total = 0.0
     for artifact in unique.values():
-        size = artifact.get("one_time_bytes")
+        size = artifact.get(field)
         if size is None:
             return None
         total += size / artifact["reuse_horizon"]
     return total
+
+
+def _setup_tokens(records: list[dict[str, Any]]) -> float | None:
+    unique: dict[str, dict[str, Any]] = {}
+    for record in records:
+        for artifact in record["setup"]:
+            artifact_id = artifact["artifact_id"]
+            if artifact_id in unique and unique[artifact_id] != artifact:
+                raise RecordError(f"setup artifact {artifact_id!r} has inconsistent metadata")
+            unique[artifact_id] = artifact
+    tokenizer_ids = {tokenizer for item in unique.values() for tokenizer in item["one_time_tokens"]}
+    if len(tokenizer_ids) > 1:
+        return None
+    tokenizer = next(iter(tokenizer_ids), None)
+    return sum(
+        (artifact["one_time_tokens"].get(tokenizer, 0) if tokenizer else 0)
+        / artifact["reuse_horizon"]
+        for artifact in unique.values()
+    )
 
 
 def _episode_metrics(record: dict[str, Any]) -> dict[str, float | None]:
@@ -113,9 +148,13 @@ def _summarize_condition(records: list[dict[str, Any]]) -> dict[str, Any]:
     episode_metrics = [_episode_metrics(record) for record in records]
     successes = [record["outcome"]["joint_success"] for record in records]
     tokenizer_units = sorted({
-        call["tokenizer"]
+        tokenizer
         for record in records
-        for call in record["model_calls"]
+        for tokenizer in (
+            [call["tokenizer"] for call in record["model_calls"]]
+            + [tokenizer for artifact in record["setup"]
+               for tokenizer in artifact["one_time_tokens"]]
+        )
     })
     costs = {
         name: _mean([metrics[name] for metrics in episode_metrics])
@@ -127,6 +166,25 @@ def _summarize_condition(records: list[dict[str, Any]]) -> dict[str, Any]:
         "observed": len(records) if setup_bytes is not None else 0,
         "missing": 0 if setup_bytes is not None else len(records),
         "complete": setup_bytes is not None,
+    }
+    for field, name in (
+        ("one_time_model_calls", "amortized_setup_model_calls"),
+        ("one_time_service_seconds", "amortized_setup_service_seconds"),
+        ("one_time_wall_seconds", "amortized_setup_wall_seconds"),
+    ):
+        value = _setup_value(records, field)
+        costs[name] = {
+            "mean": value,
+            "observed": len(records) if value is not None else 0,
+            "missing": 0 if value is not None else len(records),
+            "complete": value is not None,
+        }
+    setup_tokens = _setup_tokens(records)
+    costs["amortized_setup_tokens"] = {
+        "mean": setup_tokens,
+        "observed": len(records) if setup_tokens is not None else 0,
+        "missing": 0 if setup_tokens is not None else len(records),
+        "complete": setup_tokens is not None,
     }
     if len(tokenizer_units) > 1:
         for name in ("input_tokens", "output_tokens"):
@@ -193,6 +251,12 @@ def frontier_report(records: list[dict[str, Any]]) -> dict[str, Any]:
                         "missing": point["episodes"],
                         "complete": False,
                     }
+                point["costs"]["amortized_setup_tokens"] = {
+                    "mean": None,
+                    "observed": 0,
+                    "missing": point["episodes"],
+                    "complete": False,
+                }
 
         frontiers = []
         for scope_name, dimensions in FRONTIER_SCOPES.items():

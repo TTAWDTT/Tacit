@@ -186,6 +186,9 @@ def private_match_report(records: list[dict[str, Any]], *, replicates: int = 500
         artifact = {
             "artifact_id": f"private-match-v0.3-nl-selector:{selection_setup['manifest_sha256']}",
             "one_time_bytes": selection_setup["raw"]["wire_bytes"],
+            "one_time_model_calls": selection_setup["raw"]["model_calls"],
+            "one_time_service_seconds": selection_setup["raw"]["model_service_seconds"],
+            "one_time_wall_seconds": selection_setup["raw"]["wall_seconds"],
             "reuse_horizon": selection_setup["reuse_horizon_evaluation_episodes"],
             "one_time_tokens": {
                 tokenizer: values["input_tokens"] + values["output_tokens"]
@@ -352,7 +355,7 @@ def _validate_selection_manifest(
             ),
             "wall_seconds": None if raw["wall_seconds"] is None else raw["wall_seconds"] / horizon,
         },
-        "limitation": "Fixed setup is reported separately from episode bootstrap uncertainty; amortization uses the preregistered eight-episode pilot horizon, not a deployment lifetime.",
+        "limitation": "Fixed setup is reported separately from episode bootstrap uncertainty; amortization uses the preregistered eight-episode pilot horizon, not a deployment lifetime. Token costs remain tokenizer-indexed and the scalar token frontier is suppressed for heterogeneous tokenizer units.",
     }
 
 

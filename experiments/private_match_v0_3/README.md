@@ -239,9 +239,10 @@ development IDs, model/tokenizer signature, and evaluation coverage. It charges
 the one-time selector's serialized channel bytes and per-tokenizer model tokens
 as a setup artifact on the selected English arm, and publishes raw plus
 eight-episode-amortized calls, bytes, tokens, service time, and wall time.
-Fixed setup is shown separately from episode bootstrap uncertainty. Without the
-manifest, both English candidate points are omitted from the Pareto frontier
-instead of being treated as zero-setup.
+The end-to-end operational Pareto scope includes these setup dimensions as
+separate axes; setup is shown separately from episode bootstrap uncertainty.
+Without the manifest, both English candidate points are omitted from the Pareto
+frontier instead of being treated as zero-setup.
 
 The report reconstructs each task from its seed and evaluator key, re-scores
 the exact answer, checks prompt revision, schedule, route, transmitted text-size metadata, parser
