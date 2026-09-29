@@ -90,6 +90,12 @@ Uses autoregressive latent thoughts and a shared latent working memory; the pape
 
 Uses a sparsity-regularized autoencoder to infer shared/private latent dimensions and their agent dependency structure, then routes dimensions and injects a learned prefix. Its identifiability result is bounded by invertible generative-process, variation, and sparse-Jacobian assumptions; it does not guarantee semantic grounding or finite-sample recovery for arbitrary hidden states. The paper reports strong MATH/GSM8K debate results (e.g. Qwen3-1.7B MATH 93.0% vs 75.8% Multiagent Finetuning), but each agent receives the same benchmark question, so necessary private-evidence transfer is not established. Its experiments use 500 training and 500 evaluation examples and a single node with eight H100s. No serialized payload-byte or complete cross-process cost frontier is reported. Treat as a serious trained latent collaboration baseline when internals and training are available; count communicated coordinates/bytes, both endpoints, adapters, and setup. See the [source audit](THOUGHTCOMM_AUDIT_V0_1.md).
 
+### Yu et al. (2026), *Learning to Communicate: Toward End-to-End Optimization of Multi-Agent Language Systems* (DiffMAS), arXiv preprint
+
+[arXiv](https://arxiv.org/abs/2604.21794)
+
+Trains task-specific LoRA adapters over a sequential multi-agent latent KV trace and reports gains over text, training-free latent, and C2C baselines across reasoning, coding, and commonsense benchmarks. It is a strong learned-latent upper bound for compatible internal-access deployments. All roles see the same task instance; there is no receiver-need/private-fact benchmark. The AIME tables appear to use 30 items (3.3-point increments) and provide no uncertainty intervals, while the system is trained on task-family examples. The paper also needs clarification on whether gradients update only the final role or the upstream communication encoders. Its trace grows linearly in stages × blocks × dimensions before framing, so latent continuity is not a bandwidth saving by itself. See the [audit](DIFFMAS_AUDIT_V0_1.md).
+
 ### Du et al. (2026), *Enabling Agents to Communicate Entirely in Latent Space* (Interlat), ACL 2026
 
 [ACL Anthology](https://aclanthology.org/2026.acl-long.1248/) · [official code](https://github.com/XiaoDu-flying/Interlat)
