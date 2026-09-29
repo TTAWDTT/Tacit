@@ -5,23 +5,14 @@ OpenAI-compatible endpoints and apply the project's resource gates first.
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import os
+from pathlib import Path
 
-from tacit import OpenAICompatibleClient, exchange_dialogue
+from tacit import DialogueProtocolCard, OpenAICompatibleClient, exchange_dialogue
 
 DEFAULT_PORTS = {"A": 8000, "B": 8001, "C": 8002}
-
-
-class EvidenceProtocol:
-    protocol_id = "evidence-unicast-three-agent-v1"
-    agent_instructions = {
-        name: (
-            "Share only evidence from your private context or messages routed to you. "
-            "Label uncertainty and do not claim to know unreceived messages."
-        )
-        for name in ("A", "B", "C")
-    }
 
 
 def _client(name: str) -> OpenAICompatibleClient:
@@ -38,9 +29,15 @@ def _client(name: str) -> OpenAICompatibleClient:
 
 
 def main() -> None:
+    card_path = Path(os.environ.get(
+        "TLU_DIALOGUE_PROTOCOL_CARD",
+        str(Path(__file__).with_name("dialogue_protocol_card.json")),
+    ))
+    card_bytes = card_path.read_bytes()
+    protocol = DialogueProtocolCard.from_json(card_bytes)
     result = exchange_dialogue(
         {name: _client(name) for name in ("A", "B", "C")},
-        protocol=EvidenceProtocol(),
+        protocol=protocol,
         private_contexts={
             "A": "Trial log: event X preceded event Y in 3 of 4 observations.",
             "B": "Independent sensor: event Y preceded event X once; sensor is noisy.",
@@ -55,6 +52,7 @@ def main() -> None:
     )
     print(json.dumps({
         "protocol_id": result.protocol_id,
+        "protocol_card_sha256": hashlib.sha256(card_bytes).hexdigest(),
         "model_calls": result.model_calls,
         "wire_bytes": result.wire_bytes,
         "wire_budget_bytes": result.wire_budget_bytes,

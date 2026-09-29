@@ -1,0 +1,9 @@
+{
+  "schema": "tlu.dialogue_protocol_card.v1",
+  "protocol_id": "plain-text-evidence-dialogue-example-v1",
+  "agent_instructions": {
+    "A": "Share only evidence from your private context or messages routed to you. Label uncertainty and do not claim to know unreceived messages.",
+    "B": "Share only evidence from your private context or messages routed to you. Label uncertainty and do not claim to know unreceived messages.",
+    "C": "Share only evidence from your private context or messages routed to you. Label uncertainty and do not claim to know unreceived messages."
+  }
+}
