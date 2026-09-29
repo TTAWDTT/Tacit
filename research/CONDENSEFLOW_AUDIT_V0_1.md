@@ -69,6 +69,37 @@ round's downstream transformation is non-expansive in the chosen norm; a
 general transformer can amplify upstream perturbations, so an appropriate
 Lipschitz factor or empirical-only qualification is needed.
 
+### A valid query-shared sufficient condition
+
+For a fixed, prespecified set of receiver queries `Q`, define
+
+`rho_shared = max_{S subset [T], |S|=K} min_{q in Q} sum_{j in S} alpha_j(q)`.
+
+This reverses the paper's per-query selection order: choose one support `S`
+first, then evaluate its least attention mass over every query. Let `A_S` be
+the single hard selector for `S`, reused for all queries. For any `q`, let
+`beta_q = sum_{j in S} alpha_j(q)`. The compressed attention distribution is
+the original distribution renormalized on `S`, so its total-variation
+distance from the original is `1 - beta_q`; equivalently, the `L1` distance is
+`2(1 - beta_q)`. With `||v_j||_2 <= Vmax`, this gives
+
+`||O - O_tilde(A_S)||_F <= 2 (1 - rho_shared) Vmax sqrt(|Q|)`.
+
+The proof applies one and the same support to every query. Since a hard
+selector is a row-stochastic matrix, the same upper bound applies to the
+minimum over the full set of row-stochastic matrices. Extending it to the
+implemented LTC requires the extra condition that its parameterized
+probe-induced aggregation can realize or approach `A_S`; the paper does not
+establish that condition. `Q` must also be fixed independently of the realized
+query at communication time, or the cost of selecting and disclosing query
+specific support must be counted.
+
+In the two-query counterexample, `rho_shared = 1 - sigmoid(10)`, about
+`0.0000454`; the corrected bound is loose (about `2.828`) but valid. This is
+the desired diagnostic behavior: incompatible salient supports erase the
+guarantee instead of promising near-zero error. The executable reproduces both
+the invalid per-query claim and this shared-support sufficient bound.
+
 ## Falsifiable predictions for a future latent arm
 
 1. Construct receiver query sets whose per-query top-`K` supports are disjoint.

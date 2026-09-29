@@ -12,6 +12,11 @@ class CondenseFlowBoundAuditTests(unittest.TestCase):
         self.assertLess(result["theorem_bound"], 0.0002)
         self.assertGreater(result["minimum_error_over_one_fixed_row_stochastic_A"], 1.4)
         self.assertGreater(result["violation_ratio"], 10_000)
+        self.assertLess(result["best_common_support_mass"], 0.0001)
+        self.assertGreaterEqual(
+            result["query_shared_support_bound"],
+            result["minimum_error_over_one_fixed_row_stochastic_A"],
+        )
 
     def test_larger_query_magnitude_sharpens_the_gap(self):
         moderate = fixed_compressor_counterexample(3.0)

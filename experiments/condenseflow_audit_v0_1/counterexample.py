@@ -19,6 +19,8 @@ def fixed_compressor_counterexample(query_magnitude: float = 5.0) -> dict[str, f
     # Each query's best one-position attention mass is sigmoid(2q).
     rho = 1.0 / (1.0 + exp(-2.0 * query_magnitude))
     theorem_rhs = 2.0 * (1.0 - rho) * sqrt(2.0)  # V_max=1, n_q=2
+    shared_rho = 1.0 - rho
+    shared_support_bound = 2.0 * (1.0 - shared_rho) * sqrt(2.0)
 
     # Any one-row stochastic A=[p, 1-p] compresses K and V to one pair.
     # A one-position cache returns the same scalar c for both queries.
@@ -31,6 +33,8 @@ def fixed_compressor_counterexample(query_magnitude: float = 5.0) -> dict[str, f
         "n_queries": 2,
         "attention_concentration_rho": rho,
         "theorem_bound": theorem_rhs,
+        "best_common_support_mass": shared_rho,
+        "query_shared_support_bound": shared_support_bound,
         "minimum_error_over_one_fixed_row_stochastic_A": minimum_fixed_matrix_error,
         "violation_ratio": minimum_fixed_matrix_error / theorem_rhs,
     }
