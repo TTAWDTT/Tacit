@@ -11,6 +11,8 @@
 
 Latent communication cuts across representation and substrate: embeddings, hidden states, or KV state may avoid text generation, but require compatible model internals, alignment, receiver integration, and byte/compute accounting. A text-only result must state that deployment boundary instead of claiming superiority to latent transfer.
 
+Shared KV reuse is an additional system-state mechanism, distinct from transmitting a compact semantic payload. Prompt Choreography shares text-associated KV encodings across calls within a compatible runtime, reducing repeated prefill; the cached tensor is not a zero-byte network codec. Its same-device assumption, accuracy shifts without adaptation, memory needs, and possible context leakage define an explicit deployment stratum. See the [source audit](PROMPT_CHOREOGRAPHY_AUDIT_V0_1.md).
+
 ## What the source review changes
 
 ProtocolBench explicitly measures task quality, latency/throughput, byte overhead, and failure robustness, pins factors such as model, prompts, hardware image and rate limits, and normalizes retries and streaming across A2A/ACP/ANP/Agora. Its router selects protocols per scenario and does not change application semantics. That is strong guidance for systems comparisons; those results do not identify which message content language is best.
@@ -19,6 +21,8 @@ Agora describes a meta-protocol combining standardized routines for frequent int
 
 The 2026 latent-communication taxonomy distinguishes communicated object (embedding/hidden state/KV cache), sender-receiver alignment, and receiver fusion. This suggests future comparisons must report the interface assumptions and serialized state size, rather than placing a latent result on a text-token axis.
 
+Prompt Choreography sharpens the distinction between *transmitting* a representation and *reusing* an internal representation already resident in shared memory. For a compatible same-runtime workflow, report the cache baseline's latency and inference compute separately from the logical channel payload. For independent endpoints, only compare a KV transfer if actual serialized bytes and receiver integration are measured.
+
 ## Falsifiable design consequences
 
 - Keep message representation fixed while varying scheduling, then keep schedule fixed while varying representation. Do not attribute gains across these interventions to “language.”
@@ -26,6 +30,7 @@ The 2026 latent-communication taxonomy distinguishes communicated object (embedd
 - For every fixed symbolic/structured arm, log both syntax validity and whether decoding recovers the sender's exact private state. Then score receiver task success independently. A correct-looking message can still be semantically wrong, and a faithful message can still be misdecoded.
 - Compare under a task budget and total system costs. Also show the measured application boundary; do not infer physical-network bytes from application payloads.
 - A message format selected by an LLM is a policy over a format inventory. Its choice cost, inventory/setup cost, and receiver compatibility belong on its frontier.
+- When evaluating end-to-end inference efficiency on repeated-context workflows, include prefix-cache and (where the runtime and task permit it) shared-KV reuse as systems baselines. Preserve identical task visibility and score semantic fidelity, accuracy, privacy, cache memory, and serialized bytes separately.
 
 ## Scope boundary for v0.2
 

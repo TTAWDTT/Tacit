@@ -154,6 +154,12 @@ Proposes a direct best-match mapping between emerged symbols and concepts to mak
 
 ## Protocol and system layers
 
+### Bai & Eisner (2026), *Accelerating Language Model Workflows with Prompt Choreography*, TACL
+
+[ACL Anthology](https://aclanthology.org/2026.tacl-1.13/) · [official implementation](https://github.com/tjbai/choreo) · [detailed audit](PROMPT_CHOREOGRAPHY_AUDIT_V0_1.md)
+
+Shares dynamically generated message KV encodings inside a compatible model runtime to avoid repeated prefill computation. In the paper's three main MATH workflows it improves per-step time-to-first-token by 2.0–6.2×, while end-to-end speedups are about 1.03×; some more prefill-bound Tree-of-Thought configurations reach 2.2×. Naive choreography can reduce task accuracy, fine-tuning can restore some of it, and context reuse creates information-blockage and leakage risks. This is a strong shared-state inference baseline when agents share a device/runtime and context is repeatedly re-encoded. It does not reduce the logical message's network bytes and is not a portable cross-model language. Keep its compute/cache frontier separate from a representation-and-wire-byte frontier; charge fine-tuning and cache memory when used.
+
 ### Random access codes (RACs)
 
 Random access codes are a classical communication-theory primitive: a sender compresses a bit vector into a bounded message, and a receiver with a private query index tries to recover the requested coordinate. Classical (n\to1) encoders, including shared-randomness variants, have been studied directly; see [Ambainis et al. (2008)](https://arxiv.org/abs/0810.2937). This prevents framing a hidden-index/coordinate-retrieval task as a new benchmark idea. Tacit's use is narrower: an exact finite control for validating information boundaries, query-distribution effects, and wire-budget accounting before using expensive or capability-limited LLMs. The project-local enumeration and its limits are recorded in [`private_query_v0_1`](../experiments/private_query_v0_1/README.md).

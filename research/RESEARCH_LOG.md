@@ -1,5 +1,11 @@
 # Research log
 
+## 2026-09-29 — Separate shared KV reuse from message-language efficiency
+
+- **Question:** does a strong internal-state reuse baseline invalidate or supersede a text message-format experiment? Read the full TACL 2026 Prompt Choreography paper and its linked reference implementation.
+- **Finding:** shared KV encodings lower repeated prefill cost inside one compatible runtime; they do not shorten the logical message or measure its serialized network bytes. The paper reports 2.0–6.2× TTFT but about 1.03× end-to-end speedup in its three main workflows, with up to 2.2× in more prefill-bound ToT settings. Untuned context choreography can hurt accuracy and introduces information-blockage/leakage risks.
+- **Decision/prediction:** retain shared-KV reuse as a conditional system baseline for repeated-context, shared-device workflows, separately from content representation and portable transport. Gains should scale with redundant prefill and can vanish end-to-end when decoding dominates. Do not add it to Private Match's first codec ranking or treat cache reuse as zero-byte communication. No model was run; the local inference resource gate remains in force. See [audit](PROMPT_CHOREOGRAPHY_AUDIT_V0_1.md) and [comparison-layer rules](PROTOCOL_LAYERS_AND_COMPARABILITY_2026_09.md).
+
 ## 2026-09-29 — Tenth INDEX_m host-resource gate rejection
 
 - About 79 minutes after attempt 9, reran the exact frozen launcher once in `-PrepareOnly` mode because host conditions could have changed. The read-only idle gate measured 33.8% mean CPU (35.5% maximum), 60% GPU utilization, 953 MiB GPU memory, and 2,892 MiB free system memory; port 8001 was unused.
