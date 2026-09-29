@@ -1,6 +1,6 @@
 # Working theory: task-conditioned communication rate
 
-**Status:** v0.3, updated 2026-09-29 with a cumulative-cost condition for stateful setup amortization and an exact one-way lower bound for held-out candidate selection. These definitions organize experiments; they do not prove that a particular representation is better.
+**Status:** v0.4, updated 2026-09-29 with a cumulative-cost condition for stateful setup amortization, an exact one-way lower bound for held-out candidate selection, and a lossy random-binning reference. These definitions organize experiments; they do not prove that a particular representation is better.
 
 ## 1. Episode and protocol
 
@@ -320,6 +320,28 @@ The complete-support assumption above can be too strong for a small, fixed evalu
 **Proof.** A zero-error encoder cannot assign the same message to adjacent meanings: on a candidate set containing both, the receiver would see the same message and same candidate set for either target. Hence every valid encoder induces a proper coloring, requiring at least (χ(G)) symbols. Conversely, send the proper color of the target. Each candidate set is a clique in (G), so its meanings have distinct colors; the receiver selects the unique candidate matching the received color. Thus (χ(G)) symbols suffice. The complete graph case gives (χ(G)=n), recovering the full-support bound. (\square)
 
 **Scope and prediction.** This is a deterministic, zero-error, one-way payload result for a fixed, known candidate suite; it excludes the cost of sharing the coloring, and it is not an LLM-token or lossy-accuracy bound. A small random suite may have a much smaller (χ(G)) than its target support size, making an oracle code deceptively cheap. Report graph coverage and this finite-suite floor alongside the full-support (n)-symbol reference. Increasing candidate-set coverage should move (χ(G)) upward toward (n); if it does not, inspect the candidate generator or support assumptions. The v0.4 fixture must not call the full-support bit count a strict lower bound on its realized sample unless every target pair co-occurs.
+
+### Lossy accuracy reference from random binning
+
+The zero-error chromatic-number floor does not describe how quickly task accuracy rises as a finite message alphabet grows when collisions are allowed. Random binning is established in source coding with decoder side information (for example, [Merhav 2015](https://arxiv.org/abs/1507.01255)); universal hash families provide another way to approximate collision-controlled random assignments ([Carter and Wegman 1979](https://doi.org/10.1016/0022-0000(79)90044-8)). The finite one-shot decision formula below is derived directly for our candidate-set task; it is not claimed as a theorem from those papers. Consider a fixed candidate set $C$ with $k$ distinct meanings and a uniform target $Y\in C$. A sender maps each meaning to one of $M$ message symbols, without seeing $C$. For a fixed encoder $f$, a Bayes-optimal receiver that sees both $C$ and $f(Y)$ can choose one representative from every code class present in $C$, so its exact-selection accuracy on that set is
+
+\[
+a(f,C)=\frac{|f(C)|}{k}.
+\]
+
+Now draw the shared encoder as an ideal random function $F$ that independently assigns every meaning a uniform symbol in $[M]$. For any one of the $M$ symbols, the probability that it is absent from $C$ is $(1-1/M)^k$. Linearity of expectation gives
+
+\[
+\mathbb{E}_F[a(F,C)] = \frac{M\left(1-(1-1/M)^k\right)}{k}.
+\]
+
+This expectation depends only on $k$, not on which candidate meanings appear or how the fixed suite samples its candidate sets. For $M=1$ it recovers the no-message prior $1/k$. For a power-of-two alphabet $M=2^b$, it is an exact expected-accuracy reference at a $b$-bit fixed-width payload cap. Example: for $k=4$, $b=0,1,2,3$ gives $1/4$, $15/32$, $175/256$, and $1695/2048$ respectively. This is a lossy **coding baseline**, not a language, not a model result, and not a claim that a random mapping is useful to an LLM.
+
+**Proof of the receiver rule.** Let the code classes intersecting $C$ have sizes $n_1,\ldots,n_r$. Conditional on receiving class $j$, the target is uniform over those $n_j$ meanings because the prior is uniform and the encoder is deterministic. Any decoder therefore succeeds with probability at most $1/n_j$ on that class, attained by choosing any one candidate in it. Averaging over the $k$ possible targets, each occupied class contributes exactly one correct target, so accuracy is $r/k=|f(C)|/k$. For the random-function calculation, write $|F(C)|=\sum_{m=1}^{M}\mathbf{1}\{m\text{ appears in }F(C)\}$ and take expectations.
+
+**Operational boundary.** The derivation assumes the same target-independent random codebook is already available to both endpoints. Its seed/codebook distribution, serialization, model instructions or codec runtime, latency, and compute are excluded. A keyed hash is only a pseudorandom approximation to an ideal random function; a family with only pairwise-independent outputs does not in general justify the exact occupancy formula for $k>2$. Treat this as an oracle payload reference until a concrete shared-codebook implementation is tested and fully charged. The executable exact-rational calculator [`candidate_set_random_code.py`](../research/candidate_set_random_code.py) and exhaustive small-alphabet regression test make the curve reproducible.
+
+**Falsifiable prediction P11.** On uniformly targeted candidate sets of size $k$, averaging a truly random codebook over independent draws must match the formula at each $M$; a systematic discrepancy indicates target-prior imbalance, target-dependent codebook selection, non-independent labels, or an incorrect decoder model. A semantic protocol's claim of value should be tested against this random-binning reference as well as the no-message and zero-error code, while keeping payload-only and complete LLM/system costs separate.
 
 ### Fixed-width, prefix-free, and framed payloads are different bounds
 
