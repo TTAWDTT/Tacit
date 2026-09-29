@@ -3,9 +3,13 @@
 from .runtime import (
     ChatCompletion,
     ChatModel,
+    DialogueProtocol,
+    DialogueResult,
+    DialogueTurn,
     ExchangeResult,
     OpenAICompatibleClient,
     TextProtocol,
+    exchange_dialogue,
     exchange_once,
 )
 from .channel import FrameTransmission, LocalTCPFrameChannel, LocalTCPMessageChannel, Transmission
@@ -13,9 +17,13 @@ from .channel import FrameTransmission, LocalTCPFrameChannel, LocalTCPMessageCha
 __all__ = [
     "ChatCompletion",
     "ChatModel",
+    "DialogueProtocol",
+    "DialogueResult",
+    "DialogueTurn",
     "ExchangeResult",
     "OpenAICompatibleClient",
     "TextProtocol",
+    "exchange_dialogue",
     "exchange_once",
     "LocalTCPMessageChannel",
     "LocalTCPFrameChannel",

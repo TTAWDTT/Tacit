@@ -9,7 +9,7 @@ from urllib.request import Request
 
 from tacit import (
     ChatCompletion, LocalTCPFrameChannel, LocalTCPMessageChannel,
-    OpenAICompatibleClient, exchange_once,
+    OpenAICompatibleClient, exchange_dialogue, exchange_once,
 )
 from tools.cost_report import aggregate
 
@@ -30,7 +30,114 @@ class FakeModel:
         return self.completion
 
 
+class FakeDialogueProtocol:
+    protocol_id = "fixed-dialogue-test-v1"
+    agent_instructions = {
+        "A": "Use A's evidence and the public transcript.",
+        "B": "Use B's evidence and the public transcript.",
+    }
+
+
+class SequencedDialogueModel:
+    def __init__(self, model_name, texts):
+        self.model_name = model_name
+        self.texts = list(texts)
+        self.calls = []
+
+    def complete(self, messages):
+        self.calls.append(list(messages))
+        text = self.texts.pop(0)
+        return ChatCompletion(text, self.model_name, 20, 4, 0.01)
+
+
 class TacitRuntimeTests(unittest.TestCase):
+    def test_fixed_schedule_dialogue_preserves_private_views_and_measures_each_turn(self) -> None:
+        agent_a = SequencedDialogueModel("model-a", ["A first", "A follow-up"])
+        agent_b = SequencedDialogueModel("model-b", ["B reply"])
+        result = exchange_dialogue(
+            {"A": agent_a, "B": agent_b},
+            protocol=FakeDialogueProtocol(),
+            private_contexts={"A": "A-secret", "B": "B-secret"},
+            schedule=("A", "B", "A"),
+            task="Combine the two observations.",
+            max_turns=3,
+        )
+
+        self.assertEqual(result.model_calls, 3)
+        self.assertEqual([turn.speaker for turn in result.turns], ["A", "B", "A"])
+        self.assertEqual([turn.recipient for turn in result.turns], ["B", "A", "B"])
+        self.assertEqual(result.model_call_records()[0]["tokenizer"], "not_reported")
+        with self.assertRaisesRegex(ValueError, "tokenizers must map"):
+            result.model_call_records(tokenizers={"A": ""})
+        self.assertEqual(result.wire_bytes, sum(
+            record["payload_bytes"] + record["framing_bytes"]
+            for record in result.transmission_records()
+        ))
+        call_records = result.model_call_records(tokenizers={"A": "tokenizer-a", "B": "tokenizer-b"})
+        self.assertEqual([row["agent"] for row in call_records], ["A", "B", "A"])
+        episode = {
+            "schema_version": "tlu.costs.v3",
+            "episode_id": "fixed-dialogue-test-episode",
+            "stratum": {
+                "experiment_id": "dialogue-runtime-test",
+                "task_id": "toy-dialogue@1",
+                "split": "test",
+                "task_parameters": {"turns": 3},
+                "model_population_id": "fake-pair",
+                "agent_models": {"A": "model-a", "B": "model-b"},
+                "scorer_id": "test-only",
+            },
+            "protocol": {
+                "policy_id": "fixed-schedule",
+                "code_id": result.protocol_id,
+                "decoder_id": "verbatim-transcript-v1",
+            },
+            "outcome": {"joint_success": True, "answer_score": 1.0},
+            "transmissions": result.transmission_records(),
+            "model_calls": call_records,
+            "runtime": {},
+            "setup": [],
+        }
+        report = aggregate([episode])
+        self.assertEqual(
+            report["groups"][0]["channel"]["wire_bytes"]["observed_sum"],
+            result.wire_bytes,
+        )
+
+        first_a = json.loads(agent_a.calls[0][1]["content"])
+        b_prompt = json.loads(agent_b.calls[0][1]["content"])
+        second_a = json.loads(agent_a.calls[1][1]["content"])
+        self.assertEqual(first_a["private_context"], "A-secret")
+        self.assertEqual(first_a["public_transcript"], [])
+        self.assertEqual(b_prompt["private_context"], "B-secret")
+        self.assertEqual(b_prompt["public_transcript"], [{"sender": "A", "message": "A first"}])
+        self.assertEqual(second_a["private_context"], "A-secret")
+        self.assertEqual(second_a["public_transcript"], [
+            {"sender": "A", "message": "A first"},
+            {"sender": "B", "message": "B reply"},
+        ])
+        self.assertNotIn("B-secret", json.dumps(agent_a.calls))
+        self.assertNotIn("A-secret", json.dumps(agent_b.calls))
+
+    def test_dialogue_rejects_invalid_schedules_and_roles(self) -> None:
+        agents = {"A": FakeModel(ChatCompletion("a", "A")), "B": FakeModel(ChatCompletion("b", "B"))}
+        common = {
+            "agents": agents,
+            "protocol": FakeDialogueProtocol(),
+            "private_contexts": {"A": "a", "B": "b"},
+            "task": "task",
+            "max_turns": 2,
+        }
+        for changes in (
+            {"schedule": ()},
+            {"schedule": ("A", "C")},
+            {"schedule": ("A", [])},
+            {"schedule": ("A", "B", "A")},
+            {"private_contexts": {"A": "a"}},
+        ):
+            with self.subTest(changes=changes), self.assertRaises(ValueError):
+                exchange_dialogue(**(common | {"schedule": ("A", "B")} | changes))
+
     def test_loopback_frame_channel_transmits_opaque_bytes_and_accounts_exactly(self) -> None:
         received = []
         payload = b"\x00\xffKV\x80\x00"

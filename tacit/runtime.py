@@ -14,6 +14,8 @@ from typing import Any, Mapping, Protocol, Sequence
 from urllib.error import HTTPError, URLError
 from urllib.request import HTTPRedirectHandler, Request, build_opener, urlopen
 
+from tacit.channel import LocalTCPMessageChannel, Transmission
+
 
 JsonObject = dict[str, Any]
 
@@ -49,6 +51,16 @@ class TextProtocol(Protocol):
 
     @property
     def receiver_instruction(self) -> str: ...
+
+
+class DialogueProtocol(Protocol):
+    """Fixed instructions for a multi-turn two-agent dialogue protocol."""
+
+    @property
+    def protocol_id(self) -> str: ...
+
+    @property
+    def agent_instructions(self) -> Mapping[str, str]: ...
 
 
 @dataclass(frozen=True)
@@ -112,6 +124,64 @@ class ExchangeResult:
                 }
             }
         return row
+
+
+@dataclass(frozen=True)
+class DialogueTurn:
+    """One scheduled model call and the exact message delivered to its peer."""
+
+    speaker: str
+    recipient: str
+    completion: ChatCompletion
+    transmission: Transmission
+
+
+@dataclass(frozen=True)
+class DialogueResult:
+    """Complete fixed-schedule dialogue with call and wire-cost accessors."""
+
+    protocol_id: str
+    turns: tuple[DialogueTurn, ...]
+
+    @property
+    def model_calls(self) -> int:
+        return len(self.turns)
+
+    @property
+    def wire_bytes(self) -> int:
+        return sum(turn.transmission.total_application_bytes for turn in self.turns)
+
+    def transmission_records(self) -> list[JsonObject]:
+        """Return one exact tlu.costs.v3 transmission record per scheduled turn."""
+        return [turn.transmission.cost_record() for turn in self.turns]
+
+    def model_call_records(
+        self,
+        *,
+        tokenizers: Mapping[str, str] | None = None,
+    ) -> list[JsonObject]:
+        """Return provider usage by agent; unknown tokenizer IDs stay explicit."""
+        tokenizer_map = {} if tokenizers is None else tokenizers
+        speakers = {turn.speaker for turn in self.turns}
+        if not isinstance(tokenizer_map, Mapping) or any(
+            name not in speakers or not isinstance(tokenizer, str) or not tokenizer.strip()
+            for name, tokenizer in tokenizer_map.items()
+        ):
+            raise ValueError("tokenizers must map participating agent names to non-empty identifiers")
+        return [
+            {
+                "agent": turn.speaker,
+                "stage": "dialogue_turn",
+                "model": turn.completion.model,
+                "tokenizer": tokenizer_map.get(turn.speaker, "not_reported"),
+                "input_tokens": turn.completion.input_tokens,
+                "output_tokens": turn.completion.output_tokens,
+                "service_seconds": turn.completion.service_seconds,
+                "retry": False,
+                "truncated": turn.completion.finish_reason == "length",
+            }
+            for turn in self.turns
+        ]
 
 
 @dataclass(frozen=True)
@@ -226,6 +296,87 @@ def exchange_once(
         sender=sender_result,
         receiver=receiver_result,
     )
+
+
+def exchange_dialogue(
+    agents: Mapping[str, ChatModel],
+    *,
+    protocol: DialogueProtocol,
+    private_contexts: Mapping[str, str],
+    schedule: Sequence[str],
+    task: str,
+    max_turns: int,
+    channel_timeout_seconds: float = 30.0,
+) -> DialogueResult:
+    """Run a fixed-schedule, two-agent exchange over measured loopback TCP.
+
+    At each turn, an agent sees only its own private context and the public
+    transcript delivered so far. The caller controls the exact schedule and
+    turn cap; this function does not infer a stopping signal from message text.
+    """
+    names = set(agents)
+    if len(names) != 2 or any(not isinstance(name, str) or not name.strip() for name in names):
+        raise ValueError("agents must contain exactly two non-empty string names")
+    if set(private_contexts) != names:
+        raise ValueError("private_contexts must contain exactly one entry per agent")
+    if any(not isinstance(context, str) for context in private_contexts.values()):
+        raise ValueError("each private context must be a string")
+    instructions = protocol.agent_instructions
+    if not isinstance(protocol.protocol_id, str) or not protocol.protocol_id.strip():
+        raise ValueError("protocol_id must be a non-empty string")
+    if not isinstance(instructions, Mapping) or set(instructions) != names:
+        raise ValueError("agent_instructions must contain exactly one instruction per agent")
+    if any(not isinstance(text, str) or not text.strip() for text in instructions.values()):
+        raise ValueError("each agent instruction must be a non-empty string")
+    if isinstance(max_turns, bool) or not isinstance(max_turns, int) or max_turns < 1:
+        raise ValueError("max_turns must be a positive integer")
+    if isinstance(schedule, (str, bytes)) or not isinstance(schedule, Sequence) or not schedule:
+        raise ValueError("schedule must be a non-empty sequence of agent names")
+    if len(schedule) > max_turns:
+        raise ValueError("schedule exceeds max_turns")
+    if any(not isinstance(name, str) or name not in names for name in schedule):
+        raise ValueError("schedule contains an unknown agent")
+    if not isinstance(task, str) or not task.strip():
+        raise ValueError("task must be a non-empty string")
+
+    transcript: list[dict[str, str]] = []
+    turns: list[DialogueTurn] = []
+    received: list[dict[str, Any]] = []
+    with LocalTCPMessageChannel(received.append, timeout_seconds=channel_timeout_seconds) as channel:
+        for index, speaker in enumerate(schedule, start=1):
+            recipient = next(name for name in names if name != speaker)
+            messages = [
+                {"role": "system", "content": instructions[speaker]},
+                {
+                    "role": "user",
+                    "content": json.dumps(
+                        {
+                            "task": task,
+                            "private_context": private_contexts[speaker],
+                            "public_transcript": transcript,
+                            "instruction": "Send exactly the next message for this turn.",
+                        },
+                        ensure_ascii=False,
+                        sort_keys=True,
+                    ),
+                },
+            ]
+            completion = agents[speaker].complete(messages)
+            received_before = len(received)
+            transmission = channel.send(
+                completion.text,
+                protocol_id=protocol.protocol_id,
+                round_number=index,
+                sender=speaker,
+                recipient=recipient,
+            )
+            delivered = received[received_before:]
+            if len(delivered) != 1 or delivered[0].get("payload") != completion.text:
+                raise RuntimeError("loopback channel did not deliver the exact sender message")
+            transcript.append({"sender": speaker, "message": delivered[0]["payload"]})
+            turns.append(DialogueTurn(speaker, recipient, completion, transmission))
+
+    return DialogueResult(protocol.protocol_id, tuple(turns))
 
 
 def _optional_nonnegative_int(value: Any) -> int | None:
