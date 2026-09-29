@@ -54,7 +54,7 @@ class TextProtocol(Protocol):
 
 
 class DialogueProtocol(Protocol):
-    """Fixed instructions for a multi-turn two-agent dialogue protocol."""
+    """Fixed instructions for a scheduled multi-agent dialogue protocol."""
 
     @property
     def protocol_id(self) -> str: ...
@@ -320,25 +320,27 @@ def exchange_dialogue(
     *,
     protocol: DialogueProtocol,
     private_contexts: Mapping[str, str],
-    schedule: Sequence[str],
+    schedule: Sequence[str | tuple[str, str]],
     task: str,
     max_turns: int,
     wire_budget_bytes: int | None = None,
     channel_timeout_seconds: float = 30.0,
 ) -> DialogueResult:
-    """Run a fixed-schedule, two-agent exchange over measured loopback TCP.
+    """Run a fixed-schedule multi-agent exchange over measured loopback TCP.
 
-    At each turn, an agent sees only its own private context and the public
-    transcript delivered so far. The caller controls the exact schedule,
-    turn cap, and optional application-wire byte budget. A message that would
-    exceed the remaining wire budget is not delivered; its model call remains
-    in the result so inference costs are not lost. The budget includes the
-    measured JSON envelope, length prefix, and acknowledgment, but not TCP/IP
-    headers or model inference tokens.
+    Each scheduled item is either an agent name (legacy two-agent mode, which
+    routes to the other agent) or a ``(sender, recipient)`` unicast pair. Each
+    agent sees only its private context and its own sent/received transcript;
+    messages addressed to other agents are not injected into its prompt. The
+    caller controls the exact schedule, turn cap, and optional application-wire
+    byte budget. A message that would exceed the remaining wire budget is not
+    delivered; its model call remains in the result so inference costs are not
+    lost. The budget includes the measured JSON envelope, length prefix, and
+    acknowledgment, but not TCP/IP headers or model inference tokens.
     """
     names = set(agents)
-    if len(names) != 2 or any(not isinstance(name, str) or not name.strip() for name in names):
-        raise ValueError("agents must contain exactly two non-empty string names")
+    if len(names) < 2 or any(not isinstance(name, str) or not name.strip() for name in names):
+        raise ValueError("agents must contain at least two non-empty string names")
     if set(private_contexts) != names:
         raise ValueError("private_contexts must contain exactly one entry per agent")
     if any(not isinstance(context, str) for context in private_contexts.values()):
@@ -359,22 +361,39 @@ def exchange_dialogue(
     ):
         raise ValueError("wire_budget_bytes must be a non-negative integer or None")
     if isinstance(schedule, (str, bytes)) or not isinstance(schedule, Sequence) or not schedule:
-        raise ValueError("schedule must be a non-empty sequence of agent names")
+        raise ValueError("schedule must be a non-empty sequence of agents or sender-recipient pairs")
     if len(schedule) > max_turns:
         raise ValueError("schedule exceeds max_turns")
-    if any(not isinstance(name, str) or name not in names for name in schedule):
-        raise ValueError("schedule contains an unknown agent")
+    routes: list[tuple[str, str]] = []
+    for item in schedule:
+        if isinstance(item, str):
+            if len(names) != 2 or item not in names:
+                raise ValueError("agent-name schedule entries require exactly two agents")
+            sender = item
+            recipient = next(name for name in names if name != sender)
+        elif (
+            isinstance(item, tuple)
+            and len(item) == 2
+            and all(isinstance(name, str) for name in item)
+        ):
+            sender, recipient = item
+            if sender not in names or recipient not in names:
+                raise ValueError("schedule contains an unknown agent")
+            if sender == recipient:
+                raise ValueError("scheduled sender and recipient must be different agents")
+        else:
+            raise ValueError("schedule entries must be agent names or (sender, recipient) pairs")
+        routes.append((sender, recipient))
     if not isinstance(task, str) or not task.strip():
         raise ValueError("task must be a non-empty string")
 
-    transcript: list[dict[str, str]] = []
+    transcripts: dict[str, list[dict[str, str]]] = {name: [] for name in names}
     turns: list[DialogueTurn] = []
     received: list[dict[str, Any]] = []
     delivered_wire_bytes = 0
     stop_reason = "schedule_complete"
     with LocalTCPMessageChannel(received.append, timeout_seconds=channel_timeout_seconds) as channel:
-        for index, speaker in enumerate(schedule, start=1):
-            recipient = next(name for name in names if name != speaker)
+        for index, (speaker, recipient) in enumerate(routes, start=1):
             if wire_budget_bytes is not None:
                 minimum_message = channel.measure(
                     "",
@@ -394,7 +413,7 @@ def exchange_dialogue(
                         {
                             "task": task,
                             "private_context": private_contexts[speaker],
-                            "public_transcript": transcript,
+                            "visible_transcript": transcripts[speaker],
                             "instruction": "Send exactly the next message for this turn.",
                         },
                         ensure_ascii=False,
@@ -431,7 +450,9 @@ def exchange_dialogue(
             delivered = received[received_before:]
             if len(delivered) != 1 or delivered[0].get("payload") != completion.text:
                 raise RuntimeError("loopback channel did not deliver the exact sender message")
-            transcript.append({"sender": speaker, "message": delivered[0]["payload"]})
+            transcript_entry = {"sender": speaker, "message": delivered[0]["payload"]}
+            transcripts[speaker].append(transcript_entry)
+            transcripts[recipient].append(transcript_entry)
             turns.append(DialogueTurn(index, speaker, recipient, completion, transmission))
 
     return DialogueResult(protocol.protocol_id, tuple(turns), stop_reason, wire_budget_bytes)

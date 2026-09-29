@@ -15,11 +15,11 @@ class EvidenceDialogue:
     protocol_id = "evidence-dialogue-fixed-three-turn-v1"
     agent_instructions = {
         "A": (
-            "Share evidence you observed, label uncertainty, and use the public transcript. "
+            "Share evidence you observed, label uncertainty, and use the messages visible to you. "
             "Do not claim to know the other agent's private context."
         ),
         "B": (
-            "Share evidence you observed, label uncertainty, and use the public transcript. "
+            "Share evidence you observed, label uncertainty, and use the messages visible to you. "
             "Do not claim to know the other agent's private context."
         ),
     }

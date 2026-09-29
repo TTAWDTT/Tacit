@@ -33,8 +33,17 @@ class FakeModel:
 class FakeDialogueProtocol:
     protocol_id = "fixed-dialogue-test-v1"
     agent_instructions = {
-        "A": "Use A's evidence and the public transcript.",
-        "B": "Use B's evidence and the public transcript.",
+        "A": "Use A's evidence and the messages visible to you.",
+        "B": "Use B's evidence and the messages visible to you.",
+    }
+
+
+class ThreeAgentDialogueProtocol:
+    protocol_id = "fixed-three-agent-test-v1"
+    agent_instructions = {
+        "A": "Use only your local context and messages routed to you.",
+        "B": "Use only your local context and messages routed to you.",
+        "C": "Use only your local context and messages routed to you.",
     }
 
 
@@ -109,16 +118,60 @@ class TacitRuntimeTests(unittest.TestCase):
         b_prompt = json.loads(agent_b.calls[0][1]["content"])
         second_a = json.loads(agent_a.calls[1][1]["content"])
         self.assertEqual(first_a["private_context"], "A-secret")
-        self.assertEqual(first_a["public_transcript"], [])
+        self.assertEqual(first_a["visible_transcript"], [])
         self.assertEqual(b_prompt["private_context"], "B-secret")
-        self.assertEqual(b_prompt["public_transcript"], [{"sender": "A", "message": "A first"}])
+        self.assertEqual(b_prompt["visible_transcript"], [{"sender": "A", "message": "A first"}])
         self.assertEqual(second_a["private_context"], "A-secret")
-        self.assertEqual(second_a["public_transcript"], [
+        self.assertEqual(second_a["visible_transcript"], [
             {"sender": "A", "message": "A first"},
             {"sender": "B", "message": "B reply"},
         ])
         self.assertNotIn("B-secret", json.dumps(agent_a.calls))
         self.assertNotIn("A-secret", json.dumps(agent_b.calls))
+
+    def test_multi_agent_schedule_routes_unicast_and_isolates_transcripts(self) -> None:
+        agents = {
+            "A": SequencedDialogueModel("model-a", ["A to B", "A to C"]),
+            "B": SequencedDialogueModel("model-b", ["B to A"]),
+            "C": SequencedDialogueModel("model-c", ["C to A", "C to B"]),
+        }
+        result = exchange_dialogue(
+            agents,
+            protocol=ThreeAgentDialogueProtocol(),
+            private_contexts={"A": "A-secret", "B": "B-secret", "C": "C-secret"},
+            schedule=(("A", "B"), ("C", "A"), ("A", "C"), ("C", "B"), ("B", "A")),
+            task="Reconcile only the evidence received by each agent.",
+            max_turns=5,
+        )
+
+        self.assertEqual(result.stop_reason, "schedule_complete")
+        self.assertEqual(
+            [(turn.speaker, turn.recipient) for turn in result.turns],
+            [("A", "B"), ("C", "A"), ("A", "C"), ("C", "B"), ("B", "A")],
+        )
+        self.assertEqual(
+            [record["recipients"] for record in result.transmission_records()],
+            [["B"], ["A"], ["C"], ["B"], ["A"]],
+        )
+        a_second_turn = json.loads(agents["A"].calls[1][1]["content"])
+        self.assertEqual(a_second_turn["visible_transcript"], [
+            {"sender": "A", "message": "A to B"},
+            {"sender": "C", "message": "C to A"},
+        ])
+        b_first_turn = json.loads(agents["B"].calls[0][1]["content"])
+        self.assertEqual(b_first_turn["visible_transcript"], [
+            {"sender": "A", "message": "A to B"},
+            {"sender": "C", "message": "C to B"},
+        ])
+        c_first_turn = json.loads(agents["C"].calls[0][1]["content"])
+        c_second_turn = json.loads(agents["C"].calls[1][1]["content"])
+        self.assertEqual(c_first_turn["visible_transcript"], [])
+        self.assertEqual(c_second_turn["visible_transcript"], [
+            {"sender": "C", "message": "C to A"},
+            {"sender": "A", "message": "A to C"},
+        ])
+        self.assertNotIn("A to B", json.dumps(agents["C"].calls))
+        self.assertNotIn("B-secret", json.dumps(agents["A"].calls))
 
     def test_dialogue_enforces_total_wire_budget_and_keeps_rejected_call_costs(self) -> None:
         protocol = FakeDialogueProtocol()
@@ -219,6 +272,23 @@ class TacitRuntimeTests(unittest.TestCase):
         ):
             with self.subTest(changes=changes), self.assertRaises(ValueError):
                 exchange_dialogue(**(common | {"schedule": ("A", "B")} | changes))
+
+    def test_multi_agent_dialogue_rejects_implicit_or_invalid_routes_before_calls(self) -> None:
+        agents = {
+            name: FakeModel(ChatCompletion(name, f"model-{name}"))
+            for name in ("A", "B", "C")
+        }
+        common = {
+            "agents": agents,
+            "protocol": ThreeAgentDialogueProtocol(),
+            "private_contexts": {"A": "a", "B": "b", "C": "c"},
+            "task": "task",
+            "max_turns": 1,
+        }
+        for schedule in (("A",), (("A", "A"),), (("A", "Z"),), (("A", "B", "C"),)):
+            with self.subTest(schedule=schedule), self.assertRaises(ValueError):
+                exchange_dialogue(**common, schedule=schedule)
+        self.assertTrue(all(not agent.calls for agent in agents.values()))
 
     def test_loopback_frame_channel_transmits_opaque_bytes_and_accounts_exactly(self) -> None:
         received = []
