@@ -152,7 +152,9 @@ The report reconstructs each task from its seed, re-scores the exact answer,
 checks prompt revision, schedule, route, transmitted text-size metadata, parser
 diagnostics, and model-call counts, then delegates cost aggregation, paired
 uncertainty, and Pareto-frontier calculations to the repository's shared
-`tlu.costs.v3` tools. It keeps calibration and evaluation strata separate,
+`tlu.costs.v3` tools. It also attaches the exact Bayes controls and ideal
+fixed-width bit-budget curve separately for each q in the input. It keeps
+calibration and evaluation strata separate,
 preserves model strata, and reports decoder alignment explicitly. Natural-
 language format/fidelity is marked missing by design until an independently
 frozen semantic-judging method exists. No diagnostic pools distinct task/model

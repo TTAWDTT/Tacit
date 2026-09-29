@@ -198,6 +198,8 @@ class PrivateMatchV03Tests(unittest.TestCase):
         self.assertEqual(len(frontier["groups"]), 1)
         report = private_match_report(rows, replicates=100, seed=5)
         self.assertEqual(report["schema_version"], "tlu.private-match-report.v2")
+        self.assertEqual(report["analytic_controls"][0]["bayes_accuracy"]["no_message"], "1/16")
+        self.assertEqual(report["analytic_controls"][0]["ideal_fixed_width_total_payload_bits"][-1]["success_fraction"], "1/1")
         self.assertEqual(len(report["representation_diagnostics"]), len(PROTOCOL_IDS))
         corrupted_outcome = copy.deepcopy(rows)
         corrupted_outcome[0]["outcome"]["joint_success"] = not corrupted_outcome[0]["outcome"]["joint_success"]

@@ -11,7 +11,10 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from experiments.private_match_v0_3.generate_tasks import generate_episode, score_answer
+from experiments.private_match_v0_3.bit_frontier import frontier as bit_frontier
+from experiments.private_match_v0_3.generate_tasks import (
+    bayes_accuracy_references, generate_episode, score_answer,
+)
 from experiments.private_match_v0_3.protocols import PROTOCOL_IDS, PROMPT_REVISION, parse_coordinate_message
 from tools.cost_report import RecordError, aggregate, read_jsonl
 from tools.frontier_report import frontier_report
@@ -156,12 +159,36 @@ def private_match_report(records: list[dict[str, Any]], *, replicates: int = 500
         "schema_version": "tlu.private-match-report.v2",
         "experiment_id": EXPERIMENT_ID,
         "validation": "generated task reconstruction, exact answer scoring, message/parser diagnostics, routes, and call counts passed",
+        "analytic_controls": _analytic_controls(records),
         "representation_diagnostics": _representation_diagnostics(records),
         "cost_summary": cost_summary,
         "paired_comparisons": paired_report(records, replicates=replicates, seed=seed),
         "empirical_frontiers": frontier_report(records),
         "claim_limit": "A feasibility pilot report is descriptive. It does not establish population superiority; inspect policy/decoder alignment and complete cost coverage for every comparison.",
     }
+
+
+def _analytic_controls(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    q_values = sorted({
+        (row.get("_normalized_stratum") or row["stratum"])["task_parameters"]["q"]
+        for row in records
+    })
+    controls = []
+    for q in q_values:
+        references = bayes_accuracy_references(q)
+        width = q.bit_length() - 1
+        controls.append({
+            "q": q,
+            "candidate_count": q * q,
+            "bayes_accuracy": {
+                name: f"{value.numerator}/{value.denominator}"
+                for name, value in references.items()
+            },
+            "ideal_fixed_width_total_payload_bits": bit_frontier(
+                q=q, max_total_payload_bits=2 * width
+            ),
+        })
+    return controls
 
 
 def _representation_diagnostics(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
