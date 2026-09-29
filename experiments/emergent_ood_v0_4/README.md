@@ -71,6 +71,38 @@ Example artifact (replace each placeholder with the exact digest/ID and observed
 
 Run it with `--conditions usage_only_transfer --protocol-card ... --usage-examples ... --usage-reuse-horizon 100`. It also requires the independent receiver capability ledger and fresh resource preflight used by other message conditions. It cannot run in the reserved `--stage train --conditions full_information` calibration batch.
 
+#### Generate examples from training meanings
+
+`generate_usage_examples.py` creates the artifact by querying the frozen card's sender instruction once per selected training meaning. Selection is reproducible and keyed, each sender prompt contains one private tuple and no evaluator IDs, and every completed request is checkpointed. The per-batch hard cap is 12 requests; select a larger training bundle and count within that limit. Dry-run is the default:
+
+```powershell
+python -m experiments.emergent_ood_v0_4.generate_usage_examples `
+  --input-dir .cache/emergent_ood_v0_4/evaluation-23 `
+  --split-seed 23 `
+  --task-key .cache/emergent_ood_v0_4/evaluator.key `
+  --protocol-card .cache/emergent_ood_v0_4/frozen-card.json `
+  --examples 4 `
+  --output-dir .cache/emergent_ood_v0_4/usage-examples-4
+```
+
+Execution is separate and requires a fresh passing resource preflight, a locally running loopback sender endpoint, and explicit model/tokenizer IDs. The script never starts a service or loads a model itself:
+
+```powershell
+python -m experiments.emergent_ood_v0_4.generate_usage_examples `
+  --input-dir .cache/emergent_ood_v0_4/evaluation-23 `
+  --split-seed 23 `
+  --task-key .cache/emergent_ood_v0_4/evaluator.key `
+  --protocol-card .cache/emergent_ood_v0_4/frozen-card.json `
+  --examples 4 `
+  --output-dir .cache/emergent_ood_v0_4/usage-examples-4 `
+  --model local-sender-id `
+  --tokenizer-id local-sender-tokenizer-revision `
+  --resource-preflight .cache/emergent_ood_v0_4/resource_preflight.json `
+  --execute
+```
+
+The runner emits `usage-examples.json` and a `generation-manifest.json` with per-example prompt/completion hashes and usage. An interrupted batch can resume only with an identical selection/card/model/endpoint configuration and a newly passing preflight; use `--resume`. Keep the task key and generated role artifacts in ignored `.cache/`. This utility does not prove the card is leak-free or that the sender follows it; audit the saved trace and score the examples before claiming protocol acquisition.
+
 ### Independent receiver capability screen
 
 Before any message condition (`natural_language`, `autoform`, `json`, `symbolic`, `shared_protocol_card`, or `usage_only_transfer`) executes, the same receiver must pass a 12/12 full-information screen on three complete candidate sets from the **training meaning partition of a separate calibration split seed**. Calibration and evaluation bundles must use different split seeds but the same task key, task seed, candidate count, attribute names/values, receiver model/tokenizer, and model population. Supply the calibration bundle path and seed separately; the runner verifies its hashes and manifest, exact calibration episode/candidate identities, exact answers, and model stratum. It also verifies calibration episode IDs do not occur in evaluation. Meaning tuples may recur across independently generated split seeds: the local completion adapter sends each call as a fresh request with no shared conversation history, and calibration answers are never inserted into evaluation prompts. The screen is a strict model-eligibility check for basic task execution; it does not establish performance on unseen compositions or estimate a stable success rate. Evaluation split seeds and rows are never retained or removed according to their own full-information outcomes. Full-information runs on validation/test remain descriptive controls and cannot replace the independent train-only screen.

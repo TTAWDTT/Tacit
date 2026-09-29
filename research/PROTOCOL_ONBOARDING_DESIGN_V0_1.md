@@ -22,7 +22,7 @@ Use identical held-out episodes, candidate order, sender/receiver model populati
 - no message and full information;
 - optimized concise natural-language and JSON baselines;
 - fixed symbolic/compositional code with shared decoder card;
-- same sender card with usage-only receiver onboarding at a preregistered example-count ladder (for example `1, 2, 4, 8, 16, 32`), plus zero-shot transfer with no examples;
+- same sender card with usage-only receiver onboarding at a preregistered example-count ladder (the current bounded generator supports `1, 2, 4, 8, 12` per artifact), plus zero-shot transfer with no examples;
 - a holistic codebook control with examples whose meanings are disjoint from the scored candidate meanings.
 
 Select exemplar rows using a seed fixed before validation, stratify coverage by primitive values, and keep the selected example IDs/content frozen across receiver comparisons. Protocol/card development and any induction costs use training only; validation selects sample-count/frontier operating points, and the final test protocol and count are frozen before test access. Do not use a full-card arm as a substitute for the usage-only receiver: it measures shared specification transfer, a different onboarding channel.
@@ -51,4 +51,4 @@ The runner's `communication_budget_bytes` caps the task message boundary, not on
 
 ## Current artifact
 
-The runnable `usage_only_transfer` arm and JSON schema are in [`experiments/emergent_ood_v0_4/README.md`](../experiments/emergent_ood_v0_4/README.md). The runner validates schema, support membership, hashes, and declared acquisition accounting; authorship and semantic leakage still require an auditable generation process. Focused model-free tests exercise the receiver prompt boundary and CLI plumbing. No claim of transfer, superiority, or language emergence follows until real model results and the negative controls are complete.
+The runnable `usage_only_transfer` arm, train-only sender demonstration generator, JSON schema, and operating steps are in [`experiments/emergent_ood_v0_4/README.md`](../experiments/emergent_ood_v0_4/README.md). The runner validates schema, support membership, hashes, and declared acquisition accounting; its local generation trace makes source calls auditable, but cannot prove a protocol card was itself developed without leakage or that a model followed it semantically. Focused model-free tests exercise generation, resume, the receiver prompt boundary, setup accounting, and CLI plumbing. No claim of transfer, superiority, or language emergence follows until real model results and the negative controls are complete.
