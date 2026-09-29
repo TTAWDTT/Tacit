@@ -581,3 +581,9 @@ ceil) worst-case bits: 9, 10, and 11 for the three lengths. This predicts a comp
 - **Result:** 49 valid cells and 1,568 task episodes completed; 15 impossible configurations were explicitly skipped. Across all cells, the fixed-width rank code matched the exact ceil(d log2 V) lower bound and all deterministic codecs decoded perfectly. At fixed d=4,V=16, increasing n from 2 to 128 left the rank payload at 2 bytes and the delimited tuple at 23 bytes, while the analytic no-message accuracy fell from 1/2 to 1/128 and mean receiver-view serialization grew from 295 to 11,383 bytes.
 - **Scope:** the experiment confirms a task-family coding-complexity prediction: this sender-independent payload depends on schema cardinality, while receiver table bytes depend on candidate count. It is not an LLM scaling law; role-view bytes are not model tokens, and agent count, rounds, semantic difficulty, and transfer were not varied.
 - **Artifact and validation:** froze research/PRIVATE_MATCH_SCALING_V0_1.md and research/data/PRIVATE_MATCH_SCALING_V0_1.json. Ten focused Private Match tests pass. No model, API, or inference was used.
+
+## 2026-09-29 — Recheck the preregistered local inference gate
+
+- Ran only the frozen read-only host measurements; the experiment launcher was not invoked.
+- Attempt 8 observed CPU samples 37.54%, 36.85%, and 24.41% (32.93% mean; 37.54% maximum), GPU utilization 21%, GPU memory use 1,016 MiB, and 2,938 MiB available system memory. The frozen gate requires mean CPU below 20%, every CPU sample below 30%, GPU utilization below 25%, GPU memory below 1,800 MiB, and at least 6,000 MiB free system memory.
+- The gate failed on CPU and available system memory. No model artifact was hashed/read, no service started, and no inference request occurred. See experiments/index_v0_3/PRECHECK_ATTEMPT_8.json. Do not relax thresholds; continue model-free work until a future host sample passes.
