@@ -13,7 +13,7 @@
     "receiver_never_sees_target_or_gold_except_through_message": true,
     "one_sender_call_and_one_receiver_call_per_message_condition": true,
     "message_channel": "measured length-prefixed loopback TCP; application-layer envelope, prefix, and acknowledgement counted; TCP/IP/link-layer headers excluded",
-    "tokenizer_usage": "provider-reported total prompt/completion counts; do not infer the message-only token count from total receiver prompt usage"
+    "tokenizer_usage": "record the sender and receiver tokenizer IDs separately; use provider-reported total prompt/completion counts and do not infer message-only token count from total receiver prompt usage"
   },
   "resource_gate": {
     "required": "Before any model execution, satisfy all thresholds in experiments/index_v0_3/preregistration.json on the current machine; no remote/cloud inference.",

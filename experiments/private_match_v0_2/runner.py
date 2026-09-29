@@ -92,7 +92,8 @@ def _message_diagnostics(
 def run_condition(
     *, episode_id: str, seed: int, candidate_count: int, feature_count: int,
     vocabulary_size: int, protocol: Protocol, sender_model: ChatModel | None,
-    receiver_model: ChatModel, tokenizer_id: str, model_population_id: str,
+    receiver_model: ChatModel, sender_tokenizer_id: str | None,
+    receiver_tokenizer_id: str, model_population_id: str,
 ) -> dict[str, Any]:
     sender_view, receiver_view, gold = generate_episode(
         episode_id=episode_id, seed=seed, candidate_count=candidate_count,
@@ -105,7 +106,7 @@ def run_condition(
         receiver_results.append(receiver_model.complete(_receiver_messages(protocol, receiver_view, None)))
         answer = receiver_results[-1].text.strip()
         transmissions: list[dict[str, Any]] = []
-        calls.append(_call_record("receiver", "answer", receiver_results[-1], tokenizer_id))
+        calls.append(_call_record("receiver", "answer", receiver_results[-1], receiver_tokenizer_id))
         policy_id = "no_message"
         code_id = "none"
         decoder_id = "none"
@@ -120,7 +121,7 @@ def run_condition(
             })},
         ]
         sender_result = sender_model.complete(sender_messages)
-        calls.append(_call_record("sender", "encode", sender_result, tokenizer_id))
+        calls.append(_call_record("sender", "encode", sender_result, sender_tokenizer_id or "not_applicable"))
         message = sender_result.text
 
         def receive(envelope: dict[str, Any]) -> None:
@@ -136,7 +137,7 @@ def run_condition(
         if len(receiver_results) != 1:
             raise RuntimeError("message delivery did not invoke the receiver exactly once")
         answer = receiver_results[0].text.strip()
-        calls.append(_call_record("receiver", "decode", receiver_results[0], tokenizer_id))
+        calls.append(_call_record("receiver", "decode", receiver_results[0], receiver_tokenizer_id))
         transmissions = [transmission.cost_record()]
         policy_id, code_id, decoder_id = protocol.protocol_id, protocol.code_id, protocol.decoder_id
 
@@ -212,7 +213,8 @@ def main() -> int:
     parser.add_argument("--force", action="store_true", help="overwrite an existing output file")
     parser.add_argument("--sender-model", default=os.environ.get("TLU_SENDER_MODEL", ""))
     parser.add_argument("--receiver-model", default=os.environ.get("TLU_RECEIVER_MODEL", ""))
-    parser.add_argument("--tokenizer-id", default=os.environ.get("TLU_TOKENIZER_ID", ""))
+    parser.add_argument("--sender-tokenizer-id", default=os.environ.get("TLU_SENDER_TOKENIZER_ID", ""))
+    parser.add_argument("--receiver-tokenizer-id", default=os.environ.get("TLU_RECEIVER_TOKENIZER_ID", ""))
     parser.add_argument("--model-population-id", default=os.environ.get("TLU_MODEL_POPULATION_ID", "local-unspecified"))
     parser.add_argument("--base-url", default=os.environ.get("TLU_BASE_URL", "http://127.0.0.1:8000/v1"))
     args = parser.parse_args()
@@ -231,8 +233,8 @@ def main() -> int:
             "inference_started": False,
         }, indent=2))
         return 0
-    if not args.tokenizer_id or not args.receiver_model or any(p != "no_message" for p in args.protocols) and not args.sender_model:
-        parser.error("--execute requires --tokenizer-id, --receiver-model, and --sender-model for message protocols")
+    if not args.receiver_tokenizer_id or not args.receiver_model or any(p != "no_message" for p in args.protocols) and (not args.sender_model or not args.sender_tokenizer_id):
+        parser.error("--execute requires receiver model/tokenizer IDs and sender model/tokenizer IDs for message protocols")
     if "hex_nibbles" in args.protocols and (args.features > 16 or args.vocabulary_size > 16):
         parser.error("the registered hex_nibbles condition requires at most 16 features and values")
     if "hex_nibbles" in args.protocols and args.vocabulary_size != 16:
@@ -253,7 +255,9 @@ def main() -> int:
                     vocabulary_size=args.vocabulary_size,
                     protocol=protocol_by_id(name),
                     sender_model=None if name == "no_message" else sender,
-                    receiver_model=receiver, tokenizer_id=args.tokenizer_id,
+                    receiver_model=receiver,
+                    sender_tokenizer_id=args.sender_tokenizer_id or None,
+                    receiver_tokenizer_id=args.receiver_tokenizer_id,
                     model_population_id=args.model_population_id,
                 )
                 out.write(json.dumps(row, ensure_ascii=False, sort_keys=True) + "\n")

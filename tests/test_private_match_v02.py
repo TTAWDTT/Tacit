@@ -67,9 +67,12 @@ class PrivateMatchV02Tests(unittest.TestCase):
             feature_count=5, vocabulary_size=16, protocol=protocol_by_id("json"),
             sender_model=FakeModel("fake-sender", sender),
             receiver_model=FakeModel("fake-receiver", receiver),
-            tokenizer_id="fake-tokenizer-v1", model_population_id="fake-population",
+            sender_tokenizer_id="fake-sender-tokenizer-v1",
+            receiver_tokenizer_id="fake-receiver-tokenizer-v1", model_population_id="fake-population",
         )
         self.assertTrue(row["outcome"]["joint_success"])
+        self.assertEqual(row["model_calls"][0]["tokenizer"], "fake-sender-tokenizer-v1")
+        self.assertEqual(row["model_calls"][1]["tokenizer"], "fake-receiver-tokenizer-v1")
         self.assertEqual(len(row["transmissions"]), 1)
         tx = row["transmissions"][0]
         self.assertEqual(tx["transport_boundary"], "network")
@@ -88,7 +91,8 @@ class PrivateMatchV02Tests(unittest.TestCase):
             episode_id="pm2-empty", seed=5, candidate_count=8,
             feature_count=5, vocabulary_size=16, protocol=protocol_by_id("concise_nl"),
             sender_model=None, receiver_model=FakeModel("fake-receiver", receiver),
-            tokenizer_id="fake-tokenizer-v1", model_population_id="fake-population",
+            sender_tokenizer_id=None,
+            receiver_tokenizer_id="fake-receiver-tokenizer-v1", model_population_id="fake-population",
         )
         self.assertEqual(row["transmissions"], [])
         self.assertEqual(len(row["model_calls"]), 1)

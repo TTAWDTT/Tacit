@@ -24,7 +24,7 @@ the scorer fields.
 ## Safe behavior
 
 The CLI is dry-run by default and never launches a model process. Model
-requests require `--execute`, explicit model IDs and tokenizer ID, and a
+requests require `--execute`, explicit model IDs and tokenizer IDs, and a
 loopback OpenAI-compatible endpoint. Cloud endpoint URLs are rejected. This
 runner was implemented and tested with fake clients only; no model was run.
 
@@ -41,8 +41,10 @@ python experiments/private_match_v0_2/runner.py
 
 Once the separately documented resource gate has passed and a local endpoint
 is already running, configure `TLU_BASE_URL`, `TLU_SENDER_MODEL`,
-`TLU_RECEIVER_MODEL`, and `TLU_TOKENIZER_ID`, then add `--execute`. Results
-write as `tlu.costs.v3` episode rows. An existing output is protected unless
+`TLU_RECEIVER_MODEL`, `TLU_SENDER_TOKENIZER_ID`, and
+`TLU_RECEIVER_TOKENIZER_ID`, then add `--execute`. Sender and receiver token
+counts stay in separate tokenizer strata. Results write as `tlu.costs.v3`
+episode rows. An existing output is protected unless
 `--force` is explicit; `--force` overwrites the old ledger rather than
 appending duplicate episode IDs.
 
