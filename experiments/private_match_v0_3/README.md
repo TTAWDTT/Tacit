@@ -13,14 +13,24 @@ For a power of two `q >= 2`, the receiver sees the full Cartesian table
 `[q] × [q]` with independently shuffled candidate order and candidate IDs.
 The hidden target is uniform over the `q²` rows. Sender X sees only the
 target's X coordinate; sender Y sees only its Y coordinate. The receiver sees
-neither value. Role views and gold are serialized separately. Episode seeds
-control the candidate shuffle/IDs and target draw through domain-separated
-deterministic random streams; the seed is never placed in model-visible data.
+neither value. Role views and gold are serialized separately. An evaluator-only
+random 256-bit key seeds separate table and target streams through
+domain-separated HMAC-SHA256. Public episode seeds alone cannot reconstruct a
+task. The key is not stored in the manifest or passed into model context; keep
+the key file private and out of version control.
+
+Create the same key once for task generation, every runner shard, and reporting:
+
+```powershell
+python experiments/private_match_v0_3/generate_tasks.py `
+  --create-task-key --task-key-file .cache/private_match_v0_3/task.key
+```
 
 Generate a small task shard without loading a model:
 
 ```powershell
 python experiments/private_match_v0_3/generate_tasks.py `
+  --task-key-file .cache/private_match_v0_3/task.key `
   --output .cache/private_match_v0_3/q4 `
   --episodes 32 --seed 3000 --q 4
 ```
@@ -28,6 +38,13 @@ python experiments/private_match_v0_3/generate_tasks.py `
 The task generator validates each episode before writing and publishes SHA-256
 hashes for every role file in `manifest.json`. It refuses to overwrite an
 existing shard unless `--force` is passed.
+
+`episode_id` and the public episode seed are evaluator metadata. Raw role
+records retain IDs for joining ledgers, but the runner strips them with
+`model_visible_view(...)`; custom integrations must do the same. The secret
+task key stays evaluator-side and is never included in prompts. The manifest
+contains only a short key identifier so runs made with different keys cannot
+be accidentally pooled.
 
 An offline fake-client integration test routes the two oracle coordinates to
 the receiver over the SDK's loopback channel, then collects a sealed answer
@@ -102,7 +119,7 @@ python -m experiments.private_match_v0_3.bit_frontier --q 4 --max-bits 8
 
 ## Frozen feasibility protocols and runner (model calls not run)
 
-`protocols.py` freezes prompt/parser revision `pmt3-prompts-2` and four representation
+`protocols.py` freezes prompt/parser/context revision `pmt3-prompts-3` and four representation
 IDs: `concise_nl`, `compact_kv`, `strict_json`, and `fixed_binary`. It now
 provides deterministic encoders alongside the model prompts and decoders. The
 parser accepts canonical compact KV/JSON strings, exactly `log2(q)` binary
@@ -145,7 +162,8 @@ receiver inference call.
 
 The exact endpoint/model and tokenizer settings remain pending. No inference
 has been authorized or run by this preregistration. The default run path is a
-dry-run summary and makes no model request.
+dry-run summary and makes no model request. Before execution, create the key
+above; the runner reads it from `--task-key-file` (defaulting to the same path).
 
 ### Analyze completed ledger batches
 
@@ -161,11 +179,12 @@ python -m experiments.private_match_v0_3.report `
   .cache/private_match_v0_3/both_kv.jsonl `
   .cache/private_match_v0_3/both_json.jsonl `
   .cache/private_match_v0_3/both_binary.jsonl `
+  --task-key-file .cache/private_match_v0_3/task.key `
   --output .cache/private_match_v0_3/report.json
 ```
 
-The report reconstructs each task from its seed, re-scores the exact answer,
-checks prompt revision, schedule, route, transmitted text-size metadata, parser
+The report reconstructs each task from its seed and evaluator key, re-scores
+the exact answer, checks prompt revision, schedule, route, transmitted text-size metadata, parser
 diagnostics, and model-call counts, then delegates cost aggregation, paired
 uncertainty, and Pareto-frontier calculations to the repository's shared
 `tlu.costs.v3` tools. It also attaches the exact Bayes controls and ideal

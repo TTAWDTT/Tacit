@@ -11,7 +11,7 @@ import re
 from typing import Any
 
 
-PROMPT_REVISION = "pmt3-prompts-2"
+PROMPT_REVISION = "pmt3-prompts-3"
 PROTOCOL_IDS = ("concise_nl", "compact_kv", "strict_json", "fixed_binary")
 
 

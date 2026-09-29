@@ -18,6 +18,7 @@ from experiments.private_match_v0_3.protocols import (
 from experiments.private_match_v0_3.runner import (
     main as runner_main, planned_model_calls, run_condition, validate_capability_ledger,
 )
+from experiments.private_match_v0_3.generate_tasks import model_visible_view
 from contextlib import redirect_stdout
 from experiments.private_match_v0_3.bit_frontier import (
     frontier as triadic_bit_frontier, optimal_success_probability,
@@ -34,6 +35,7 @@ MODULE_PATH = (
     / "private_match_v0_3"
     / "generate_tasks.py"
 )
+TEST_TASK_KEY = bytes(range(32))
 SPEC = importlib.util.spec_from_file_location("private_match_v0_3", MODULE_PATH)
 module = importlib.util.module_from_spec(SPEC)
 assert SPEC and SPEC.loader
@@ -49,6 +51,8 @@ class CoordinateOracle:
         self.calls.append(list(messages))
         request = json.loads(messages[1]["content"])
         view = json.loads(request["private_context"])
+        if "episode_id" in view:
+            raise AssertionError("evaluator episode ID leaked into a sender prompt")
         self_value = view["private_value"]
         self.assert_role(view)
         return ChatCompletion(f"{self.coordinate}={self_value}", f"oracle-{self.coordinate}")
@@ -66,6 +70,8 @@ class CandidateTableOracle:
         self.calls.append(list(messages))
         request = json.loads(messages[1]["content"])
         receiver = json.loads(request["private_context"])
+        if "episode_id" in receiver:
+            raise AssertionError("evaluator episode ID leaked into a receiver prompt")
         values = {}
         for entry in request["visible_transcript"]:
             coordinate, value = entry["message"].split("=", 1)
@@ -83,6 +89,8 @@ class FrozenFormatSender:
     def complete(self, messages):
         request = json.loads(messages[1]["content"])
         view = json.loads(request["private_context"])
+        if "episode_id" in view:
+            raise AssertionError("evaluator episode ID leaked into a sender prompt")
         coordinate = view["coordinate"]
         value = view["private_value"]
         if self.protocol_id == "compact_kv":
@@ -102,6 +110,8 @@ class FrozenFormatReceiver:
     def complete(self, messages):
         request = json.loads(messages[1]["content"])
         view = json.loads(request["private_context"])
+        if "episode_id" in view:
+            raise AssertionError("evaluator episode ID leaked into a receiver prompt")
         if "calibration_coordinates" in view:
             coords = view["calibration_coordinates"]
             answer = module.oracle_answer(view, coords["x"], coords["y"])
@@ -163,7 +173,7 @@ class PrivateMatchV03Tests(unittest.TestCase):
                 self.assertEqual(parse_coordinate_message(name, valid, q=4, sender="sender_x"), (True, True, "x0002"))
                 self.assertFalse(parse_coordinate_message(name, valid + " ", q=4, sender="sender_x")[0])
                 protocol = protocol_by_id(name, 4)
-                self.assertIn("pmt3-prompts-2", protocol.protocol_id)
+                self.assertIn("pmt3-prompts-3", protocol.protocol_id)
         self.assertEqual(parse_coordinate_message("concise_nl", "The x coordinate is x0002.", q=4, sender="sender_x"), (True, True, "x0002"))
         self.assertEqual(parse_coordinate_message("concise_nl", "x is probably 0002", q=4, sender="sender_x"), (None, None, None))
 
@@ -202,7 +212,7 @@ class PrivateMatchV03Tests(unittest.TestCase):
             row = run_condition(seed=304001, q=4, condition=condition, protocol=protocol,
                 sender_model=sender, receiver_model=FrozenFormatReceiver(),
                 sender_tokenizer_id="fake-tokenizer", receiver_tokenizer_id="fake-tokenizer",
-                model_population_id="fake-population-v1")
+                model_population_id="fake-population-v1", task_key=TEST_TASK_KEY)
             self.assertEqual(len(row["model_calls"]), planned)
             self.assertEqual(len(row["transmissions"]), 2 if condition == "both_sources" else 0)
             self.assertEqual(row["outcome"]["joint_success"], condition in {"full_information", "both_sources"})
@@ -212,7 +222,8 @@ class PrivateMatchV03Tests(unittest.TestCase):
         rows = [run_condition(seed=304002, q=4, condition="both_sources",
             protocol=protocol_by_id(name, 4), sender_model=FrozenFormatSender(name),
             receiver_model=FrozenFormatReceiver(), sender_tokenizer_id="fake-tokenizer",
-            receiver_tokenizer_id="fake-tokenizer", model_population_id="fake-population-v1")
+            receiver_tokenizer_id="fake-tokenizer", model_population_id="fake-population-v1",
+            task_key=TEST_TASK_KEY)
             for name in PROTOCOL_IDS]
         self.assertEqual({row["protocol"]["policy_id"] for row in rows}, {"fixed-x-then-y-unicast-v1"})
         self.assertEqual(len({row["protocol"]["code_id"] for row in rows}), len(PROTOCOL_IDS))
@@ -224,7 +235,7 @@ class PrivateMatchV03Tests(unittest.TestCase):
         self.assertTrue(all(item["control_alignment"]["code_differs"] for item in paired["comparisons"]))
         frontier = frontier_report(rows)
         self.assertEqual(len(frontier["groups"]), 1)
-        report = private_match_report(rows, replicates=100, seed=5)
+        report = private_match_report(rows, replicates=100, seed=5, task_key=TEST_TASK_KEY)
         self.assertEqual(report["schema_version"], "tlu.private-match-report.v2")
         self.assertEqual(report["analytic_controls"][0]["bayes_accuracy"]["no_message"], "1/16")
         self.assertEqual(report["analytic_controls"][0]["ideal_fixed_width_total_payload_bits"][-1]["success_fraction"], "1/1")
@@ -232,18 +243,25 @@ class PrivateMatchV03Tests(unittest.TestCase):
         corrupted_outcome = copy.deepcopy(rows)
         corrupted_outcome[0]["outcome"]["joint_success"] = not corrupted_outcome[0]["outcome"]["joint_success"]
         with self.assertRaisesRegex(RecordError, "exact scorer"):
-            private_match_report(corrupted_outcome, replicates=100, seed=5)
+            private_match_report(corrupted_outcome, replicates=100, seed=5, task_key=TEST_TASK_KEY)
         corrupted_wire = copy.deepcopy(rows)
         corrupted_wire[0]["transmissions"][0]["payload_metadata"]["logical_text_utf8_bytes"] += 1
         with self.assertRaisesRegex(RecordError, "logical text byte count"):
-            private_match_report(corrupted_wire, replicates=100, seed=5)
+            private_match_report(corrupted_wire, replicates=100, seed=5, task_key=TEST_TASK_KEY)
         with tempfile.TemporaryDirectory() as temporary:
             ledger = Path(temporary) / "batch.jsonl"
             output = Path(temporary) / "report.json"
+            key_file = Path(temporary) / "task.key"
+            key_file.write_bytes(TEST_TASK_KEY)
             ledger.write_text("".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8")
-            self.assertEqual(report_main([str(ledger), "--replicates", "100", "--output", str(output)]), 0)
+            self.assertEqual(report_main([str(ledger), "--replicates", "100",
+                                          "--task-key-file", str(key_file),
+                                          "--output", str(output)]), 0)
             self.assertEqual(json.loads(output.read_text(encoding="utf-8"))["schema_version"],
                              "tlu.private-match-report.v2")
+        with self.assertRaisesRegex(RecordError, "task parameters"):
+            private_match_report(rows, replicates=100, seed=5,
+                                 task_key=bytes(reversed(range(32))))
 
     def test_runner_defaults_to_dry_run_and_capability_ledger_is_seed_disjoint(self):
         output = io.StringIO()
@@ -253,23 +271,33 @@ class PrivateMatchV03Tests(unittest.TestCase):
         rows = [run_condition(seed=303000 + i, q=4, condition="full_information",
             protocol=protocol_by_id("compact_kv", 4), sender_model=None,
             receiver_model=FrozenFormatReceiver(), sender_tokenizer_id=None,
-            receiver_tokenizer_id="fake-tokenizer", model_population_id="fake-population-v1")
+            receiver_tokenizer_id="fake-tokenizer", model_population_id="fake-population-v1",
+            task_key=TEST_TASK_KEY)
             for i in range(2)]
         with tempfile.TemporaryDirectory() as temporary:
             ledger = Path(temporary) / "calibration.jsonl"
             ledger.write_text("\n".join(json.dumps(row) for row in rows) + "\n", encoding="utf-8")
             validate_capability_ledger(ledger, episodes=2, seed=304000, q=4,
                 receiver_model="fake-receiver-v1", receiver_tokenizer_id="fake-tokenizer",
-                model_population_id="fake-population-v1")
+                model_population_id="fake-population-v1", task_key=TEST_TASK_KEY)
             with self.assertRaisesRegex(ValueError, "disjoint"):
                 validate_capability_ledger(ledger, episodes=2, seed=303000, q=4,
                     receiver_model="fake-receiver-v1", receiver_tokenizer_id="fake-tokenizer",
-                    model_population_id="fake-population-v1")
+                    model_population_id="fake-population-v1", task_key=TEST_TASK_KEY)
+            with self.assertRaisesRegex(ValueError, "task parameters differ"):
+                validate_capability_ledger(ledger, episodes=2, seed=304000, q=4,
+                    receiver_model="fake-receiver-v1", receiver_tokenizer_id="fake-tokenizer",
+                    model_population_id="fake-population-v1",
+                    task_key=bytes(reversed(range(32))))
 
     def test_generation_is_deterministic_and_role_separated(self):
-        first = module.generate_episode(episode_id="triad-1", seed=42, q=4)
-        second = module.generate_episode(episode_id="triad-1", seed=42, q=4)
+        first = module.generate_episode(episode_id="triad-1", seed=42, q=4, task_key=TEST_TASK_KEY)
+        second = module.generate_episode(episode_id="triad-1", seed=42, q=4, task_key=TEST_TASK_KEY)
+        other_key = module.generate_episode(episode_id="triad-1", seed=42, q=4,
+                                            task_key=bytes(reversed(range(32))))
         self.assertEqual(first, second)
+        self.assertNotEqual(first[2]["candidates"], other_key[2]["candidates"])
+        self.assertNotEqual(first[3]["target_candidate_id"], other_key[3]["target_candidate_id"])
         sender_x, sender_y, receiver, gold = first
         self.assertTrue(sender_x["private_value"].startswith("x"))
         self.assertNotIn("private_value", receiver)
@@ -279,11 +307,22 @@ class PrivateMatchV03Tests(unittest.TestCase):
         self.assertIn("target_candidate_id", gold)
         self.assertEqual(sender_x["episode_id"], sender_y["episode_id"])
 
+    def test_task_key_file_is_256_bit_private_and_refuses_accidental_replacement(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            key_path = Path(temporary) / ".cache" / "private_match" / "task.key"
+            key_id = module.create_task_key(key_path)
+            self.assertEqual(len(key_path.read_bytes()), 32)
+            self.assertEqual(key_id, module.task_key_id(module.load_task_key(key_path)))
+            with self.assertRaises(FileExistsError):
+                module.create_task_key(key_path)
+            with self.assertRaises(ValueError):
+                module._validate_task_key(b"short")
+
     def test_each_source_alone_leaves_q_candidates_and_both_are_unique(self):
         for q in (2, 4, 8, 16):
             for seed in range(12):
                 sender_x, sender_y, receiver, gold = module.generate_episode(
-                    episode_id=f"q{q}-seed{seed}", seed=seed, q=q
+                    episode_id=f"q{q}-seed{seed}", seed=seed, q=q, task_key=TEST_TASK_KEY
                 )
                 x_matches = [
                     row["candidate_id"] for row in receiver["candidates"]
@@ -320,7 +359,7 @@ class PrivateMatchV03Tests(unittest.TestCase):
 
     def test_validator_rejects_cross_role_leaks_and_incomplete_candidate_table(self):
         sender_x, sender_y, receiver, gold = module.generate_episode(
-            episode_id="validate-1", seed=7, q=4
+            episode_id="validate-1", seed=7, q=4, task_key=TEST_TASK_KEY
         )
         leaked_x = dict(sender_x, target_candidate_id=gold["target_candidate_id"])
         with self.assertRaisesRegex(ValueError, "leaks"):
@@ -331,7 +370,7 @@ class PrivateMatchV03Tests(unittest.TestCase):
 
     def test_three_agent_oracle_uses_real_unicast_channel_and_sealed_submission(self):
         sender_x, sender_y, receiver, gold = module.generate_episode(
-            episode_id="loopback-oracle-1", seed=777, q=4
+            episode_id="loopback-oracle-1", seed=777, q=4, task_key=TEST_TASK_KEY
         )
         agents = {
             "sender_x": CoordinateOracle("x"),
@@ -351,9 +390,9 @@ class PrivateMatchV03Tests(unittest.TestCase):
             agents,
             protocol=Protocol(),
             private_contexts={
-                "sender_x": json.dumps(sender_x),
-                "sender_y": json.dumps(sender_y),
-                "receiver": json.dumps(receiver),
+                "sender_x": json.dumps(model_visible_view(sender_x)),
+                "sender_y": json.dumps(model_visible_view(sender_y)),
+                "receiver": json.dumps(model_visible_view(receiver)),
             },
             schedule=(("sender_x", "receiver"), ("sender_y", "receiver")),
             task="Find the candidate row matching both private coordinates.",
@@ -381,7 +420,10 @@ class PrivateMatchV03Tests(unittest.TestCase):
     def test_dataset_manifest_hashes_roles_and_protects_existing_shard(self):
         with tempfile.TemporaryDirectory() as temporary:
             output = Path(temporary) / "shard"
-            manifest = module.generate_dataset(output, episodes=5, seed=3000, q=4)
+            manifest = module.generate_dataset(output, episodes=5, seed=3000, q=4,
+                                                task_key=TEST_TASK_KEY)
+            self.assertEqual(manifest["task_key_id"], module.task_key_id(TEST_TASK_KEY))
+            self.assertNotIn(TEST_TASK_KEY.hex(), json.dumps(manifest))
             self.assertEqual(manifest["agent_count"], 3)
             self.assertEqual(manifest["candidate_count"], 16)
             for name in module.ROLE_FILES:
@@ -392,8 +434,10 @@ class PrivateMatchV03Tests(unittest.TestCase):
                 )
                 self.assertEqual(len(path.read_text(encoding="utf-8").splitlines()), 5)
             with self.assertRaises(FileExistsError):
-                module.generate_dataset(output, episodes=5, seed=3000, q=4)
-            replaced = module.generate_dataset(output, episodes=2, seed=4000, q=2, force=True)
+                module.generate_dataset(output, episodes=5, seed=3000, q=4,
+                                        task_key=TEST_TASK_KEY)
+            replaced = module.generate_dataset(output, episodes=2, seed=4000, q=2,
+                                               task_key=TEST_TASK_KEY, force=True)
             self.assertEqual(replaced["episodes"], 2)
             with (output / "receiver.jsonl").open(encoding="utf-8") as stream:
                 receiver = json.loads(next(stream))

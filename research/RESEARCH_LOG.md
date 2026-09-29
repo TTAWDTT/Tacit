@@ -1,5 +1,20 @@
 # Research log
 
+## 2026-09-29 — Key task generation against public-seed reconstruction
+
+- **Adversarial follow-up:** stripping the seed-bearing episode ID from prompts removed the direct leak, but a tool-enabled receiver could still enumerate the preregistered public seed range against the deterministic candidate permutation and infer the hidden target. Prompt sanitization alone was insufficient.
+- **Correction:** task generation now requires a random 256-bit evaluator-only key. Candidate-table and target streams use separate domain-separated HMAC-SHA256 derivations; task keys are not written to manifests or prompts, and manifests record only a short key ID. Runner capability checks and report reconstruction require the same key ID. Generator version advanced to 0.3.1.
+- **Falsifiable security claim:** knowing the public episode seed and generator does not enable efficient reconstruction without guessing the secret key, assuming HMAC-SHA256 behaves as a pseudorandom function and the key remains secret. This is a cryptographic task-allocation safeguard, not a claim that exposed raw ledgers are private.
+- **Validation plan:** test same-key reproducibility, different-key divergence, malformed key rejection, key-file overwrite protection, and failure when runner/report artifacts use a mismatched key. No inference has been run.
+- **Amendment:** added the change to the preregistration before model observations. Keep generated task files and the key in ignored `.cache/`; do not commit them.
+
+## 2026-09-29 — Keep deterministic episode IDs out of model context
+
+- **Validity finding:** v0.3 episode IDs encode the generation seed (`pmt3-<seed>`). The runner serialized raw role views into model prompts, so the receiver could be given the seed and, with the public deterministic generator, potentially reconstruct the hidden target without communication.
+- **Correction:** added the shared `model_visible_view(...)` projection and applied it to every runner role context, including full-information controls. Raw task ledgers retain IDs for pairing, while model contexts omit evaluator identity. Advanced the prompt/context revision to `pmt3-prompts-3` before any model observations.
+- **Falsification coverage:** every fake sender and receiver now rejects an `episode_id` in its private context; the existing routed integration and all four runner conditions pass through the sanitized projection. No model or endpoint was run.
+- **Superseded limit:** the keyed-stream follow-up above replaces the remaining public-seed reconstruction risk. The key and raw evaluator ledgers still require secret handling.
+
 ## 2026-09-29 — Publish executable coordinate codecs
 
 - **Artifact gap:** the v0.3 pilot specified model prompts and deterministic format checks, but users lacked callable encoders for constructing exact reference messages outside a model run.

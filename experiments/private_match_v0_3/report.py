@@ -13,7 +13,8 @@ if str(ROOT) not in sys.path:
 
 from experiments.private_match_v0_3.bit_frontier import frontier as bit_frontier
 from experiments.private_match_v0_3.generate_tasks import (
-    bayes_accuracy_references, generate_episode, score_answer,
+    bayes_accuracy_references, generate_episode, load_task_key, score_answer,
+    task_key_id,
 )
 from experiments.private_match_v0_3.protocols import PROTOCOL_IDS, PROMPT_REVISION, parse_coordinate_message
 from tools.cost_report import RecordError, aggregate, read_jsonl
@@ -54,7 +55,7 @@ def _rate(values: list[bool | None]) -> dict[str, Any]:
     }
 
 
-def validate_private_match_records(records: list[dict[str, Any]]) -> None:
+def validate_private_match_records(records: list[dict[str, Any]], *, task_key: bytes) -> None:
     """Reconstruct tasks and fail closed on wrong outcomes or cost attribution."""
     _require(bool(records), "report requires at least one record")
     for index, row in enumerate(records, start=1):
@@ -69,7 +70,8 @@ def validate_private_match_records(records: list[dict[str, Any]]) -> None:
         q = params.get("q")
         _require(isinstance(q, int) and not isinstance(q, bool) and q >= 2 and q & (q - 1) == 0,
                  f"{prefix}: q must be a power of two >= 2")
-        _require(params == {"q": q, "candidate_count": q * q, "agent_count": 3},
+        _require(params == {"q": q, "candidate_count": q * q, "agent_count": 3,
+                            "task_key_id": task_key_id(task_key)},
                  f"{prefix}: malformed task parameters")
         diag = row.get("diagnostics")
         _require(isinstance(diag, dict), f"{prefix}: diagnostics must be an object")
@@ -83,7 +85,8 @@ def validate_private_match_records(records: list[dict[str, Any]]) -> None:
         split = "calibration" if condition == "full_information" else "evaluation"
         _require(stratum.get("split") == split, f"{prefix}: split does not match condition")
 
-        episode = generate_episode(episode_id=episode_id, seed=seed, q=q)
+        episode = generate_episode(episode_id=episode_id, seed=seed, q=q,
+                                   task_key=task_key)
         sender_x, sender_y, receiver, gold = episode
         expected_ids = [item["candidate_id"] for item in receiver["candidates"]]
         _require(diag.get("candidate_ids_in_receiver_order") == expected_ids,
@@ -152,8 +155,8 @@ def validate_private_match_records(records: list[dict[str, Any]]) -> None:
 
 
 def private_match_report(records: list[dict[str, Any]], *, replicates: int = 5000,
-                         seed: int = 1729) -> dict[str, Any]:
-    validate_private_match_records(records)
+                         seed: int = 1729, task_key: bytes) -> dict[str, Any]:
+    validate_private_match_records(records, task_key=task_key)
     cost_summary = aggregate(records)
     return {
         "schema_version": "tlu.private-match-report.v2",
@@ -233,12 +236,17 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("-o", "--output", type=Path, help="write JSON report (default: stdout)")
     parser.add_argument("--replicates", type=int, default=5000)
     parser.add_argument("--seed", type=int, default=1729)
+    parser.add_argument("--task-key-file", type=Path,
+                        default=Path(".cache/private_match_v0_3/task.key"),
+                        help="evaluator-only task key used to reconstruct private targets")
     args = parser.parse_args(argv)
     if args.replicates < 100:
         parser.error("--replicates must be at least 100")
     try:
         records = [record for path in args.inputs for record in read_jsonl(path)]
-        report = private_match_report(records, replicates=args.replicates, seed=args.seed)
+        task_key = load_task_key(args.task_key_file)
+        report = private_match_report(records, replicates=args.replicates,
+                                      seed=args.seed, task_key=task_key)
     except (OSError, RecordError, ValueError) as exc:
         parser.error(str(exc))
     encoded = json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True) + "\n"

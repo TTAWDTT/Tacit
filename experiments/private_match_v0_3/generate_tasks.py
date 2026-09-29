@@ -8,16 +8,18 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import hmac
 import json
 import platform
 import random
+import secrets
 from fractions import Fraction
 from pathlib import Path
 from typing import Any
 
 
 SCHEMA_VERSION = "tlu.private-match.v3"
-GENERATOR_VERSION = "0.3.0"
+GENERATOR_VERSION = "0.3.1"
 ROLE_FILES = ("sender_x.jsonl", "sender_y.jsonl", "receiver.jsonl", "gold.jsonl")
 
 
@@ -30,16 +32,64 @@ def _json_line(value: Any) -> str:
     return json.dumps(value, ensure_ascii=True, sort_keys=True, separators=(",", ":"))
 
 
-def generate_episode(*, episode_id: str, seed: int, q: int) -> tuple[dict[str, Any], ...]:
+def model_visible_view(view: dict[str, Any]) -> dict[str, Any]:
+    """Remove evaluator-only identity metadata before constructing a prompt."""
+    if not isinstance(view, dict):
+        raise ValueError("view must be an object")
+    return {key: value for key, value in view.items() if key != "episode_id"}
+
+
+def _validate_task_key(task_key: bytes) -> None:
+    if not isinstance(task_key, bytes) or len(task_key) != 32:
+        raise ValueError("task_key must be exactly 32 secret bytes")
+
+
+def task_key_id(task_key: bytes) -> str:
+    _validate_task_key(task_key)
+    return hashlib.sha256(task_key).hexdigest()[:16]
+
+
+def create_task_key(path: Path, *, force: bool = False) -> str:
+    """Create and retain an evaluator-only 256-bit task key."""
+    path = path.resolve()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if path.exists() and not force:
+        raise FileExistsError(f"refusing to replace existing task key: {path}")
+    key = secrets.token_bytes(32)
+    if force:
+        path.write_bytes(key)
+    else:
+        with path.open("xb") as stream:
+            stream.write(key)
+    return task_key_id(key)
+
+
+def load_task_key(path: Path) -> bytes:
+    try:
+        key = path.read_bytes()
+    except OSError as exc:
+        raise ValueError(f"could not read evaluator task key: {path}") from exc
+    _validate_task_key(key)
+    return key
+
+
+def _episode_rng(task_key: bytes, *, domain: str, seed: int) -> random.Random:
+    material = f"tlu.private-match.v0.3/{domain}/{seed}".encode("ascii")
+    return random.Random(hmac.new(task_key, material, hashlib.sha256).digest())
+
+
+def generate_episode(*, episode_id: str, seed: int, q: int,
+                     task_key: bytes) -> tuple[dict[str, Any], ...]:
     """Return x-sender, y-sender, receiver, and gold views for one episode."""
     if not isinstance(episode_id, str) or not episode_id.strip():
         raise ValueError("episode_id must be a non-empty string")
     if isinstance(seed, bool) or not isinstance(seed, int) or seed < 0:
         raise ValueError("seed must be a non-negative integer")
     _validate_q(q)
+    _validate_task_key(task_key)
 
-    table_rng = random.Random(f"tlu.private-match.v3/table/{seed}")
-    target_rng = random.Random(f"tlu.private-match.v3/target/{seed}")
+    table_rng = _episode_rng(task_key, domain="table", seed=seed)
+    target_rng = _episode_rng(task_key, domain="target", seed=seed)
     xs = [f"x{i:04d}" for i in range(q)]
     ys = [f"y{i:04d}" for i in range(q)]
     rows = [(x, y) for x in xs for y in ys]
@@ -186,12 +236,14 @@ def _digest(path: Path) -> str:
     return digest.hexdigest()
 
 
-def generate_dataset(output: Path, *, episodes: int, seed: int, q: int, force: bool = False) -> dict[str, Any]:
+def generate_dataset(output: Path, *, episodes: int, seed: int, q: int,
+                     task_key: bytes, force: bool = False) -> dict[str, Any]:
     if isinstance(episodes, bool) or not isinstance(episodes, int) or episodes < 1:
         raise ValueError("episodes must be a positive integer")
     if isinstance(seed, bool) or not isinstance(seed, int) or seed < 0:
         raise ValueError("seed must be a non-negative integer")
     _validate_q(q)
+    _validate_task_key(task_key)
     output = output.resolve()
     names = (*ROLE_FILES, "manifest.json")
     existing = [output / name for name in names if (output / name).exists()]
@@ -201,7 +253,8 @@ def generate_dataset(output: Path, *, episodes: int, seed: int, q: int, force: b
     rows: dict[str, list[str]] = {name: [] for name in ROLE_FILES}
     for index in range(episodes):
         episode = generate_episode(
-            episode_id=f"pmt3-{index:06d}", seed=seed + index, q=q
+            episode_id=f"pmt3-{index:06d}", seed=seed + index, q=q,
+            task_key=task_key,
         )
         for filename, item in zip(ROLE_FILES, episode):
             rows[filename].append(_json_line(item))
@@ -212,10 +265,11 @@ def generate_dataset(output: Path, *, episodes: int, seed: int, q: int, force: b
         "schema_version": SCHEMA_VERSION,
         "generator_version": GENERATOR_VERSION,
         "python_version": platform.python_version(),
-        "randomness": "random.Random with versioned, domain-separated string seeds for table and target streams",
+        "randomness": "random.Random streams seeded from domain-separated HMAC-SHA256(evaluator_task_key, episode_seed); evaluator-only 256-bit key is not stored in the manifest",
         "episodes": episodes,
         "seed_start": seed,
         "q": q,
+        "task_key_id": task_key_id(task_key),
         "agent_count": 3,
         "candidate_count": q * q,
         "no_message_bayes_accuracy": f"{references['no_message'].numerator}/{references['no_message'].denominator}",
@@ -232,13 +286,28 @@ def generate_dataset(output: Path, *, episodes: int, seed: int, q: int, force: b
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--output", type=Path)
+    parser.add_argument("--task-key-file", type=Path, required=True,
+                        help="evaluator-only random key; never include it in model context")
+    parser.add_argument("--create-task-key", action="store_true",
+                        help="create a new evaluator-only 256-bit key and exit")
     parser.add_argument("--episodes", type=int, default=32)
     parser.add_argument("--seed", type=int, default=3000)
     parser.add_argument("--q", type=int, default=4)
     parser.add_argument("--force", action="store_true", help="replace generated role files and manifest")
     args = parser.parse_args()
-    manifest = generate_dataset(args.output, episodes=args.episodes, seed=args.seed, q=args.q, force=args.force)
+    if args.create_task_key:
+        print(json.dumps({"task_key_file": str(args.task_key_file),
+                          "task_key_id": create_task_key(args.task_key_file, force=args.force)}, indent=2))
+        return
+    if args.output is None:
+        parser.error("--output is required unless --create-task-key is supplied")
+    try:
+        task_key = load_task_key(args.task_key_file)
+        manifest = generate_dataset(args.output, episodes=args.episodes, seed=args.seed,
+                                    q=args.q, task_key=task_key, force=args.force)
+    except ValueError as exc:
+        parser.error(str(exc))
     print(json.dumps(manifest, indent=2, sort_keys=True))
 
 

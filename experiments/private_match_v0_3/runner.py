@@ -14,7 +14,9 @@ from typing import Any
 from urllib.parse import urlparse
 
 from experiments.emergent_ood_v0_3.runner import _endpoint_port, validate_resource_preflight
-from experiments.private_match_v0_3.generate_tasks import generate_episode, score_answer
+from experiments.private_match_v0_3.generate_tasks import (
+    generate_episode, load_task_key, model_visible_view, score_answer, task_key_id,
+)
 from experiments.private_match_v0_3.protocols import (
     PROMPT_REVISION, PROTOCOL_IDS, Protocol, parse_coordinate_message, protocol_by_id,
 )
@@ -63,14 +65,14 @@ def planned_model_calls(episodes: int, condition: str) -> int:
 
 def _private_contexts(episode: tuple[dict[str, Any], ...], condition: str) -> dict[str, str]:
     sender_x, sender_y, receiver, _gold = episode
-    receiver_context = dict(receiver)
+    receiver_context = model_visible_view(receiver)
     if condition == "full_information":
         receiver_context["calibration_coordinates"] = {
             "x": sender_x["private_value"], "y": sender_y["private_value"]
         }
     return {
-        "sender_x": json.dumps(sender_x, sort_keys=True),
-        "sender_y": json.dumps(sender_y, sort_keys=True),
+        "sender_x": json.dumps(model_visible_view(sender_x), sort_keys=True),
+        "sender_y": json.dumps(model_visible_view(sender_y), sort_keys=True),
         "receiver": json.dumps(receiver_context, sort_keys=True),
     }
 
@@ -78,11 +80,11 @@ def _private_contexts(episode: tuple[dict[str, Any], ...], condition: str) -> di
 def run_condition(*, seed: int, q: int, condition: str, protocol: Protocol,
                   sender_model: Any | None, receiver_model: Any,
                   sender_tokenizer_id: str | None, receiver_tokenizer_id: str,
-                  model_population_id: str) -> dict[str, Any]:
+                  model_population_id: str, task_key: bytes) -> dict[str, Any]:
     if condition not in CONDITIONS:
         raise ValueError("unknown condition")
     episode_id = episode_id_for_seed(seed)
-    episode = generate_episode(episode_id=episode_id, seed=seed, q=q)
+    episode = generate_episode(episode_id=episode_id, seed=seed, q=q, task_key=task_key)
     sender_x, sender_y, receiver, gold = episode
     contexts = _private_contexts(episode, condition)
     agents = {"sender_x": sender_model, "sender_y": sender_model, "receiver": receiver_model}
@@ -145,7 +147,8 @@ def run_condition(*, seed: int, q: int, condition: str, protocol: Protocol,
             "experiment_id": EXPERIMENT_ID,
             "task_id": "triadic-complementary-coordinate-match-v1",
             "split": "calibration" if condition == "full_information" else "evaluation",
-            "task_parameters": {"q": q, "candidate_count": q * q, "agent_count": 3},
+            "task_parameters": {"q": q, "candidate_count": q * q, "agent_count": 3,
+                                "task_key_id": task_key_id(task_key)},
             "model_population_id": model_population_id,
             "agent_models": {
                 "sender_x": getattr(sender_model, "model_name", "absent"),
@@ -194,7 +197,7 @@ def run_condition(*, seed: int, q: int, condition: str, protocol: Protocol,
 
 def validate_capability_ledger(path: Path | None, *, episodes: int, seed: int, q: int,
                                receiver_model: str, receiver_tokenizer_id: str,
-                               model_population_id: str) -> None:
+                               model_population_id: str, task_key: bytes) -> None:
     if path is None:
         raise ValueError("evaluation requires --capability-ledger from a perfect disjoint full_information batch")
     try:
@@ -223,7 +226,8 @@ def validate_capability_ledger(path: Path | None, *, episodes: int, seed: int, q
             raise ValueError("every calibration row must be a successful full_information receiver-only call")
         if stratum.get("experiment_id") != EXPERIMENT_ID or stratum.get("scorer_id") != SCORER_ID:
             raise ValueError("capability ledger experiment/scorer differs")
-        if stratum.get("task_parameters") != {"q": q, "candidate_count": q * q, "agent_count": 3}:
+        if stratum.get("task_parameters") != {"q": q, "candidate_count": q * q, "agent_count": 3,
+                                               "task_key_id": task_key_id(task_key)}:
             raise ValueError("capability ledger task parameters differ")
         if stratum.get("model_population_id") != model_population_id:
             raise ValueError("capability ledger model population differs")
@@ -233,7 +237,8 @@ def validate_capability_ledger(path: Path | None, *, episodes: int, seed: int, q
             raise ValueError("capability ledger receiver model/tokenizer differs")
         if calls[0].get("stage") != "final_answer" or calls[0].get("truncated") is not False:
             raise ValueError("calibration answer missing, truncated, or at the wrong stage")
-        episode = generate_episode(episode_id=row["episode_id"], seed=episode_seed, q=q)
+        episode = generate_episode(episode_id=row["episode_id"], seed=episode_seed, q=q,
+                                   task_key=task_key)
         if diag.get("answer_text_verbatim") != episode[3]["target_candidate_id"]:
             raise ValueError("calibration answer does not match generated gold")
 
@@ -254,6 +259,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--seed", type=int, default=303000)
     parser.add_argument("--q", type=int, default=4)
     parser.add_argument("--output", type=Path, default=Path(".cache/private_match_v0_3/full_information.jsonl"))
+    parser.add_argument("--task-key-file", type=Path, default=Path(".cache/private_match_v0_3/task.key"),
+                        help="evaluator-only random key; never include it in model context")
     parser.add_argument("--capability-ledger", type=Path)
     parser.add_argument("--resource-preflight", type=Path)
     parser.add_argument("--force", action="store_true")
@@ -280,14 +287,6 @@ def main(argv: list[str] | None = None) -> int:
         parser.error(f"batch plans {calls} calls, above cap {MAX_MODEL_CALLS_PER_BATCH}")
     if args.condition == "full_information" and args.capability_ledger:
         parser.error("full_information calibration is its own first-stage batch")
-    if args.condition != "full_information":
-        try:
-            validate_capability_ledger(args.capability_ledger, episodes=args.episodes,
-                seed=args.seed, q=args.q, receiver_model=args.receiver_model,
-                receiver_tokenizer_id=args.receiver_tokenizer_id,
-                model_population_id=args.model_population_id)
-        except ValueError as exc:
-            parser.error(str(exc))
     needs_sender = args.condition in {"sender_x_only", "sender_y_only", "both_sources"}
     if not args.receiver_model or not args.receiver_tokenizer_id or (needs_sender and not args.sender_model):
         parser.error("--execute requires receiver model/tokenizer and sender model for message conditions")
@@ -302,6 +301,19 @@ def main(argv: list[str] | None = None) -> int:
         validate_resource_preflight(args.resource_preflight, required_ports=required_ports)
     except ValueError as exc:
         parser.error(str(exc))
+    # Read evaluator artifacts only after the fresh resource gate has passed.
+    try:
+        task_key = load_task_key(args.task_key_file)
+    except ValueError as exc:
+        parser.error(str(exc))
+    if args.condition != "full_information":
+        try:
+            validate_capability_ledger(args.capability_ledger, episodes=args.episodes,
+                seed=args.seed, q=args.q, receiver_model=args.receiver_model,
+                receiver_tokenizer_id=args.receiver_tokenizer_id,
+                model_population_id=args.model_population_id, task_key=task_key)
+        except ValueError as exc:
+            parser.error(str(exc))
     target = args.output.resolve()
     if target.exists() and not args.force:
         parser.error(f"refusing to overwrite {target}; pass --force explicitly")
@@ -319,7 +331,7 @@ def main(argv: list[str] | None = None) -> int:
                 protocol=protocol, sender_model=sender, receiver_model=receiver,
                 sender_tokenizer_id=args.sender_tokenizer_id or None,
                 receiver_tokenizer_id=args.receiver_tokenizer_id,
-                model_population_id=args.model_population_id)
+                model_population_id=args.model_population_id, task_key=task_key)
             output.write(json.dumps(row, ensure_ascii=False, sort_keys=True) + "\n")
             output.flush()
     print(json.dumps({"mode": "executed", "condition": args.condition,
