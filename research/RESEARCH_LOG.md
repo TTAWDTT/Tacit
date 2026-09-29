@@ -600,3 +600,10 @@ ceil) worst-case bits: 9, 10, and 11 for the three lengths. This predicts a comp
 - **Research:** reviewed primary sources for Mu & Goodman (NeurIPS 2021), Kobrock et al. (Findings ACL 2025), and Chaabouni et al. (ACL 2020). Set-reference/concept games already evaluate held-out concept generalization; Kobrock et al. report direction-dependent strategies across abstraction levels. Chaabouni et al. find compositionality and generalization can diverge, while composition can help transmission to new architectures.
 - **Revision:** receiver-side OOD utility is a gap in the particular Kouwenhoven et al. 2025 LLM study, not a gap in emergent-communication research overall. The small ternary split added here is only a deterministic fixture and must not be advertised as a new benchmark. A broader novelty claim about direct LLM endpoints, heterogeneous receiver transfer, or full cost accounting remains unverified.
 - **Decision:** before growing the synthetic task into an experiment, compare established set/concept tasks and current multi-agent suites against the project question. Require an actual cost/transfer limitation in prior work, not merely a different task name. No model run was made.
+
+
+## 2026-09-29 - Ninth preregistered local resource-gate rejection
+
+- Three read-only host CPU samples at two-second spacing were 27.85%, 32.48%, and 46.90% (35.74% mean). GPU use was 21% with 975 MiB used; free system memory was 3,693 MiB.
+- The frozen gate requires mean CPU below 20%, every sample below 30%, GPU below 25%, GPU memory below 1,800 MiB, and at least 6,000 MiB free RAM. It rejected on CPU and free memory. The experiment launcher was not invoked; no port check, model artifact hash/read, service, or inference request occurred.
+- Record: experiments/index_v0_3/PRECHECK_ATTEMPT_9.json. Do not repeat the measurement in this turn or relax thresholds; continue repository and literature work until host conditions materially change.

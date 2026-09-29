@@ -37,3 +37,7 @@ A second read-only recheck observed 32.8% mean CPU (35.1% maximum) and 5,672 MiB
 The sixth read-only recheck measured 33.48% mean CPU (38.73% maximum), 4,200 MiB free memory, 14% GPU use, and 1,018 MiB GPU memory. The port check found 8001 unused, but the unchanged CPU and memory gate failed. No artifacts were hashed, weights loaded, service started, or inference requests made; see [`PRECHECK_ATTEMPT_6.json`](PRECHECK_ATTEMPT_6.json).
 
 The seventh read-only recheck measured 31.96% mean CPU (34.22% maximum), 40% GPU use, and 3,717 MiB free memory. Port 8001 was unused, but the unchanged CPU, GPU, and memory gates failed. No model artifact was accessed and no service or inference request was started; see [`PRECHECK_ATTEMPT_7.json`](PRECHECK_ATTEMPT_7.json). Do not retry until the host state materially changes.
+
+The eighth recheck measured 32.93% mean CPU (37.54% maximum), 21% GPU use, 1,016 MiB GPU memory, and 2,938 MiB free system memory. The unchanged CPU and memory gates failed; see [`PRECHECK_ATTEMPT_8.json`](PRECHECK_ATTEMPT_8.json).
+
+The ninth read-only recheck measured 35.74% mean CPU (46.90% maximum), 21% GPU use, 975 MiB GPU memory, and 3,693 MiB free system memory. The unchanged CPU and memory gates failed; see [`PRECHECK_ATTEMPT_9.json`](PRECHECK_ATTEMPT_9.json). Neither recheck invoked the launcher, accessed model artifacts, or started a service. Do not retry until the host state materially changes.
