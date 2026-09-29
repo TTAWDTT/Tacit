@@ -17,7 +17,7 @@ except ImportError:  # Direct ``python tools/paired_report.py`` invocation.
     from cost_report import RecordError, aggregate, read_jsonl
 
 
-REPORT_SCHEMA_VERSION = "tlu.paired-report.v1"
+REPORT_SCHEMA_VERSION = "tlu.paired-report.v2"
 PROTOCOL_FIELDS = ("policy_id", "code_id", "decoder_id")
 BOOTSTRAP_METRICS = (
     "joint_success",
@@ -227,11 +227,15 @@ def paired_report(
             for metric_index, metric_name in enumerate(BOOTSTRAP_METRICS):
                 deltas = []
                 delta_clusters = []
+                cluster_values: dict[tuple[str, str], dict[str, list[float]]] = defaultdict(
+                    lambda: {"left": [], "right": []}
+                )
                 missing_pairs = 0
                 if metric_name in {"input_tokens", "output_tokens"} and not token_deltas_comparable:
                     metrics[metric_name] = {
                         **_paired_bootstrap(deltas, [], replicates=replicates, rng=random.Random(seed)),
                         "missing_pairs": len(common_ids),
+                        "cluster_summaries": [],
                     }
                     continue
                 for episode_id in common_ids:
@@ -241,7 +245,23 @@ def paired_report(
                         missing_pairs += 1
                     else:
                         deltas.append(left_value - right_value)
-                        delta_clusters.append(paired_clusters[episode_id])
+                        cluster_id = paired_clusters[episode_id]
+                        delta_clusters.append(cluster_id)
+                        cluster_values[cluster_id]["left"].append(left_value)
+                        cluster_values[cluster_id]["right"].append(right_value)
+                cluster_summaries = []
+                for cluster_id in sorted(cluster_values):
+                    values = cluster_values[cluster_id]
+                    left_mean = sum(values["left"]) / len(values["left"])
+                    right_mean = sum(values["right"]) / len(values["right"])
+                    cluster_summaries.append({
+                        "cluster_source": cluster_id[0],
+                        "cluster_id": cluster_id[1],
+                        "paired_episodes": len(values["left"]),
+                        "left_mean": left_mean,
+                        "right_mean": right_mean,
+                        "mean_left_minus_right": left_mean - right_mean,
+                    })
                 metrics[metric_name] = {
                     **_paired_bootstrap(
                         deltas,
@@ -250,6 +270,7 @@ def paired_report(
                         rng=random.Random(seed + len(comparisons) * len(BOOTSTRAP_METRICS) + metric_index),
                     ),
                     "missing_pairs": missing_pairs,
+                    "cluster_summaries": cluster_summaries,
                 }
             comparisons.append({
                 "task_stratum": task_strata[task_key],

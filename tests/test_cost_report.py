@@ -168,12 +168,17 @@ class CostReportContractTests(unittest.TestCase):
         report = paired_report(left_rows + right_rows, replicates=500, seed=23)
         comparison = report["comparisons"][0]
         success = comparison["metrics"]["joint_success"]
+        self.assertEqual(report["schema_version"], "tlu.paired-report.v2")
         self.assertEqual(comparison["paired_episode_count"], 4)
         self.assertEqual(comparison["paired_inference_cluster_count"], 2)
         self.assertEqual(success["independent_clusters"], 2)
         self.assertTrue(success["few_independent_units_warning"])
         self.assertEqual(success["mean_left_minus_right"], 0.0)
         self.assertEqual((success["ci95_low"], success["ci95_high"]), (-1.0, 1.0))
+        self.assertEqual(
+            [(row["cluster_id"], row["mean_left_minus_right"]) for row in success["cluster_summaries"]],
+            [("block-a", 1.0), ("block-b", -1.0)],
+        )
 
     def test_paired_report_omits_interval_with_one_explicit_cluster(self) -> None:
         left = _record("one-a", version="tlu.costs.v3")

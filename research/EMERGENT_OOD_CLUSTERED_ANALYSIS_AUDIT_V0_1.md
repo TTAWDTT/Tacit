@@ -22,7 +22,7 @@ The capability gate requires different calibration and evaluation split seeds an
 
 ## What the existing analysis supports
 
-`tools.paired_report` pairs matching episode IDs and resamples complete `inference_cluster_id` groups. It reports the mean paired episode difference, cluster-bootstrap percentile intervals, and the number of independent clusters. With balanced complete episode coverage per split, the pooled mean equals the equally weighted mean of split means. If batches are incomplete or split cluster sizes differ, that equivalence no longer holds; combine every preregistered offset for each condition and verify equal episode coverage before interpretation.
+`tools.paired_report` v2 pairs matching episode IDs and resamples complete `inference_cluster_id` groups. It reports the mean paired episode difference, cluster-bootstrap percentile intervals, independent-cluster count, and each cluster's left/right means and paired difference. With balanced complete episode coverage per split, the pooled mean equals the equally weighted mean of split means. If batches are incomplete or split cluster sizes differ, that equivalence no longer holds; combine every preregistered offset for each condition and verify equal episode coverage before interpretation.
 
 `tools.frontier_report` groups by the complete task/model stratum, including `communication_budget_bytes`. It describes Pareto membership at each matched cap and makes no population-dominance inference. Use paired uncertainty separately for each same-cap contrast. A green frontier point from one split is descriptive only.
 
