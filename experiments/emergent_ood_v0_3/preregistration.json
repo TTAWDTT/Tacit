@@ -13,7 +13,7 @@
     {
       "revision": 3,
       "date": "2026-09-29",
-      "change": "Declared the seed-level balanced candidate-set block as the independent inference unit and added cluster-aware paired bootstrap support.",
+      "change": "Declared each independently generated held-out-composition seed as the inference cluster and added cluster-aware paired bootstrap support.",
       "rationale": "The five target-balanced episodes within one candidate set share stimuli and are dependent; treating rows as independent understates uncertainty.",
       "data_collected_before_amendment": false
     }
@@ -78,9 +78,9 @@
     "costs": ["serialized application bytes", "complete reported input/output tokens per model call", "model call count", "service and wall latency"],
     "claim_limit": "Five episodes from one candidate-set block are one independent cluster; they are a capability screen and cannot estimate a stable generalization rate or support equal-budget protocol superiority."
   },
-  "follow_up_gate": "Only after disjoint-calibration full-information success and plumbing validation, preregister a larger held-out comparison with multiple independently sampled candidate-set blocks. Sample candidate subsets uniformly from the eligible held-out subset space using a deterministic seed-based sampler, or enumerate a preregistered balanced subset design; do not use the lexicographically first subset as a population sample. Include development-tuned natural language, valid JSON, compact structured text, symbolic code with setup charged, no-message and oracle controls, multiple receiver families, and equal byte/token budget curves. Analyze and bootstrap at the independent block level.",
+  "follow_up_gate": "Only after disjoint-calibration full-information success and plumbing validation, preregister a larger held-out comparison over multiple independently generated composition-split seeds. Within each split, sample candidate subsets uniformly from the eligible held-out subset space using a deterministic seed-based sampler, or enumerate a preregistered balanced subset design; do not use the lexicographically first subset as a population sample. If several candidate subsets are measured within one split, retain the split seed as their shared outer inference cluster. Include development-tuned natural language, valid JSON, compact structured text, symbolic code with setup charged, no-message and oracle controls, multiple receiver families, and equal byte/token budget curves. Analyze and bootstrap at the independent split-seed level.",
   "capability_gate_sampling": "Calibration and evaluation episode IDs must be disjoint. The full-information calibration result is an eligibility check only; evaluation episodes are retained regardless of their full-information outcomes. Any evaluation full_information arm is a comparator and must not be reused as the gate.",
-  "inference_unit": "One generation-seed candidate-set block; episode rows within the block are repeated target-balanced outcomes, not independent observations. Each tlu.costs.v3 row records the shared inference_cluster_id. The current evaluation contains one block and supports descriptive outcomes only.",
+  "inference_unit": "One independently generated held-out-composition split seed. The current runner selects one candidate-set block per seed; its episode rows are repeated target-balanced outcomes, not independent observations. If a future runner samples multiple candidate sets from one split, those nested blocks share the split-seed inference_cluster_id. The current evaluation contains one independent split seed and supports descriptive outcomes only.",
   "implementation": {
     "runner": "experiments/emergent_ood_v0_3/runner.py",
     "resource_preflight": "experiments/emergent_ood_v0_3/resource_preflight.ps1",
