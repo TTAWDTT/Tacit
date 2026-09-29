@@ -52,15 +52,19 @@ def main() -> None:
         schedule=("A", "B", "A"),
         task="Assess whether the maintenance event likely changed the sensor behavior.",
         max_turns=3,
+        wire_budget_bytes=4096,
     )
     print(json.dumps({
         "protocol_id": result.protocol_id,
         "model_calls": result.model_calls,
         "wire_bytes": result.wire_bytes,
+        "wire_budget_bytes": result.wire_budget_bytes,
+        "stop_reason": result.stop_reason,
         "model_call_records": result.model_call_records(),
         "transmission_records": result.transmission_records(),
         "messages": [
-            {"speaker": turn.speaker, "message": turn.transmission.message}
+            {"speaker": turn.speaker, "message": turn.completion.text,
+             "delivered": turn.transmission is not None}
             for turn in result.turns
         ],
     }, ensure_ascii=False, indent=2))

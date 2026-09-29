@@ -64,6 +64,7 @@ class TacitRuntimeTests(unittest.TestCase):
         )
 
         self.assertEqual(result.model_calls, 3)
+        self.assertEqual(result.stop_reason, "schedule_complete")
         self.assertEqual([turn.speaker for turn in result.turns], ["A", "B", "A"])
         self.assertEqual([turn.recipient for turn in result.turns], ["B", "A", "B"])
         self.assertEqual(result.model_call_records()[0]["tokenizer"], "not_reported")
@@ -118,6 +119,87 @@ class TacitRuntimeTests(unittest.TestCase):
         ])
         self.assertNotIn("B-secret", json.dumps(agent_a.calls))
         self.assertNotIn("A-secret", json.dumps(agent_b.calls))
+
+    def test_dialogue_enforces_total_wire_budget_and_keeps_rejected_call_costs(self) -> None:
+        protocol = FakeDialogueProtocol()
+        schedule = ("A", "B", "A")
+        messages = ("A first", "B reply", "A follow-up")
+        with LocalTCPMessageChannel(lambda _envelope: None) as channel:
+            first = channel.measure(
+                messages[0], protocol_id=protocol.protocol_id, round_number=1,
+                sender="A", recipient="B",
+            )
+            second = channel.measure(
+                messages[1], protocol_id=protocol.protocol_id, round_number=2,
+                sender="B", recipient="A",
+            )
+        budget = first.total_application_bytes + second.total_application_bytes - 1
+        agent_a = SequencedDialogueModel("model-a", [messages[0], messages[2]])
+        agent_b = SequencedDialogueModel("model-b", [messages[1]])
+
+        result = exchange_dialogue(
+            {"A": agent_a, "B": agent_b},
+            protocol=protocol,
+            private_contexts={"A": "A-secret", "B": "B-secret"},
+            schedule=schedule,
+            task="Combine the two observations.",
+            max_turns=3,
+            wire_budget_bytes=budget,
+        )
+
+        self.assertEqual(result.stop_reason, "wire_budget_exhausted")
+        self.assertEqual(result.wire_budget_bytes, budget)
+        self.assertLessEqual(result.wire_bytes, budget)
+        self.assertEqual(result.model_calls, 2)
+        self.assertEqual([turn.round_number for turn in result.turns], [1, 2])
+        self.assertIsNotNone(result.turns[0].transmission)
+        self.assertIsNone(result.turns[1].transmission)
+        self.assertEqual(len(result.transmission_records()), 1)
+        self.assertEqual(len(result.model_call_records()), 2)
+        self.assertEqual([row["round"] for row in result.model_call_records()], [1, 2])
+        self.assertEqual(len(agent_a.calls), 1)
+        self.assertEqual(len(agent_b.calls), 1)
+
+    def test_dialogue_rejects_invalid_wire_budget_before_model_calls(self) -> None:
+        agents = {
+            "A": FakeModel(ChatCompletion("a", "A")),
+            "B": FakeModel(ChatCompletion("b", "B")),
+        }
+        for invalid_budget in (-1, 1.5, True):
+            with self.subTest(budget=invalid_budget), self.assertRaisesRegex(
+                ValueError, "wire_budget_bytes"
+            ):
+                exchange_dialogue(
+                    agents,
+                    protocol=FakeDialogueProtocol(),
+                    private_contexts={"A": "a", "B": "b"},
+                    schedule=("A",),
+                    task="task",
+                    max_turns=1,
+                    wire_budget_bytes=invalid_budget,
+                )
+        self.assertEqual(agents["A"].calls, [])
+        self.assertEqual(agents["B"].calls, [])
+
+    def test_dialogue_does_not_call_models_when_no_message_can_fit(self) -> None:
+        agents = {
+            "A": FakeModel(ChatCompletion("a", "A")),
+            "B": FakeModel(ChatCompletion("b", "B")),
+        }
+        result = exchange_dialogue(
+            agents,
+            protocol=FakeDialogueProtocol(),
+            private_contexts={"A": "a", "B": "b"},
+            schedule=("A", "B"),
+            task="task",
+            max_turns=2,
+            wire_budget_bytes=0,
+        )
+        self.assertEqual(result.stop_reason, "wire_budget_exhausted")
+        self.assertEqual(result.model_calls, 0)
+        self.assertEqual(result.wire_bytes, 0)
+        self.assertEqual(agents["A"].calls, [])
+        self.assertEqual(agents["B"].calls, [])
 
     def test_dialogue_rejects_invalid_schedules_and_roles(self) -> None:
         agents = {"A": FakeModel(ChatCompletion("a", "A")), "B": FakeModel(ChatCompletion("b", "B"))}
@@ -201,6 +283,10 @@ class TacitRuntimeTests(unittest.TestCase):
         received = []
         message = '事实: "café" 🧪\\line\n'
         with LocalTCPMessageChannel(received.append) as channel:
+            measured = channel.measure(
+                message, protocol_id="json-envelope-test-v1", round_number=2,
+                sender="A", recipient="B",
+            )
             transmission = channel.send(
                 message,
                 protocol_id="json-envelope-test-v1",
@@ -210,6 +296,7 @@ class TacitRuntimeTests(unittest.TestCase):
             )
 
         self.assertEqual(received[0]["payload"], message)
+        self.assertEqual(measured, transmission)
         self.assertEqual(transmission.message, message)
         self.assertEqual(transmission.logical_payload_bytes, len(message.encode("utf-8")))
         self.assertEqual(

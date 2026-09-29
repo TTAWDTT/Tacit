@@ -128,12 +128,18 @@ class ExchangeResult:
 
 @dataclass(frozen=True)
 class DialogueTurn:
-    """One scheduled model call and the exact message delivered to its peer."""
+    """One scheduled model call, with an optional delivered transmission.
 
+    ``transmission`` is ``None`` when a generated message exceeded the
+    remaining wire budget. The completion stays available for full inference
+    cost accounting even though its text was not sent.
+    """
+
+    round_number: int
     speaker: str
     recipient: str
     completion: ChatCompletion
-    transmission: Transmission
+    transmission: Transmission | None
 
 
 @dataclass(frozen=True)
@@ -142,6 +148,8 @@ class DialogueResult:
 
     protocol_id: str
     turns: tuple[DialogueTurn, ...]
+    stop_reason: str
+    wire_budget_bytes: int | None
 
     @property
     def model_calls(self) -> int:
@@ -149,11 +157,19 @@ class DialogueResult:
 
     @property
     def wire_bytes(self) -> int:
-        return sum(turn.transmission.total_application_bytes for turn in self.turns)
+        return sum(
+            turn.transmission.total_application_bytes
+            for turn in self.turns
+            if turn.transmission is not None
+        )
 
     def transmission_records(self) -> list[JsonObject]:
         """Return one exact tlu.costs.v3 transmission record per scheduled turn."""
-        return [turn.transmission.cost_record() for turn in self.turns]
+        return [
+            turn.transmission.cost_record()
+            for turn in self.turns
+            if turn.transmission is not None
+        ]
 
     def model_call_records(
         self,
@@ -171,6 +187,7 @@ class DialogueResult:
         return [
             {
                 "agent": turn.speaker,
+                "round": turn.round_number,
                 "stage": "dialogue_turn",
                 "model": turn.completion.model,
                 "tokenizer": tokenizer_map.get(turn.speaker, "not_reported"),
@@ -306,13 +323,18 @@ def exchange_dialogue(
     schedule: Sequence[str],
     task: str,
     max_turns: int,
+    wire_budget_bytes: int | None = None,
     channel_timeout_seconds: float = 30.0,
 ) -> DialogueResult:
     """Run a fixed-schedule, two-agent exchange over measured loopback TCP.
 
     At each turn, an agent sees only its own private context and the public
-    transcript delivered so far. The caller controls the exact schedule and
-    turn cap; this function does not infer a stopping signal from message text.
+    transcript delivered so far. The caller controls the exact schedule,
+    turn cap, and optional application-wire byte budget. A message that would
+    exceed the remaining wire budget is not delivered; its model call remains
+    in the result so inference costs are not lost. The budget includes the
+    measured JSON envelope, length prefix, and acknowledgment, but not TCP/IP
+    headers or model inference tokens.
     """
     names = set(agents)
     if len(names) != 2 or any(not isinstance(name, str) or not name.strip() for name in names):
@@ -330,6 +352,12 @@ def exchange_dialogue(
         raise ValueError("each agent instruction must be a non-empty string")
     if isinstance(max_turns, bool) or not isinstance(max_turns, int) or max_turns < 1:
         raise ValueError("max_turns must be a positive integer")
+    if wire_budget_bytes is not None and (
+        isinstance(wire_budget_bytes, bool)
+        or not isinstance(wire_budget_bytes, int)
+        or wire_budget_bytes < 0
+    ):
+        raise ValueError("wire_budget_bytes must be a non-negative integer or None")
     if isinstance(schedule, (str, bytes)) or not isinstance(schedule, Sequence) or not schedule:
         raise ValueError("schedule must be a non-empty sequence of agent names")
     if len(schedule) > max_turns:
@@ -342,9 +370,22 @@ def exchange_dialogue(
     transcript: list[dict[str, str]] = []
     turns: list[DialogueTurn] = []
     received: list[dict[str, Any]] = []
+    delivered_wire_bytes = 0
+    stop_reason = "schedule_complete"
     with LocalTCPMessageChannel(received.append, timeout_seconds=channel_timeout_seconds) as channel:
         for index, speaker in enumerate(schedule, start=1):
             recipient = next(name for name in names if name != speaker)
+            if wire_budget_bytes is not None:
+                minimum_message = channel.measure(
+                    "",
+                    protocol_id=protocol.protocol_id,
+                    round_number=index,
+                    sender=speaker,
+                    recipient=recipient,
+                )
+                if minimum_message.total_application_bytes > wire_budget_bytes - delivered_wire_bytes:
+                    stop_reason = "wire_budget_exhausted"
+                    break
             messages = [
                 {"role": "system", "content": instructions[speaker]},
                 {
@@ -362,6 +403,20 @@ def exchange_dialogue(
                 },
             ]
             completion = agents[speaker].complete(messages)
+            measured = channel.measure(
+                completion.text,
+                protocol_id=protocol.protocol_id,
+                round_number=index,
+                sender=speaker,
+                recipient=recipient,
+            )
+            if (
+                wire_budget_bytes is not None
+                and measured.total_application_bytes > wire_budget_bytes - delivered_wire_bytes
+            ):
+                turns.append(DialogueTurn(index, speaker, recipient, completion, None))
+                stop_reason = "wire_budget_exhausted"
+                break
             received_before = len(received)
             transmission = channel.send(
                 completion.text,
@@ -370,13 +425,16 @@ def exchange_dialogue(
                 sender=speaker,
                 recipient=recipient,
             )
+            if transmission != measured:
+                raise RuntimeError("measured and delivered message costs differ")
+            delivered_wire_bytes += transmission.total_application_bytes
             delivered = received[received_before:]
             if len(delivered) != 1 or delivered[0].get("payload") != completion.text:
                 raise RuntimeError("loopback channel did not deliver the exact sender message")
             transcript.append({"sender": speaker, "message": delivered[0]["payload"]})
-            turns.append(DialogueTurn(speaker, recipient, completion, transmission))
+            turns.append(DialogueTurn(index, speaker, recipient, completion, transmission))
 
-    return DialogueResult(protocol.protocol_id, tuple(turns))
+    return DialogueResult(protocol.protocol_id, tuple(turns), stop_reason, wire_budget_bytes)
 
 
 def _optional_nonnegative_int(value: Any) -> int | None:

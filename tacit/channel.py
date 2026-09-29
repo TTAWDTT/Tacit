@@ -211,6 +211,24 @@ class LocalTCPMessageChannel:
         self._thread.start()
         return self
 
+    def measure(
+        self,
+        message: str,
+        *,
+        protocol_id: str,
+        round_number: int,
+        sender: str,
+        recipient: str,
+    ) -> Transmission:
+        """Measure exact application bytes without delivering the message."""
+        _validate_message_fields(message, protocol_id, round_number, sender, recipient)
+        body, transmission = _prepare_message(
+            message, protocol_id, round_number, sender, recipient
+        )
+        if len(body) > self._max_envelope_bytes:
+            raise ValueError("message envelope exceeds max_envelope_bytes")
+        return transmission
+
     def __exit__(self, exc_type: Any, exc: Any, traceback: Any) -> None:
         if self._server is not None:
             self._server.shutdown()
@@ -233,20 +251,9 @@ class LocalTCPMessageChannel:
         if self._server is None:
             raise RuntimeError("channel is not running")
         _validate_message_fields(message, protocol_id, round_number, sender, recipient)
-        envelope = {
-            "schema": MESSAGE_SCHEMA,
-            "protocol_id": protocol_id,
-            "round": round_number,
-            "sender": sender,
-            "recipient": recipient,
-            "payload": message,
-        }
-        body = json.dumps(
-            envelope, ensure_ascii=False, sort_keys=True, separators=(",", ":")
-        ).encode("utf-8")
-        payload_field = json.dumps(
-            message, ensure_ascii=False, separators=(",", ":")
-        ).encode("utf-8")
+        body, transmission = _prepare_message(
+            message, protocol_id, round_number, sender, recipient
+        )
         if len(body) > self._max_envelope_bytes:
             raise ValueError("message envelope exceeds max_envelope_bytes")
         prefix = struct.pack("!I", len(body))
@@ -261,21 +268,7 @@ class LocalTCPMessageChannel:
             if status != b"\x01":
                 raise RuntimeError("receiver callback failed or did not acknowledge delivery")
 
-        serialized_payload_bytes = len(payload_field)
-        total_bytes = len(prefix) + len(body) + 1
-        framing_bytes = total_bytes - serialized_payload_bytes
-        if framing_bytes < 0:
-            raise RuntimeError("serialized envelope byte partition is invalid")
-        return Transmission(
-            message=message,
-            protocol_id=protocol_id,
-            round_number=round_number,
-            sender=sender,
-            recipient=recipient,
-            logical_payload_bytes=len(message.encode("utf-8")),
-            serialized_payload_bytes=serialized_payload_bytes,
-            framing_bytes=framing_bytes,
-        )
+        return transmission
 
 
 class LocalTCPFrameChannel:
@@ -422,6 +415,45 @@ def _recv_exact(sock: socket.socket, size: int) -> bytes:
             raise ConnectionError("connection closed before a complete message frame arrived")
         chunks.extend(chunk)
     return bytes(chunks)
+
+
+def _prepare_message(
+    message: str,
+    protocol_id: str,
+    round_number: int,
+    sender: str,
+    recipient: str,
+) -> tuple[bytes, Transmission]:
+    """Serialize one text envelope and derive its exact application-byte cost."""
+    envelope = {
+        "schema": MESSAGE_SCHEMA,
+        "protocol_id": protocol_id,
+        "round": round_number,
+        "sender": sender,
+        "recipient": recipient,
+        "payload": message,
+    }
+    body = json.dumps(
+        envelope, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")
+    payload_field = json.dumps(
+        message, ensure_ascii=False, separators=(",", ":")
+    ).encode("utf-8")
+    serialized_payload_bytes = len(payload_field)
+    framing_bytes = 4 + len(body) + 1 - serialized_payload_bytes
+    if framing_bytes < 0:
+        raise RuntimeError("serialized envelope byte partition is invalid")
+    transmission = Transmission(
+        message=message,
+        protocol_id=protocol_id,
+        round_number=round_number,
+        sender=sender,
+        recipient=recipient,
+        logical_payload_bytes=len(message.encode("utf-8")),
+        serialized_payload_bytes=serialized_payload_bytes,
+        framing_bytes=framing_bytes,
+    )
+    return body, transmission
 
 
 def _decode_envelope(body: bytes) -> dict[str, Any]:
