@@ -14,6 +14,18 @@ python experiments/emergent_ood_v0_4/split.py --seed 17 --output .cache/emergent
 
 Omitting `--output` prints JSON to stdout. File output is rejected unless it stays inside the project. The split seed is public metadata, not a secret or a task key.
 
+### Ontology replication
+
+The fixture also accepts a project-local ontology spec with schema `tlu.emergent-ood-ontology.v1`, an `ontology_id`, ordered `attributes`, and an equally sized `values_by_attribute` list for every attribute. Two matched vocabulary shifts are included: `ontologies/robotics_v1.json` and `ontologies/music_v1.json`.
+
+```powershell
+python experiments/emergent_ood_v0_4/split.py --seed 17 --ontology experiments/emergent_ood_v0_4/ontologies/robotics_v1.json --output .cache/emergent_ood_v0_4/robotics-split.json
+python -m experiments.emergent_ood_v0_4.episodes keygen --key .cache/emergent_ood_v0_4/robotics.key
+python -m experiments.emergent_ood_v0_4.episodes generate --ontology experiments/emergent_ood_v0_4/ontologies/robotics_v1.json --seed 17 --task-seed 0 --k 4 --sets-per-stage 16 --key .cache/emergent_ood_v0_4/robotics.key --output-dir .cache/emergent_ood_v0_4/robotics-episodes
+```
+
+The episode manifest carries the ordered ontology and split specification; the runner reconstructs it, verifies the split hash and stage supports, and records an ontology-specific task ID in each result. This permits matched evaluation across different value vocabularies and attribute meanings. Split seeds only repartition one ontology, and the included ontologies are hand-selected synthetic domains; they are not independent samples of natural tasks or evidence of broad transfer. For smaller spaces, choose `k` no larger than the smallest validation/test support.
+
 ## Keyed communication episodes
 
 Create a local evaluator-only 256-bit key once, then generate role ledgers:

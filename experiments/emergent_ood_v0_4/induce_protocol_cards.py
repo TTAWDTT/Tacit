@@ -20,7 +20,7 @@ from typing import Any
 from experiments.emergent_ood_v0_3.runner import validate_resource_preflight
 from experiments.emergent_ood_v0_4.episodes import _inside_project
 from experiments.emergent_ood_v0_4.runner import ROOT, OpenAICompatibleClient, _endpoint_port, _loopback_url
-from experiments.emergent_ood_v0_4.split import build_split
+from experiments.emergent_ood_v0_4.split import build_split, load_ontology_spec
 
 
 CARD_SCHEMA = "tlu.shared_protocol_card.v1"
@@ -114,7 +114,7 @@ def build_induction_messages(
         ]
     user_payload = {
         "task": (
-            "A sender sees one private four-attribute meaning. A receiver sees a candidate table of meanings and one message "
+            f"A sender sees one private {len(split['attributes'])}-attribute meaning. A receiver sees a candidate table of meanings and one message "
             "from the sender, then must return the exact candidate_id whose complete tuple matches. The sender never sees the table. "
             "Future evaluation includes held-out compositions, so design productive rules rather than a lookup table of complete tuples."
         ),
@@ -127,7 +127,7 @@ def build_induction_messages(
             "Propose distinct, unambiguous, compositional sender/receiver instruction pairs.",
             "Represent every attribute and exact value so unrelated messages cannot merge ambiguously.",
             "The sender may use only its private meaning. The receiver may use only its candidate table and the received message.",
-            "Do not encode candidate IDs, episode IDs, split/task seeds, or a table mapping complete four-value tuples to labels.",
+            f"Do not encode candidate IDs, episode IDs, split/task seeds, or a table mapping complete {len(split['attributes'])}-value tuples to labels.",
             "Do not assume shared conversation history, hidden state, tools, extra turns, or a response from the sender.",
             "Each card must be independently usable by two separately prompted agents. Return only the message payload at runtime.",
         ],
@@ -190,10 +190,20 @@ def run_induction(
     *, split_seed: int, task_key_path: Path, example_count: int, candidate_count: int,
     output_dir: Path, execute: bool, model: str = "", tokenizer_id: str = "",
     protocol_family: str = "compositional_symbolic",
+    ontology_path: Path | None = None,
     base_url: str = "http://127.0.0.1:8002/v1", resource_preflight: Path | None = None,
     temperature: float = 0.7, max_tokens: int = 4096,
 ) -> dict[str, Any]:
-    split = build_split(seed=split_seed)
+    ontology = load_ontology_spec(ontology_path) if ontology_path else None
+    if ontology is None:
+        split = build_split(seed=split_seed)
+    else:
+        split = build_split(
+            seed=split_seed,
+            attributes=ontology["attributes"],
+            values=[ontology["values_by_attribute"][name] for name in ontology["attributes"]],
+            ontology_id=ontology["ontology_id"],
+        )
     task_key = _read_inside(task_key_path)
     examples = sample_training_examples(split=split, task_key=task_key, example_count=example_count)
     messages = build_induction_messages(
@@ -206,6 +216,7 @@ def run_induction(
         "mode": "execute" if execute else "dry_run",
         "split_seed": split_seed,
         "split_sha256": split["split_sha256"],
+        "ontology_id": split.get("ontology_id"),
         "task_key_id": hashlib.sha256(task_key).hexdigest()[:16],
         "training_examples": len(examples),
         "training_example_ids_sha256": hashlib.sha256("\n".join(sorted(
@@ -333,6 +344,7 @@ def run_induction(
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--split-seed", type=int, default=17)
+    parser.add_argument("--ontology", type=Path, help="project-local ontology spec; omit for the default fixture")
     parser.add_argument("--task-key", type=Path, default=Path(".cache/emergent_ood_v0_4/evaluator.key"))
     parser.add_argument("--training-examples", type=int, default=DEFAULT_EXAMPLES)
     parser.add_argument("--candidates", type=int, default=DEFAULT_CANDIDATES)
@@ -355,6 +367,7 @@ def main() -> int:
             example_count=args.training_examples, candidate_count=args.candidates,
             output_dir=args.output_dir, execute=args.execute, model=args.model,
             protocol_family=args.protocol_family,
+            ontology_path=args.ontology,
             tokenizer_id=args.tokenizer_id, base_url=args.base_url,
             resource_preflight=args.resource_preflight, temperature=args.temperature,
             max_tokens=args.max_tokens,

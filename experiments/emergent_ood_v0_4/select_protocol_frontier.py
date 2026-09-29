@@ -22,7 +22,7 @@ from experiments.emergent_ood_v0_4.induce_protocol_cards import (
 from experiments.emergent_ood_v0_4.runner import (
     EXPERIMENT_ID, ROOT, SCORER_ID, _meaning_id_from_values, load_protocol_card,
 )
-from experiments.emergent_ood_v0_4.split import build_split
+from experiments.emergent_ood_v0_4.split import build_split, build_split_from_spec, split_task_id
 
 
 SPEC_SCHEMA = "tlu.emergent-ood-protocol-frontier-candidates.v1"
@@ -76,7 +76,8 @@ def _validation_episode_index(bundle_dir: Path, *, split_seed: int) -> tuple[dic
     manifest = _json(manifest_path, "episode bundle manifest")
     if manifest.get("schema") != EPISODE_SCHEMA:
         raise ValueError("unsupported episode bundle schema")
-    split = build_split(seed=split_seed)
+    split_spec = manifest.get("split_spec")
+    split = build_split_from_spec(seed=split_seed, spec=split_spec) if split_spec is not None else build_split(seed=split_seed)
     if manifest.get("split_sha256") != split["split_sha256"]:
         raise ValueError("episode bundle does not match the declared validation split seed")
     if not isinstance(manifest.get("files"), dict):
@@ -205,6 +206,12 @@ def _candidate_run(
             or run_manifest.get("protocol_card_sha256") != card_digest
             or run_manifest.get("split_seed") != split_seed
             or run_manifest.get("split_sha256") != bundle_info["split"]["split_sha256"]
+            or ("ontology_id" in run_manifest and run_manifest.get("ontology_id") != bundle_info["split"].get("ontology_id"))
+            or ("task_id" in run_manifest and run_manifest.get("task_id") != split_task_id(bundle_info["split"]))
+            or (bundle_info["split"].get("ontology_id") is not None and (
+                run_manifest.get("ontology_id") != bundle_info["split"].get("ontology_id")
+                or run_manifest.get("task_id") != split_task_id(bundle_info["split"])
+            ))
             or run_manifest.get("input_episode_manifest_sha256") != bundle_info["manifest_sha256"]
             or run_manifest.get("task_seed") != bundle_info["manifest"].get("task_seed")
             or run_manifest.get("task_key_id") != bundle_info["manifest"].get("task_key_id")
@@ -215,7 +222,7 @@ def _candidate_run(
             reference_manifest = run_manifest
         else:
             invariant_fields = (
-                "experiment_id", "stage", "conditions", "split_seed", "split_sha256", "task_seed",
+                "experiment_id", "stage", "conditions", "split_seed", "split_sha256", "ontology_id", "task_id", "task_seed",
                 "task_key_id", "input_episode_manifest_sha256", "communication_budget_bytes",
                 "sender_model", "receiver_model", "sender_tokenizer_id", "receiver_tokenizer_id",
                 "model_population_id",
@@ -239,6 +246,9 @@ def _candidate_run(
                 raise ValueError("validation result is missing its outcome, stratum, or protocol object")
             if (
                 row.get("experiment_id") != EXPERIMENT_ID
+                or ("ontology_id" in row and row.get("ontology_id") != bundle_info["split"].get("ontology_id"))
+                or (bundle_info["split"].get("ontology_id") is not None
+                    and row.get("ontology_id") != bundle_info["split"].get("ontology_id"))
                 or row.get("stage") != "validation"
                 or row.get("condition") != "shared_protocol_card"
                 or row.get("protocol_id") != protocol_id
@@ -249,7 +259,7 @@ def _candidate_run(
                 or row.get("communication_budget_bytes") != run_manifest.get("communication_budget_bytes")
                 or episode_id not in expected_ids
                 or row.get("candidate_set_id") != expected_ids[episode_id]
-                or stratum.get("task_id") != "four-attribute-higher-order-meaning-matching-v1"
+                or stratum.get("task_id") != split_task_id(bundle_info["split"])
                 or stratum.get("scorer_id") != SCORER_ID
                 or not isinstance(outcome.get("exact_selection"), bool)
             ):

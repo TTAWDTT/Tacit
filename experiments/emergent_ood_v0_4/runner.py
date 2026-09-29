@@ -28,7 +28,7 @@ from tacit.runtime import ChatCompletion, ChatModel, DialogueResult, OpenAICompa
 from experiments.emergent_ood_v0_3.runner import validate_resource_preflight
 from experiments.emergent_ood_v0_4.episodes import SCHEMA as EPISODE_SCHEMA
 from experiments.emergent_ood_v0_4.episodes import verify_ledgers
-from experiments.emergent_ood_v0_4.split import build_split
+from experiments.emergent_ood_v0_4.split import build_split, build_split_from_spec, split_task_id
 
 
 EXPERIMENT_ID = "emergent-ood-v0.4-receiver-utility"
@@ -98,24 +98,24 @@ class _Protocol:
         if condition in {"full_information", "no_message"}:
             return common + " No sender message is required for this control."
         if condition == "natural_language":
-            return common + " Describe all four attribute names and their exact values in one short sentence."
+            return common + f" Describe all {len(attributes)} attribute names and their exact values in one short sentence."
         if condition == "autoform":
             return common + (
                 " Choose a concise, efficient communication medium other than ordinary prose, suited to this exact tuple. "
                 "You may use structured data, a table, mathematical notation, pseudocode, or a compact code. "
                 "Your partner has the attribute vocabulary and candidate table, but not your private tuple; no fixed message grammar "
                 "is shared, so make your representation "
-                "decodable and preserve all four exact attribute values. Return only the message."
+                f"decodable and preserve all {len(attributes)} exact attribute values. Return only the message."
             )
         if condition == "json":
-            return common + " Return one compact JSON object with exactly the four attribute names as keys and their exact string values."
+            return common + f" Return one compact JSON object with exactly the {len(attributes)} attribute names as keys and their exact string values."
         if condition == "symbolic":
             codebook = {name: {value: str(index) for index, value in enumerate(values[name])} for name in attributes}
             return common + (
                 " Encode one digit per attribute in this fixed order: " + ", ".join(attributes) + ". "
                 "For each attribute, its allowed values map to digits in the listed order: "
                 + json.dumps(codebook, ensure_ascii=False, separators=(",", ":"))
-                + ". Emit exactly four digits and no separators."
+                + f". Emit exactly {len(attributes)} digits and no separators."
             )
         raise ValueError(f"condition has no sender: {condition}")
 
@@ -129,7 +129,7 @@ class _Protocol:
         if condition == "full_information":
             return (
                 "You are the receiver in a full-information capability control. "
-                "Use the calibration_target tuple in your private context and select the candidate with the exact same four values. "
+                f"Use the calibration_target tuple in your private context and select the candidate with the exact same {len(attributes)} values. "
                 "Return only its candidate_id, with no punctuation or explanation."
             )
         if condition == "no_message":
@@ -142,7 +142,7 @@ class _Protocol:
         if condition == "autoform":
             return common + (
                 " The sender may choose an open concise format, including structured data, tables, equations, pseudocode, "
-                "or code; no fixed syntax is guaranteed. Infer the four exact attribute values from the message and match "
+                f"or code; no fixed syntax is guaranteed. Infer the {len(attributes)} exact attribute values from the message and match "
                 "the complete tuple against your candidate table."
             )
         if condition == "json":
@@ -150,7 +150,7 @@ class _Protocol:
         if condition == "symbolic":
             codebook = {name: {str(index): value for index, value in enumerate(values[name])} for name in attributes}
             return common + (
-                " Decode exactly four digits in this attribute order: " + ", ".join(attributes) + ". "
+                f" Decode exactly {len(attributes)} digits in this attribute order: " + ", ".join(attributes) + ". "
                 "The per-attribute digit maps are: " + json.dumps(codebook, ensure_ascii=False, separators=(",", ":")) + "."
             )
         raise ValueError(f"condition has no receiver protocol: {condition}")
@@ -236,8 +236,9 @@ def load_usage_examples(
         ):
             raise ValueError(f"usage-example acquisition {field} must be a non-negative number or null")
     examples = artifact["examples"]
-    if not isinstance(examples, list) or not 1 <= len(examples) <= 192:
-        raise ValueError("usage examples must contain between 1 and 192 rows")
+    maximum_examples = len(split["train_meaning_ids"])
+    if not isinstance(examples, list) or not 1 <= len(examples) <= maximum_examples:
+        raise ValueError(f"usage examples must contain between 1 and {maximum_examples} training rows")
     train_rows = bundle["sender"]["train"]
     train_meanings = {
         tuple(row["private_meaning"].get(axis) for axis in split["attributes"])
@@ -302,9 +303,12 @@ def load_episode_bundle(directory: Path, *, split_seed: int) -> tuple[dict[str, 
         raise ValueError("episode manifest is missing or invalid") from exc
     if not isinstance(manifest, dict) or manifest.get("schema") != EPISODE_SCHEMA:
         raise ValueError("unsupported episode manifest schema")
-    split = build_split(seed=split_seed)
+    split_spec = manifest.get("split_spec")
+    split = build_split_from_spec(seed=split_seed, spec=split_spec) if split_spec is not None else build_split(seed=split_seed)
     if manifest.get("split_sha256") != split["split_sha256"]:
         raise ValueError("episode manifest does not match the declared split seed")
+    if manifest.get("attributes") != split["attributes"]:
+        raise ValueError("episode manifest attribute order disagrees with its reconstructed split")
     files = manifest.get("files")
     if not isinstance(files, dict):
         raise ValueError("episode manifest file table is missing")
@@ -349,8 +353,15 @@ def load_episode_bundle(directory: Path, *, split_seed: int) -> tuple[dict[str, 
             declared = manifest["files"][role][stage]["records"]
             if manifest.get("episodes_per_stage", {}).get(stage) != declared:
                 raise ValueError("manifest stage counts do not match role ledger records")
-    if manifest.get("partition_sizes") != {"train": 192, "validation": 16, "test": 48}:
-        raise ValueError("manifest has unexpected default partition sizes")
+    heldout_size = len(split["held_out_meaning_ids"])
+    validation_size = max(1, heldout_size // 4)
+    expected_partition_sizes = {
+        "train": len(split["train_meaning_ids"]),
+        "validation": validation_size,
+        "test": heldout_size - validation_size,
+    }
+    if manifest.get("partition_sizes") != expected_partition_sizes:
+        raise ValueError("manifest partition sizes do not match the reconstructed ontology split")
     return bundle, split
 
 
@@ -396,6 +407,9 @@ def validate_capability_ledger(
     receiver_model: str,
     receiver_tokenizer_id: str,
     model_population_id: str,
+    task_id: str = "four-attribute-higher-order-meaning-matching-v1",
+    train_target_support_size: int = 192,
+    ontology_id: str | None = None,
 ) -> None:
     """Require a verified, all-correct train-only receiver screen before comparison runs."""
     if path is None:
@@ -453,6 +467,9 @@ def validate_capability_ledger(
         "receiver_tokenizer_id": receiver_tokenizer_id,
         "model_population_id": model_population_id,
     }
+    if ontology_id is not None:
+        expected_manifest_fields["ontology_id"] = ontology_id
+        expected_manifest_fields["task_id"] = task_id
     for key, expected_value in expected_manifest_fields.items():
         if run_manifest.get(key) != expected_value:
             raise ValueError(f"capability run manifest {key} does not match this evaluation run")
@@ -473,7 +490,9 @@ def validate_capability_ledger(
             or row.get("condition") != "full_information"
             or row.get("protocol", {}).get("policy_id") != "full_information"
             or row.get("experiment_id") != EXPERIMENT_ID
-            or row.get("stratum", {}).get("task_id") != "four-attribute-higher-order-meaning-matching-v1"
+            or (ontology_id is not None and row.get("ontology_id") != ontology_id)
+            or ("ontology_id" in row and row.get("ontology_id") != ontology_id)
+            or row.get("stratum", {}).get("task_id") != task_id
             or row.get("stratum", {}).get("scorer_id") != SCORER_ID
             or row.get("outcome", {}).get("joint_success") is not True
             or row.get("outcome", {}).get("answer_format_valid") is not True
@@ -492,7 +511,7 @@ def validate_capability_ledger(
             or calls[0].get("tokenizer") != receiver_tokenizer_id
             or calls[0].get("truncated") is not False
             or row.get("stratum", {}).get("model_population_id") != model_population_id
-            or row.get("stratum", {}).get("task_parameters", {}).get("target_support_size") != 192
+            or row.get("stratum", {}).get("task_parameters", {}).get("target_support_size") != train_target_support_size
         ):
             raise ValueError("capability ledger is not a perfect, format-valid, matching full-information receiver screen")
 
@@ -668,11 +687,16 @@ def run_condition(
     usage_examples_digest: str | None = None,
     usage_acquisition: dict[str, Any] | None = None,
     usage_reuse_horizon: int | None = None,
+    task_id: str = "four-attribute-higher-order-meaning-matching-v1",
+    ontology_id: str | None = None,
+    target_support_size: int | None = None,
     split_seed: int, task_seed: int, model_population_id: str,
     wire_budget_bytes: int = DEFAULT_WIRE_BUDGET_BYTES,
 ) -> dict[str, Any]:
     if condition not in CONDITIONS:
         raise ValueError(f"unsupported condition: {condition}")
+    if target_support_size is None:
+        target_support_size = {"train": 192, "validation": 16, "test": 48}[stage]
     target = episode["sender"]["private_meaning"]
     candidates = episode["receiver"]["candidates"]
     candidate_ids = [row["candidate_id"] for row in candidates]
@@ -781,6 +805,7 @@ def run_condition(
         "candidate_set_cluster_id": gold["candidate_set_id"],
         "stage": stage,
         "split_seed": split_seed,
+        "ontology_id": ontology_id,
         "task_seed": task_seed,
         "episode_id": gold["episode_id"],
         "candidate_set_id": gold["candidate_set_id"],
@@ -838,14 +863,14 @@ def run_condition(
         },
         "stratum": {
             "experiment_id": EXPERIMENT_ID,
-            "task_id": "four-attribute-higher-order-meaning-matching-v1",
+            "task_id": task_id,
             "split": stage,
             "scorer_id": SCORER_ID,
             "model_population_id": model_population_id,
             "agent_models": {"sender": sender_model_id, "receiver": receiver_model_id},
             "task_parameters": {
                 "candidate_count": len(candidate_ids),
-                "target_support_size": {"train": 192, "validation": 16, "test": 48}[stage],
+                "target_support_size": target_support_size,
                 "communication_budget_bytes": wire_budget_bytes,
             },
         },
@@ -1039,6 +1064,8 @@ def main() -> int:
         print(json.dumps({
             "mode": "dry-run",
             "experiment_id": EXPERIMENT_ID,
+            "ontology_id": split.get("ontology_id"),
+            "task_id": split_task_id(split),
             "stage": args.stage,
             "conditions": args.conditions,
             "candidate_sets": args.sets,
@@ -1108,6 +1135,9 @@ def main() -> int:
                 receiver_model=args.receiver_model,
                 receiver_tokenizer_id=args.receiver_tokenizer_id,
                 model_population_id=args.model_population_id,
+                task_id=split_task_id(split),
+                train_target_support_size=len(split["train_meaning_ids"]),
+                ontology_id=split.get("ontology_id"),
             )
         except (OSError, ValueError) as exc:
             parser.error(str(exc))
@@ -1167,6 +1197,8 @@ def main() -> int:
         "wire_budget_bytes": args.wire_budget_bytes,
         "split_seed": args.split_seed,
         "split_sha256": split["split_sha256"],
+        "ontology_id": split.get("ontology_id"),
+        "task_id": split_task_id(split),
         "task_seed": bundle["manifest"]["task_seed"],
         "task_key_id": bundle["manifest"]["task_key_id"],
         "input_episode_manifest_sha256": input_manifest_sha256,
@@ -1248,6 +1280,9 @@ def main() -> int:
                 usage_examples_digest=usage_examples_digest if condition == "usage_only_transfer" else None,
                 usage_acquisition=usage_metadata["acquisition"] if condition == "usage_only_transfer" else None,
                 usage_reuse_horizon=args.usage_reuse_horizon if condition == "usage_only_transfer" else None,
+                task_id=split_task_id(split),
+                ontology_id=split.get("ontology_id"),
+                target_support_size=bundle["manifest"]["partition_sizes"][args.stage],
                 split_seed=args.split_seed, task_seed=bundle["manifest"]["task_seed"],
                 model_population_id=args.model_population_id,
                 wire_budget_bytes=args.wire_budget_bytes,
@@ -1277,6 +1312,8 @@ def main() -> int:
             "communication_budget_bytes": args.wire_budget_bytes,
             "split_seed": args.split_seed,
             "split_sha256": split["split_sha256"],
+            "ontology_id": split.get("ontology_id"),
+            "task_id": split_task_id(split),
             "task_seed": bundle["manifest"]["task_seed"],
             "task_key_id": bundle["manifest"]["task_key_id"],
             "model_population_id": args.model_population_id,

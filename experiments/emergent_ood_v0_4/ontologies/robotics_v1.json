@@ -1,0 +1,11 @@
+{
+  "schema": "tlu.emergent-ood-ontology.v1",
+  "ontology_id": "robotics-v1",
+  "attributes": ["device", "sensor", "motion", "surface"],
+  "values_by_attribute": {
+    "device": ["drone", "rover", "robot-arm", "crane"],
+    "sensor": ["camera", "lidar", "sonar", "thermal"],
+    "motion": ["inspect", "rotate", "grasp", "map"],
+    "surface": ["flat", "rough", "inclined", "wet"]
+  }
+}

@@ -21,7 +21,7 @@ from experiments.emergent_ood_v0_4.runner import (
     select_candidate_sets,
     validate_capability_ledger,
 )
-from experiments.emergent_ood_v0_4.split import build_split
+from experiments.emergent_ood_v0_4.split import build_split, load_ontology_spec, split_task_id
 from tacit.runtime import ChatCompletion
 from tools.cost_report import aggregate
 from tools.frontier_report import frontier_report
@@ -750,6 +750,51 @@ class EmergentOODV04RunnerTests(unittest.TestCase):
             receiver_test.write_text(receiver_test.read_text(encoding="utf-8") + " ", encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "hash mismatch"):
                 load_episode_bundle(output, split_seed=17)
+
+    def test_custom_ontology_bundle_round_trips_without_default_vocabulary_assumptions(self):
+        cache_root = Path(__file__).resolve().parents[1] / ".cache"
+        cache_root.mkdir(exist_ok=True)
+        ontology = load_ontology_spec(
+            Path("experiments/emergent_ood_v0_4/ontologies/robotics_v1.json")
+        )
+        split = build_split(
+            seed=17, attributes=ontology["attributes"],
+            values=[ontology["values_by_attribute"][name] for name in ontology["attributes"]],
+            ontology_id=ontology["ontology_id"],
+        )
+        bundle = generate_ledgers(
+            split=split, task_key=bytes(range(32)), task_seed=9, k=4, sets_per_stage=3,
+        )
+        with tempfile.TemporaryDirectory(dir=cache_root) as temporary:
+            output = Path(temporary) / "robotics-episodes"
+            write_ledgers(bundle, output)
+            loaded, loaded_split = load_episode_bundle(output, split_seed=17)
+            self.assertEqual(loaded_split["ontology_id"], "robotics-v1")
+            self.assertEqual(loaded_split["split_sha256"], split["split_sha256"])
+            self.assertEqual(loaded["manifest"]["partition_sizes"], {
+                "train": 192, "validation": 16, "test": 48,
+            })
+            self.assertEqual(
+                loaded["manifest"]["attributes"], ["device", "sensor", "motion", "surface"]
+            )
+            self.assertEqual(
+                split_task_id(loaded_split),
+                "4-attribute-higher-order-meaning-matching-v1:robotics-v1",
+            )
+            episode = select_candidate_sets(loaded, "validation", 1)[0]
+            row = run_condition(
+                episode=episode, condition="json", stage="validation",
+                sender_model=FakeSender("json", loaded_split["attributes"], loaded_split["values_by_attribute"]),
+                receiver_model=FakeReceiver("json", loaded_split["attributes"], loaded_split["values_by_attribute"]),
+                attributes=loaded_split["attributes"], values=loaded_split["values_by_attribute"],
+                task_id=split_task_id(loaded_split), target_support_size=16,
+                ontology_id=loaded_split["ontology_id"],
+                split_seed=17, task_seed=9, model_population_id="fake-population",
+            )
+            self.assertTrue(row["outcome"]["exact_selection"])
+            self.assertEqual(row["stratum"]["task_id"], "4-attribute-higher-order-meaning-matching-v1:robotics-v1")
+            with self.assertRaisesRegex(ValueError, "seed does not match"):
+                load_episode_bundle(output, split_seed=18)
 
     def test_json_sender_fidelity_rejects_duplicate_keys_but_accepts_unordered_fields(self):
         target = {axis: self.values[axis][0] for axis in self.attributes}

@@ -10,6 +10,7 @@ from train.
 from __future__ import annotations
 
 import argparse
+import argparse
 import hashlib
 import json
 from pathlib import Path
@@ -28,17 +29,27 @@ DEFAULT_VALUES = (
 def _validate_names(
     attributes: Sequence[str], values: Sequence[Sequence[str]],
 ) -> tuple[tuple[str, ...], tuple[tuple[str, ...], ...]]:
+    if not isinstance(attributes, Sequence) or isinstance(attributes, (str, bytes)):
+        raise ValueError("attributes must be a sequence of names")
+    if not isinstance(values, Sequence) or isinstance(values, (str, bytes)):
+        raise ValueError("values must contain one sequence per attribute")
+    if any(not isinstance(axis, Sequence) or isinstance(axis, (str, bytes)) for axis in values):
+        raise ValueError("each value axis must be a sequence of labels")
     attrs = tuple(attributes)
     axes = tuple(tuple(axis) for axis in values)
     if len(attrs) < 2 or len(attrs) != len(axes):
         raise ValueError("provide at least two attributes and one value axis per attribute")
-    if len(set(attrs)) != len(attrs) or any(not item for item in attrs):
+    if any(not isinstance(item, str) or not item.strip() for item in attrs):
+        raise ValueError("attribute names must be non-empty and unique")
+    if len(set(attrs)) != len(attrs):
         raise ValueError("attribute names must be non-empty and unique")
     value_count = len(axes[0])
     if value_count < 2 or any(len(axis) != value_count for axis in axes):
         raise ValueError("each attribute must have the same value count, at least two")
     for axis in axes:
-        if any(not item for item in axis) or len(set(axis)) != value_count:
+        if any(not isinstance(item, str) or not item.strip() for item in axis):
+            raise ValueError("values on each attribute axis must be non-empty and unique")
+        if len(set(axis)) != value_count:
             raise ValueError("values on each attribute axis must be non-empty and unique")
     return attrs, axes
 
@@ -63,11 +74,20 @@ def build_split(
     *, seed: int = 0,
     attributes: Sequence[str] = DEFAULT_ATTRIBUTES,
     values: Sequence[Sequence[str]] = DEFAULT_VALUES,
+    ontology_id: str | None = None,
 ) -> dict[str, Any]:
     """Build and internally validate a balanced modular higher-order split."""
     if isinstance(seed, bool) or not isinstance(seed, int) or seed < 0:
         raise ValueError("seed must be a non-negative integer")
+    if ontology_id is not None and (not isinstance(ontology_id, str) or not ontology_id.strip()):
+        raise ValueError("ontology_id must be a non-empty string when provided")
     attrs, axes = _validate_names(attributes, values)
+    if ontology_id is None and (attrs != DEFAULT_ATTRIBUTES or axes != DEFAULT_VALUES):
+        ontology_payload = json.dumps(
+            {"attributes": attrs, "values_by_attribute": dict(zip(attrs, axes))},
+            ensure_ascii=False, sort_keys=True, separators=(",", ":"),
+        )
+        ontology_id = "ontology-" + hashlib.sha256(ontology_payload.encode("utf-8")).hexdigest()[:12]
     value_count = len(axes[0])
     permutations = tuple(
         _axis_permutation(seed, axis_index, value_count)
@@ -114,9 +134,50 @@ def build_split(
             "no protocol performance, language emergence, or general benchmark claim is established",
         ],
     }
+    if ontology_id is not None:
+        result["ontology_id"] = ontology_id
     result["split_sha256"] = _split_digest(result)
     validate_split(result)
     return result
+
+
+def build_split_from_spec(*, seed: int, spec: dict[str, Any]) -> dict[str, Any]:
+    """Rebuild a split from hash-bound manifest metadata or a validated spec."""
+    if not isinstance(spec, dict):
+        raise ValueError("split spec must be an object")
+    allowed = {"seed", "attributes", "values_by_attribute", "ontology_id"}
+    required = {"seed", "attributes", "values_by_attribute"}
+    if set(spec) - allowed or not required.issubset(spec):
+        raise ValueError("split spec has missing or unexpected fields")
+    if isinstance(spec["seed"], bool) or not isinstance(spec["seed"], int) or spec["seed"] != seed:
+        raise ValueError("split spec seed does not match the requested split seed")
+    attributes = spec["attributes"]
+    values_by_attribute = spec["values_by_attribute"]
+    if not isinstance(attributes, list) or not isinstance(values_by_attribute, dict):
+        raise ValueError("split spec attributes/value map are malformed")
+    if any(not isinstance(name, str) or not name.strip() for name in attributes):
+        raise ValueError("split spec attribute names must be non-empty strings")
+    if len(set(attributes)) != len(attributes):
+        raise ValueError("split spec attribute names must be unique")
+    if set(values_by_attribute) != set(attributes):
+        raise ValueError("split spec value axes do not match attributes")
+    checked_attributes, axes = _validate_names(
+        attributes, [values_by_attribute[name] for name in attributes]
+    )
+    return build_split(
+        seed=seed,
+        attributes=checked_attributes,
+        values=axes,
+        ontology_id=spec.get("ontology_id"),
+    )
+
+
+def split_task_id(split: dict[str, Any]) -> str:
+    """Stable task stratum identity, retaining the legacy ID for the default fixture."""
+    ontology_id = split.get("ontology_id")
+    if ontology_id is None:
+        return "four-attribute-higher-order-meaning-matching-v1"
+    return f"{len(split['attributes'])}-attribute-higher-order-meaning-matching-v1:{ontology_id}"
 
 
 def _cartesian_indices(value_count: int, dimensions: int):
@@ -192,6 +253,10 @@ def validate_split(split: dict[str, Any]) -> None:
     seed = split.get("seed")
     if isinstance(seed, bool) or not isinstance(seed, int) or seed < 0:
         raise ValueError("split seed is invalid")
+    if "ontology_id" in split and (
+        not isinstance(split["ontology_id"], str) or not split["ontology_id"].strip()
+    ):
+        raise ValueError("ontology_id must be a non-empty string")
     expected_permutations = [
         list(_axis_permutation(seed, i, len(axes[0]))) for i in range(len(checked_attrs))
     ]
@@ -254,13 +319,56 @@ def validate_split(split: dict[str, Any]) -> None:
         raise ValueError("split digest mismatch")
 
 
+def load_ontology_spec(path: Path) -> dict[str, Any]:
+    """Load a small, self-contained ontology spec from inside the project."""
+    root = Path(__file__).resolve().parents[2]
+    target = path if path.is_absolute() else root / path
+    target = target.resolve()
+    try:
+        target.relative_to(root)
+    except ValueError as exc:
+        raise ValueError("ontology spec must resolve inside the project directory") from exc
+    try:
+        spec = json.loads(target.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ValueError("ontology spec is missing or invalid JSON") from exc
+    required = {"schema", "ontology_id", "attributes", "values_by_attribute"}
+    if not isinstance(spec, dict) or set(spec) != required:
+        raise ValueError("ontology spec must contain exactly schema, ontology_id, attributes, and values_by_attribute")
+    if spec["schema"] != "tlu.emergent-ood-ontology.v1":
+        raise ValueError("unsupported ontology spec schema")
+    if not isinstance(spec["attributes"], list) or not isinstance(spec["values_by_attribute"], dict):
+        raise ValueError("ontology attributes and values_by_attribute must be a list and object")
+    if any(not isinstance(name, str) or not name.strip() for name in spec["attributes"]):
+        raise ValueError("ontology attribute names must be non-empty strings")
+    if len(set(spec["attributes"])) != len(spec["attributes"]):
+        raise ValueError("ontology attribute names must be unique")
+    if set(spec["values_by_attribute"]) != set(spec["attributes"]):
+        raise ValueError("ontology value axes must match the declared attributes")
+    # Validate names before set/dict membership to reject malformed JSON types cleanly.
+    _validate_names(
+        spec["attributes"], [spec["values_by_attribute"].get(name) for name in spec["attributes"]]
+    )
+    if not isinstance(spec["ontology_id"], str) or not spec["ontology_id"].strip():
+        raise ValueError("ontology_id must be a non-empty string")
+    return spec
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--ontology", type=Path, help="project-local tlu.emergent-ood-ontology.v1 JSON")
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
     try:
-        split = build_split(seed=args.seed)
+        ontology = load_ontology_spec(args.ontology) if args.ontology else None
+        split = build_split(
+            seed=args.seed,
+            attributes=ontology["attributes"] if ontology else DEFAULT_ATTRIBUTES,
+            values=[ontology["values_by_attribute"][name] for name in ontology["attributes"]]
+            if ontology else DEFAULT_VALUES,
+            ontology_id=ontology["ontology_id"] if ontology else None,
+        )
     except ValueError as exc:
         parser.error(str(exc))
     encoded = json.dumps(split, ensure_ascii=False, indent=2, sort_keys=True) + "\n"

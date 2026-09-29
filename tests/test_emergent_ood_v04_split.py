@@ -2,8 +2,11 @@ from __future__ import annotations
 
 import copy
 import unittest
+from pathlib import Path
 
-from experiments.emergent_ood_v0_4.split import build_split, validate_split
+from experiments.emergent_ood_v0_4.split import (
+    build_split, build_split_from_spec, load_ontology_spec, split_task_id, validate_split,
+)
 
 
 class EmergentOODV04SplitTests(unittest.TestCase):
@@ -30,6 +33,34 @@ class EmergentOODV04SplitTests(unittest.TestCase):
         self.assertEqual(len(split["train_meaning_ids"]), 4)
         self.assertEqual(len(split["held_out_meaning_ids"]), 4)
         self.assertEqual(split["coverage_by_order"], {"1": 6, "2": 12})
+
+    def test_distinct_ontology_specs_create_hash_separated_matched_structure(self):
+        root = Path(__file__).resolve().parents[1]
+        robotics = load_ontology_spec(root / "experiments/emergent_ood_v0_4/ontologies/robotics_v1.json")
+        music = load_ontology_spec(root / "experiments/emergent_ood_v0_4/ontologies/music_v1.json")
+        splits = []
+        for ontology in (robotics, music):
+            spec = {
+                "seed": 13,
+                "attributes": ontology["attributes"],
+                "values_by_attribute": ontology["values_by_attribute"],
+                "ontology_id": ontology["ontology_id"],
+            }
+            splits.append(build_split_from_spec(seed=13, spec=spec))
+        first, second = splits
+        self.assertEqual(first["universe_size"], second["universe_size"])
+        self.assertEqual(first["coverage_by_order"], second["coverage_by_order"])
+        self.assertEqual(len(first["held_out_meaning_ids"]), len(second["held_out_meaning_ids"]))
+        self.assertNotEqual(first["split_sha256"], second["split_sha256"])
+        self.assertNotEqual(split_task_id(first), split_task_id(second))
+        validate_split(first)
+        validate_split(second)
+        with self.assertRaisesRegex(ValueError, "seed does not match"):
+            build_split_from_spec(seed=14, spec={
+                "seed": 13, "attributes": robotics["attributes"],
+                "values_by_attribute": robotics["values_by_attribute"],
+                "ontology_id": robotics["ontology_id"],
+            })
 
     def test_validation_rejects_tampering(self):
         split = build_split(seed=3)

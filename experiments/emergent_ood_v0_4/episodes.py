@@ -15,9 +15,9 @@ from pathlib import Path
 from typing import Any, Sequence
 
 try:  # Direct script and package/module execution.
-    from .split import build_split, validate_split
+    from .split import DEFAULT_ATTRIBUTES, DEFAULT_VALUES, build_split, load_ontology_spec, validate_split
 except ImportError:  # pragma: no cover - exercised by the CLI entry point
-    from split import build_split, validate_split
+    from split import DEFAULT_ATTRIBUTES, DEFAULT_VALUES, build_split, load_ontology_spec, validate_split
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -216,6 +216,12 @@ def generate_ledgers(
         "schema": SCHEMA,
         "generator_version": GENERATOR_VERSION,
         "split_sha256": split["split_sha256"],
+        "split_spec": {
+            "seed": split["seed"],
+            "attributes": list(split["attributes"]),
+            "values_by_attribute": split["values_by_attribute"],
+            **({"ontology_id": split["ontology_id"]} if "ontology_id" in split else {}),
+        },
         "attributes": list(split["attributes"]),
         "task_key_id": hashlib.sha256(task_key).hexdigest()[:16],
         "task_seed": task_seed,
@@ -309,6 +315,7 @@ def main() -> None:
     gen = sub.add_parser("generate")
     gen.add_argument("--key", type=Path, default=Path(".cache/emergent_ood_v0_4/evaluator.key"))
     gen.add_argument("--seed", type=int, default=17)
+    gen.add_argument("--ontology", type=Path, help="project-local ontology spec; omit for the default fixture")
     gen.add_argument("--task-seed", type=int, default=0)
     gen.add_argument("--k", type=int, default=4)
     gen.add_argument("--sets-per-stage", type=int, default=16)
@@ -318,7 +325,14 @@ def main() -> None:
     if args.command == "keygen":
         print(create_task_key(args.key))
         return
-    split = build_split(seed=args.seed)
+    ontology = load_ontology_spec(args.ontology) if args.ontology else None
+    split = build_split(
+        seed=args.seed,
+        attributes=ontology["attributes"] if ontology else DEFAULT_ATTRIBUTES,
+        values=[ontology["values_by_attribute"][name] for name in ontology["attributes"]]
+        if ontology else DEFAULT_VALUES,
+        ontology_id=ontology["ontology_id"] if ontology else None,
+    )
     key = load_task_key(args.key)
     bundle = generate_ledgers(split=split, task_key=key, task_seed=args.task_seed, k=args.k, sets_per_stage=args.sets_per_stage)
     verify_ledgers(bundle)

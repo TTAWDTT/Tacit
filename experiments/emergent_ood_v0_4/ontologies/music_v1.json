@@ -1,0 +1,11 @@
+{
+  "schema": "tlu.emergent-ood-ontology.v1",
+  "ontology_id": "music-v1",
+  "attributes": ["instrument", "register", "tempo", "timbre"],
+  "values_by_attribute": {
+    "instrument": ["flute", "piano", "violin", "trumpet"],
+    "register": ["low", "mid-low", "mid-high", "high"],
+    "tempo": ["slow", "steady", "brisk", "rapid"],
+    "timbre": ["bright", "dark", "warm", "airy"]
+  }
+}
