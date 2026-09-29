@@ -206,13 +206,17 @@ def validate_resource_preflight(
     if age < -30 or age > RESOURCE_PREFLIGHT_MAX_AGE_SECONDS:
         raise ValueError("resource preflight must be no more than five minutes old")
     expected_machine = machine_name if machine_name is not None else os.environ.get("COMPUTERNAME")
-    if expected_machine and report.get("machine_name") != expected_machine:
+    if not expected_machine:
+        raise ValueError("cannot verify resource preflight host identity")
+    if report.get("machine_name") != expected_machine:
         raise ValueError("resource preflight belongs to a different machine")
     if report.get("limits") != RESOURCE_GATE_LIMITS:
         raise ValueError("resource preflight limits do not match the frozen gate")
     ports = report.get("requested_ports")
-    if not isinstance(ports, list) or any(type(port) is not int for port in ports):
+    if not isinstance(ports, list) or any(type(port) is not int or not 1 <= port <= 65535 for port in ports):
         raise ValueError("resource preflight requested_ports are invalid")
+    if len(set(ports)) != len(ports):
+        raise ValueError("resource preflight requested_ports must be unique")
     if not required_ports.issubset(set(ports)):
         raise ValueError("resource preflight did not check every configured endpoint port")
     if report.get("listening_requested_ports") != []:
@@ -238,6 +242,7 @@ def validate_resource_preflight(
         reported_mean, reported_max,
         observed.get("gpu_utilization_percent"),
         observed.get("gpu_memory_used_mib"),
+        observed.get("gpu_memory_total_mib"),
         observed.get("free_system_memory_mib"),
     )
     if any(
@@ -249,6 +254,15 @@ def validate_resource_preflight(
         raise ValueError("resource preflight CPU mean does not match its samples")
     if abs(reported_max - max_cpu) > 0.02:
         raise ValueError("resource preflight CPU maximum does not match its samples")
+    if any(value < 0 or value > 100 for value in (*samples, reported_mean, reported_max, observed["gpu_utilization_percent"])):
+        raise ValueError("resource preflight utilization percentages are outside 0..100")
+    if (
+        observed["gpu_memory_used_mib"] < 0
+        or observed["gpu_memory_total_mib"] <= 0
+        or observed["gpu_memory_used_mib"] > observed["gpu_memory_total_mib"]
+        or observed["free_system_memory_mib"] < 0
+    ):
+        raise ValueError("resource preflight memory measurements are outside valid ranges")
     if mean_cpu >= 20 or max_cpu >= 30:
         raise ValueError("resource preflight CPU measurements exceed the frozen gate")
     if observed["gpu_utilization_percent"] >= 25 or observed["gpu_memory_used_mib"] >= 1800:

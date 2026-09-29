@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib.util
 import io
 import json
+import os
 import sys
 import tempfile
 import unittest
@@ -85,6 +86,14 @@ class EmergentOODResourceGateTests(unittest.TestCase):
                 self.path, required_ports={8000, 9000}, machine_name="test-host", now=self.now,
             )
 
+    def test_host_identity_is_required_when_environment_does_not_supply_it(self):
+        self._write()
+        with patch.dict(os.environ, {"COMPUTERNAME": ""}):
+            with self.assertRaisesRegex(ValueError, "cannot verify.*host identity"):
+                module.validate_resource_preflight(
+                    self.path, required_ports={8000}, now=self.now,
+                )
+
     def test_rejected_or_relaxed_or_forged_measurements_are_rejected(self):
         self.report["status"] = "rejected"
         self._write()
@@ -101,6 +110,24 @@ class EmergentOODResourceGateTests(unittest.TestCase):
         self.report["observed"]["gpu_utilization_percent"] = 25
         self._write()
         with self.assertRaisesRegex(ValueError, "GPU measurements exceed"):
+            self._validate()
+
+    def test_invalid_port_and_impossible_telemetry_ranges_are_rejected(self):
+        self.report["requested_ports"] = [8000, 70000]
+        self._write()
+        with self.assertRaisesRegex(ValueError, "requested_ports are invalid"):
+            self._validate()
+
+        self.report["requested_ports"] = [8000, 8001]
+        self.report["observed"]["gpu_utilization_percent"] = -1
+        self._write()
+        with self.assertRaisesRegex(ValueError, "outside 0..100"):
+            self._validate()
+
+        self.report["observed"]["gpu_utilization_percent"] = 10
+        self.report["observed"]["gpu_memory_used_mib"] = 9000
+        self._write()
+        with self.assertRaisesRegex(ValueError, "memory measurements are outside"):
             self._validate()
 
     def test_busy_port_or_preflight_after_model_start_is_rejected(self):
