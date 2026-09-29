@@ -28,6 +28,7 @@ class ChatCompletion:
     output_tokens: int | None = None
     service_seconds: float | None = None
     request_id: str | None = None
+    finish_reason: str | None = None
 
 
 class ChatModel(Protocol):
@@ -170,6 +171,7 @@ class OpenAICompatibleClient:
                 usage.get("generation_seconds", usage.get("service_seconds", elapsed))
             ),
             request_id=payload.get("id"),
+            finish_reason=choice.get("finish_reason") if isinstance(choice.get("finish_reason"), str) else None,
         )
 
 

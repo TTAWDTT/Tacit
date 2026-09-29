@@ -1,0 +1,30 @@
+{
+  "experiment_id": "private-match-v0.2",
+  "status": "runner implemented; inference not yet authorized by resource gate",
+  "hypothesis": "Explicit low-overhead codes may reduce measured application-layer communication while preserving exact matching accuracy on a fixed, shared task. This pilot cannot establish general superiority.",
+  "task": "Role-separated deterministic private-record matching. Sender sees one target tuple; receiver sees a shuffled table of unique candidate tuples. Target index is sampled independently and uniformly.",
+  "conditions": ["no_message", "concise_nl", "json", "tuple", "hex_nibbles", "autoform"],
+  "primary_outcomes": ["exact joint success", "application-layer bytes per episode", "sender plus receiver model tokens", "end-to-end wall seconds"],
+  "secondary_outcomes": ["receiver payload tokenizer count (null unless separately measured)", "output truncation", "protocol decoding errors"],
+  "design": {
+    "paired_episodes": true,
+    "same_receiver_table_and_target_across_conditions": true,
+    "sender_never_sees_receiver_table_or_gold": true,
+    "receiver_never_sees_target_or_gold_except_through_message": true,
+    "one_sender_call_and_one_receiver_call_per_message_condition": true,
+    "message_channel": "measured length-prefixed loopback TCP; application-layer envelope, prefix, and acknowledgement counted; TCP/IP/link-layer headers excluded",
+    "tokenizer_usage": "provider-reported total prompt/completion counts; do not infer the message-only token count from total receiver prompt usage"
+  },
+  "resource_gate": {
+    "required": "Before any model execution, satisfy all thresholds in experiments/index_v0_3/preregistration.json on the current machine; no remote/cloud inference.",
+    "runner_default": "dry-run",
+    "execution_requires": "explicit --execute and a loopback endpoint",
+    "model_execution_performed_for_this_artifact": false
+  },
+  "analysis": {
+    "no_message_exact_bayes_accuracy": "1 / candidate_count",
+    "paired_unit": "episode_id",
+    "frontier": "report success against application bytes, reported model tokens, and wall time; do not combine these into a scalar unless a cost model is specified",
+    "claims": "No superiority claim from this pilot alone; compare confidence intervals and repeat across model populations and task scales before making general claims."
+  }
+}

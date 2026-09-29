@@ -179,7 +179,7 @@ class TacitRuntimeTests(unittest.TestCase):
         response_data = {
             "id": "request-1",
             "model": "actual-model",
-            "choices": [{"message": {"content": "  wire text\n"}}],
+            "choices": [{"message": {"content": "  wire text\n"}, "finish_reason": "stop"}],
             "usage": {"prompt_tokens": 31, "completion_tokens": 4, "generation_seconds": 0.25},
         }
 
@@ -203,7 +203,7 @@ class TacitRuntimeTests(unittest.TestCase):
         self.assertEqual(request.full_url, "http://localhost:8000/v1/chat/completions")
         self.assertEqual(request.get_header("Authorization"), "Bearer secret")
         self.assertEqual(completion, ChatCompletion(
-            "  wire text\n", "actual-model", 31, 4, 0.25, "request-1"
+            "  wire text\n", "actual-model", 31, 4, 0.25, "request-1", "stop"
         ))
 
 

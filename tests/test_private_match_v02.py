@@ -1,0 +1,89 @@
+from __future__ import annotations
+
+import json
+import tempfile
+import unittest
+from pathlib import Path
+
+from experiments.private_match_v0_1.generate_tasks import generate_episode
+from experiments.private_match_v0_2.protocols import PROTOCOL_IDS, protocol_by_id
+from experiments.private_match_v0_2.runner import run_condition
+from tacit.runtime import ChatCompletion
+from tools.cost_report import read_jsonl
+
+
+class FakeModel:
+    def __init__(self, name: str, responder):
+        self.model_name = name
+        self.responder = responder
+
+    def complete(self, messages):
+        return ChatCompletion(
+            text=self.responder(messages), model=self.model_name,
+            input_tokens=12, output_tokens=3, service_seconds=0.01,
+            finish_reason="stop",
+        )
+
+
+class PrivateMatchV02Tests(unittest.TestCase):
+    def test_registered_protocols_are_explicit_and_unique(self):
+        protocols = [protocol_by_id(name) for name in PROTOCOL_IDS]
+        self.assertEqual(len({item.protocol_id for item in protocols}), len(protocols))
+        self.assertTrue(all(item.sender_instruction and item.receiver_instruction for item in protocols))
+
+    def test_hex_nibble_mapping_is_exact_for_registered_domain(self):
+        for value in range(16):
+            code = format(value, "x")
+            self.assertEqual(int(code, 16), value)
+
+    def test_message_condition_uses_real_channel_and_emits_valid_v3_record(self):
+        sender_view, receiver_view, gold = generate_episode(
+            episode_id="pm2-test", seed=92, candidate_count=8,
+            feature_count=5, vocabulary_size=16,
+        )
+        match_id = gold["target_candidate_id"]
+        target_record = sender_view["target_record"]
+
+        def sender(messages):
+            return json.dumps(target_record, separators=(",", ":"))
+
+        def receiver(messages):
+            payload = json.loads(messages[1]["content"])
+            self.assertEqual(payload["message_verbatim"], json.dumps(target_record, separators=(",", ":")))
+            return match_id
+
+        row = run_condition(
+            episode_id="pm2-test", seed=92, candidate_count=8,
+            feature_count=5, vocabulary_size=16, protocol=protocol_by_id("json"),
+            sender_model=FakeModel("fake-sender", sender),
+            receiver_model=FakeModel("fake-receiver", receiver),
+            tokenizer_id="fake-tokenizer-v1", model_population_id="fake-population",
+        )
+        self.assertTrue(row["outcome"]["joint_success"])
+        self.assertEqual(len(row["transmissions"]), 1)
+        tx = row["transmissions"][0]
+        self.assertEqual(tx["transport_boundary"], "network")
+        self.assertEqual(tx["payload_metadata"]["application_layer_scope"], "length-prefixed loopback TCP; TCP/IP headers excluded")
+        self.assertIsNone(tx["recipient_tokens"]["receiver"]["tokens"])
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "rows.jsonl"
+            path.write_text(json.dumps(row) + "\n", encoding="utf-8")
+            self.assertEqual(len(read_jsonl(path)), 1)
+
+    def test_no_message_has_no_transmission_and_one_receiver_call(self):
+        def receiver(messages):
+            return "r0000"
+
+        row = run_condition(
+            episode_id="pm2-empty", seed=5, candidate_count=8,
+            feature_count=5, vocabulary_size=16, protocol=protocol_by_id("concise_nl"),
+            sender_model=None, receiver_model=FakeModel("fake-receiver", receiver),
+            tokenizer_id="fake-tokenizer-v1", model_population_id="fake-population",
+        )
+        self.assertEqual(row["transmissions"], [])
+        self.assertEqual(len(row["model_calls"]), 1)
+        self.assertEqual(row["protocol"]["policy_id"], "no_message")
+
+
+if __name__ == "__main__":
+    unittest.main()
