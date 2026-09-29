@@ -37,7 +37,9 @@ python experiments/private_match_v0_3/generate_tasks.py `
 
 The task generator validates each episode before writing and publishes SHA-256
 hashes for every role file in `manifest.json`. It refuses to overwrite an
-existing shard unless `--force` is passed.
+existing shard unless `--force` is passed. Shard episode IDs use the same
+seed-derived canonical IDs as runner ledgers, so generated role views can be
+joined directly to model-run records for the same key and seed.
 
 `episode_id` and the public episode seed are evaluator metadata. Raw role
 records retain IDs for joining ledgers, but the runner strips them with

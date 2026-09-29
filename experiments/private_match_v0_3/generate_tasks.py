@@ -19,7 +19,7 @@ from typing import Any
 
 
 SCHEMA_VERSION = "tlu.private-match.v3"
-GENERATOR_VERSION = "0.3.1"
+GENERATOR_VERSION = "0.3.2"
 ROLE_FILES = ("sender_x.jsonl", "sender_y.jsonl", "receiver.jsonl", "gold.jsonl")
 
 
@@ -253,7 +253,7 @@ def generate_dataset(output: Path, *, episodes: int, seed: int, q: int,
     rows: dict[str, list[str]] = {name: [] for name in ROLE_FILES}
     for index in range(episodes):
         episode = generate_episode(
-            episode_id=f"pmt3-{index:06d}", seed=seed + index, q=q,
+            episode_id=f"pmt3-{seed + index:012d}", seed=seed + index, q=q,
             task_key=task_key,
         )
         for filename, item in zip(ROLE_FILES, episode):

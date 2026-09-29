@@ -16,7 +16,8 @@ from experiments.private_match_v0_3.protocols import (
     PROTOCOL_IDS, encode_coordinate_message, parse_coordinate_message, protocol_by_id,
 )
 from experiments.private_match_v0_3.runner import (
-    main as runner_main, planned_model_calls, run_condition, validate_capability_ledger,
+    episode_id_for_seed, main as runner_main, planned_model_calls, run_condition,
+    validate_capability_ledger,
 )
 from experiments.private_match_v0_3.generate_tasks import model_visible_view
 from contextlib import redirect_stdout
@@ -423,6 +424,7 @@ class PrivateMatchV03Tests(unittest.TestCase):
             manifest = module.generate_dataset(output, episodes=5, seed=3000, q=4,
                                                 task_key=TEST_TASK_KEY)
             self.assertEqual(manifest["task_key_id"], module.task_key_id(TEST_TASK_KEY))
+            self.assertEqual(manifest["generator_version"], "0.3.2")
             self.assertNotIn(TEST_TASK_KEY.hex(), json.dumps(manifest))
             self.assertEqual(manifest["agent_count"], 3)
             self.assertEqual(manifest["candidate_count"], 16)
@@ -433,6 +435,14 @@ class PrivateMatchV03Tests(unittest.TestCase):
                     manifest["files_sha256"][name],
                 )
                 self.assertEqual(len(path.read_text(encoding="utf-8").splitlines()), 5)
+            with (output / "sender_x.jsonl").open(encoding="utf-8") as stream:
+                shard_sender_x = json.loads(next(stream))
+            runner_sender_x = module.generate_episode(
+                episode_id=episode_id_for_seed(3000), seed=3000, q=4,
+                task_key=TEST_TASK_KEY,
+            )[0]
+            self.assertEqual(shard_sender_x["episode_id"], runner_sender_x["episode_id"])
+            self.assertEqual(shard_sender_x, runner_sender_x)
             with self.assertRaises(FileExistsError):
                 module.generate_dataset(output, episodes=5, seed=3000, q=4,
                                         task_key=TEST_TASK_KEY)

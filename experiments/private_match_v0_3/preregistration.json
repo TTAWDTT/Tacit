@@ -5,12 +5,12 @@
   "objective": "Validate a three-agent task where two senders hold complementary private coordinates and the receiver must combine both messages to identify one row. Then, only after passing resource and disjoint calibration gates, compare message representations with schedule and call structure fixed.",
   "task_family": "Complete Cartesian product [q] x [q] with q a power of two >= 2; hidden target uniform over q^2 rows; Sender X sees only x, Sender Y sees only y, and Receiver sees the candidate table only.",
   "task_randomness": {
-    "generator_version": "0.3.1",
+    "generator_version": "0.3.2",
     "scheme": "A random 256-bit evaluator-only task key feeds domain-separated HMAC-SHA256 streams for candidate-table construction and target selection.",
     "public_seed_scope": "Public episode seeds select reproducible episodes only when combined with the evaluator key; the seed alone is insufficient to reconstruct candidate order or target.",
     "key_handling": "Keep the key outside version control and model-visible context. The manifest records only a short key ID. Runner, calibration, and report must use the same key ID.",
     "amendment_date": "2026-09-29",
-    "amendment_status": "Added before any model inference or pilot data collection, after an audit found that public-seed deterministic shuffles could be enumerated by a tool-enabled receiver."
+    "amendment_status": "Added before any model inference or pilot data collection, after an audit found that public-seed deterministic shuffles could be enumerated by a tool-enabled receiver; generator v0.3.2 also aligns shard and runner episode IDs to their seed."
   },
   "default_pilot": {
     "q": 4,
