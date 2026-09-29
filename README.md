@@ -44,6 +44,8 @@ A model-free [three-agent Private Match task family](experiments/private_match_v
 
 ## Scope
 
+Private Match v0.3 now includes a model-free [lossy expected-payload prefix-code oracle](experiments/private_match_v0_3/README.md#lossy-self-delimiting-prefix-code-reference), derived from task-oriented functional compression. Its q=4 example makes expected payload and per-episode worst-case bits explicit; it is a stronger analytic baseline, not evidence for a new language or an LLM advantage. The [related-work audit](research/RELATED_WORK.md) records the established graph-coloring/function-computation prior art.
+
 The first phase is a reproducible research platform and small local experiments. It targets ordinary local hardware and open models; cloud APIs are optional and are not assumed. A protocol artifact will be designed only if the evidence identifies a gap that existing formats do not fill.
 
 The PrefixSum calibration sequence v0.11–v0.16 progressively separated sender computation, message delivery, receiver acquisition, arithmetic composition, prompt/scaffold compliance, and final answer formatting. These runs reuse short arithmetic tasks and do not compare reusable message languages. Their preregistrations, checksummed runners, aggregate reports, and episode ledgers are linked from the [experiment plan](docs/EXPERIMENT_PLAN.md); the latest receiver result and failure decomposition are the [v0.16 report](research/PREFIXSUM_LOCAL_14B_RECEIVER_V0_16.md) and [audit](research/PREFIXSUM_RECEIVER_FAILURE_AUDIT_V0_1.md).
