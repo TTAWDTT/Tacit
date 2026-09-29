@@ -24,6 +24,28 @@ result = exchange_once(
 print(result.message, result.receiver.text)
 ```
 
+For a frozen, shareable two-party protocol, use `ProtocolCard` instead of defining a local class. The JSON schema is `tlu.shared_protocol_card.v1`; parsing rejects extra or duplicate fields and enforces the same 128-character ID and 32 KiB per-instruction limits used by the v0.4 experiment:
+
+```python
+from pathlib import Path
+from hashlib import sha256
+from tacit import OpenAICompatibleClient, ProtocolCard, exchange_once
+
+card_bytes = Path("protocol-card.json").read_bytes()
+card = ProtocolCard.from_json(card_bytes)
+card_source_sha256 = sha256(card_bytes).hexdigest()  # hash the exact shared artifact
+result = exchange_once(
+    OpenAICompatibleClient("http://localhost:8000/v1", "sender-model"),
+    OpenAICompatibleClient("http://localhost:8001/v1", "receiver-model"),
+    protocol=card,
+    sender_context="Facts visible to sender",
+    receiver_context="Facts visible to receiver",
+    receiver_task="Combine evidence and answer the task",
+)
+```
+
+`ProtocolCard.to_json_bytes()` emits deterministic compact UTF-8 JSON for creating a card. Keep and hash the exact bytes distributed to participants when recording provenance; reserializing a card can change that artifact hash. A frozen instruction card makes a protocol portable and identifiable. It does not establish shared semantics, compositionality, robustness, or a performance advantage; those remain empirical questions. Any protocol induction, tuning, or onboarding cost must be measured separately.
+
 From a checkout, install the package in editable mode with `python -m pip install -e .`. No runtime dependencies are installed. On PowerShell, configure the example endpoints before running it:
 
 ```powershell

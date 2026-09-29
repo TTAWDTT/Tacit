@@ -1,5 +1,12 @@
 # Research log
 
+## 2026-09-30 - Defer local inference after resource gate rejection
+
+- **Observation:** the live local preflight sampled CPU at 62.92%, 55.30%, and 47.87% (mean 55.36%), measured GPU utilization at 26% with 3,063 MiB used, and reported 755 MiB available system memory. It failed the configured limits (CPU mean <20%, each sample <30%, GPU <25% and <1,800 MiB, available RAM ≥6,000 MiB).
+- **Decision:** do not load a model, launch a server, or send inference requests on this host while the gate fails. Continue only with offline, low-cost implementation and analysis; rerun the preflight before any later local inference attempt.
+- **Verification:** three CPU samples were collected over two-second intervals; ports 8000, 8001, and 8002 were idle. No model artifact was hashed or read, no model loaded, no service started, and zero inference requests were made. The raw ignored preflight report is under `.cache/emergent_ood_v0_4/`.
+- **Limit:** this is a short point-in-time machine sample, not a diagnosis of the user's perceived slowdown and not evidence that this project caused it.
+
 ## 2026-09-29 — Prepare private task shards and recheck the local gate
 
 **Observation.** The preregistered v0.3 key and its calibration, development,

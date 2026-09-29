@@ -13,6 +13,7 @@ from .runtime import (
     exchange_once,
 )
 from .channel import FrameTransmission, LocalTCPFrameChannel, LocalTCPMessageChannel, Transmission
+from .protocol import PROTOCOL_CARD_SCHEMA, ProtocolCard
 
 __all__ = [
     "ChatCompletion",
@@ -29,4 +30,6 @@ __all__ = [
     "LocalTCPFrameChannel",
     "Transmission",
     "FrameTransmission",
+    "PROTOCOL_CARD_SCHEMA",
+    "ProtocolCard",
 ]

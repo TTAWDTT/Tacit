@@ -24,6 +24,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from tacit.runtime import ChatCompletion, ChatModel, DialogueResult, OpenAICompatibleClient, exchange_dialogue
+from tacit.protocol import ProtocolCard
 
 from experiments.emergent_ood_v0_3.runner import validate_resource_preflight
 from experiments.emergent_ood_v0_4.episodes import SCHEMA as EPISODE_SCHEMA
@@ -168,20 +169,14 @@ def _inside_project(path: Path) -> Path:
 def load_protocol_card(path: Path) -> tuple[dict[str, str], str]:
     path = _inside_project(path)
     try:
-        card = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
+        card_value, raw = ProtocolCard.read(str(path))
+    except ValueError as exc:
         raise ValueError("protocol card is missing or invalid JSON") from exc
-    required = {"schema", "protocol_id", "sender_instruction", "receiver_instruction"}
-    if not isinstance(card, dict) or set(card) != required or card.get("schema") != "tlu.shared_protocol_card.v1":
-        raise ValueError("protocol card fields or schema are invalid")
-    for field in ("protocol_id", "sender_instruction", "receiver_instruction"):
-        if not isinstance(card[field], str) or not card[field].strip():
-            raise ValueError(f"protocol card {field} must be a non-empty string")
-    if len(card["protocol_id"]) > 128:
-        raise ValueError("protocol card ID is too long")
-    if any(len(card[field].encode("utf-8")) > 32768 for field in ("sender_instruction", "receiver_instruction")):
-        raise ValueError("protocol card instructions exceed 32 KiB per role")
-    return {field: card[field] for field in required if field != "schema"}, hashlib.sha256(path.read_bytes()).hexdigest()
+    return {
+        "protocol_id": card_value.protocol_id,
+        "sender_instruction": card_value.sender_instruction,
+        "receiver_instruction": card_value.receiver_instruction,
+    }, hashlib.sha256(raw).hexdigest()
 
 
 def load_usage_examples(
