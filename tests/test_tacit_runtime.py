@@ -173,6 +173,38 @@ class TacitRuntimeTests(unittest.TestCase):
         self.assertNotIn("A to B", json.dumps(agents["C"].calls))
         self.assertNotIn("B-secret", json.dumps(agents["A"].calls))
 
+    def test_final_answer_is_sealed_and_counted_as_inference_not_communication(self) -> None:
+        agent_a = SequencedDialogueModel("model-a", ["evidence to B"])
+        agent_b = SequencedDialogueModel("model-b", ["candidate-7"])
+        result = exchange_dialogue(
+            {"A": agent_a, "B": agent_b},
+            protocol=FakeDialogueProtocol(),
+            private_contexts={"A": "A-secret", "B": "B-secret"},
+            schedule=("A",),
+            task="Return one candidate ID.",
+            max_turns=1,
+            final_answer_agent="B",
+            final_answer_instruction="Return only the exact candidate ID.",
+        )
+
+        self.assertEqual(result.model_calls, 2)
+        self.assertEqual(result.final_agent, "B")
+        self.assertEqual(result.final_submission.text, "candidate-7")
+        self.assertEqual(len(result.transmission_records()), 1)
+        self.assertEqual(result.wire_bytes, sum(
+            row["payload_bytes"] + row["framing_bytes"]
+            for row in result.transmission_records()
+        ))
+        self.assertEqual(
+            [row["stage"] for row in result.model_call_records()],
+            ["dialogue_turn", "final_answer"],
+        )
+        final_prompt = json.loads(agent_b.calls[0][1]["content"])
+        self.assertEqual(final_prompt["visible_transcript"], [
+            {"sender": "A", "message": "evidence to B"},
+        ])
+        self.assertNotIn("candidate-7", json.dumps(result.transmission_records()))
+
     def test_dialogue_enforces_total_wire_budget_and_keeps_rejected_call_costs(self) -> None:
         protocol = FakeDialogueProtocol()
         schedule = ("A", "B", "A")
@@ -288,6 +320,9 @@ class TacitRuntimeTests(unittest.TestCase):
         for schedule in (("A",), (("A", "A"),), (("A", "Z"),), (("A", "B", "C"),)):
             with self.subTest(schedule=schedule), self.assertRaises(ValueError):
                 exchange_dialogue(**common, schedule=schedule)
+        self.assertTrue(all(not agent.calls for agent in agents.values()))
+        with self.assertRaisesRegex(ValueError, "final_answer_agent"):
+            exchange_dialogue(**common, schedule=(("A", "B"),), final_answer_agent="Z")
         self.assertTrue(all(not agent.calls for agent in agents.values()))
 
     def test_loopback_frame_channel_transmits_opaque_bytes_and_accounts_exactly(self) -> None:

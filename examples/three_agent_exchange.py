@@ -50,6 +50,8 @@ def main() -> None:
         task="Assess the likely event ordering and how the calibration change affects confidence.",
         max_turns=5,
         wire_budget_bytes=4096,
+        final_answer_agent="C",
+        final_answer_instruction="Return a concise final assessment for the task scorer.",
     )
     print(json.dumps({
         "protocol_id": result.protocol_id,
@@ -57,6 +59,9 @@ def main() -> None:
         "wire_bytes": result.wire_bytes,
         "wire_budget_bytes": result.wire_budget_bytes,
         "stop_reason": result.stop_reason,
+        "final_submission": (
+            None if result.final_submission is None else result.final_submission.text
+        ),
         "model_call_records": result.model_call_records(),
         "transmission_records": result.transmission_records(),
         "messages": [

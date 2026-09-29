@@ -1,5 +1,14 @@
 # Research log
 
+## 2026-09-29 — Freeze a three-agent complementary-evidence task family
+
+- **Gap:** the measured loopback SDK now supports routed N-agent exchanges, but the current Private Match model task has only one complete-record sender. A multi-agent SDK example does not validate that messages from multiple private evidence holders are jointly needed.
+- **Task:** added Private Match v0.3 with two independent senders holding coordinates `X,Y ∈ [q]` and one receiver holding the complete shuffled `[q] × [q]` candidate table. The target pair is uniform; each single-coordinate class contains exactly `q` candidates, while the pair identifies one candidate.
+- **Formal references:** exact no-message Bayes accuracy `1/q²`; either single-source arm `1/q`; both-source oracle `1`. For `q=2ʷ`, any deterministic zero-error simultaneous fixed-width protocol must distinguish all `q` values at each source, hence needs at least `w` payload bits per source and `2w=log₂(q²)` total. Sending each coordinate as `w` bits attains this task-specific bound. The argument excludes framing, prompts, LLM tokens, model error, and setup cost.
+- **Validation:** the generator randomizes candidate order and IDs independently of target choice, publishes separate role files and hashes, and rejects leaky views or incomplete marginal classes. Six offline tests cover deterministic generation, all four exact q strata (2, 4, 8, 16), role separation, Bayes references, oracle scoring, hashes, overwrite protection, and the complete two-source loopback route followed by a sealed submission.
+- **Prediction / planned experiment:** at q=4, no-message/one-source/two-source exact references are 6.25%/25%/100%. Under a qualified receiver and fixed schedule, both-source conditions should exceed either one-source arm. A representation ranking must be paired on identical episodes and reported against both channel bytes and complete inference tokens.
+- **Limits / resource status:** this is a small synthetic task-family calibration, not a new language and not a model result. The comparison protocol is preregistered but prompts and model eligibility remain future gates. No model or endpoint was started or called. See [task specification](../experiments/private_match_v0_3/README.md), [preregistration](../experiments/private_match_v0_3/preregistration.json), and [generator](../experiments/private_match_v0_3/generate_tasks.py).
+
 ## 2026-09-29 — Separate adaptive routing from representation under matched compute
 
 - **Question:** do recent adaptive multi-agent protocols provide evidence for a new message language, and what must Tacit control to isolate representation quality?

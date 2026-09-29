@@ -144,16 +144,18 @@ class DialogueTurn:
 
 @dataclass(frozen=True)
 class DialogueResult:
-    """Complete fixed-schedule dialogue with call and wire-cost accessors."""
+    """Complete dialogue, optional sealed answer, and auditable cost accessors."""
 
     protocol_id: str
     turns: tuple[DialogueTurn, ...]
     stop_reason: str
     wire_budget_bytes: int | None
+    final_agent: str | None = None
+    final_submission: ChatCompletion | None = None
 
     @property
     def model_calls(self) -> int:
-        return len(self.turns)
+        return len(self.turns) + int(self.final_submission is not None)
 
     @property
     def wire_bytes(self) -> int:
@@ -179,12 +181,14 @@ class DialogueResult:
         """Return provider usage by agent; unknown tokenizer IDs stay explicit."""
         tokenizer_map = {} if tokenizers is None else tokenizers
         speakers = {turn.speaker for turn in self.turns}
+        if self.final_agent is not None:
+            speakers.add(self.final_agent)
         if not isinstance(tokenizer_map, Mapping) or any(
             name not in speakers or not isinstance(tokenizer, str) or not tokenizer.strip()
             for name, tokenizer in tokenizer_map.items()
         ):
             raise ValueError("tokenizers must map participating agent names to non-empty identifiers")
-        return [
+        rows = [
             {
                 "agent": turn.speaker,
                 "round": turn.round_number,
@@ -199,6 +203,20 @@ class DialogueResult:
             }
             for turn in self.turns
         ]
+        if self.final_submission is not None:
+            rows.append({
+                "agent": self.final_agent,
+                "round": len(self.turns) + 1,
+                "stage": "final_answer",
+                "model": self.final_submission.model,
+                "tokenizer": tokenizer_map.get(self.final_agent, "not_reported"),
+                "input_tokens": self.final_submission.input_tokens,
+                "output_tokens": self.final_submission.output_tokens,
+                "service_seconds": self.final_submission.service_seconds,
+                "retry": False,
+                "truncated": self.final_submission.finish_reason == "length",
+            })
+        return rows
 
 
 @dataclass(frozen=True)
@@ -325,6 +343,8 @@ def exchange_dialogue(
     max_turns: int,
     wire_budget_bytes: int | None = None,
     channel_timeout_seconds: float = 30.0,
+    final_answer_agent: str | None = None,
+    final_answer_instruction: str = "Submit the final task answer now; do not send another message to an agent.",
 ) -> DialogueResult:
     """Run a fixed-schedule multi-agent exchange over measured loopback TCP.
 
@@ -386,6 +406,14 @@ def exchange_dialogue(
         routes.append((sender, recipient))
     if not isinstance(task, str) or not task.strip():
         raise ValueError("task must be a non-empty string")
+    if final_answer_agent is not None and (
+        not isinstance(final_answer_agent, str)
+        or not final_answer_agent.strip()
+        or final_answer_agent not in names
+    ):
+        raise ValueError("final_answer_agent must name a participating agent")
+    if not isinstance(final_answer_instruction, str) or not final_answer_instruction.strip():
+        raise ValueError("final_answer_instruction must be a non-empty string")
 
     transcripts: dict[str, list[dict[str, str]]] = {name: [] for name in names}
     turns: list[DialogueTurn] = []
@@ -455,7 +483,37 @@ def exchange_dialogue(
             transcripts[recipient].append(transcript_entry)
             turns.append(DialogueTurn(index, speaker, recipient, completion, transmission))
 
-    return DialogueResult(protocol.protocol_id, tuple(turns), stop_reason, wire_budget_bytes)
+    final_submission = None
+    if final_answer_agent is not None:
+        final_messages = [
+            {
+                "role": "system",
+                "content": instructions[final_answer_agent] + "\n\n" + final_answer_instruction,
+            },
+            {
+                "role": "user",
+                "content": json.dumps(
+                    {
+                        "task": task,
+                        "private_context": private_contexts[final_answer_agent],
+                        "visible_transcript": transcripts[final_answer_agent],
+                        "instruction": "Return the final task answer for external scoring.",
+                    },
+                    ensure_ascii=False,
+                    sort_keys=True,
+                ),
+            },
+        ]
+        final_submission = agents[final_answer_agent].complete(final_messages)
+
+    return DialogueResult(
+        protocol.protocol_id,
+        tuple(turns),
+        stop_reason,
+        wire_budget_bytes,
+        final_answer_agent,
+        final_submission,
+    )
 
 
 def _optional_nonnegative_int(value: Any) -> int | None:
