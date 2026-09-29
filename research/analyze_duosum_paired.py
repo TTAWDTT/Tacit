@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import math
 import random
 import statistics
 import sys
@@ -160,6 +161,31 @@ def _paired_delta(
     return point, _quantile(draws, 0.025), _quantile(draws, 0.975)
 
 
+def _exact_mcnemar(
+    left: list[dict[str, Any]], right: list[dict[str, Any]], outcome: str,
+) -> tuple[int, int, float]:
+    """Return left-only wins, right-only wins, and doubled-tail exact p-value."""
+    right_by_task = {row["task_id"]: row for row in right}
+    left_ids = {row["task_id"] for row in left}
+    if len(right_by_task) != len(right) or len(left_ids) != len(left) or left_ids != set(right_by_task):
+        raise ValueError("exact paired test requires unique identical task coverage")
+    if any(not isinstance(row.get(outcome), bool) for row in (*left, *right)):
+        raise ValueError(f"exact paired test requires boolean outcomes for {outcome}")
+    left_only = sum(
+        row[outcome] and not right_by_task[row["task_id"]][outcome]
+        for row in left
+    )
+    right_only = sum(
+        not row[outcome] and right_by_task[row["task_id"]][outcome]
+        for row in left
+    )
+    discordant = left_only + right_only
+    if discordant == 0:
+        return left_only, right_only, 1.0
+    tail = sum(math.comb(discordant, count) for count in range(min(left_only, right_only) + 1))
+    return left_only, right_only, min(1.0, 2.0 * tail / (2 ** discordant))
+
+
 def _report(sanitized: list[dict[str, Any]]) -> str:
     groups: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
     for row in sanitized:
@@ -194,9 +220,27 @@ def _report(sanitized: list[dict[str, Any]]) -> str:
                 )
         lines.append("")
     lines.extend([
+        "## Exact paired binary task outcomes",
+        "",
+        "The table reports post hoc doubled-tail exact McNemar tests on the eight task-level joint outcomes (`compact_kv` versus comparator). P-values are unadjusted. Within each run there are six comparator contrasts for each of two binary endpoints, so these values are descriptive and do not establish confirmatory significance.",
+        "",
+        "| Run | Comparator | Joint outcome | Compact-only wins | Comparator-only wins | Discordant tasks | Exact p (unadjusted) |",
+        "|---|---|---|---:|---:|---:|---:|",
+    ])
+    for version in ("pilot_v0_5", "pilot_v0_6"):
+        left = groups[(version, PRIMARY_CONDITION)]
+        for comparator in COMPARATORS:
+            right = groups[(version, comparator)]
+            for outcome in ("joint_strict_success", "joint_semantic_success"):
+                left_only, right_only, p_value = _exact_mcnemar(left, right, outcome)
+                lines.append(
+                    f"| `{version}` | `{comparator}` | `{outcome}` | {left_only} | {right_only} | {left_only + right_only} | {p_value:.4f} |"
+                )
+    lines.extend([
+        "",
         "## Interpretation boundary",
         "",
-        "This reanalysis can quantify paired exploratory differences in the existing runs. It cannot repair instruction non-adherence (the v0.6 JSON arm emitted invalid JSON), separate model/backend changes across v0.5/v0.6, infer population-level superiority from eight tasks, or create a matched-budget frontier. Message format was not the only varying causal factor across conditions. The public JSONL contains sanitized per-task outcomes and cost summaries only; source traces remain ignored under `.cache/`.",
+        "In v0.6, compact-KV beats `no_communication` on the joint task outcome in 7/8 tasks and loses in 0/8, giving an unadjusted exact p=0.0156 for both strict and semantic scores (the scores coincide here). This is a concrete within-sample signal that exchanging information helped on these fixed tasks. It is post hoc and does not survive Bonferroni correction across the 12 within-run binary contrasts (threshold 0.0042); it supports neither a population communication effect nor compact-KV superiority over other message representations. The reanalysis cannot repair instruction non-adherence (the v0.6 JSON arm emitted invalid JSON), separate model/backend changes across v0.5/v0.6, infer population-level superiority from eight tasks, or create a matched-budget frontier. Message format was not the only varying causal factor across conditions. The public JSONL contains sanitized per-task outcomes and cost summaries only; source traces remain ignored under `.cache/`.",
         "",
     ])
     return "\n".join(lines)

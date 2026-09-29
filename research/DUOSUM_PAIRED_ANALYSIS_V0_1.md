@@ -126,6 +126,37 @@ Paired percentile bootstrap: 20,000 episode-cluster resamples, seed 1729; interv
 | `message_count` | `no_communication` | 2.0000 | [2.0000, 2.0000] |
 | `elapsed_seconds` | `no_communication` | -2.2699 | [-2.3588, -2.1881] |
 
+## Exact paired binary task outcomes
+
+The table reports post hoc doubled-tail exact McNemar tests on the eight task-level joint outcomes (`compact_kv` versus comparator). P-values are unadjusted. Within each run there are six comparator contrasts for each of two binary endpoints, so these values are descriptive and do not establish confirmatory significance.
+
+| Run | Comparator | Joint outcome | Compact-only wins | Comparator-only wins | Discordant tasks | Exact p (unadjusted) |
+|---|---|---|---:|---:|---:|---:|
+| `pilot_v0_5` | `scaffold_only` | `joint_strict_success` | 0 | 2 | 2 | 0.5000 |
+| `pilot_v0_5` | `scaffold_only` | `joint_semantic_success` | 0 | 2 | 2 | 0.5000 |
+| `pilot_v0_5` | `concise_nl` | `joint_strict_success` | 0 | 1 | 1 | 1.0000 |
+| `pilot_v0_5` | `concise_nl` | `joint_semantic_success` | 2 | 1 | 3 | 1.0000 |
+| `pilot_v0_5` | `json_schema` | `joint_strict_success` | 0 | 1 | 1 | 1.0000 |
+| `pilot_v0_5` | `json_schema` | `joint_semantic_success` | 4 | 1 | 5 | 0.3750 |
+| `pilot_v0_5` | `binary` | `joint_strict_success` | 0 | 2 | 2 | 0.5000 |
+| `pilot_v0_5` | `binary` | `joint_semantic_success` | 1 | 2 | 3 | 1.0000 |
+| `pilot_v0_5` | `autoform` | `joint_strict_success` | 0 | 2 | 2 | 0.5000 |
+| `pilot_v0_5` | `autoform` | `joint_semantic_success` | 2 | 2 | 4 | 1.0000 |
+| `pilot_v0_5` | `no_communication` | `joint_strict_success` | 0 | 0 | 0 | 1.0000 |
+| `pilot_v0_5` | `no_communication` | `joint_semantic_success` | 5 | 0 | 5 | 0.0625 |
+| `pilot_v0_6` | `scaffold_only` | `joint_strict_success` | 6 | 0 | 6 | 0.0312 |
+| `pilot_v0_6` | `scaffold_only` | `joint_semantic_success` | 6 | 0 | 6 | 0.0312 |
+| `pilot_v0_6` | `concise_nl` | `joint_strict_success` | 1 | 0 | 1 | 1.0000 |
+| `pilot_v0_6` | `concise_nl` | `joint_semantic_success` | 1 | 0 | 1 | 1.0000 |
+| `pilot_v0_6` | `json_schema` | `joint_strict_success` | 0 | 1 | 1 | 1.0000 |
+| `pilot_v0_6` | `json_schema` | `joint_semantic_success` | 0 | 1 | 1 | 1.0000 |
+| `pilot_v0_6` | `binary` | `joint_strict_success` | 6 | 0 | 6 | 0.0312 |
+| `pilot_v0_6` | `binary` | `joint_semantic_success` | 6 | 0 | 6 | 0.0312 |
+| `pilot_v0_6` | `autoform` | `joint_strict_success` | 3 | 0 | 3 | 0.2500 |
+| `pilot_v0_6` | `autoform` | `joint_semantic_success` | 3 | 0 | 3 | 0.2500 |
+| `pilot_v0_6` | `no_communication` | `joint_strict_success` | 7 | 0 | 7 | 0.0156 |
+| `pilot_v0_6` | `no_communication` | `joint_semantic_success` | 7 | 0 | 7 | 0.0156 |
+
 ## Interpretation boundary
 
-This reanalysis can quantify paired exploratory differences in the existing runs. It cannot repair instruction non-adherence (the v0.6 JSON arm emitted invalid JSON), separate model/backend changes across v0.5/v0.6, infer population-level superiority from eight tasks, or create a matched-budget frontier. Message format was not the only varying causal factor across conditions. The public JSONL contains sanitized per-task outcomes and cost summaries only; source traces remain ignored under `.cache/`.
+In v0.6, compact-KV beats `no_communication` on the joint task outcome in 7/8 tasks and loses in 0/8, giving an unadjusted exact p=0.0156 for both strict and semantic scores (the scores coincide here). This is a concrete within-sample signal that exchanging information helped on these fixed tasks. It is post hoc and does not survive Bonferroni correction across the 12 within-run binary contrasts (threshold 0.0042); it supports neither a population communication effect nor compact-KV superiority over other message representations. The reanalysis cannot repair instruction non-adherence (the v0.6 JSON arm emitted invalid JSON), separate model/backend changes across v0.5/v0.6, infer population-level superiority from eight tasks, or create a matched-budget frontier. Message format was not the only varying causal factor across conditions. The public JSONL contains sanitized per-task outcomes and cost summaries only; source traces remain ignored under `.cache/`.

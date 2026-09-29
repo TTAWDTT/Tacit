@@ -5,7 +5,7 @@ from __future__ import annotations
 import random
 import unittest
 
-from research.analyze_duosum_paired import CONDITIONS, _paired_delta, _sanitize
+from research.analyze_duosum_paired import CONDITIONS, _exact_mcnemar, _paired_delta, _sanitize
 
 
 def _row(task_id: str, strict: int, payload_bytes: int) -> dict:
@@ -67,6 +67,45 @@ class DuoSumPairedTests(unittest.TestCase):
                 [_row("a", 1, 3), _row("b", 0, 4)],
                 "payload_bytes",
                 random.Random(1),
+            )
+
+    def test_exact_mcnemar_uses_discordant_task_pairs_only(self) -> None:
+        compact = [
+            {"task_id": f"task-{index}", "joint_success": True}
+            for index in range(4)
+        ]
+        baseline = [
+            {"task_id": f"task-{index}", "joint_success": False}
+            for index in range(4)
+        ]
+        left_only, right_only, p_value = _exact_mcnemar(compact, baseline, "joint_success")
+        self.assertEqual((left_only, right_only), (4, 0))
+        self.assertEqual(p_value, 0.125)
+
+        mixed_compact = [
+            {"task_id": "task-0", "joint_success": True},
+            {"task_id": "task-1", "joint_success": True},
+            {"task_id": "task-2", "joint_success": False},
+            {"task_id": "task-3", "joint_success": False},
+        ]
+        mixed_baseline = [
+            {"task_id": "task-0", "joint_success": False},
+            {"task_id": "task-1", "joint_success": False},
+            {"task_id": "task-2", "joint_success": True},
+            {"task_id": "task-3", "joint_success": True},
+        ]
+        left_only, right_only, p_value = _exact_mcnemar(
+            mixed_compact, mixed_baseline, "joint_success"
+        )
+        self.assertEqual((left_only, right_only), (2, 2))
+        self.assertEqual(p_value, 1.0)
+
+    def test_exact_mcnemar_rejects_invalid_pair_coverage(self) -> None:
+        with self.assertRaisesRegex(ValueError, "identical task coverage"):
+            _exact_mcnemar(
+                [{"task_id": "a", "joint_success": True}],
+                [{"task_id": "b", "joint_success": False}],
+                "joint_success",
             )
 
 
