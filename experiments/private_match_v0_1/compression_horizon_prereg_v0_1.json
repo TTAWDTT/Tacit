@@ -1,0 +1,39 @@
+{
+  "study_id": "private_match_compression_horizon_v0_1",
+  "status": "frozen_before_run",
+  "question": "At what empirically observed reuse horizons, if any, does sending the shared zlib dictionary once reduce total bytes versus persistent zlib without a dictionary?",
+  "task": {
+    "schema": "tlu.private-match.v1",
+    "candidate_count": 8,
+    "feature_count": 5,
+    "vocabulary_size": 16,
+    "episodes_per_seed": 16384,
+    "seeds": [12000, 22000, 32000, 42000, 52000]
+  },
+  "reuse_horizons": [1, 16, 64, 128, 256, 512, 1024, 2048, 4096, 6144, 8192, 10240, 12288, 16384],
+  "codecs": [
+    "labeled_natural_language_template",
+    "compact_json",
+    "ordered_delimited_tuple",
+    "fixed_width_mixed_radix_rank"
+  ],
+  "comparison": {
+    "baseline": "persistent zlib level 9, one stream, LF delimiter per message, Z_SYNC_FLUSH per message, Z_FINISH at horizon",
+    "dictionary_arm": "same persistent zlib stream and flush policy with the fixed v0.2 shared dictionary",
+    "dictionary_setup_bytes": 198,
+    "accounting": "dictionary sent once per seed/stream plus exact compressed stream bytes; no amortization or linear extrapolation",
+    "primary_metric": "baseline_stream_bytes - (dictionary_setup_bytes + dictionary_stream_bytes)",
+    "positive_value_means": "dictionary arm transmits fewer total bytes at that horizon"
+  },
+  "predictions": [
+    "At the measured horizon of 128 episodes, the dictionary arm remains larger than the no-dictionary stream for all four codecs, consistent with v0.2.",
+    "The labeled text, compact JSON, and delimited tuple may cross break-even by 16384 episodes, but stream behavior can make the exact threshold differ from the prior linear extrapolation.",
+    "The fixed-width rank arm does not cross break-even within 16384 episodes because the dictionary does not reduce its compressed payload in v0.2."
+  ],
+  "limits": [
+    "Model-free byte accounting only; model tokens, inference, latency, and decoder implementation cost are not measured.",
+    "One task distribution, schema, dictionary, compressor level, serialization, and point-to-point setup boundary.",
+    "Each horizon is an independently finished stream; actual deployment loss recovery, random access, and synchronization are out of scope.",
+    "These codec results are controls, not evidence that an LLM can emit or decode any representation."
+  ]
+}
