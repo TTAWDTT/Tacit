@@ -7,6 +7,7 @@ prompts, setup, inference, and model errors.
 from __future__ import annotations
 
 import argparse
+from dataclasses import dataclass
 from fractions import Fraction
 import json
 from collections.abc import Sequence
@@ -40,6 +41,99 @@ def _probability_vector(values: Sequence[int | Fraction], *, name: str) -> tuple
     if any(value < 0 for value in probabilities) or sum(probabilities, Fraction(0)) != 1:
         raise ValueError(f"{name} must contain non-negative probabilities that sum exactly to 1")
     return probabilities
+
+
+@dataclass(frozen=True)
+class FixedWidthCodebook:
+    """A source-index-to-symbol encoder and its frozen MAP decoder."""
+
+    payload_bits: int
+    symbols: tuple[int, ...]
+    representatives: tuple[int, ...]
+
+    def __post_init__(self) -> None:
+        if (isinstance(self.payload_bits, bool) or not isinstance(self.payload_bits, int)
+                or self.payload_bits < 0):
+            raise ValueError("payload_bits must be a non-negative integer")
+        if not isinstance(self.symbols, tuple) or not isinstance(self.representatives, tuple):
+            raise ValueError("codebook symbols and representatives must be immutable tuples")
+        if not self.symbols or not self.representatives:
+            raise ValueError("codebook support and representatives must be non-empty")
+        if any(isinstance(value, bool) or not isinstance(value, int) for value in self.symbols):
+            raise ValueError("code symbols must be integers")
+        if any(isinstance(value, bool) or not isinstance(value, int)
+               for value in self.representatives):
+            raise ValueError("representatives must be integer source indices")
+        if max(self.symbols) >= len(self.representatives) or min(self.symbols) < 0:
+            raise ValueError("code symbols must refer to declared representatives")
+        if set(self.symbols) != set(range(len(self.representatives))):
+            raise ValueError("every declared code symbol must be used")
+        if any(not 0 <= index < len(self.symbols)
+               or self.symbols[index] != symbol
+               for symbol, index in enumerate(self.representatives)):
+            raise ValueError("each representative must belong to its decoded class")
+        if (len(self.representatives) - 1).bit_length() > self.payload_bits:
+            raise ValueError("payload_bits cannot represent all code symbols")
+
+    def encode(self, value_index: int) -> str:
+        if isinstance(value_index, bool) or not isinstance(value_index, int):
+            raise ValueError("value_index must be an integer")
+        if not 0 <= value_index < len(self.symbols):
+            raise ValueError("value_index is outside the codebook support")
+        if self.payload_bits == 0:
+            return ""
+        return format(self.symbols[value_index], f"0{self.payload_bits}b")
+
+    def decode(self, payload: str) -> int:
+        if not isinstance(payload, str) or len(payload) != self.payload_bits:
+            raise ValueError("payload must contain exactly payload_bits binary characters")
+        if any(bit not in "01" for bit in payload):
+            raise ValueError("payload must contain only binary characters")
+        symbol = int(payload, 2) if payload else 0
+        if symbol >= len(self.representatives):
+            raise ValueError("payload names an unused code symbol")
+        return self.representatives[symbol]
+
+    def success_probability(self, probabilities: Sequence[int | Fraction]) -> Fraction:
+        """Exact one-coordinate success under a supplied evaluation prior.
+
+        The encoder and decoder remain frozen; only the episode distribution
+        changes. This measures transfer without letting the decoder adapt.
+        """
+        prior = _probability_vector(probabilities, name="probabilities")
+        if len(prior) != len(self.symbols):
+            raise ValueError("evaluation prior support must match the codebook")
+        return sum((probability for index, probability in enumerate(prior)
+                    if self.representatives[self.symbols[index]] == index), Fraction(0))
+
+
+def optimal_nonuniform_codebook(
+    *, probabilities: Sequence[int | Fraction], payload_bits: int,
+) -> FixedWidthCodebook:
+    """Build an exact Bayes-optimal fixed-width encoder for one known prior.
+
+    Ties are resolved by source index. The most probable K-1 values receive
+    singleton symbols; all remaining values share the final symbol, where
+    K=min(support size, 2**payload_bits). The decoder predicts the most
+    probable source value in each class. The returned codebook is frozen and
+    can be scored on shifted priors with ``success_probability``.
+    """
+    prior = _probability_vector(probabilities, name="probabilities")
+    if isinstance(payload_bits, bool) or not isinstance(payload_bits, int) or payload_bits < 0:
+        raise ValueError("payload_bits must be a non-negative integer")
+    support_size = len(prior)
+    max_useful_bits = (support_size - 1).bit_length()
+    symbol_count = support_size if payload_bits >= max_useful_bits else 1 << payload_bits
+    order = sorted(range(support_size), key=lambda index: (-prior[index], index))
+
+    symbols = [symbol_count - 1] * support_size
+    representatives = []
+    for symbol, index in enumerate(order[:symbol_count - 1]):
+        symbols[index] = symbol
+        representatives.append(index)
+    tail = order[symbol_count - 1:]
+    representatives.append(tail[0])
+    return FixedWidthCodebook(payload_bits, tuple(symbols), tuple(representatives))
 
 
 def optimal_nonuniform_success_probability(

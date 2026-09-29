@@ -23,9 +23,14 @@ discovery and codebook setup must be accounted for in operational comparisons.
 
 **Check.** Added an exact `Fraction` calculator and compared it against
 exhaustive encoder-pair enumeration for small supports and several bit budgets;
-the focused test passes. Uniform rational priors reduce to the existing
-uniform frontier. The episode generator remains uniform, and no model inference
-or heavy compute was run.
+the focused tests pass. Then made the frontier constructive: the codebook
+assigns singleton messages to the top K−1 training-prior values, pools the
+remaining values, and freezes each class's MAP representative. A synthetic
+four-value prior shift scores 3/4 in-prior and 1/4 after shift, versus 3/4
+for a codebook retrained on the shifted prior. This distinguishes frozen
+transfer from prior adaptation. Uniform rational priors reduce to the existing
+uniform frontier. The episode generator remains uniform, and no model
+inference or heavy compute was run.
 
 ## 2026-09-29 — Use unbiased keyed streams for task sampling
 

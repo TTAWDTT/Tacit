@@ -392,3 +392,17 @@ For a source with K classes, each class contributes the probability of one repre
 For uniform marginals, `S_X(K)=K/q_x` and `S_Y(K)=K/q_y`, recovering Section 14 when `q_x=q_y=q=2^w`. With a fixed payload budget, the optimal allocation depends on the two marginal tails: another bit is valuable where it increases retained probability mass most. Thus a task-specific code can beat a uniform partition without establishing a reusable language advantage; frequency discovery and codebook setup must be charged, and transfer to a changed prior must be measured.
 
 **Executable check and prediction.** `optimal_nonuniform_success_probability(...)` in [`bit_frontier.py`](../experiments/private_match_v0_3/bit_frontier.py) computes this frontier exactly from rational priors. Exhaustively enumerate all encoder pairs on small supports and compare their Bayes success with the formula. Under a shift toward a flatter prior, an encoder optimized for a skewed development prior should lose some of its in-prior gain; a fixed uniform code should transfer more stably. This is falsifiable only with the same task semantics and matched setup/inference costs, and the theorem excludes model errors, framing, and non-independent X/Y priors.
+
+### Frozen codebooks under prior shift
+
+The frontier is attainable by an explicit fixed-width codebook. For a source prior sorted as `p(1) ≥ … ≥ p(q)` and `K = min(q, 2^b)` available symbols, assign the first `K−1` values distinct symbols and put all remaining values in symbol `K−1`. The decoder maps each symbol to its most probable training-prior value; ties use the lowest source index. This realizes retained mass `S(K)`. It is one optimal codebook, not the only one, and it is specialized to the training prior.
+
+For a frozen codebook with encoder `c` and decoder representative `r`, let `p'` be an evaluation prior on the same support. Its exact transfer accuracy is
+
+\[
+T(c,r;p')=\sum_{x=1}^{q}p'(x)\,\mathbf 1[r(c(x))=x].
+\]
+
+For two independent coordinates and frozen codebooks, exact target-row success is the product `T_X T_Y`. This measures prior transfer without letting either encoder or decoder adapt. If evaluation-prior adaptation is allowed, that is a separate condition: the sender partition stays fixed but the receiver may change each class representative. Any experiment must state which condition it uses and charge prior discovery, codebook communication/storage, framing, and inference outside this payload-only probability.
+
+`optimal_nonuniform_codebook(...)` in [`bit_frontier.py`](../experiments/private_match_v0_3/bit_frontier.py) returns the encoder symbols, frozen representatives, exact fixed-width serialization, and exact transfer score. Tests check its in-prior optimum and a preregisterable shift example: for training prior `(1/2, 1/4, 1/8, 1/8)` with one bit, accuracy is `3/4`; under evaluation prior `(1/8, 1/8, 1/2, 1/4)`, the frozen codebook scores `1/4`, while a newly optimized codebook scores `3/4`. This is an exact model-free illustration, not an empirical language result. The current task generator remains uniform, so no non-uniform shard or model comparison is implied.

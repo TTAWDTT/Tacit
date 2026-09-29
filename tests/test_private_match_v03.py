@@ -23,7 +23,7 @@ from experiments.private_match_v0_3.generate_tasks import model_visible_view
 from contextlib import redirect_stdout
 from experiments.private_match_v0_3.bit_frontier import (
     frontier as triadic_bit_frontier, optimal_nonuniform_success_probability,
-    optimal_success_probability,
+    optimal_nonuniform_codebook, optimal_success_probability,
 )
 from experiments.private_match_v0_3.report import main as report_main, private_match_report
 from tools.cost_report import RecordError
@@ -200,6 +200,58 @@ class PrivateMatchV03Tests(unittest.TestCase):
                 optimal_nonuniform_success_probability(
                     probabilities_x=invalid, probabilities_y=py, total_payload_bits=1,
                 )
+
+    def test_nonuniform_codebook_is_optimal_and_transfer_keeps_decoder_frozen(self):
+        training_prior = (Fraction(1, 2), Fraction(1, 4), Fraction(1, 8), Fraction(1, 8))
+        shifted_prior = (Fraction(1, 8), Fraction(1, 8), Fraction(1, 2), Fraction(1, 4))
+        codebook = optimal_nonuniform_codebook(probabilities=training_prior, payload_bits=1)
+
+        self.assertEqual(codebook.symbols, (0, 1, 1, 1))
+        self.assertEqual(codebook.representatives, (0, 1))
+        self.assertEqual(codebook.success_probability(training_prior), Fraction(3, 4))
+        self.assertEqual(codebook.success_probability(shifted_prior), Fraction(1, 4))
+        shifted_optimum = optimal_nonuniform_codebook(
+            probabilities=shifted_prior, payload_bits=1,
+        )
+        self.assertEqual(shifted_optimum.success_probability(shifted_prior), Fraction(3, 4))
+
+        for bits in range(3):
+            exhaustive = Fraction(0)
+            for encoding in product(range(1 << bits), repeat=len(training_prior)):
+                grouped = {}
+                for value_index, symbol in enumerate(encoding):
+                    grouped.setdefault(symbol, []).append(value_index)
+                decoded = {
+                    symbol: min(group, key=lambda index: (-training_prior[index], index))
+                    for symbol, group in grouped.items()
+                }
+                score = sum((
+                    training_prior[index]
+                    for index, symbol in enumerate(encoding)
+                    if decoded[symbol] == index
+                ), Fraction(0))
+                exhaustive = max(exhaustive, score)
+            self.assertEqual(
+                optimal_nonuniform_codebook(
+                    probabilities=training_prior, payload_bits=bits,
+                ).success_probability(training_prior),
+                exhaustive,
+            )
+
+        for value_index in range(4):
+            payload = codebook.encode(value_index)
+            self.assertEqual(len(payload), 1)
+            self.assertEqual(
+                codebook.decode(payload),
+                codebook.representatives[codebook.symbols[value_index]],
+            )
+        no_message = optimal_nonuniform_codebook(probabilities=training_prior, payload_bits=0)
+        self.assertEqual(no_message.encode(3), "")
+        self.assertEqual(no_message.decode(""), 0)
+        with self.assertRaises(ValueError):
+            codebook.decode("2")
+        with self.assertRaises(ValueError):
+            codebook.encode(4)
 
     def test_triadic_bit_frontier_matches_exhaustive_encoder_pairs(self):
         q = 4
