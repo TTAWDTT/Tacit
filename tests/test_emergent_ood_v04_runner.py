@@ -22,6 +22,7 @@ from experiments.emergent_ood_v0_4.runner import (
 from experiments.emergent_ood_v0_4.split import build_split
 from tacit.runtime import ChatCompletion
 from tools.cost_report import aggregate
+from tools.frontier_report import frontier_report
 from tools.paired_report import paired_report
 
 
@@ -168,6 +169,21 @@ class EmergentOODV04RunnerTests(unittest.TestCase):
         self.assertEqual(row["costs"]["delivered_payload_bytes"], 0)
         self.assertEqual(row["costs"]["application_wire_bytes"], 0)
         self.assertEqual(row["trace"]["stop_reason"], "wire_budget_exhausted")
+
+    def test_empirical_frontier_keeps_matched_budget_as_its_own_stratum(self):
+        rows = [
+            self._run(condition, wire_budget_bytes=256)[0]
+            for condition in ("autoform", "json")
+        ]
+        report = frontier_report(rows)
+        self.assertEqual(len(report["groups"]), 1)
+        group = report["groups"][0]
+        self.assertEqual(group["stratum"]["task_parameters"]["communication_budget_bytes"], 256)
+        self.assertTrue(group["episode_coverage_matched_across_conditions"])
+        self.assertEqual(
+            {condition["protocol"]["policy_id"] for condition in group["conditions"]},
+            {"autoform", "json"},
+        )
 
     def test_message_conditions_keep_private_roles_and_evaluator_labels_separate(self):
         row, sender, receiver = self._run("json")
