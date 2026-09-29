@@ -44,6 +44,17 @@ Supply the frozen card with `--protocol-card` and a `--usage-examples` JSON arti
 
 Build the pairs only from training meanings under the frozen sender convention. The runner binds their claims to the exact card, split, and episode-manifest hashes, and checks every meaning against the sender training ledger. It strips IDs and provenance fields from the receiver prompt. These hashes validate artifact binding, not authorship: preserve the generation trace and audit it before making a transfer claim. Supply `--usage-reuse-horizon H`, the preregistered number of evaluation episodes that will reuse this artifact. Each result carries the artifact in the standard `setup` array, so `tools.cost_report`, `tools.frontier_report`, and `tools.paired_report` deduplicate it by hash and amortize its one-time payload bytes, model calls, service/wall time, and tokenizer-indexed generation tokens over `H`. Setup bytes measure the serialized example payload for one conceptual onboarding transfer; HTTP framing and actual artifact transport are not measured by this runner. The run manifest also preserves acquisition input/output totals. `usage_example_bytes_per_receiver_request` reports repeated prompt context; provider input tokens already include it. Setup-distribution bytes and repeated inference-prompt costs are distinct accounting dimensions.
 
+For the shuffled-pair negative control, transform the generated artifact offline:
+
+```powershell
+python -m experiments.emergent_ood_v0_4.shuffle_usage_examples `
+  --source .cache/emergent_ood_v0_4/generated/usage-examples.json `
+  --output .cache/emergent_ood_v0_4/generated/usage-examples-shuffled.json `
+  --seed 31
+```
+
+The utility preserves the meaning list, message multiset, and original acquisition ledger, but deterministically pairs each meaning with a different message; it makes no model calls. It writes a `.control.json` sidecar binding the transformed artifact hash to its source, seed, and row permutation. Run this artifact with the same episode sets, card, candidate order, and receiver settings as the correctly paired examples. Retain both artifacts and the sidecar so results can be joined by hash. If messages are too duplicated to form a complete mismatched pairing, the utility fails instead of quietly emitting a weak control.
+
 Example artifact (replace each placeholder with the exact digest/ID and observed message):
 
 ```json

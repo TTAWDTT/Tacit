@@ -9,6 +9,7 @@ from unittest.mock import patch
 
 from experiments.emergent_ood_v0_4.episodes import generate_ledgers, write_ledgers
 import experiments.emergent_ood_v0_4.generate_usage_examples as generator
+import experiments.emergent_ood_v0_4.shuffle_usage_examples as shuffler
 from experiments.emergent_ood_v0_4.runner import load_episode_bundle, load_protocol_card, load_usage_examples
 from experiments.emergent_ood_v0_4.split import build_split
 from tacit.runtime import ChatCompletion
@@ -170,6 +171,82 @@ class UsageExampleGenerationTests(unittest.TestCase):
             self.assertEqual(len(digest), 64)
             self.assertEqual(len(examples), 3)
             self.assertEqual(metadata["acquisition"]["tokenizer_id"], "fake-tokenizer")
+
+    def test_shuffled_pair_control_is_deterministic_bound_and_still_runner_loadable(self):
+        with tempfile.TemporaryDirectory(dir=self.cache_root) as temporary:
+            root = Path(temporary)
+            bundle_dir, key_path, card_path, preflight = self._inputs(root)
+            output_dir = root / "generated"
+            with patch.object(generator, "OpenAICompatibleClient", return_value=FakeSender()), patch.object(
+                generator, "validate_resource_preflight"
+            ):
+                generator.generate_usage_examples(
+                    input_dir=bundle_dir, split_seed=17, task_key_path=key_path,
+                    protocol_card_path=card_path, example_count=4, output_dir=output_dir,
+                    model="fake-sender", tokenizer_id="fake-tokenizer",
+                    base_url="http://127.0.0.1:8000/v1", execute=True,
+                    resource_preflight=preflight,
+                )
+            source_path = output_dir / "usage-examples.json"
+            first_path = root / "shuffled-a.json"
+            second_path = root / "shuffled-b.json"
+            first_manifest = shuffler.shuffle_usage_examples(
+                source_path=source_path, output_path=first_path, seed=31,
+            )
+            second_manifest = shuffler.shuffle_usage_examples(
+                source_path=source_path, output_path=second_path, seed=31,
+            )
+            original = json.loads(source_path.read_text(encoding="utf-8"))
+            shuffled = json.loads(first_path.read_text(encoding="utf-8"))
+            self.assertEqual(first_manifest, second_manifest)
+            self.assertEqual(first_path.read_bytes(), second_path.read_bytes())
+            self.assertEqual(
+                sorted(row["message"] for row in shuffled["examples"]),
+                sorted(row["message"] for row in original["examples"]),
+            )
+            self.assertTrue(all(
+                row["message"] != original["examples"][index]["message"]
+                for index, row in enumerate(shuffled["examples"])
+            ))
+            self.assertEqual(shuffled["acquisition"], original["acquisition"])
+            self.assertEqual(first_manifest["model_calls_added"], 0)
+
+            bundle, split = load_episode_bundle(bundle_dir, split_seed=17)
+            card, card_hash = load_protocol_card(card_path)
+            loaded, digest, _ = load_usage_examples(
+                first_path, split=split, bundle=bundle, protocol_card=card,
+                protocol_card_sha256=card_hash,
+                training_episode_manifest_sha256=hashlib.sha256(
+                    (bundle_dir / "manifest.json").read_bytes()
+                ).hexdigest(),
+            )
+            self.assertEqual(len(loaded), 4)
+            self.assertEqual(digest, first_manifest["control_artifact_sha256"])
+
+    def test_shuffled_pair_control_rejects_unshuffleable_labels_and_existing_output(self):
+        with tempfile.TemporaryDirectory(dir=self.cache_root) as temporary:
+            root = Path(temporary)
+            source_path = root / "source.json"
+            source = {
+                "schema": "tlu.usage_examples.v1",
+                "examples": [
+                    {"meaning_id": "a", "meaning": {"x": "1"}, "message": "same"},
+                    {"meaning_id": "b", "meaning": {"x": "2"}, "message": "same"},
+                ],
+            }
+            source_path.write_text(json.dumps(source), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "do not permit"):
+                shuffler.shuffle_usage_examples(
+                    source_path=source_path, output_path=root / "unshuffleable.json", seed=0,
+                )
+            source["examples"][1]["message"] = "different"
+            source_path.write_text(json.dumps(source), encoding="utf-8")
+            output_path = root / "control.json"
+            output_path.write_text("occupied", encoding="utf-8")
+            with self.assertRaisesRegex(FileExistsError, "outputs must be new"):
+                shuffler.shuffle_usage_examples(
+                    source_path=source_path, output_path=output_path, seed=0,
+                )
 
     def test_interruption_checkpoints_exact_prefix_and_resume_reuses_it(self):
         with tempfile.TemporaryDirectory(dir=self.cache_root) as temporary:
