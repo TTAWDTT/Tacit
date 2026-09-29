@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import json
 import io
 import sys
@@ -13,8 +14,9 @@ from experiments.private_match_v0_1.generate_tasks import generate_episode
 from experiments.private_match_v0_2.protocols import PROTOCOL_IDS, protocol_by_id
 from experiments.private_match_v0_2.report import main as report_main, private_match_report
 from experiments.private_match_v0_2.runner import (
-    MAX_MODEL_CALLS_PER_BATCH, _loopback_url, _message_diagnostics,
+    CAPABILITY_CONDITION, MAX_MODEL_CALLS_PER_BATCH, _loopback_url, _message_diagnostics,
     episode_id_for_seed, main as runner_main, planned_model_calls, run_condition,
+    validate_capability_ledger,
 )
 from tacit.runtime import ChatCompletion
 from tools.cost_report import read_jsonl
@@ -38,6 +40,7 @@ class PrivateMatchV02Tests(unittest.TestCase):
         self.assertEqual(MAX_MODEL_CALLS_PER_BATCH, 12)
         self.assertEqual(planned_model_calls(4, ["no_message", "concise_nl"]), 12)
         self.assertEqual(planned_model_calls(4, ["no_message", *PROTOCOL_IDS]), 52)
+        self.assertEqual(planned_model_calls(4, ["full_information", "no_message", "concise_nl"]), 16)
         self.assertEqual(episode_id_for_seed(20260929), "pm2-000020260929")
         self.assertEqual(episode_id_for_seed(20260929), episode_id_for_seed(20260929))
 
@@ -57,7 +60,53 @@ class PrivateMatchV02Tests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             output_path = Path(directory) / "must-not-exist.jsonl"
             arguments = [
+                "runner.py", "--execute", "--protocols", "full_information", "--episodes", "1",
+                "--receiver-model", "local-receiver", "--receiver-tokenizer-id", "receiver-tokenizer",
+                "--output", str(output_path),
+            ]
+            with patch.object(sys, "argv", arguments):
+                with patch("experiments.private_match_v0_2.runner.OpenAICompatibleClient") as client:
+                    with redirect_stderr(io.StringIO()), self.assertRaises(SystemExit):
+                        runner_main()
+            self.assertFalse(output_path.exists())
+            client.assert_not_called()
+
+    def test_execute_rejects_protocol_batch_without_capability_ledger(self):
+        with tempfile.TemporaryDirectory() as directory:
+            output_path = Path(directory) / "must-not-exist.jsonl"
+            arguments = [
                 "runner.py", "--execute", "--protocols", "no_message", "--episodes", "1",
+                "--receiver-model", "local-receiver", "--receiver-tokenizer-id", "receiver-tokenizer",
+                "--resource-preflight", str(Path(directory) / "preflight.json"),
+                "--output", str(output_path),
+            ]
+            with patch.object(sys, "argv", arguments):
+                with patch("experiments.private_match_v0_2.runner.OpenAICompatibleClient") as client:
+                    with redirect_stderr(io.StringIO()), self.assertRaises(SystemExit):
+                        runner_main()
+            self.assertFalse(output_path.exists())
+            client.assert_not_called()
+
+    def test_execute_rejects_mixed_capability_and_comparison_batch(self):
+        with tempfile.TemporaryDirectory() as directory:
+            output_path = Path(directory) / "must-not-exist.jsonl"
+            arguments = [
+                "runner.py", "--execute", "--protocols", "full_information", "no_message", "--episodes", "1",
+                "--receiver-model", "local-receiver", "--receiver-tokenizer-id", "receiver-tokenizer",
+                "--output", str(output_path),
+            ]
+            with patch.object(sys, "argv", arguments):
+                with patch("experiments.private_match_v0_2.runner.OpenAICompatibleClient") as client:
+                    with redirect_stderr(io.StringIO()), self.assertRaises(SystemExit):
+                        runner_main()
+            self.assertFalse(output_path.exists())
+            client.assert_not_called()
+
+    def test_execute_rejects_duplicate_conditions(self):
+        with tempfile.TemporaryDirectory() as directory:
+            output_path = Path(directory) / "must-not-exist.jsonl"
+            arguments = [
+                "runner.py", "--execute", "--protocols", "full_information", "full_information", "--episodes", "1",
                 "--receiver-model", "local-receiver", "--receiver-tokenizer-id", "receiver-tokenizer",
                 "--output", str(output_path),
             ]
@@ -78,16 +127,98 @@ class PrivateMatchV02Tests(unittest.TestCase):
                 "--sender-base-url", "http://127.0.0.1:8001/v1",
                 "--receiver-base-url", "http://127.0.0.1:8002/v1",
                 "--resource-preflight", str(Path(directory) / "preflight.json"),
+                "--capability-ledger", str(Path(directory) / "capability.jsonl"),
                 "--output", str(output_path),
             ]
             with patch.object(sys, "argv", arguments):
-                with patch("experiments.private_match_v0_2.runner.validate_resource_preflight") as validate:
-                    with patch("experiments.private_match_v0_2.runner.OpenAICompatibleClient"):
-                        with patch("experiments.private_match_v0_2.runner.run_condition", return_value={"fake": True}):
-                            with redirect_stdout(io.StringIO()):
-                                self.assertEqual(runner_main(), 0)
+                with patch("experiments.private_match_v0_2.runner.validate_capability_ledger"):
+                    with patch("experiments.private_match_v0_2.runner.validate_resource_preflight") as validate:
+                        with patch("experiments.private_match_v0_2.runner.OpenAICompatibleClient"):
+                            with patch("experiments.private_match_v0_2.runner.run_condition", return_value={"fake": True}):
+                                with redirect_stdout(io.StringIO()):
+                                    self.assertEqual(runner_main(), 0)
             validate.assert_called_once_with(Path(directory) / "preflight.json", required_ports={8001, 8002})
             self.assertTrue(output_path.exists())
+
+    def test_full_information_condition_is_unmessaged_and_exact(self):
+        episode_id = episode_id_for_seed(123)
+        sender_view, receiver_view, gold = generate_episode(
+            episode_id=episode_id, seed=123, candidate_count=8,
+            feature_count=5, vocabulary_size=16,
+        )
+
+        def answer(messages):
+            payload = json.loads(messages[1]["content"])
+            self.assertEqual(payload["target_record"], sender_view["target_record"])
+            self.assertEqual(payload["candidates"], receiver_view["candidates"])
+            return gold["target_candidate_id"]
+
+        row = run_condition(
+            episode_id=episode_id, seed=123, candidate_count=8, feature_count=5,
+            vocabulary_size=16, protocol=protocol_by_id("no_message"), sender_model=None,
+            receiver_model=FakeModel("fake-receiver", answer), sender_tokenizer_id=None,
+            receiver_tokenizer_id="fake-receiver-tokenizer-v1", model_population_id="fake-population",
+            condition_name=CAPABILITY_CONDITION,
+        )
+        self.assertTrue(row["outcome"]["joint_success"])
+        self.assertEqual(row["protocol"]["policy_id"], "full_information_capability_control")
+        self.assertEqual(row["transmissions"], [])
+        self.assertEqual(len(row["model_calls"]), 1)
+        self.assertEqual(row["model_calls"][0]["stage"], CAPABILITY_CONDITION)
+        self.assertTrue(row["diagnostics"]["answer_format_valid"])
+
+        whitespace_row = run_condition(
+            episode_id=episode_id, seed=123, candidate_count=8, feature_count=5,
+            vocabulary_size=16, protocol=protocol_by_id("no_message"), sender_model=None,
+            receiver_model=FakeModel("fake-receiver", lambda _messages: f" {gold['target_candidate_id']}\n"),
+            sender_tokenizer_id=None, receiver_tokenizer_id="fake-receiver-tokenizer-v1",
+            model_population_id="fake-population", condition_name=CAPABILITY_CONDITION,
+        )
+        self.assertTrue(whitespace_row["outcome"]["joint_success"])
+        self.assertFalse(whitespace_row["diagnostics"]["answer_format_valid"])
+
+    def test_capability_ledger_requires_all_exact_matching_episodes_and_models(self):
+        rows = []
+        for seed in range(200, 204):
+            episode_id = episode_id_for_seed(seed)
+            sender_view, receiver_view, gold = generate_episode(
+                episode_id=episode_id, seed=seed, candidate_count=8,
+                feature_count=5, vocabulary_size=16,
+            )
+            receiver = FakeModel("receiver-v1", lambda _messages, answer=gold["target_candidate_id"]: answer)
+            rows.append(run_condition(
+                episode_id=episode_id, seed=seed, candidate_count=8, feature_count=5,
+                vocabulary_size=16, protocol=protocol_by_id("no_message"), sender_model=None,
+                receiver_model=receiver, sender_tokenizer_id=None,
+                receiver_tokenizer_id="receiver-tok-v1", model_population_id="population-v1",
+                condition_name=CAPABILITY_CONDITION,
+            ))
+
+        def validate(rows_to_check, **overrides):
+            with tempfile.TemporaryDirectory() as directory:
+                path = Path(directory) / "capability.jsonl"
+                path.write_text("".join(json.dumps(row) + "\n" for row in rows_to_check), encoding="utf-8")
+                parameters = {
+                    "episodes": 4, "seed": 200, "candidate_count": 8, "feature_count": 5,
+                    "vocabulary_size": 16, "receiver_model": "receiver-v1",
+                    "receiver_tokenizer_id": "receiver-tok-v1", "model_population_id": "population-v1",
+                }
+                parameters.update(overrides)
+                return validate_capability_ledger(path, **parameters)
+
+        validate(rows)
+        failed = copy.deepcopy(rows)
+        failed[2]["outcome"]["joint_success"] = False
+        with self.assertRaisesRegex(ValueError, "did not pass every episode"):
+            validate(failed)
+        malformed = copy.deepcopy(rows)
+        malformed[1]["diagnostics"]["answer_format_valid"] = False
+        with self.assertRaisesRegex(ValueError, "strict valid"):
+            validate(malformed)
+        with self.assertRaisesRegex(ValueError, "model differs"):
+            validate(rows, receiver_model="other-model")
+        with self.assertRaisesRegex(ValueError, "tokenizer differs"):
+            validate(rows, receiver_tokenizer_id="other-tokenizer")
 
     def test_hex_nibble_mapping_is_exact_for_registered_domain(self):
         for value in range(16):

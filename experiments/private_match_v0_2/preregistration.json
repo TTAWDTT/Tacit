@@ -1,7 +1,7 @@
 {
   "experiment_id": "private-match-v0.2",
-  "status": "runner implemented; inference not yet authorized by resource gate",
-  "preregistration_revision": 3,
+  "status": "runner implemented; inference requires resource and receiver-capability gates",
+  "preregistration_revision": 4,
   "amendment_history": [
     {
       "revision": 2,
@@ -16,11 +16,18 @@
       "change": "Added a hard 12-model-request cap per staged batch, a 30-second per-request timeout, seed-stable episode IDs, and multi-ledger paired reporting.",
       "rationale": "The default seven-condition, four-episode plan requires 52 requests, which is an avoidable local resource and runtime burden. Staging bounds each execution and preserves exact episode pairing across ledgers.",
       "data_collected_before_amendment": false
+    },
+    {
+      "revision": 4,
+      "date": "2026-09-29",
+      "change": "Added a strict full-information receiver capability stage and a same-task/model/tokenizer ledger gate before protocol comparisons.",
+      "rationale": "The experiment plan requires a receiver-capability-positive local condition. Without it, failure on every compressed or natural-language message could reflect candidate matching or answer-format inability rather than communication quality.",
+      "data_collected_before_amendment": false
     }
   ],
   "hypothesis": "Explicit low-overhead codes may reduce measured application-layer communication while preserving exact matching accuracy on a fixed, shared task. This pilot cannot establish general superiority.",
   "task": "Role-separated deterministic private-record matching. Sender sees one target tuple; receiver sees a shuffled table of unique candidate tuples. Target index is sampled independently and uniformly.",
-  "conditions": ["no_message", "concise_nl", "compact_kv", "json", "tuple", "hex_nibbles", "autoform"],
+  "conditions": ["full_information", "no_message", "concise_nl", "compact_kv", "json", "tuple", "hex_nibbles", "autoform"],
   "primary_outcomes": ["exact joint success", "application-layer bytes per episode", "sender plus receiver model tokens", "end-to-end wall seconds"],
   "secondary_outcomes": ["receiver payload tokenizer count (null unless separately measured)", "sender and receiver output truncation", "message syntax validity", "exact semantic fidelity for mechanically decodable formats", "protocol decoding errors"],
   "design": {
@@ -35,8 +42,9 @@
   "resource_gate": {
     "required": "Before any model execution, satisfy all thresholds in experiments/index_v0_3/preregistration.json on the current machine; no remote/cloud inference.",
     "runner_default": "dry-run",
-    "execution_requires": "explicit --execute, a passing same-host --resource-preflight report sampled within five minutes while every configured loopback endpoint port was free, and one shared or separate sender/receiver loopback endpoint(s); redirects and non-loopback hosts are rejected; no batch may exceed 12 planned model requests; each request times out after 30 seconds",
-    "staged_execution": "Run no_message plus one message protocol at four episodes (12 requests), then add one message protocol at a time (8 requests per batch); run a fresh resource gate before every batch and use a distinct output ledger for every batch.",
+    "execution_requires": "explicit --execute, a passing same-host --resource-preflight report sampled within five minutes while every configured loopback endpoint port was free, and for every non-full_information condition a --capability-ledger with exact successful full-information rows for the same episode IDs, task parameters, receiver model, tokenizer, and model population; one shared or separate sender/receiver loopback endpoint(s); redirects and non-loopback hosts are rejected; no batch may exceed 12 planned model requests; each request times out after 30 seconds",
+    "capability_gate": "First run full_information for every episode and require strict-valid, exact, untruncated answers on all episodes. Save that ledger privately. Every later condition must use the exact same receiver task episodes and receiver model/tokenizer/model population; no partial or mismatched capability ledger is accepted.",
+    "staged_execution": "For four episodes, run a full_information-only batch (4 requests). After a 4/4 pass, run no_message plus one message protocol together (12 requests), then add one message protocol per batch (8 requests); run a fresh resource gate before each batch and use distinct output ledgers.",
     "episode_identity": "Episode IDs are derived from generation seeds so batches for the same seed pair and batches for distinct seeds can be combined without collisions.",
     "model_execution_performed_for_this_artifact": false
   },
