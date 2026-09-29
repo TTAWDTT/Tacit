@@ -7,10 +7,12 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import sys
 import time
 from collections import defaultdict
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
@@ -32,6 +34,14 @@ CONDITIONS = ("full_information", "no_message", "natural_language")
 CALLS_PER_EPISODE = {"full_information": 1, "no_message": 1, "natural_language": 2}
 MAX_MODEL_CALLS_PER_BATCH = 12
 REQUEST_TIMEOUT_SECONDS = 30.0
+RESOURCE_PREFLIGHT_MAX_AGE_SECONDS = 300
+RESOURCE_GATE_LIMITS = {
+    "host_cpu_mean_below_percent": 20,
+    "host_cpu_each_sample_below_percent": 30,
+    "gpu_utilization_below_percent": 25,
+    "gpu_memory_below_mib": 1800,
+    "free_system_memory_at_least_mib": 6000,
+}
 SHAPE_LABELS = {0: "circle", 1: "square", 2: "triangle"}
 COLOR_LABELS = {0: "red", 1: "green", 2: "blue"}
 QUANTITY_LABELS = {0: "one", 1: "two", 2: "three"}
@@ -165,6 +175,86 @@ def validate_capability_ledger(
             raise ValueError("receiver model population differs from the successful capability screen")
         if stratum.get("agent_models", {}).get("receiver") != receiver_model:
             raise ValueError("receiver model differs from the successful capability screen")
+
+
+def validate_resource_preflight(
+    path: Path | None,
+    *,
+    required_ports: set[int],
+    machine_name: str | None = None,
+    now: datetime | None = None,
+) -> None:
+    """Require a recent passing read-only preflight for this host and endpoint ports."""
+    if path is None:
+        raise ValueError("--execute requires --resource-preflight from resource_preflight.ps1")
+    try:
+        report = json.loads(path.read_text(encoding="utf-8-sig"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ValueError(f"could not read resource preflight report: {path}") from exc
+    if not isinstance(report, dict) or report.get("schema") != "tlu.local_resource_preflight.v1":
+        raise ValueError("resource preflight report schema is invalid")
+    if report.get("status") != "eligible":
+        raise ValueError("resource preflight did not pass")
+    try:
+        sampled_at = datetime.fromisoformat(report["sampled_at_utc"].replace("Z", "+00:00"))
+    except (KeyError, TypeError, ValueError) as exc:
+        raise ValueError("resource preflight timestamp is invalid") from exc
+    if sampled_at.tzinfo is None:
+        raise ValueError("resource preflight timestamp must include a timezone")
+    current_time = now or datetime.now(timezone.utc)
+    age = (current_time - sampled_at.astimezone(timezone.utc)).total_seconds()
+    if age < -30 or age > RESOURCE_PREFLIGHT_MAX_AGE_SECONDS:
+        raise ValueError("resource preflight must be no more than five minutes old")
+    expected_machine = machine_name if machine_name is not None else os.environ.get("COMPUTERNAME")
+    if expected_machine and report.get("machine_name") != expected_machine:
+        raise ValueError("resource preflight belongs to a different machine")
+    if report.get("limits") != RESOURCE_GATE_LIMITS:
+        raise ValueError("resource preflight limits do not match the frozen gate")
+    ports = report.get("requested_ports")
+    if not isinstance(ports, list) or any(type(port) is not int for port in ports):
+        raise ValueError("resource preflight requested_ports are invalid")
+    if not required_ports.issubset(set(ports)):
+        raise ValueError("resource preflight did not check every configured endpoint port")
+    if report.get("listening_requested_ports") != []:
+        raise ValueError("a configured endpoint port was already in use during preflight")
+    if any(report.get(key) is not False for key in (
+        "model_artifact_hashed", "model_artifact_read", "model_loaded", "service_started",
+    )) or report.get("inference_requests") != 0:
+        raise ValueError("resource preflight must be read-only and precede model/service startup")
+    observed = report.get("observed")
+    if not isinstance(observed, dict):
+        raise ValueError("resource preflight observed measurements are missing")
+    samples = observed.get("host_cpu_samples_percent")
+    if not isinstance(samples, list) or len(samples) != 3 or any(
+        isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value)
+        for value in samples
+    ):
+        raise ValueError("resource preflight must contain three finite CPU samples")
+    mean_cpu = sum(samples) / len(samples)
+    max_cpu = max(samples)
+    reported_mean = observed.get("host_cpu_mean_percent")
+    reported_max = observed.get("host_cpu_max_percent")
+    numeric_values = (
+        reported_mean, reported_max,
+        observed.get("gpu_utilization_percent"),
+        observed.get("gpu_memory_used_mib"),
+        observed.get("free_system_memory_mib"),
+    )
+    if any(
+        isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value)
+        for value in numeric_values
+    ):
+        raise ValueError("resource preflight GPU/memory measurements are missing or invalid")
+    if abs(reported_mean - mean_cpu) > 0.02:
+        raise ValueError("resource preflight CPU mean does not match its samples")
+    if abs(reported_max - max_cpu) > 0.02:
+        raise ValueError("resource preflight CPU maximum does not match its samples")
+    if mean_cpu >= 20 or max_cpu >= 30:
+        raise ValueError("resource preflight CPU measurements exceed the frozen gate")
+    if observed["gpu_utilization_percent"] >= 25 or observed["gpu_memory_used_mib"] >= 1800:
+        raise ValueError("resource preflight GPU measurements exceed the frozen gate")
+    if observed["free_system_memory_mib"] < 6000:
+        raise ValueError("resource preflight free memory is below the frozen gate")
 
 
 def _call_record(agent: str, stage: str, completion: ChatCompletion, tokenizer_id: str) -> dict[str, Any]:
@@ -317,6 +407,13 @@ def _loopback_url(value: str) -> str:
     return value.rstrip("/")
 
 
+def _endpoint_port(value: str) -> int:
+    parsed = urlparse(value)
+    if parsed.scheme not in {"http", "https"}:
+        raise ValueError("endpoint must use HTTP or HTTPS")
+    return parsed.port or (443 if parsed.scheme == "https" else 80)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--execute", action="store_true", help="call the configured local loopback endpoint")
@@ -324,6 +421,7 @@ def main() -> int:
     parser.add_argument("--seed", type=int, default=17)
     parser.add_argument("--output", type=Path, default=Path(".cache/emergent_ood_v0_3/full_information.jsonl"))
     parser.add_argument("--capability-ledger", type=Path, help="perfect full_information JSONL required before executing later conditions")
+    parser.add_argument("--resource-preflight", type=Path, help="passing report from resource_preflight.ps1, at most five minutes old")
     parser.add_argument("--force", action="store_true", help="overwrite an existing output file")
     parser.add_argument("--sender-model", default=os.environ.get("TLU_SENDER_MODEL", ""))
     parser.add_argument("--receiver-model", default=os.environ.get("TLU_RECEIVER_MODEL", ""))
@@ -373,8 +471,15 @@ def main() -> int:
     needs_sender = "natural_language" in args.conditions
     if needs_sender and (not args.sender_model or not args.sender_tokenizer_id):
         parser.error("natural_language requires sender model and tokenizer IDs")
-    sender_endpoint = _loopback_url(args.sender_base_url or args.base_url) if needs_sender else None
-    receiver_endpoint = _loopback_url(args.receiver_base_url or args.base_url)
+    try:
+        sender_endpoint = _loopback_url(args.sender_base_url or args.base_url) if needs_sender else None
+        receiver_endpoint = _loopback_url(args.receiver_base_url or args.base_url)
+        required_ports = {_endpoint_port(receiver_endpoint)}
+        if sender_endpoint:
+            required_ports.add(_endpoint_port(sender_endpoint))
+        validate_resource_preflight(args.resource_preflight, required_ports=required_ports)
+    except ValueError as exc:
+        parser.error(str(exc))
     target = args.output.resolve()
     if target.exists() and not args.force:
         parser.error(f"refusing to overwrite {target}; pass --force explicitly")

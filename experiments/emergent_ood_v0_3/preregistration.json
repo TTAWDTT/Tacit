@@ -50,7 +50,8 @@
     "runner_default": "dry-run",
     "requires_explicit_execute": true,
     "endpoints": "loopback OpenAI-compatible server must already be running; non-loopback endpoints and redirects are rejected",
-    "resource_gate": "Pass the unchanged read-only resource gate before each model batch; local inference only; this preregistration does not authorize bypassing it.",
+    "runtime_resource_monitor": "The preflight is a launch gate, not a live monitor; the externally managed model server must retain its own runtime stop safeguards.",
+    "resource_gate": "Pass the unchanged read-only resource gate before each model batch; local inference only; execution requires a passing same-host report no more than five minutes old, with the configured loopback ports checked free before service startup. The runner checks the report against the frozen thresholds before writing output or contacting endpoints. This preregistration does not authorize bypassing the gate.",
     "model_or_training_run_performed": false
   },
   "outcomes": {
@@ -61,7 +62,9 @@
   "follow_up_gate": "Only after full-information success and plumbing validation, preregister a larger held-out comparison with development-tuned natural language, valid JSON, compact structured text, symbolic code with setup charged, no-message and oracle controls, multiple receiver families, and equal byte/token budget curves.",
   "implementation": {
     "runner": "experiments/emergent_ood_v0_3/runner.py",
+    "resource_preflight": "experiments/emergent_ood_v0_3/resource_preflight.ps1",
     "test_file": "tests/test_emergent_ood_runner.py",
+    "resource_gate_test_file": "tests/test_emergent_ood_resource_gate.py",
     "follow_up_gate": "--capability-ledger; validated before creating output files or contacting endpoints"
   }
 }
