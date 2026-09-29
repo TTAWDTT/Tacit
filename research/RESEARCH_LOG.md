@@ -1,5 +1,11 @@
 # Research log
 
+## 2026-09-29 — Tenth INDEX_m host-resource gate rejection
+
+- About 79 minutes after attempt 9, reran the exact frozen launcher once in `-PrepareOnly` mode because host conditions could have changed. The read-only idle gate measured 33.8% mean CPU (35.5% maximum), 60% GPU utilization, 953 MiB GPU memory, and 2,892 MiB free system memory; port 8001 was unused.
+- The launcher stopped before task/model artifact verification. No task or model artifact was hashed or read, no model was loaded, no service started, and no inference occurred. The sanitized record is [`PRECHECK_ATTEMPT_10.json`](../experiments/index_v0_3/PRECHECK_ATTEMPT_10.json).
+- This is host-state evidence only, not model or protocol evidence. CPU, GPU, and free-memory limits remain frozen; do not recheck until host conditions materially change.
+
 ## 2026-09-29 — Enable separate loopback endpoints for heterogeneous Private Match agents
 
 - **Gap:** v0.2 allowed different sender/receiver model IDs and tokenizer IDs but forced both requests through one local server address. This did not cover deployments where independently hosted local model families expose different ports.

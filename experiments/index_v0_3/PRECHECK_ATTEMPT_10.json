@@ -1,0 +1,34 @@
+{
+  "study": "index_m_qwen3_1_7b_capability_pilot_v0_3",
+  "attempt": "read-only PREPARE_ONLY resource-gate recheck",
+  "attempt_number": 10,
+  "status": "idle_gate_not_met",
+  "sampled_at_utc": "2026-09-29T01:30:23Z",
+  "method": "Frozen PowerShell launcher sampled host CPU three times at two-second intervals, queried NVIDIA-SMI and Windows free memory, and rejected before task/model artifact verification.",
+  "observed": {
+    "host_cpu_mean_percent": 33.8,
+    "host_cpu_max_percent": 35.5,
+    "gpu_utilization_percent": 60,
+    "gpu_memory_used_mib": 953,
+    "free_system_memory_mib": 2892
+  },
+  "frozen_launch_gate": {
+    "host_cpu_mean_below_percent": 20,
+    "host_cpu_each_sample_below_percent": 30,
+    "gpu_utilization_below_percent": 25,
+    "gpu_memory_below_mib": 1800,
+    "free_system_memory_at_least_mib": 6000
+  },
+  "rejection_reasons": [
+    "Host CPU mean and maximum exceeded the frozen limits",
+    "GPU utilization exceeded the frozen limit",
+    "Free system memory was below the frozen minimum"
+  ],
+  "port_8001_was_in_use": false,
+  "model_task_artifacts_hashed": false,
+  "model_task_artifacts_read": false,
+  "model_loaded": false,
+  "service_started": false,
+  "inference_requests": 0,
+  "interpretation": "Host-state observation only. No task, model, or protocol result was collected. Do not retry until host CPU/GPU load and free RAM materially change."
+}
