@@ -14,10 +14,13 @@ For a power of two `q >= 2`, the receiver sees the full Cartesian table
 The hidden target is uniform over the `q²` rows. Sender X sees only the
 target's X coordinate; sender Y sees only its Y coordinate. The receiver sees
 neither value. Role views and gold are serialized separately. An evaluator-only
-random 256-bit key seeds separate table and target streams through
-domain-separated HMAC-SHA256. Public episode seeds alone cannot reconstruct a
-task. The key is not stored in the manifest or passed into model context; keep
-the key file private and out of version control.
+random 256-bit key drives domain-separated HMAC-SHA256 counter streams for
+candidate order, candidate IDs, and target selection. Bounded draws use
+rejection sampling to avoid modulo bias. Public episode seeds alone cannot
+reconstruct a task. The key is not stored in the manifest or passed into model
+context; keep the key file private and out of version control. The benchmark's
+formal prior is ideal independent-uniform sampling; a fixed-key shard is a
+deterministic pseudorandom realization under the HMAC PRF assumption.
 
 Create the same key once for task generation, every runner shard, and reporting:
 

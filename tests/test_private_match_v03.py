@@ -138,6 +138,15 @@ class FrozenFormatReceiver:
 
 
 class PrivateMatchV03Tests(unittest.TestCase):
+    def test_hmac_bounded_sampling_rejects_out_of_range_values(self):
+        rng = module._HMACRandom(TEST_TASK_KEY, domain="test", seed=9)
+        drawn = iter((3, 2, 0))
+        rng.getrandbits = lambda count: next(drawn)
+        self.assertEqual(rng.randbelow(3), 2)
+        self.assertEqual(rng.randbelow(1), 0)
+        with self.assertRaises(ValueError):
+            rng.randbelow(0)
+
     def test_triadic_bit_frontier_matches_exhaustive_encoder_pairs(self):
         q = 4
         width = q.bit_length() - 1
@@ -424,7 +433,7 @@ class PrivateMatchV03Tests(unittest.TestCase):
             manifest = module.generate_dataset(output, episodes=5, seed=3000, q=4,
                                                 task_key=TEST_TASK_KEY)
             self.assertEqual(manifest["task_key_id"], module.task_key_id(TEST_TASK_KEY))
-            self.assertEqual(manifest["generator_version"], "0.3.2")
+            self.assertEqual(manifest["generator_version"], "0.3.3")
             self.assertNotIn(TEST_TASK_KEY.hex(), json.dumps(manifest))
             self.assertEqual(manifest["agent_count"], 3)
             self.assertEqual(manifest["candidate_count"], 16)

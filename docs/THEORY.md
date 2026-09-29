@@ -352,6 +352,8 @@ This result formalizes the three-agent [Private Match v0.3](../experiments/priva
 
 **Model.** Let `q = 2^w`, with integer `w >= 1`. Independent uniform coordinates `X,Y ∈ [q]` define the hidden target row `(X,Y)`. The receiver observes the complete `q × q` Cartesian table, with candidate order and IDs randomized independently of the target and source values. Sender X observes only `X`, Sender Y only `Y`; they each send one simultaneous, noiseless, fixed-width binary message of `b_x` and `b_y` bits. The receiver knows the sender slot from a fixed schedule and must output the exact target row ID. There is no target-dependent shared state, feedback, or task-dependent codebook setup in the bound. The total payload cap `B` is a nonnegative integer and requires `b_x + b_y ≤ B`.
 
+This is an ideal probability model: table order, IDs, and target are independent-uniform draws. The executable generator uses a secret-key HMAC pseudorandom function with separate domains and unbiased rejection sampling; for a fixed key and seed, an episode is deterministic. Thus the proposition is exact for the declared ideal prior, while generated shards are computational pseudorandom realizations under the HMAC PRF assumption rather than fresh literal random draws on each run.
+
 **Proposition (exact finite-budget Bayes frontier).** The maximum exact-match probability is
 
 \[

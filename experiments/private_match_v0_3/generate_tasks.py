@@ -11,7 +11,6 @@ import hashlib
 import hmac
 import json
 import platform
-import random
 import secrets
 from fractions import Fraction
 from pathlib import Path
@@ -19,7 +18,7 @@ from typing import Any
 
 
 SCHEMA_VERSION = "tlu.private-match.v3"
-GENERATOR_VERSION = "0.3.2"
+GENERATOR_VERSION = "0.3.3"
 ROLE_FILES = ("sender_x.jsonl", "sender_y.jsonl", "receiver.jsonl", "gold.jsonl")
 
 
@@ -73,9 +72,58 @@ def load_task_key(path: Path) -> bytes:
     return key
 
 
-def _episode_rng(task_key: bytes, *, domain: str, seed: int) -> random.Random:
-    material = f"tlu.private-match.v0.3/{domain}/{seed}".encode("ascii")
-    return random.Random(hmac.new(task_key, material, hashlib.sha256).digest())
+class _HMACRandom:
+    """Deterministic HMAC-SHA256 counter stream with unbiased bounded draws.
+
+    Under the PRF idealization, stream blocks are uniform pseudorandom bytes.
+    Rejection sampling then avoids modulo bias in `randbelow` and Fisher-Yates.
+    """
+
+    def __init__(self, task_key: bytes, *, domain: str, seed: int) -> None:
+        _validate_task_key(task_key)
+        if not domain or not domain.isascii():
+            raise ValueError("domain must be a non-empty ASCII string")
+        if isinstance(seed, bool) or not isinstance(seed, int) or seed < 0:
+            raise ValueError("seed must be a non-negative integer")
+        self._task_key = task_key
+        self._prefix = f"tlu.private-match.v0.3.3/{domain}/{seed}/".encode("ascii")
+        self._counter = 0
+        self._buffer = bytearray()
+
+    def _read(self, count: int) -> bytes:
+        while len(self._buffer) < count:
+            block = hmac.new(
+                self._task_key,
+                self._prefix + self._counter.to_bytes(8, "big"),
+                hashlib.sha256,
+            ).digest()
+            self._counter += 1
+            self._buffer += block
+        result = bytes(self._buffer[:count])
+        del self._buffer[:count]
+        return result
+
+    def getrandbits(self, count: int) -> int:
+        if isinstance(count, bool) or not isinstance(count, int) or count < 0:
+            raise ValueError("count must be a non-negative integer")
+        if count == 0:
+            return 0
+        byte_count = (count + 7) // 8
+        return int.from_bytes(self._read(byte_count), "big") & ((1 << count) - 1)
+
+    def randbelow(self, stop: int) -> int:
+        if isinstance(stop, bool) or not isinstance(stop, int) or stop < 1:
+            raise ValueError("stop must be a positive integer")
+        bits = (stop - 1).bit_length()
+        while True:
+            value = self.getrandbits(bits)
+            if value < stop:
+                return value
+
+    def shuffle(self, values: list[Any]) -> None:
+        for index in range(len(values) - 1, 0, -1):
+            other = self.randbelow(index + 1)
+            values[index], values[other] = values[other], values[index]
 
 
 def generate_episode(*, episode_id: str, seed: int, q: int,
@@ -88,19 +136,20 @@ def generate_episode(*, episode_id: str, seed: int, q: int,
     _validate_q(q)
     _validate_task_key(task_key)
 
-    table_rng = _episode_rng(task_key, domain="table", seed=seed)
-    target_rng = _episode_rng(task_key, domain="target", seed=seed)
+    row_rng = _HMACRandom(task_key, domain="table-order", seed=seed)
+    candidate_id_rng = _HMACRandom(task_key, domain="candidate-ids", seed=seed)
+    target_rng = _HMACRandom(task_key, domain="target", seed=seed)
     xs = [f"x{i:04d}" for i in range(q)]
     ys = [f"y{i:04d}" for i in range(q)]
     rows = [(x, y) for x in xs for y in ys]
-    table_rng.shuffle(rows)
+    row_rng.shuffle(rows)
     candidate_ids = [f"r{i:04d}" for i in range(q * q)]
-    table_rng.shuffle(candidate_ids)
+    candidate_id_rng.shuffle(candidate_ids)
     candidates = [
         {"candidate_id": candidate_id, "record": {"x": x, "y": y}}
         for candidate_id, (x, y) in zip(candidate_ids, rows)
     ]
-    target_index = target_rng.randrange(q * q)
+    target_index = target_rng.randbelow(q * q)
     target = candidates[target_index]
     x_value = target["record"]["x"]
     y_value = target["record"]["y"]
@@ -265,7 +314,7 @@ def generate_dataset(output: Path, *, episodes: int, seed: int, q: int,
         "schema_version": SCHEMA_VERSION,
         "generator_version": GENERATOR_VERSION,
         "python_version": platform.python_version(),
-        "randomness": "random.Random streams seeded from domain-separated HMAC-SHA256(evaluator_task_key, episode_seed); evaluator-only 256-bit key is not stored in the manifest",
+        "randomness": "domain-separated HMAC-SHA256 counter streams for table order, candidate IDs, and target; rejection sampling avoids modulo bias; evaluator-only 256-bit key is not stored in the manifest",
         "episodes": episodes,
         "seed_start": seed,
         "q": q,

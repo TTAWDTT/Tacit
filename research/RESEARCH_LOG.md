@@ -1,5 +1,11 @@
 # Research log
 
+## 2026-09-29 — Use unbiased keyed streams for task sampling
+
+- **Assumption audit:** the ideal frontier assumes independent-uniform table order, candidate IDs, and target, while generator v0.3.2 seeded Python's non-cryptographic `random.Random` from HMAC output. That was adequate for seed secrecy but left the sampling mechanism less directly aligned with the registered prior than necessary.
+- **Correction:** generator v0.3.3 uses independent HMAC-SHA256 counter-stream domains for table order, candidate IDs, and target. Fisher–Yates shuffles and target selection use rejection sampling, avoiding modulo bias. The key/seed pair still makes each episode deterministic; preregistration and theory now explicitly distinguish the ideal probability model from fixed-key pseudorandom realizations under the HMAC PRF assumption.
+- **Verification:** all 14 focused Private Match v0.3 tests pass, including deterministic reproduction, role/task invariants, report/key checks, and a scripted rejection-sampling test. Python compilation, preregistration JSON parsing, and `git diff --check` pass. No model or endpoint was used.
+
 ## 2026-09-29 — Promote the v0.3 bit frontier into the working theory
 
 - **Theory gap:** the exact three-agent complementary-coordinate frontier was documented in the task README and executable calculator, but the central theory document did not yet state its assumptions, proof, or scaling prediction.
