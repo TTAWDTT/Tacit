@@ -865,7 +865,10 @@ def main() -> int:
             )
         except (OSError, ValueError) as exc:
             parser.error(str(exc))
-    needs_sender = any(condition in {"natural_language", "autoform", "json", "symbolic"} for condition in args.conditions)
+    needs_sender = any(
+        condition in {"natural_language", "autoform", "json", "symbolic", "shared_protocol_card"}
+        for condition in args.conditions
+    )
     if needs_sender and not args.sender_model:
         parser.error("message conditions require --sender-model")
     if needs_sender and not args.sender_tokenizer_id:

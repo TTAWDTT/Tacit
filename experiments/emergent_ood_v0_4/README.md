@@ -90,4 +90,61 @@ python -m unittest discover -s tests -p "test_emergent_ood_v04_*.py" -v
 
 The task asks a sender to communicate a private meaning so a receiver can select its match from a balanced candidate set. Training exposes lower-order combinations while validation/test targets are disjoint held-out compositions. The proposed CLSR-inspired method may induce a reusable dialect from training episodes, select/profile only on validation, then freeze before final evaluation.
 
-The artifact provides a first strict task scorer and local runner, plus a model-free tested gate for independent receiver-capability calibration. It still has no learned dialect, protocol-induction workflow, cross-model transfer experiment, or performance evidence. Canonical-label fidelity for English is a conservative string audit, not a general semantic judge. See the [CLSR transfer experiment design](../../research/CLSR_TRANSFER_EXPERIMENT_DESIGN_V0_1.md), [CLSR prior audit](../../research/CLSR_AUDIT_V0_1.md), and [GlossoGen boundary audit](../../research/GLOSSOGEN_AUDIT_V0_1.md).
+The artifact provides a strict task scorer and local runner, plus a model-free tested gate for independent receiver-capability calibration. A train-only candidate-card induction runner now exists, but it has not been executed; there is still no learned dialect, cross-model transfer experiment, or protocol-performance evidence. The [`select_protocol_frontier.py`](select_protocol_frontier.py) turns complete validation runs of at least two supplied cards into a hash-bound Pareto shortlist; it never chooses a single winner and reads only validation bundle roles. It can verify induction manifests, bind the selected cards to their hashes, and include measured generator calls/tokens/service time in separately reported setup costs. Without those manifests, discovery cost remains explicitly unknown. The selector still cannot prove that a card's meaning is free of hidden-target leakage. Canonical-label fidelity for English is a conservative string audit, not a general semantic judge. See the [CLSR transfer experiment design](../../research/CLSR_TRANSFER_EXPERIMENT_DESIGN_V0_1.md), [CLSR prior audit](../../research/CLSR_AUDIT_V0_1.md), and [GlossoGen boundary audit](../../research/GLOSSOGEN_AUDIT_V0_1.md).
+
+### Propose candidate protocol cards from training data
+
+The induction utility defaults to dry-run. It chooses examples only from the split's lower-order training partition, using the private task key to order meaning IDs. The generator sees the attribute vocabulary and sampled training examples; it does not receive validation/test tuples, gold candidate labels, split seed, or task key. The output is a set of instruction-card hypotheses, not evidence of an emergent language or useful protocol.
+
+```powershell
+python -m experiments.emergent_ood_v0_4.induce_protocol_cards `
+  --split-seed 23 `
+  --task-key .cache/emergent_ood_v0_4/evaluator.key `
+  --output-dir .cache/emergent_ood_v0_4/induced-cards
+```
+
+Execution is a separate, explicit `--execute` operation. It requires an operator-started loopback endpoint, model and tokenizer IDs, and a fresh passing resource report for port 8002; it never starts a service itself. Keep the successful `induction-manifest.json` and list its project-relative path in the candidate spec's optional `induction_manifests` array. The selector checks each induced card's bytes and hash against both the trace and evaluated candidate, and reports generator setup separately from validation-selection setup. It amortizes the measured setup values over the declared reuse horizon but does not treat prompt/completion file bytes as network-wire bytes.
+
+### Freeze a validation-selected protocol frontier
+
+Use only training information to propose and freeze every candidate card first, then run each card across the **same complete validation episode set**, at the same byte cap and model/tokenizer population. With the default 16 validation sets, use 16 one-set batches (`--sets 1 --set-offset 0` through `15`) per card to stay under the 12-call limit. Preserve each JSONL ledger and its runner-written `.manifest.json` sidecar.
+
+Create a project-local candidate spec, for example `.cache/emergent_ood_v0_4/protocol-candidates.json`:
+
+```json
+{
+  "schema": "tlu.emergent-ood-protocol-frontier-candidates.v1",
+  "input_dir": "episodes",
+  "split_seed": 23,
+  "reuse_horizon_evaluation_episodes": 1000,
+  "induction_manifests": ["induced-cards/induction-manifest.json"],
+  "candidates": [
+    {
+      "protocol_id": "candidate-a-v1",
+      "card": "cards/candidate-a.json",
+      "validation_ledgers": [
+        "runs/a-offset-0.jsonl",
+        "runs/a-offset-1.jsonl"
+      ]
+    },
+    {
+      "protocol_id": "candidate-b-v1",
+      "card": "cards/candidate-b.json",
+      "validation_ledgers": [
+        "runs/b-offset-0.jsonl",
+        "runs/b-offset-1.jsonl"
+      ]
+    }
+  ]
+}
+```
+
+Paths in the spec are relative to its directory. List every offset ledger needed to cover all validation sets for each candidate; the two entries shown are abbreviated examples, not complete coverage for the default 16-set bundle. Run the freeze step only after all candidate cards and validation runs are complete:
+
+```powershell
+python -m experiments.emergent_ood_v0_4.select_protocol_frontier `
+  --spec .cache/emergent_ood_v0_4/protocol-candidates.json `
+  --output .cache/emergent_ood_v0_4/protocol-freeze.json
+```
+
+The selector verifies card/result hashes, candidate-set offset coverage, paired episode IDs, exact validation-stage labels, matching byte cap, and matching model/tokenizer IDs. It deliberately opens only the bundle manifest and the three validation role files; absent or damaged test role files do not affect selection. Its Pareto objectives are exact validation success, complete application wire bytes, and—only when every call reports them—per-agent/model/tokenizer input and output tokens. It reports service time but excludes it from dominance because host load can vary. All candidate-validation inference is counted as selection setup and divided by the declared reuse horizon. When induction manifests are supplied, the selector verifies their split/task-key identity, prompt/completion hashes, model usage, and every evaluated card's content hash. It reports and amortizes discovery cost separately; missing provider token usage stays unknown, and artifact bytes are not mislabeled as network traffic. Without manifests, the report explicitly leaves discovery cost unaccounted. Keep the protocol-generation trace and all train-only inputs if an autonomously generated language is later claimed.

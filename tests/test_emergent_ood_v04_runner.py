@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import contextlib
+import hashlib
 import io
 import json
 import tempfile
@@ -479,6 +480,57 @@ class EmergentOODV04RunnerTests(unittest.TestCase):
             run_manifest = json.loads(output_path.with_suffix(".jsonl.manifest.json").read_text(encoding="utf-8"))
             self.assertEqual(run_manifest["capability_split_seed"], 17)
             self.assertEqual(run_manifest["split_seed"], 18)
+
+    def test_cli_runs_shared_protocol_card_with_sender_endpoint_and_cost_ids(self):
+        cache_root = Path(__file__).resolve().parents[1] / ".cache"
+        cache_root.mkdir(exist_ok=True)
+        with tempfile.TemporaryDirectory(dir=cache_root) as temporary:
+            root = Path(temporary)
+            calibration_dir = root / "calibration"
+            evaluation_dir = root / "evaluation"
+            write_ledgers(self.bundle, calibration_dir)
+            evaluation_split = build_split(seed=18)
+            evaluation_bundle = generate_ledgers(
+                split=evaluation_split, task_key=bytes(range(32)), task_seed=9, k=4, sets_per_stage=3
+            )
+            write_ledgers(evaluation_bundle, evaluation_dir)
+            input_manifest_sha256 = hashlib.sha256(
+                (calibration_dir / "manifest.json").read_bytes()
+            ).hexdigest()
+            capability_path, _, _ = self._write_capability_fixture(input_manifest_sha256=input_manifest_sha256)
+            card_path = root / "card.json"
+            card_path.write_text(json.dumps({
+                "schema": "tlu.shared_protocol_card.v1",
+                "protocol_id": "frozen-card-cli-test-v1",
+                "sender_instruction": "Encode the tuple as compact JSON.",
+                "receiver_instruction": "Decode the tuple from the message.",
+            }), encoding="utf-8")
+            output_path = root / "card-validation.jsonl"
+            args = [
+                "runner", "--input-dir", str(evaluation_dir), "--split-seed", "18",
+                "--stage", "validation", "--sets", "1", "--conditions", "shared_protocol_card",
+                "--protocol-card", str(card_path), "--execute", "--receiver-model", "fake-receiver",
+                "--receiver-tokenizer-id", "fake-receiver-tokenizer-v1", "--sender-model", "fake-sender",
+                "--sender-tokenizer-id", "fake-sender-tokenizer-v1", "--model-population-id",
+                "fake-test-population", "--capability-ledger", str(capability_path),
+                "--capability-input-dir", str(calibration_dir), "--capability-split-seed", "17",
+                "--output", str(output_path),
+            ]
+            clients = [
+                FakeSender("json", self.attributes, self.values),
+                FakeReceiver("json", self.attributes, self.values),
+            ]
+            with patch("sys.argv", args), patch.object(
+                runner_module, "OpenAICompatibleClient", side_effect=clients
+            ), patch.object(runner_module, "validate_resource_preflight"), contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(runner_module.main(), 0)
+            rows = runner_module._jsonl(output_path)
+            self.assertEqual(len(rows), 4)
+            self.assertTrue(all(row["outcome"]["exact_selection"] for row in rows))
+            self.assertTrue(all(row["model_calls"][0]["model"] == "fake-sender" for row in rows))
+            manifest = json.loads(output_path.with_suffix(".jsonl.manifest.json").read_text(encoding="utf-8"))
+            self.assertEqual(manifest["sender_model"], "fake-sender")
+            self.assertEqual(manifest["sender_tokenizer_id"], "fake-sender-tokenizer-v1")
 
     def test_incomplete_candidate_set_selection_is_rejected(self):
         corrupt = {**self.bundle, "gold": {**self.bundle["gold"]}}
