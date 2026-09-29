@@ -300,6 +300,14 @@ The preprint separates tool reliability into stages including initialization, pa
 
 ## Communication-dependent task suites
 
+### Madmoun & Lahlou (2026), *Communication Enables Cooperation in LLM Agents: A Comparison with Curriculum-Based Approaches*, EACL
+
+[ACL Anthology record and full paper](https://aclanthology.org/2026.eacl-short.23/)
+
+In a three-round four-player Stag Hunt, the paper gives each player a one-word, non-binding broadcast before simultaneous action. In its heterogeneous four-model condition, cooperation rises from 0% to 48.3%; the word `stag` appears in 73% of messages during cooperative rounds. Same-family coalitions already cooperate 52.2% without talk, so communication mainly reduces the cost and variance of coordination failure there. The same paper reports that in a 1.6× public-goods-with-punishment setting, contributions rise 48%→71% while average payoffs fall 184.4→127.5; under 4× incentives, both cooperation and average payoff rise. These are the authors' reported outcomes, not a Tacit reproduction.
+
+This is a cheap-talk/focal-action prior, not a semantic codec comparison: all players know the same game and its payoffs, and the signal helps coordinate intent. **Design consequence:** keep hidden-state transfer and team coordination as separate estimands. Add a cost-matched episode-level message-association control for exact receiver-selection tasks; for joint-payoff tasks, separately test one-word intent signalling and measure welfare as well as action alignment. A coordination-rate gain alone does not show that agents transmitted or used private knowledge. See the formal boundary and P15 in [Theory §18](../docs/THEORY.md#18-separate-task-information-value-from-coordination-value).
+
 ### Dongre & Hakkani-Tür (2026), *Embodied Multi-Agent Coordination by Aligning World Models Through Dialogue*, SIGDIAL
 
 [ACL Anthology record and paper](https://aclanthology.org/2026.sigdial-1.21/)

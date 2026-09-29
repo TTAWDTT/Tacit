@@ -1,5 +1,13 @@
 # Research log
 
+## 2026-09-30 - Separate hidden-fact transfer from cheap-talk coordination
+
+- **Observation:** the EACL 2026 four-agent Stag Hunt study reports that a one-word broadcast can coordinate behavior in a shared-prior game. Its public-goods results also show why cooperation rate and welfare must be reported separately: under one incentive setting, contributions rose while payoff fell. This is evidence about coordination signals, not a demonstration that a message transfers sender-private task information.
+- **Formalization:** Theory P15 defines the Bayes value of information of a message for a receiver's hidden-state decision. When the message is conditionally independent of the hidden state given the receiver's local information, it cannot improve ideal Bayes risk. This leaves joint-utility coordination effects outside that proposition.
+- **Change:** documented the distinction and primary source in the thesis, related-work map, theory, and [cheap-talk audit](CHEAP_TALK_INFORMATION_VS_COORDINATION_AUDIT_V0_1.md). The experiment plan now requires a message-association control before attributing held-out receiver success to transferred task information.
+- **Prediction / next gate:** on compatible episodes, deranging frozen sender messages while preserving the message multiset, schedule, and cost should reduce receiver performance only when the original message carries task-relevant information. Exclude source meanings from recipient candidates; record any unavoidable overlap and predeclare its treatment. For genuinely joint-payoff tasks, add a separate intent/cheap-talk arm and measure team welfare.
+- **Verification and limit:** read the full [EACL Anthology paper](https://aclanthology.org/2026.eacl-short.23/), including its experimental setup and reported outcomes; reviewed the existing onboarding runner's trace fields. This turn made documentation/theory changes only: no replay control is implemented yet, and no LLM inference or local resource sampling was run. The cited paper's results are not Tacit replications.
+
 ## 2026-09-30 - Defer local inference after resource gate rejection
 
 - **Observation:** the live local preflight sampled CPU at 62.92%, 55.30%, and 47.87% (mean 55.36%), measured GPU utilization at 26% with 3,063 MiB used, and reported 755 MiB available system memory. It failed the configured limits (CPU mean <20%, each sample <30%, GPU <25% and <1,800 MiB, available RAM ≥6,000 MiB).

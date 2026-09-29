@@ -574,3 +574,24 @@ For a balanced receiver candidate set of size `k` whose order is target-independ
 The exact report generator [`research/emergent_ood_scaling.py`](../research/emergent_ood_scaling.py) computes these quantities without simulation. Its exhaustive tests compare every partial assignment in small generated splits against the formula for multiple `d` and `V` values.
 
 **Falsifiable scaling prediction P14.** At fixed `V`, the held-out meaning support grows as `V^(d-1)` while the ideal zero-error payload lower bound grows as `ceil(d log₂ V)`. At fixed `d`, increasing `V` changes these quantities to `V^(d-1)` and `ceil(d log₂ V)`, respectively. A generated split with different exact support counts, or a zero-error code below the stated payload floor under the same side-information boundary, falsifies the construction, implementation, or assumptions. These are task-size and oracle communication scaling laws, not an empirical law for LLM token use or inference cost.
+
+## 18. Separate task-information value from coordination value
+
+A message can improve a multi-agent outcome in at least two ways: it can change a receiver's posterior about a task-relevant hidden state, or it can help agents coordinate their actions through a shared signal or focal convention. A task-success gain alone does not identify which mechanism operated. An information codec should be judged on whether the correct private fact reaches the receiver; an action-coordination protocol may work by establishing common intent without transferring that fact.
+
+**Decision model.** Let `W` be the task-relevant hidden state, `Y` the receiver's local information, and `M` the received message. For receiver loss `ℓ(a,W)`, its Bayes risk before and after communication is
+
+\[
+R(Y)=\mathbb{E}\left[\min_a\mathbb{E}[\ell(a,W)\mid Y]\right],\qquad
+R(Y,M)=\mathbb{E}\left[\min_a\mathbb{E}[\ell(a,W)\mid Y,M]\right].
+\]
+
+The decision value of information is `V_info = R(Y) - R(Y,M)`, which is nonnegative for an ideal receiver allowed to ignore the message.
+
+**Proposition (no new posterior, no Bayes decision value).** If `M` and `W` are conditionally independent given `Y`, then `R(Y,M)=R(Y)` and `V_info=0`.
+
+**Proof.** Conditional independence gives `P(W | Y,M)=P(W | Y)` almost surely. Therefore every action has the same conditional expected loss with or without observing `M`; minimizing and averaging preserves equality. ∎
+
+This proposition applies to an individual decision whose loss depends on its action and `W`. It does not say communication cannot help a team. When team utility `U(a_1,...,a_n,W)` contains coordination externalities, a shared message can alter correlation among agents' actions, reveal intended actions, or select a focal equilibrium even when it carries no new information about `W`. Such a gain is coordination value and needs a team-utility estimand plus an intent-signal control. It must not be reported as successful transfer of private task knowledge.
+
+**Falsifiable prediction P15 (message-association control).** In a receiver task whose reward depends on recovering a sender-private task state, use the same sender outputs, delivered-message multiset, receiver inputs, schedule, and cost accounting, but randomly permute the association between sender states and delivered messages across compatible episodes. If improvement depends on decoding task-relevant content, this semantic derangement should remove that improvement; if it persists, investigate shared-message activation, a public/focal signal, leakage, or an unmatched prompt effect. The permutation must avoid placing a source meaning in the destination candidate set, or the remaining overlap must be measured and included in the null. On tasks with joint-action externalities, add a separate one-symbol intent/cheap-talk arm and score coordination and welfare. The two controls answer different questions and must not be collapsed into one baseline.
