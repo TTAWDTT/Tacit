@@ -12,7 +12,7 @@ import math
 import time
 from typing import Any, Mapping, Protocol, Sequence
 from urllib.error import HTTPError, URLError
-from urllib.request import Request, urlopen
+from urllib.request import HTTPRedirectHandler, Request, build_opener, urlopen
 
 
 JsonObject = dict[str, Any]
@@ -127,6 +127,7 @@ class OpenAICompatibleClient:
     api_key: str | None = None
     timeout_seconds: float = 120.0
     max_tokens: int = 512
+    follow_redirects: bool = True
 
     def complete(self, messages: Sequence[Mapping[str, str]]) -> ChatCompletion:
         if self.timeout_seconds <= 0:
@@ -144,7 +145,13 @@ class OpenAICompatibleClient:
         request = Request(url, data=body, headers=headers, method="POST")
         started = time.perf_counter()
         try:
-            with urlopen(request, timeout=self.timeout_seconds) as response:
+            if self.follow_redirects:
+                response_context = urlopen(request, timeout=self.timeout_seconds)
+            else:
+                response_context = build_opener(_RejectRedirectHandler).open(
+                    request, timeout=self.timeout_seconds
+                )
+            with response_context as response:
                 payload = json.loads(response.read().decode("utf-8"))
         except HTTPError as exc:
             detail = exc.read(2048).decode("utf-8", errors="replace")
@@ -173,6 +180,13 @@ class OpenAICompatibleClient:
             request_id=payload.get("id"),
             finish_reason=choice.get("finish_reason") if isinstance(choice.get("finish_reason"), str) else None,
         )
+
+
+class _RejectRedirectHandler(HTTPRedirectHandler):
+    """Reject redirects to prevent loopback-only calls forwarding prompts off-host."""
+
+    def redirect_request(self, req: Request, fp: Any, code: int, msg: str, headers: Any, newurl: str) -> None:
+        return None
 
 
 def exchange_once(

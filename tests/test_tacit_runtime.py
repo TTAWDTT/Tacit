@@ -3,6 +3,8 @@ from __future__ import annotations
 import unittest
 from unittest.mock import patch
 import json
+import threading
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.request import Request
 
 from tacit import ChatCompletion, LocalTCPMessageChannel, OpenAICompatibleClient, exchange_once
@@ -205,6 +207,52 @@ class TacitRuntimeTests(unittest.TestCase):
         self.assertEqual(completion, ChatCompletion(
             "  wire text\n", "actual-model", 31, 4, 0.25, "request-1", "stop"
         ))
+
+    def test_loopback_client_can_reject_redirects(self) -> None:
+        redirected_requests = []
+
+        class RedirectHandler(BaseHTTPRequestHandler):
+            def do_POST(self):
+                self.send_response(302)
+                self.send_header("Location", f"http://127.0.0.1:{self.server.redirect_port}/capture")
+                self.end_headers()
+
+            def log_message(self, *args):
+                pass
+
+        class CaptureHandler(BaseHTTPRequestHandler):
+            def do_POST(self):
+                redirected_requests.append(self.path)
+                self.send_response(200)
+                self.end_headers()
+                self.wfile.write(b'{"choices":[{"message":{"content":"leaked"}}]}')
+
+            def log_message(self, *args):
+                pass
+
+        capture = ThreadingHTTPServer(("127.0.0.1", 0), CaptureHandler)
+        redirect = ThreadingHTTPServer(("127.0.0.1", 0), RedirectHandler)
+        redirect.redirect_port = capture.server_port
+        threads = [
+            threading.Thread(target=server.serve_forever, daemon=True)
+            for server in (capture, redirect)
+        ]
+        for thread in threads:
+            thread.start()
+        try:
+            client = OpenAICompatibleClient(
+                f"http://127.0.0.1:{redirect.server_port}/v1", "local-model",
+                follow_redirects=False,
+            )
+            with self.assertRaisesRegex(RuntimeError, "HTTP 302"):
+                client.complete([{"role": "user", "content": "synthetic prompt"}])
+            self.assertEqual(redirected_requests, [])
+        finally:
+            for server in (redirect, capture):
+                server.shutdown()
+                server.server_close()
+            for thread in threads:
+                thread.join(timeout=1)
 
 
 if __name__ == "__main__":

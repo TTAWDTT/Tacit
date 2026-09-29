@@ -25,8 +25,9 @@ the scorer fields.
 
 The CLI is dry-run by default and never launches a model process. Model
 requests require `--execute`, explicit model IDs and tokenizer IDs, and a
-loopback OpenAI-compatible endpoint. Cloud endpoint URLs are rejected. This
-runner was implemented and tested with fake clients only; no model was run.
+loopback OpenAI-compatible endpoint. Cloud endpoint URLs and HTTP redirects
+are rejected. This runner was implemented and tested with fake clients only;
+no model was run.
 
 Before executing inference, satisfy the resource thresholds and procedure in
 [`../index_v0_3/preregistration.json`](../index_v0_3/preregistration.json).

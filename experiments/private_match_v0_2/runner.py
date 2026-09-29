@@ -244,8 +244,8 @@ def main() -> int:
     if target.exists() and not args.force:
         parser.error(f"refusing to overwrite {target}; pass --force explicitly")
     target.parent.mkdir(parents=True, exist_ok=True)
-    sender = _NamedClient(OpenAICompatibleClient(endpoint, args.sender_model, max_tokens=64)) if args.sender_model else None
-    receiver = _NamedClient(OpenAICompatibleClient(endpoint, args.receiver_model, max_tokens=16))
+    sender = _NamedClient(OpenAICompatibleClient(endpoint, args.sender_model, max_tokens=64, follow_redirects=False)) if args.sender_model else None
+    receiver = _NamedClient(OpenAICompatibleClient(endpoint, args.receiver_model, max_tokens=16, follow_redirects=False))
     with target.open("w", encoding="utf-8", newline="\n") as out:
         for index in range(args.episodes):
             for name in args.protocols:
