@@ -1,6 +1,6 @@
 # Working theory: task-conditioned communication rate
 
-**Status:** v0.1, falsifiable framing. These definitions organize experiments; they do not yet prove that a particular representation is better.
+**Status:** v0.2, updated 2026-09-29 with a cumulative-cost condition for stateful setup amortization. These definitions organize experiments; they do not prove that a particular representation is better.
 
 ## 1. Episode and protocol
 
@@ -133,6 +133,16 @@ H^* = \left\lceil\frac{A}{c_B-c_L}\right\rceil.
 If (c_B\le c_L), no finite reuse horizon repays setup under this cost measure. This elementary result predicts that task-specific codebooks or learned decoders can be worse for one-off tasks even when their steady-state messages are shorter. Experiments must charge setup and specify the reuse horizon.
 
 This closed-form crossover assumes stationary per-episode costs. For stateful compression or adaptive protocols, let (C_L(H)) and (C_B(H)) be the cumulative costs through horizon (H); the exact condition is (A+C_L(H)\le C_B(H)). Do not extrapolate a finite-horizon average saving unless a stable marginal saving is justified. The Private Match dictionary follow-up found its stream savings nearly flat between 128 and 16,384 records, which falsified the linear break-even projection from the earlier 128-record sample in that specific setup; see the [horizon report](../research/PRIVATE_MATCH_COMPRESSION_HORIZON_V0_1.md).
+
+**Proposition (cumulative reuse condition).** For a realized sequence of (H) transmissions, let (b_t) be the baseline's incremental cost and (ell_t) the reusable protocol's incremental cost at step (t), including state-dependent framing or encoding cost but excluding its fixed setup (A). Define (Delta_t=b_t-ell_t) and (S_H=sum_{t=1}^{H}Delta_t). Then the reusable protocol has lower total cost through (H) exactly when
+
+\[
+S_H \ge A.
+\]
+
+**Proof.** Baseline cost is (sum_{t=1}^{H}b_t). Reusable-protocol cost is (A+sum_{t=1}^{H}ell_t). Their difference is (S_H-A), so the reusable protocol is cheaper exactly when this difference is nonnegative. (square)
+
+This condition also applies when each increment depends on preceding messages. If (Delta_t=0) after some (H_0), then (S_H=S_{H_0}) for all later (H); if (S_{H_0}<A), no finite extension repays setup. For stochastic task streams, report the distribution of (S_H-A) over independent sequences as well as its expectation; an expected crossover does not imply that most individual deployments cross at that horizon. A projected (H^*=A/\bar\Delta) is justified only under a stated stable-marginal-savings assumption, not merely because an initial finite sample had positive average savings.
 
 ## 5. Predictions to test
 

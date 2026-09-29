@@ -617,3 +617,10 @@ ceil) worst-case bits: 9, 10, and 11 for the three lengths. This predicts a comp
 - **Replication/correction:** an extension of the v0.2 seed-5000 sequence exactly reproduced the four H=128 compressed-stream byte pairs, then extended to H=16,384 without additional stream savings. Therefore the old projected break-even values (650, 8,448, 6,336) are withdrawn; they wrongly treated a startup effect as a constant marginal per-message saving. Updated the v0.2 report, private-match README, experiment plan, thesis, and theory to require exact cumulative curves for stateful codecs.
 - **Validation:** all streams round-trip; result audit confirmed five seeds, 280 rows, zero dictionary wins, and exact v0.2 prefix equality. Full offline suite: 56 tests passed in 11.3 seconds.
 - **Scope:** this corrects one zlib/dictionary estimate on one synthetic distribution, not a language or LLM result. No asymptotic non-amortization claim is made beyond the measured horizon.
+
+
+## 2026-09-29 - Formalize nonstationary setup amortization
+
+- Added a realized-sequence proposition to docs/THEORY.md: a reusable protocol repays one-time setup A through horizon H exactly when cumulative marginal savings S_H=sum_t(b_t-l_t) reaches A.
+- This condition permits message costs to depend on stream history and cleanly distinguishes a stationary per-message crossover from a transient startup effect. For stochastic streams, the theory now calls for the distribution across independent sequences, not only one expected horizon.
+- This formalization is motivated by the compression-horizon result but is general to adaptive formats and online-learned protocols. It does not establish that their marginal savings vanish or that a particular protocol is cheaper. Documentation-only update; no tests were rerun.
