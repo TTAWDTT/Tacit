@@ -14,6 +14,13 @@ acknowledgement at the application layer; it excludes TCP/IP and link-layer
 headers. Receiver message-only token counts remain null because model-reported
 prompt usage includes the receiver's task context.
 
+Each row also preserves the generated message and answer in a diagnostics
+object, reports syntax validity and exact semantic fidelity for mechanically
+decodable formats, and keeps receiver success separate. Natural-language and
+sender-selected semantic fidelity are left null instead of being guessed.
+This makes failed messages auditable while keeping the synthetic target out of
+the scorer fields.
+
 ## Safe behavior
 
 The CLI is dry-run by default and never launches a model process. Model
@@ -35,8 +42,9 @@ python experiments/private_match_v0_2/runner.py
 Once the separately documented resource gate has passed and a local endpoint
 is already running, configure `TLU_BASE_URL`, `TLU_SENDER_MODEL`,
 `TLU_RECEIVER_MODEL`, and `TLU_TOKENIZER_ID`, then add `--execute`. Results
-append as `tlu.costs.v3` episode rows. An existing output is protected unless
-`--force` is explicit.
+write as `tlu.costs.v3` episode rows. An existing output is protected unless
+`--force` is explicit; `--force` overwrites the old ledger rather than
+appending duplicate episode IDs.
 
 ## Limits
 

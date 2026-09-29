@@ -61,6 +61,34 @@ def _call_record(agent: str, stage: str, completion: ChatCompletion, tokenizer_i
     }
 
 
+def _message_diagnostics(
+    protocol_id: str, message: str | None, target_record: dict[str, str],
+    feature_order: list[str], vocabulary_size: int,
+) -> tuple[bool | None, bool | None]:
+    """Return (format-valid, semantically-faithful) for mechanically checkable codes."""
+    if message is None or protocol_id in {"concise_nl", "autoform"}:
+        return None, None
+    try:
+        if protocol_id == "json":
+            decoded = json.loads(message)
+            valid = isinstance(decoded, dict)
+            return valid, valid and decoded == target_record
+        if protocol_id == "tuple":
+            values = message.split(",")
+            valid = len(values) == len(feature_order) and all(values)
+            decoded = dict(zip(feature_order, values)) if valid else None
+            return valid, valid and decoded == target_record
+        if protocol_id == "hex_nibbles":
+            valid = len(message) == len(feature_order) and all(ch in "0123456789abcdef" for ch in message)
+            numbers = [int(ch, 16) for ch in message] if valid else []
+            valid = valid and all(number < vocabulary_size for number in numbers)
+            decoded = {name: f"v{number:04d}" for name, number in zip(feature_order, numbers)} if valid else None
+            return valid, valid and decoded == target_record
+    except (json.JSONDecodeError, TypeError, ValueError):
+        return False, False
+    return None, None
+
+
 def run_condition(
     *, episode_id: str, seed: int, candidate_count: int, feature_count: int,
     vocabulary_size: int, protocol: Protocol, sender_model: ChatModel | None,
@@ -81,6 +109,7 @@ def run_condition(
         policy_id = "no_message"
         code_id = "none"
         decoder_id = "none"
+        message: str | None = None
     else:
         sender_messages = [
             {"role": "system", "content": protocol.sender_instruction},
@@ -112,6 +141,10 @@ def run_condition(
         policy_id, code_id, decoder_id = protocol.protocol_id, protocol.code_id, protocol.decoder_id
 
     success = score_answer(receiver_view, gold, answer)
+    format_valid, message_fidelity = _message_diagnostics(
+        protocol.protocol_id, message, sender_view["target_record"],
+        sender_view["feature_names"], vocabulary_size,
+    )
     return {
         "schema_version": "tlu.costs.v3",
         "episode_id": episode_id,
@@ -134,6 +167,15 @@ def run_condition(
         },
         "protocol": {"policy_id": policy_id, "code_id": code_id, "decoder_id": decoder_id},
         "outcome": {"joint_success": success, "answer_score": 1.0 if success else 0.0},
+        "diagnostics": {
+            "message_text": message,
+            "answer_text": answer,
+            "answer_is_candidate_id": answer in {row["candidate_id"] for row in receiver_view["candidates"]},
+            "message_format_valid": format_valid,
+            "message_semantic_fidelity": message_fidelity,
+            "sender_truncated": bool(calls[0]["truncated"]) if sender_model is not None else False,
+            "receiver_truncated": bool(calls[-1]["truncated"]),
+        },
         "transmissions": transmissions,
         "model_calls": calls,
         "runtime": {"wall_seconds": time.perf_counter() - wall_started},
@@ -167,7 +209,7 @@ def main() -> int:
     parser.add_argument("--features", type=int, default=5)
     parser.add_argument("--vocabulary-size", type=int, default=16)
     parser.add_argument("--output", type=Path, default=Path(".cache/private_match_v0_2/pilot.jsonl"))
-    parser.add_argument("--force", action="store_true")
+    parser.add_argument("--force", action="store_true", help="overwrite an existing output file")
     parser.add_argument("--sender-model", default=os.environ.get("TLU_SENDER_MODEL", ""))
     parser.add_argument("--receiver-model", default=os.environ.get("TLU_RECEIVER_MODEL", ""))
     parser.add_argument("--tokenizer-id", default=os.environ.get("TLU_TOKENIZER_ID", ""))
@@ -176,6 +218,12 @@ def main() -> int:
     args = parser.parse_args()
     if args.episodes < 1:
         parser.error("--episodes must be positive")
+    if args.candidates < 2 or args.features < 1 or args.vocabulary_size < 2:
+        parser.error("--candidates must be >=2, --features >=1, and --vocabulary-size >=2")
+    if args.vocabulary_size ** args.features < args.candidates:
+        parser.error("the requested task has fewer unique records than candidates")
+    if args.seed < 0:
+        parser.error("--seed must be non-negative")
     if not args.execute:
         print(json.dumps({
             "mode": "dry-run", "would_run": args.episodes * len(args.protocols),
@@ -185,8 +233,10 @@ def main() -> int:
         return 0
     if not args.tokenizer_id or not args.receiver_model or any(p != "no_message" for p in args.protocols) and not args.sender_model:
         parser.error("--execute requires --tokenizer-id, --receiver-model, and --sender-model for message protocols")
-    if args.features > 16 or args.vocabulary_size > 16:
+    if "hex_nibbles" in args.protocols and (args.features > 16 or args.vocabulary_size > 16):
         parser.error("the registered hex_nibbles condition requires at most 16 features and values")
+    if "hex_nibbles" in args.protocols and args.vocabulary_size != 16:
+        parser.error("the registered hex_nibbles condition requires vocabulary-size 16")
     endpoint = _loopback_url(args.base_url)
     target = args.output.resolve()
     if target.exists() and not args.force:
@@ -194,15 +244,14 @@ def main() -> int:
     target.parent.mkdir(parents=True, exist_ok=True)
     sender = _NamedClient(OpenAICompatibleClient(endpoint, args.sender_model, max_tokens=64)) if args.sender_model else None
     receiver = _NamedClient(OpenAICompatibleClient(endpoint, args.receiver_model, max_tokens=16))
-    mode = "a" if target.exists() and args.force else "w"
-    with target.open(mode, encoding="utf-8", newline="\n") as out:
+    with target.open("w", encoding="utf-8", newline="\n") as out:
         for index in range(args.episodes):
             for name in args.protocols:
                 row = run_condition(
                     episode_id=f"pm2-{index:06d}", seed=args.seed + index,
                     candidate_count=args.candidates, feature_count=args.features,
                     vocabulary_size=args.vocabulary_size,
-                    protocol=protocol_by_id("concise_nl" if name == "no_message" else name),
+                    protocol=protocol_by_id(name),
                     sender_model=None if name == "no_message" else sender,
                     receiver_model=receiver, tokenizer_id=args.tokenizer_id,
                     model_population_id=args.model_population_id,

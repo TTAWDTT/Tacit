@@ -5,7 +5,7 @@
   "task": "Role-separated deterministic private-record matching. Sender sees one target tuple; receiver sees a shuffled table of unique candidate tuples. Target index is sampled independently and uniformly.",
   "conditions": ["no_message", "concise_nl", "json", "tuple", "hex_nibbles", "autoform"],
   "primary_outcomes": ["exact joint success", "application-layer bytes per episode", "sender plus receiver model tokens", "end-to-end wall seconds"],
-  "secondary_outcomes": ["receiver payload tokenizer count (null unless separately measured)", "output truncation", "protocol decoding errors"],
+  "secondary_outcomes": ["receiver payload tokenizer count (null unless separately measured)", "sender and receiver output truncation", "message syntax validity", "exact semantic fidelity for mechanically decodable formats", "protocol decoding errors"],
   "design": {
     "paired_episodes": true,
     "same_receiver_table_and_target_across_conditions": true,

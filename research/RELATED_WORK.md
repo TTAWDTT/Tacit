@@ -1,5 +1,7 @@
 # Related work map (initial)
 
+The layer distinction used in this project is documented in [Protocol layers and comparability](PROTOCOL_LAYERS_AND_COMPARABILITY_2026_09.md): interaction policy, content representation, and transport/system protocol are separate experimental factors. In particular, Agora/ProtocolBench/DALA are important adjacent system baselines but do not by themselves test which semantic message representation an LLM should use.
+
 **Research date:** 2026-09-29. Claims below are short summaries of public abstracts/specifications and need full-paper review before being used as experimental facts. Search is ongoing; this is not a systematic review.
 
 ## Directly relevant: representations and formats

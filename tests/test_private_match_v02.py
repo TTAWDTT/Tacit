@@ -7,7 +7,7 @@ from pathlib import Path
 
 from experiments.private_match_v0_1.generate_tasks import generate_episode
 from experiments.private_match_v0_2.protocols import PROTOCOL_IDS, protocol_by_id
-from experiments.private_match_v0_2.runner import run_condition
+from experiments.private_match_v0_2.runner import _message_diagnostics, run_condition
 from tacit.runtime import ChatCompletion
 from tools.cost_report import read_jsonl
 
@@ -35,6 +35,16 @@ class PrivateMatchV02Tests(unittest.TestCase):
         for value in range(16):
             code = format(value, "x")
             self.assertEqual(int(code, 16), value)
+
+    def test_message_fidelity_diagnostics_separate_syntax_from_meaning(self):
+        fields = ["f0", "f1"]
+        target = {"f0": "v0002", "f1": "v0010"}
+        self.assertEqual(_message_diagnostics("json", '{"f0":"v0002","f1":"v0010"}', target, fields, 16), (True, True))
+        self.assertEqual(_message_diagnostics("json", '{"f0":"v0002","f1":"v0009"}', target, fields, 16), (True, False))
+        self.assertEqual(_message_diagnostics("tuple", "v0002,v0010", target, fields, 16), (True, True))
+        self.assertEqual(_message_diagnostics("hex_nibbles", "2a", target, fields, 16), (True, True))
+        self.assertEqual(_message_diagnostics("hex_nibbles", "2z", target, fields, 16), (False, False))
+        self.assertEqual(_message_diagnostics("concise_nl", "record: ...", target, fields, 16), (None, None))
 
     def test_message_condition_uses_real_channel_and_emits_valid_v3_record(self):
         sender_view, receiver_view, gold = generate_episode(
@@ -83,6 +93,8 @@ class PrivateMatchV02Tests(unittest.TestCase):
         self.assertEqual(row["transmissions"], [])
         self.assertEqual(len(row["model_calls"]), 1)
         self.assertEqual(row["protocol"]["policy_id"], "no_message")
+        self.assertIsNone(row["diagnostics"]["message_text"])
+        self.assertFalse(row["diagnostics"]["sender_truncated"])
 
 
 if __name__ == "__main__":

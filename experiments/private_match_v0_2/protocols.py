@@ -17,6 +17,12 @@ _OUTPUT = "Return only the answer requested by the receiver task. No explanation
 
 
 def protocol_by_id(name: str) -> Protocol:
+    if name == "no_message":
+        return Protocol(
+            name, "none", "no-message-prior-v1",
+            "No message is sent in this condition.",
+            "You receive no message from the sender. Use only the candidate table and return one candidate_id. The target is independent of the table, so do not invent evidence.",
+        )
     if name == "concise_nl":
         return Protocol(
             name, "prompt-v1", "candidate-match-v1",
