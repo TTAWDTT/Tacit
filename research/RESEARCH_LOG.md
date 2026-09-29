@@ -1,5 +1,13 @@
 # Research log
 
+## 2026-09-29 — Derive the triadic fixed-width bit-budget frontier
+
+- **Question:** for the q-by-q complete-table task, how much exact-match accuracy can two complementary senders achieve when only a total payload-bit budget is fixed?
+- **Result:** under uniform independent coordinates, a uniform target, a complete receiver table, two simultaneous noiseless fixed-width messages, and a free known sender schedule, the exact optimum is `A*(q,B)=2^min(B,2 log2(q))/q²` for power-of-two q. For q=4, the ideal curve is 1/16, 1/8, 1/4, 1/2, 1 at 0 through 4 bits. The theorem follows because each message pair selects a Cartesian product of source equivalence classes; every nonempty product cell contributes exactly 1/q² expected Bayes accuracy, so success equals the product of the numbers of distinguishable X and Y classes divided by q².
+- **Artifact:** `experiments/private_match_v0_3/bit_frontier.py` computes the exact rational frontier and a reproducible JSON view. The task README records assumptions, proof, exclusions, and the run command.
+- **Falsification:** exhaustive enumeration of every pair of deterministic q=4 coordinate encoders up to the zero-error endpoint matches the formula; validation also covers the q=4 frontier points and invalid domains. These checks validate the finite combinatorial result, not LLM behavior.
+- **Limits:** the bit budget is fixed-width source payload only. The result does not cover variable-length codes, adaptive interaction, framing, prompt/codebook setup, model/tokenizer costs, inference errors, or heterogeneous receivers. It adds an ideal axis for the v0.3 budget study but is no evidence of a language advantage. No model or endpoint was started or called.
+
 ## 2026-09-29 — Freeze a three-agent complementary-evidence task family
 
 - **Gap:** the measured loopback SDK now supports routed N-agent exchanges, but the current Private Match model task has only one complete-record sender. A multi-agent SDK example does not validate that messages from multiple private evidence holders are jointly needed.

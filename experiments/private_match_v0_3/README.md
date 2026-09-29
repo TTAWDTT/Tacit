@@ -58,6 +58,48 @@ bits. The two coordinates attain this bound. This is a bound for this
 finite, noiseless, simultaneous task model; it says nothing about LLM token
 cost, decoding errors, instructions, or setup cost.
 
+### Exact fixed-width bit-budget frontier
+
+`bit_frontier.py` extends the zero-error endpoint to every integer total
+payload-bit budget. Let sender X and sender Y use `b_x` and `b_y` fixed-width
+bits, with `b_x + b_y <= B`; the fixed turn schedule identifies the source
+slot. Under the task assumptions above, the optimal Bayes accuracy is
+
+\[
+  A^*(q,B) = \max_{b_x+b_y\le B}
+  \frac{\min(q,2^{b_x})\min(q,2^{b_y})}{q^2}.
+\]
+
+Since `q=2^w`, this reduces exactly to
+
+\[
+  A^*(q,B)=\frac{2^{\min(B,2w)}}{q^2}.
+\]
+
+**Proof.** Each deterministic sender maps coordinate values into message
+classes. A received pair identifies the Cartesian product of one X-class and
+one Y-class. If these classes have sizes `a` and `b`, the receiver has `ab`
+equally likely rows and can be correct with probability `1/(ab)`. Averaging
+over the `ab` target rows in that cell contributes exactly `1/q²`; summing
+over nonempty cells gives `K_x K_y/q²`, where `K_x` and `K_y` are the numbers
+of distinct message classes. A `b_x`-bit fixed-width message has at most
+`min(q,2^{b_x})` classes, and likewise for Y. These bounds are attained by
+partitions with that many classes. Maximizing their product under the integer
+bit budget yields the displayed frontier. Randomized encoders cannot improve
+it: conditioning on their randomness gives a mixture of deterministic encoder
+pairs, whose average accuracy is no greater than the best deterministic pair. ∎
+
+For `q=4`, the frontier is `1/16, 1/8, 1/4, 1/2, 1` at total payload
+budgets `0` through `4` bits. This assumes simultaneous fixed-width payloads,
+uniform independent coordinates, a complete receiver table, and a free fixed
+schedule. It excludes envelope bytes, prompt/codebook cost, tokenization,
+inference compute, and model errors. It is an ideal communication reference,
+not an LLM performance result. Reproduce it with:
+
+```powershell
+python -m experiments.private_match_v0_3.bit_frontier --q 4 --max-bits 8
+```
+
 ## Frozen feasibility protocols and runner (model calls not run)
 
 `protocols.py` freezes prompt revision `pmt3-prompts-1` and four representation

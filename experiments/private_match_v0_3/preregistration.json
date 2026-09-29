@@ -17,6 +17,7 @@
     "no_message_bayes_accuracy": "1/16",
     "one_source_bayes_accuracy": "1/4",
     "both_source_oracle_accuracy": "1/1",
+    "fixed_width_total_payload_budget_bayes_frontier": "2^min(B, 2*log2(q)) / q^2, for integer B >= 0",
     "zero_error_fixed_width_payload_bits": 4,
     "zero_error_bound_scope": "simultaneous noiseless fixed-width binary message from each coordinate source; framing, prompts, model decoding, and setup excluded"
   },

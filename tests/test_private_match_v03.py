@@ -8,6 +8,7 @@ import tempfile
 import unittest
 from fractions import Fraction
 from pathlib import Path
+from itertools import product
 
 from tacit import ChatCompletion, exchange_dialogue
 from experiments.private_match_v0_3.protocols import (
@@ -17,6 +18,9 @@ from experiments.private_match_v0_3.runner import (
     main as runner_main, planned_model_calls, run_condition, validate_capability_ledger,
 )
 from contextlib import redirect_stdout
+from experiments.private_match_v0_3.bit_frontier import (
+    frontier as triadic_bit_frontier, optimal_success_probability,
+)
 
 
 MODULE_PATH = (
@@ -118,6 +122,30 @@ class FrozenFormatReceiver:
 
 
 class PrivateMatchV03Tests(unittest.TestCase):
+    def test_triadic_bit_frontier_matches_exhaustive_encoder_pairs(self):
+        q = 4
+        width = q.bit_length() - 1
+        for budget in range(2 * width + 2):
+            best = Fraction(0)
+            for x_bits in range(width + 1):
+                for y_bits in range(width + 1):
+                    if x_bits + y_bits > budget:
+                        continue
+                    x_classes = max(
+                        len(set(encoder))
+                        for encoder in product(range(1 << x_bits), repeat=q)
+                    )
+                    y_classes = max(
+                        len(set(encoder))
+                        for encoder in product(range(1 << y_bits), repeat=q)
+                    )
+                    best = max(best, Fraction(x_classes * y_classes, q * q))
+            self.assertEqual(optimal_success_probability(q=q, total_payload_bits=budget), best)
+        self.assertEqual(
+            [row["success_fraction"] for row in triadic_bit_frontier(q=4, max_total_payload_bits=4)],
+            ["1/16", "1/8", "1/4", "1/2", "1/1"],
+        )
+
     def test_frozen_protocols_have_strict_decoders_and_fail_closed(self):
         self.assertEqual(len(PROTOCOL_IDS), 4)
         expected = {
