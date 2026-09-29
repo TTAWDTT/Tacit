@@ -100,6 +100,8 @@ class FrozenFormatSender:
         value = view["private_value"]
         if self.protocol_id == "compact_kv":
             text = f"{coordinate}={value}"
+        elif self.protocol_id == "decimal_index":
+            text = str(int(value[1:]))
         elif self.protocol_id == "strict_json":
             text = json.dumps({coordinate: value}, separators=(",", ":"))
         elif self.protocol_id == "fixed_binary":
@@ -111,6 +113,9 @@ class FrozenFormatSender:
 
 class FrozenFormatReceiver:
     model_name = "fake-receiver-v1"
+
+    def __init__(self, protocol_id="compact_kv"):
+        self.protocol_id = protocol_id
 
     def complete(self, messages):
         request = json.loads(messages[1]["content"])
@@ -129,6 +134,8 @@ class FrozenFormatReceiver:
                     value = json.loads(message)[role_coord]
                 elif "=" in message:
                     value = message.split("=", 1)[1]
+                elif self.protocol_id == "decimal_index":
+                    value = f"{role_coord}{int(message):04d}"
                 elif message and set(message) <= {"0", "1"}:
                     value = f"{role_coord}{int(message, 2):04d}"
                 else:
@@ -311,9 +318,10 @@ class PrivateMatchV03Tests(unittest.TestCase):
         )
 
     def test_frozen_protocols_have_strict_decoders_and_fail_closed(self):
-        self.assertEqual(len(PROTOCOL_IDS), 4)
+        self.assertEqual(len(PROTOCOL_IDS), 5)
         expected = {
             "compact_kv": "x=x0002",
+            "decimal_index": "2",
             "strict_json": '{"x":"x0002"}',
             "fixed_binary": "10",
         }
@@ -322,9 +330,13 @@ class PrivateMatchV03Tests(unittest.TestCase):
                 self.assertEqual(parse_coordinate_message(name, valid, q=4, sender="sender_x"), (True, True, "x0002"))
                 self.assertFalse(parse_coordinate_message(name, valid + " ", q=4, sender="sender_x")[0])
                 protocol = protocol_by_id(name, 4)
-                self.assertIn("pmt3-prompts-3", protocol.protocol_id)
+                self.assertIn("pmt3-prompts-4", protocol.protocol_id)
         self.assertEqual(parse_coordinate_message("concise_nl", "The x coordinate is x0002.", q=4, sender="sender_x"), (True, True, "x0002"))
         self.assertEqual(parse_coordinate_message("concise_nl", "x is probably 0002", q=4, sender="sender_x"), (None, None, None))
+        for malformed in ("", " 2", "02", "+2", "2.0", "4"):
+            self.assertFalse(parse_coordinate_message(
+                "decimal_index", malformed, q=4, sender="sender_x",
+            )[0])
 
     def test_registered_encoders_roundtrip_every_value_across_q(self):
         for q in (2, 4, 8, 16, 64):
@@ -359,7 +371,7 @@ class PrivateMatchV03Tests(unittest.TestCase):
             protocol = protocol_by_id("compact_kv", 4)
             sender = None if condition in {"full_information", "no_message"} else FrozenFormatSender(protocol.protocol_id)
             row = run_condition(seed=304001, q=4, condition=condition, protocol=protocol,
-                sender_model=sender, receiver_model=FrozenFormatReceiver(),
+                sender_model=sender, receiver_model=FrozenFormatReceiver(protocol.protocol_id),
                 sender_tokenizer_id="fake-tokenizer", receiver_tokenizer_id="fake-tokenizer",
                 model_population_id="fake-population-v1", task_key=TEST_TASK_KEY)
             self.assertEqual(len(row["model_calls"]), planned)
@@ -370,7 +382,7 @@ class PrivateMatchV03Tests(unittest.TestCase):
     def test_representation_arms_share_policy_but_version_code_and_decoder(self):
         rows = [run_condition(seed=304002, q=4, condition="both_sources",
             protocol=protocol_by_id(name, 4), sender_model=FrozenFormatSender(name),
-            receiver_model=FrozenFormatReceiver(), sender_tokenizer_id="fake-tokenizer",
+            receiver_model=FrozenFormatReceiver(name), sender_tokenizer_id="fake-tokenizer",
             receiver_tokenizer_id="fake-tokenizer", model_population_id="fake-population-v1",
             task_key=TEST_TASK_KEY)
             for name in PROTOCOL_IDS]
@@ -378,7 +390,7 @@ class PrivateMatchV03Tests(unittest.TestCase):
         self.assertEqual(len({row["protocol"]["code_id"] for row in rows}), len(PROTOCOL_IDS))
         self.assertEqual(len({row["protocol"]["decoder_id"] for row in rows}), len(PROTOCOL_IDS))
         paired = paired_report(rows, replicates=100, seed=4)
-        self.assertEqual(len(paired["comparisons"]), 6)
+        self.assertEqual(len(paired["comparisons"]), 10)
         self.assertTrue(all(item["control_alignment"]["policy_matched"] for item in paired["comparisons"]))
         self.assertTrue(all(not item["control_alignment"]["decoder_matched"] for item in paired["comparisons"]))
         self.assertTrue(all(item["control_alignment"]["code_differs"] for item in paired["comparisons"]))

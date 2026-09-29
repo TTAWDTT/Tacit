@@ -1,5 +1,28 @@
 # Research log
 
+## 2026-09-29 — Add the observed decimal-shorthand baseline
+
+**Observation.** The prior DuoSum v0.6 audit found the model emitted decimal-only
+payloads in 16/16 outputs under the concise-English prompt, and all 16 values
+matched the sender's private value. These outputs were counted as format
+violations, although they show a shorter task-specific text code that merits a
+separate arm (see [`DUOSUM_PILOT_V0_6.md`](DUOSUM_PILOT_V0_6.md)).
+
+**Correction.** Before any Private Match v0.3 inference, added `decimal_index`:
+send the zero-based coordinate index as a canonical base-10 integer, with sender
+slot identifying X versus Y. Its exact parser, encoder, decoder instructions,
+and task-specific setup boundary are frozen at `pmt3-prompts-4`. The preregistered
+comparison family now includes all ten pairwise contrasts across five formats.
+This is an intentionally strong, task-aware shorthand baseline; it is not called
+natural language or a reusable communication language. Optimized natural
+language and AutoForm-style selection remain separate missing baselines.
+
+**Verification.** Strict malformed-message tests, round trips through q=16,384,
+and fake sender/receiver end-to-end comparisons pass. All 18 focused Private
+Match v0.3 tests pass; preregistration parsing and the ten-contrast count,
+Python compilation, and `git diff --check` also pass. No model inference was
+run.
+
 ## 2026-09-29 — Exact frontier with non-uniform independent priors
 
 **Observation.** The v0.3 exact bit-budget frontier assumed uniform coordinates,

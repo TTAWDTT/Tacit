@@ -11,8 +11,8 @@ import re
 from typing import Any
 
 
-PROMPT_REVISION = "pmt3-prompts-3"
-PROTOCOL_IDS = ("concise_nl", "compact_kv", "strict_json", "fixed_binary")
+PROMPT_REVISION = "pmt3-prompts-4"
+PROTOCOL_IDS = ("concise_nl", "compact_kv", "decimal_index", "strict_json", "fixed_binary")
 
 
 def _decimal_width(q: int) -> int:
@@ -57,6 +57,19 @@ def protocol_by_id(name: str, q: int) -> Protocol:
             "combine the two messages, match the candidate table, and return only candidate_id."
         )
         code, decoder = "pmt3-kv-v1", "pmt3-kv-coordinate-v1"
+    elif name == "decimal_index":
+        digits = _decimal_width(q)
+        sender = sender_common + (
+            "Return only the zero-based decimal index in your coordinate value, without leading zeros "
+            "or any label. For example, if your private value ends in 1, return 1."
+        )
+        receiver = (
+            "Each message is a zero-based decimal coordinate index. The sender slot determines whether it is x or y. "
+            f"Interpret the index within q, restore its zero-padded {digits}-digit coordinate value, "
+            "match the candidate table, "
+            "and return only candidate_id."
+        )
+        code, decoder = "pmt3-decimal-index-v1", "pmt3-decimal-index-coordinate-v1"
     elif name == "strict_json":
         sender = sender_common + (
             'Return exactly one JSON object with one key, either x or y, and its exact string value, '
@@ -106,6 +119,8 @@ def encode_coordinate_message(name: str, *, q: int, sender: str, value: str) -> 
         return f"The {coordinate} coordinate is {value}."
     elif name == "compact_kv":
         return f"{coordinate}={value}"
+    elif name == "decimal_index":
+        return str(index)
     if name == "strict_json":
         return json.dumps({coordinate: value}, ensure_ascii=True, separators=(",", ":"))
     return f"{index:0{q.bit_length() - 1}b}"
@@ -139,6 +154,10 @@ def parse_coordinate_message(name: str, message: str, *, q: int, sender: str) ->
         if not match or match.group(1) != coordinate or match.group(2) != coordinate:
             return False, True, None
         index = int(match.group(3))
+    elif name == "decimal_index":
+        if not re.fullmatch(r"(?:0|[1-9][0-9]*)", message):
+            return False, True, None
+        index = int(message)
     elif name == "strict_json":
         try:
             value: Any = json.loads(message)
