@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import FrozenInstanceError
 import json
+from pathlib import Path
 import unittest
 
 from tacit import ChatCompletion, ProtocolCard, exchange_once
@@ -46,6 +47,11 @@ class ProtocolCardTests(unittest.TestCase):
             self.card.protocol_id = "mutated"
         self.assertEqual(self.card.to_json_bytes(), self.card.to_json_bytes())
         self.assertEqual(json.loads(self.card.to_json_bytes()), self.card.to_dict())
+
+    def test_shipped_example_card_uses_the_public_schema(self) -> None:
+        card_path = Path(__file__).resolve().parents[1] / "examples" / "protocol_card.json"
+        card = ProtocolCard.from_json(card_path.read_bytes())
+        self.assertEqual(card.protocol_id, "plain-text-evidence-review-example-v1")
 
     def test_rejects_duplicate_extra_wrong_schema_and_invalid_json(self) -> None:
         duplicate = (

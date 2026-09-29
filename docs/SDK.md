@@ -46,6 +46,14 @@ result = exchange_once(
 
 `ProtocolCard.to_json_bytes()` emits deterministic compact UTF-8 JSON for creating a card. Keep and hash the exact bytes distributed to participants when recording provenance; reserializing a card can change that artifact hash. A frozen instruction card makes a protocol portable and identifiable. It does not establish shared semantics, compositionality, robustness, or a performance advantage; those remain empirical questions. Any protocol induction, tuning, or onboarding cost must be measured separately.
 
+The runnable [`protocol_card_exchange.py`](../examples/protocol_card_exchange.py) uses the accompanying [`protocol_card.json`](../examples/protocol_card.json), reports its exact source hash, and records message bytes and provider token counts. The card is an illustrative natural-language baseline. Install the package in editable mode, start two compatible endpoints, set the same endpoint variables as the minimal exchange above, and run:
+
+```powershell
+python examples/protocol_card_exchange.py
+```
+
+Set `TLU_PROTOCOL_CARD` to use another frozen card. The example contacts configured endpoints only when executed; importing the module does not make requests or start a server.
+
 From a checkout, install the package in editable mode with `python -m pip install -e .`. No runtime dependencies are installed. On PowerShell, configure the example endpoints before running it:
 
 ```powershell
