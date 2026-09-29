@@ -248,7 +248,7 @@ class EmergentOODV04RunnerTests(unittest.TestCase):
         self.assertEqual(comparison["paired_inference_cluster_count"], 1)
         self.assertIsNone(comparison["metrics"]["joint_success"]["ci95_low"])
 
-    def _write_capability_fixture(self, *, corrupt=False):
+    def _write_capability_fixture(self, *, corrupt=False, input_manifest_sha256=None):
         cache_root = Path(__file__).resolve().parents[1] / ".cache"
         cache_root.mkdir(exist_ok=True)
         temporary = tempfile.TemporaryDirectory(dir=cache_root)
@@ -258,7 +258,7 @@ class EmergentOODV04RunnerTests(unittest.TestCase):
         records = [self._run("full_information", episode, stage="train")[0] for episode in calibration]
         if corrupt:
             records[0] = {**records[0], "outcome": {**records[0]["outcome"], "joint_success": False}}
-        input_manifest_sha256 = "a" * 64
+        input_manifest_sha256 = input_manifest_sha256 or "a" * 64
         runner_module._write_results(
             records,
             output,
@@ -281,9 +281,24 @@ class EmergentOODV04RunnerTests(unittest.TestCase):
         )
         return output, calibration, input_manifest_sha256
 
-    def test_train_only_capability_ledger_is_verified_and_disjoint(self):
+    def test_independent_train_only_capability_ledger_is_verified(self):
         output, calibration, input_manifest_sha256 = self._write_capability_fixture()
-        validation = select_candidate_sets(self.bundle, "validation", 1)
+        evaluation_split = build_split(seed=18)
+        evaluation_bundle = generate_ledgers(
+            split=evaluation_split, task_key=bytes(range(32)), task_seed=9, k=4, sets_per_stage=3
+        )
+        validation = select_candidate_sets(evaluation_bundle, "validation", 1)
+        calibration_tuples = {
+            json.dumps(candidate["attributes"], sort_keys=True)
+            for episode in calibration
+            for candidate in episode["receiver"]["candidates"]
+        }
+        evaluation_tuples = {
+            json.dumps(candidate["attributes"], sort_keys=True)
+            for episode in validation
+            for candidate in episode["receiver"]["candidates"]
+        }
+        self.assertTrue(calibration_tuples & evaluation_tuples)
         validate_capability_ledger(
             output,
             expected_calibration_episodes=calibration,
@@ -291,6 +306,7 @@ class EmergentOODV04RunnerTests(unittest.TestCase):
             input_manifest_sha256=input_manifest_sha256,
             split_seed=17,
             split_sha256=self.split["split_sha256"],
+            evaluation_split_seed=18,
             task_seed=9,
             task_key_id=self.bundle["manifest"]["task_key_id"],
             receiver_model="fake-receiver",
@@ -299,7 +315,11 @@ class EmergentOODV04RunnerTests(unittest.TestCase):
         )
 
     def test_capability_ledger_rejects_failures_overlap_and_tampered_hash(self):
-        validation = select_candidate_sets(self.bundle, "validation", 1)
+        evaluation_split = build_split(seed=18)
+        evaluation_bundle = generate_ledgers(
+            split=evaluation_split, task_key=bytes(range(32)), task_seed=9, k=4, sets_per_stage=3
+        )
+        validation = select_candidate_sets(evaluation_bundle, "validation", 1)
         output, calibration, input_manifest_sha256 = self._write_capability_fixture(corrupt=True)
         with self.assertRaisesRegex(ValueError, "perfect"):
             validate_capability_ledger(
@@ -309,6 +329,7 @@ class EmergentOODV04RunnerTests(unittest.TestCase):
                 input_manifest_sha256=input_manifest_sha256,
                 split_seed=17,
                 split_sha256=self.split["split_sha256"],
+                evaluation_split_seed=18,
                 task_seed=9,
                 task_key_id=self.bundle["manifest"]["task_key_id"],
                 receiver_model="fake-receiver",
@@ -324,6 +345,7 @@ class EmergentOODV04RunnerTests(unittest.TestCase):
                 input_manifest_sha256=input_manifest_sha256,
                 split_seed=17,
                 split_sha256=self.split["split_sha256"],
+                evaluation_split_seed=18,
                 task_seed=9,
                 task_key_id=self.bundle["manifest"]["task_key_id"],
                 receiver_model="fake-receiver",
@@ -342,6 +364,7 @@ class EmergentOODV04RunnerTests(unittest.TestCase):
                 input_manifest_sha256=input_manifest_sha256,
                 split_seed=17,
                 split_sha256=self.split["split_sha256"],
+                evaluation_split_seed=18,
                 task_seed=9,
                 task_key_id=self.bundle["manifest"]["task_key_id"],
                 receiver_model="fake-receiver",
@@ -375,6 +398,87 @@ class EmergentOODV04RunnerTests(unittest.TestCase):
                         with self.assertRaises(SystemExit):
                             runner_module.main()
                     endpoint_client.assert_not_called()
+
+    def test_execution_rejects_capability_screen_on_evaluation_split(self):
+        cache_root = Path(__file__).resolve().parents[1] / ".cache"
+        cache_root.mkdir(exist_ok=True)
+        with tempfile.TemporaryDirectory(dir=cache_root) as temporary:
+            input_dir = Path(temporary) / "episodes"
+            write_ledgers(self.bundle, input_dir)
+            args = [
+                "runner",
+                "--input-dir", str(input_dir),
+                "--split-seed", "17",
+                "--stage", "validation",
+                "--conditions", "autoform",
+                "--execute",
+                "--receiver-model", "fake-receiver",
+                "--receiver-tokenizer-id", "fake-receiver-tokenizer-v1",
+                "--sender-model", "fake-sender",
+                "--sender-tokenizer-id", "fake-sender-tokenizer-v1",
+                "--capability-input-dir", str(input_dir),
+                "--capability-split-seed", "17",
+                "--capability-ledger", str(Path(temporary) / "capability.jsonl"),
+            ]
+            with patch("sys.argv", args), patch.object(
+                runner_module, "OpenAICompatibleClient"
+            ) as endpoint_client, contextlib.redirect_stderr(io.StringIO()):
+                with self.assertRaises(SystemExit):
+                    runner_module.main()
+            endpoint_client.assert_not_called()
+
+    def test_cli_accepts_verified_capability_bundle_from_independent_split(self):
+        cache_root = Path(__file__).resolve().parents[1] / ".cache"
+        cache_root.mkdir(exist_ok=True)
+        with tempfile.TemporaryDirectory(dir=cache_root) as temporary:
+            temporary_path = Path(temporary)
+            calibration_dir = temporary_path / "calibration"
+            evaluation_dir = temporary_path / "evaluation"
+            write_ledgers(self.bundle, calibration_dir)
+            evaluation_split = build_split(seed=18)
+            evaluation_bundle = generate_ledgers(
+                split=evaluation_split, task_key=bytes(range(32)), task_seed=9, k=4, sets_per_stage=3
+            )
+            write_ledgers(evaluation_bundle, evaluation_dir)
+            manifest_digest = runner_module.hashlib.sha256(
+                (calibration_dir / "manifest.json").read_bytes()
+            ).hexdigest()
+            capability_path, _, _ = self._write_capability_fixture(
+                input_manifest_sha256=manifest_digest
+            )
+            output_path = temporary_path / "validation.jsonl"
+            args = [
+                "runner",
+                "--input-dir", str(evaluation_dir),
+                "--split-seed", "18",
+                "--stage", "validation",
+                "--sets", "1",
+                "--conditions", "autoform",
+                "--execute",
+                "--receiver-model", "fake-receiver",
+                "--receiver-tokenizer-id", "fake-receiver-tokenizer-v1",
+                "--sender-model", "fake-sender",
+                "--sender-tokenizer-id", "fake-sender-tokenizer-v1",
+                "--model-population-id", "fake-test-population",
+                "--capability-ledger", str(capability_path),
+                "--capability-input-dir", str(calibration_dir),
+                "--capability-split-seed", "17",
+                "--output", str(output_path),
+            ]
+            clients = [
+                FakeSender("autoform", self.attributes, self.values),
+                FakeReceiver("autoform", self.attributes, self.values),
+            ]
+            with patch("sys.argv", args), patch.object(
+                runner_module, "OpenAICompatibleClient", side_effect=clients
+            ), patch.object(runner_module, "validate_resource_preflight"), contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(runner_module.main(), 0)
+            result_rows = runner_module._jsonl(output_path)
+            self.assertEqual(len(result_rows), 4)
+            self.assertTrue(all(row["outcome"]["exact_selection"] for row in result_rows))
+            run_manifest = json.loads(output_path.with_suffix(".jsonl.manifest.json").read_text(encoding="utf-8"))
+            self.assertEqual(run_manifest["capability_split_seed"], 17)
+            self.assertEqual(run_manifest["split_seed"], 18)
 
     def test_incomplete_candidate_set_selection_is_rejected(self):
         corrupt = {**self.bundle, "gold": {**self.bundle["gold"]}}

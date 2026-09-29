@@ -279,6 +279,7 @@ def validate_capability_ledger(
     input_manifest_sha256: str,
     split_seed: int,
     split_sha256: str,
+    evaluation_split_seed: int,
     task_seed: int,
     task_key_id: str,
     receiver_model: str,
@@ -287,7 +288,9 @@ def validate_capability_ledger(
 ) -> None:
     """Require a verified, all-correct train-only receiver screen before comparison runs."""
     if path is None:
-        raise ValueError("communication conditions require --capability-ledger from a disjoint train-stage full_information screen")
+        raise ValueError("communication conditions require --capability-ledger from an independent train-stage full_information screen")
+    if split_seed == evaluation_split_seed:
+        raise ValueError("capability screen must use an independent split seed from evaluation")
     candidate_count = (
         len(expected_calibration_episodes[0]["receiver"]["candidates"])
         if expected_calibration_episodes else 0
@@ -322,22 +325,8 @@ def validate_capability_ledger(
     if len(indexed) != len(rows) or set(indexed) != set(expected_rows):
         raise ValueError("capability episode IDs do not match the expected training-only calibration block")
     eval_ids = {episode["gold"]["episode_id"] for episode in evaluation_episodes}
-    eval_meanings = {episode["gold"]["meaning_id"] for episode in evaluation_episodes}
-    eval_candidate_tuples = {
-        json.dumps(candidate["attributes"], ensure_ascii=False, sort_keys=True)
-        for episode in evaluation_episodes
-        for candidate in episode["receiver"]["candidates"]
-    }
     if set(indexed) & eval_ids:
         raise ValueError("capability episodes overlap evaluation episode IDs")
-    calibration_meanings = {episode["gold"]["meaning_id"] for episode in expected_calibration_episodes}
-    calibration_candidate_tuples = {
-        json.dumps(candidate["attributes"], ensure_ascii=False, sort_keys=True)
-        for episode in expected_calibration_episodes
-        for candidate in episode["receiver"]["candidates"]
-    }
-    if calibration_meanings & eval_meanings or calibration_candidate_tuples & eval_candidate_tuples:
-        raise ValueError("train-stage capability meanings or candidates overlap held-out evaluation semantics")
     expected_manifest_fields = {
         "experiment_id": EXPERIMENT_ID,
         "stage": "train",
@@ -763,6 +752,8 @@ def main() -> int:
     parser.add_argument("--protocol-card", type=Path, help="shared sender/receiver card JSON for the shared_protocol_card condition")
     parser.add_argument("--output", type=Path, default=Path(".cache/emergent_ood_v0_4/runs/validation.jsonl"))
     parser.add_argument("--capability-ledger", type=Path, help="verified train-only full_information screen required before message conditions")
+    parser.add_argument("--capability-input-dir", type=Path, help="episode bundle used for the independent train-only receiver screen")
+    parser.add_argument("--capability-split-seed", type=int, help="split seed for the independent train-only receiver screen")
     parser.add_argument("--execute", action="store_true", help="contact the configured local loopback model endpoints")
     parser.add_argument("--resource-preflight", type=Path)
     parser.add_argument("--force", action="store_true")
@@ -799,6 +790,8 @@ def main() -> int:
         )
     if args.capability_ledger is not None and args.stage == "train":
         parser.error("train-stage calibration cannot consume another capability ledger")
+    if args.stage == "train" and (args.capability_input_dir is not None or args.capability_split_seed is not None):
+        parser.error("train-stage calibration cannot consume an independent capability bundle")
     calls_planned = len(episodes) * sum(CALLS_PER_EPISODE[name] for name in args.conditions)
     if calls_planned > MAX_MODEL_CALLS_PER_BATCH:
         parser.error(f"batch plans {calls_planned} model calls; hard cap is {MAX_MODEL_CALLS_PER_BATCH}")
@@ -834,18 +827,38 @@ def main() -> int:
     )
     if needs_capability:
         try:
-            calibration_episodes = select_candidate_sets(bundle, "train", CAPABILITY_CALIBRATION_SETS)
+            if args.capability_input_dir is None or args.capability_split_seed is None:
+                raise ValueError("message conditions require --capability-input-dir and --capability-split-seed for independent calibration")
+            if args.capability_split_seed == args.split_seed:
+                raise ValueError("capability split seed must differ from the evaluation split seed")
+            calibration_bundle, calibration_split = load_episode_bundle(
+                args.capability_input_dir, split_seed=args.capability_split_seed
+            )
+            calibration_manifest = calibration_bundle["manifest"]
+            evaluation_manifest = bundle["manifest"]
+            if (
+                calibration_manifest["task_key_id"] != evaluation_manifest["task_key_id"]
+                or calibration_manifest["task_seed"] != evaluation_manifest["task_seed"]
+                or calibration_manifest["k"] != evaluation_manifest["k"]
+                or calibration_split["attributes"] != split["attributes"]
+                or calibration_split["values_by_attribute"] != split["values_by_attribute"]
+            ):
+                raise ValueError("independent calibration bundle does not match the evaluation task, key, and ontology")
+            calibration_episodes = select_candidate_sets(
+                calibration_bundle, "train", CAPABILITY_CALIBRATION_SETS
+            )
             validate_capability_ledger(
                 args.capability_ledger,
                 expected_calibration_episodes=calibration_episodes,
                 evaluation_episodes=episodes,
                 input_manifest_sha256=hashlib.sha256(
-                    (_inside_project(args.input_dir) / "manifest.json").read_bytes()
+                    (_inside_project(args.capability_input_dir) / "manifest.json").read_bytes()
                 ).hexdigest(),
-                split_seed=args.split_seed,
-                split_sha256=split["split_sha256"],
-                task_seed=bundle["manifest"]["task_seed"],
-                task_key_id=bundle["manifest"]["task_key_id"],
+                split_seed=args.capability_split_seed,
+                split_sha256=calibration_split["split_sha256"],
+                evaluation_split_seed=args.split_seed,
+                task_seed=calibration_manifest["task_seed"],
+                task_key_id=calibration_manifest["task_key_id"],
                 receiver_model=args.receiver_model,
                 receiver_tokenizer_id=args.receiver_tokenizer_id,
                 model_population_id=args.model_population_id,
@@ -924,6 +937,11 @@ def main() -> int:
             "sender_max_tokens": 160 if needs_sender else None,
             "receiver_max_tokens": 48,
             "resource_preflight_sha256": preflight_digest,
+            "capability_split_seed": args.capability_split_seed if needs_capability else None,
+            "capability_input_episode_manifest_sha256": (
+                hashlib.sha256((_inside_project(args.capability_input_dir) / "manifest.json").read_bytes()).hexdigest()
+                if needs_capability else None
+            ),
             "input_episode_manifest_sha256": hashlib.sha256(
                 (_inside_project(args.input_dir) / "manifest.json").read_bytes()
             ).hexdigest(),
