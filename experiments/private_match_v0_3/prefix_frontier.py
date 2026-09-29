@@ -175,6 +175,22 @@ def prefix_code_frontier(q: int) -> dict[str, object]:
             ],
         })
 
+    randomized_vertices = _upper_concave_hull(points)
+    randomized_segments = []
+    for left, right in zip(randomized_vertices, randomized_vertices[1:]):
+        randomized_segments.append({
+            "lower_expected_payload_bits": left["expected_payload_bits"],
+            "lower_joint_success": left["joint_success"],
+            "upper_expected_payload_bits": right["expected_payload_bits"],
+            "upper_joint_success": right["joint_success"],
+            "higher_cost_protocol_probability": (
+                f"(B - {left['expected_payload_bits']}) / "
+                f"({right['expected_payload_bits']} - {left['expected_payload_bits']})"
+            ),
+            "lower_cost_allocations": left["sender_class_allocations"],
+            "higher_cost_allocations": right["sender_class_allocations"],
+        })
+
     class_costs = [
         {
             "class_count": code.class_count,
@@ -204,6 +220,11 @@ def prefix_code_frontier(q: int) -> dict[str, object]:
         "objective": "exact receiver-row success under a sum expected prefix-payload bit budget",
         "class_costs": class_costs,
         "expected_length_pareto_frontier": points,
+        "free_shared_randomness_upper_bound": {
+            "vertices": randomized_vertices,
+            "mixing_segments": randomized_segments,
+            "assumption": "a free common coin selects a complete deterministic protocol before each episode; seed agreement, setup, and per-episode tail constraints are excluded",
+        },
         "fixed_width_integer_budget_reference": fixed_width_reference,
         "limits": [
             "payload-only prefix lengths; message framing, prompt/codebook exposition, model tokens, and inference cost excluded",
@@ -212,6 +233,42 @@ def prefix_code_frontier(q: int) -> dict[str, object]:
             "the shared task-specific encoder/decoder is a functional-compression oracle, not an LLM language or a superiority result",
         ],
     }
+
+
+def randomized_success_at_expected_budget(q: int, expected_budget: Fraction | int | str) -> Fraction:
+    """Interpolate the free-shared-randomness upper bound at an expected rate."""
+    _validate_q(q)
+    budget = Fraction(expected_budget)
+    report = prefix_code_frontier(q)
+    vertices = report["free_shared_randomness_upper_bound"]["vertices"]
+    costs = [Fraction(point["expected_payload_bits"]) for point in vertices]
+    if not costs[0] <= budget <= costs[-1]:
+        raise ValueError(f"expected_budget must be in {_fraction_text(costs[0])}..{_fraction_text(costs[-1])}")
+    for left, right in zip(vertices, vertices[1:]):
+        left_cost = Fraction(left["expected_payload_bits"])
+        right_cost = Fraction(right["expected_payload_bits"])
+        if left_cost <= budget <= right_cost:
+            left_success = Fraction(left["joint_success"])
+            right_success = Fraction(right["joint_success"])
+            return left_success + (budget - left_cost) * (right_success - left_success) / (right_cost - left_cost)
+    return Fraction(vertices[-1]["joint_success"])
+
+
+def _upper_concave_hull(points: list[dict[str, object]]) -> list[dict[str, object]]:
+    """Return the upper concave hull of cost/success points, preserving endpoints."""
+    hull: list[dict[str, object]] = []
+    for point in points:
+        x = Fraction(point["expected_payload_bits"])
+        y = Fraction(point["joint_success"])
+        while len(hull) >= 2:
+            first, second = hull[-2], hull[-1]
+            x0, y0 = Fraction(first["expected_payload_bits"]), Fraction(first["joint_success"])
+            x1, y1 = Fraction(second["expected_payload_bits"]), Fraction(second["joint_success"])
+            if (y1 - y0) / (x1 - x0) > (y - y1) / (x - x1):
+                break
+            hull.pop()
+        hull.append(point)
+    return hull
 
 
 def _fraction_text(value: Fraction) -> str:

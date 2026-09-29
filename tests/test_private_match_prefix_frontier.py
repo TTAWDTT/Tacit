@@ -4,6 +4,7 @@ from fractions import Fraction
 from experiments.private_match_v0_3.prefix_frontier import (
     optimal_prefix_partition,
     prefix_code_frontier,
+    randomized_success_at_expected_budget,
 )
 
 
@@ -58,6 +59,17 @@ class PrivateMatchPrefixFrontierTests(unittest.TestCase):
             if item["sender_x_classes"] == 3 and item["sender_y_classes"] == 3
         )
         self.assertEqual(allocation["worst_case_payload_bits"], 4)
+
+    def test_q4_free_shared_coin_convexification_uses_no_message_and_full_reveal(self):
+        bound = prefix_code_frontier(4)["free_shared_randomness_upper_bound"]
+        vertices = bound["vertices"]
+        self.assertEqual(
+            [(point["expected_payload_bits"], point["joint_success"]) for point in vertices],
+            [("0", "1/16"), ("4", "1")],
+        )
+        self.assertEqual(randomized_success_at_expected_budget(4, 3), Fraction(49, 64))
+        segment = bound["mixing_segments"][0]
+        self.assertEqual(segment["higher_cost_protocol_probability"], "(B - 0) / (4 - 0)")
 
     def test_prefix_code_rejects_invalid_messages_and_oversized_search(self):
         code = optimal_prefix_partition(4, 3)

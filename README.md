@@ -44,7 +44,7 @@ A model-free [three-agent Private Match task family](experiments/private_match_v
 
 ## Scope
 
-Private Match v0.3 now includes a model-free [lossy expected-payload prefix-code oracle](experiments/private_match_v0_3/README.md#lossy-self-delimiting-prefix-code-reference), derived from task-oriented functional compression. Its q=4 example makes expected payload and per-episode worst-case bits explicit; it is a stronger analytic baseline, not evidence for a new language or an LLM advantage. The [related-work audit](research/RELATED_WORK.md) records the established graph-coloring/function-computation prior art.
+Private Match v0.3 now includes a model-free [lossy prefix-code and shared-randomness frontier](experiments/private_match_v0_3/README.md#lossy-self-delimiting-prefix-code-reference), derived from task-oriented functional compression. Under free shared randomness and expected bit cost, the q=4 analytic bound reaches `49/64` at 3 expected bits by mixing no message with full disclosure; that is a policy randomization bound, not a language gain or LLM result. The [related-work audit](research/RELATED_WORK.md) records the established graph-coloring/function-computation prior art.
 
 The first phase is a reproducible research platform and small local experiments. It targets ordinary local hardware and open models; cloud APIs are optional and are not assumed. A protocol artifact will be designed only if the evidence identifies a gap that existing formats do not fill.
 

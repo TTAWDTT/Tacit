@@ -133,14 +133,17 @@ python -m experiments.private_match_v0_3.bit_frontier --q 4 --max-bits 8
 ### Lossy self-delimiting prefix-code reference
 
 The fixed-width frontier uses an integer **hard maximum** bit budget. For a
-separate deterministic one-shot expected-payload comparison that permits receiver errors, the
+separate deterministic one-shot expected-payload comparison that permits
+receiver errors, the
 model-free [`prefix_frontier.py`](prefix_frontier.py) enumerates source-value
 partitions and assigns an optimal Huffman prefix code to each partition. The
 receiver predicts one representative row per pair of decoded classes. This is
 a task-specific functional-compression oracle with a free, shared codebook;
 the script reports expected payload, worst-case payload, and joint exact-row
-success separately. It does not convexify randomized mixtures or model setup,
-framing, LLM token cost, or model decoding.
+success separately. It also reports the upper concave hull under free common
+randomness; this assumes the coin selects a complete deterministic protocol
+before each episode and excludes coin coordination, setup, framing, LLM token
+cost, and model decoding.
 
 ```powershell
 python -m experiments.private_match_v0_3.prefix_frontier --q 4
@@ -152,6 +155,13 @@ bits has success `1/2`. Since one is an expected-rate budget and the other a
 per-episode cap, that comparison is not a matched-budget result. The zero-error
 prefix lower bound remains 4 expected bits total. The derivation and a
 falsifiable prediction are in [Theory §14](../../docs/THEORY.md#14-exact-bit-budget-frontier-for-complementary-coordinate-matching).
+
+Under the shared-coin expected-budget oracle, the q=4 hull uses no message
+`(0 bits, 1/16 success)` and full disclosure `(4 bits, 1 success)` as its only
+vertices. At average 3 bits, sending both coordinates in 3/4 of episodes and
+nothing in 1/4 gives success `49/64`; a fixed-width protocol can use the same
+lottery. This is a budget-policy reference, not a variable-length-language
+gain, and its 4-bit tail violates a 3-bit per-episode cap.
 
 ## Frozen feasibility protocols and runner (model calls not run)
 
