@@ -1,0 +1,65 @@
+{
+  "retrieved_at": "2026-09-29",
+  "purpose": "Select existing communication-dependent benchmark families for Tacit protocol experiments; distinguish task validity from representation attribution and complete-cost accounting.",
+  "queries": [
+    "Silo-Bench benchmark algorithmic information silos multi-agent LLM communication benchmark arxiv",
+    "MT-PingEval private information games total communication budget interaction turns benchmark arxiv",
+    "LLM communication benchmark hidden information collaboration communication cost emergent communication 2025 2026",
+    "agent communication benchmark task success budget constrained messages LLM collaboration ACL NeurIPS",
+    "MT-PingEval GitHub implementation and SILO-BENCH official code"
+  ],
+  "sources": [
+    {
+      "title": "MT-PingEval: Evaluating Multi-Turn Collaboration with Private Information Games",
+      "authors": ["Jacob Eisenstein", "Fantine Huot", "Adam Fisch", "Jonathan Berant", "Mirella Lapata"],
+      "version": "arXiv v2, 2026-08-10",
+      "url": "https://arxiv.org/html/2602.24188",
+      "kind": "primary paper",
+      "facts_used": [
+        "Private-information collaborative games with automatic verification and generation of new instances",
+        "Fixed per-player communication-token budget evaluated across 2, 4, 8, and 16 turns; 128 tokens per player and 1000 generated examples per task in the reported experiment",
+        "Task families include chess, COVR, MD3, tangram, and structured-record name-game",
+        "Most tested models did not improve with more turns; some outcomes were attributable to guess-and-check behavior"
+      ]
+    },
+    {
+      "title": "SILO-BENCH: A Scalable Environment for Evaluating Distributed Coordination in Multi-Agent LLM Systems",
+      "authors": ["Yuzhe Zhang", "Feiran Liu", "Yi Shan", "Xinyi Huang", "Xin Yang", "Yueqi Zhu", "Xuxin Cheng", "Cao Liu", "Ke Zeng", "Terry Jingchen Zhang", "Wenyuan Jiang"],
+      "venue": "ACL 2026, Long Papers, paper 1354",
+      "paper_url": "https://aclanthology.org/2026.acl-long.1354/",
+      "pdf_url": "https://aclanthology.org/2026.acl-long.1354.pdf",
+      "code_url": "https://github.com/jwyjohn/acl26-silo-bench",
+      "kind": "primary paper and official repository",
+      "facts_used": [
+        "30 algorithmic tasks spanning aggregation, mesh, and global-shuffle complexity levels",
+        "Six agent counts from 2 through 100 and three communication infrastructures yield 54 configurations",
+        "The paper defines token consumption as generated output tokens per communication round and also reports base-prompt, local-shard, and accumulated-message token profiles",
+        "Reported experiments used large locally hosted models and over 500 GPU-hour equivalents per experiment"
+      ]
+    },
+    {
+      "title": "AgentWorld: Benchmarking Long-Horizon Collaboration of Multi-agent LLMs",
+      "authors": [],
+      "version": "arXiv preprint 2609.31590, 2026-09",
+      "url": "https://arxiv.org/abs/2609.31590",
+      "kind": "primary preprint",
+      "facts_used": [
+        "100 human-annotated tasks and 100 augmented variants in a long-horizon multi-agent environment",
+        "Introduces Causal Collaboration Effectiveness using a graph of causal relations between actions",
+        "Evaluates large hosted/frontier and large local models; does not isolate matched message-representation effects"
+      ]
+    },
+    {
+      "title": "Cost-Effective Communication: An Auction-based Method for Language Agent Interaction",
+      "authors": ["Yijia Fan", "Jusheng Zhang", "Kaitong Cai", "Jing Yang", "Chengpei Tang", "Jian Wang", "Keze Wang"],
+      "venue": "AAAI 2026",
+      "url": "https://ojs.aaai.org/index.php/AAAI/article/view/40182",
+      "kind": "primary paper",
+      "facts_used": [
+        "Dynamic auction allocates communication bandwidth using learned message-value bids and selects full, summary, keyword, or silence content levels",
+        "This is a learned interaction/content-selection policy baseline, not a fixed-semantic-payload codec comparison"
+      ]
+    }
+  ],
+  "scope_note": "Search discovery is not exhaustive. This file captures sources directly used for the benchmark selection audit; see the audit for limitations and decision."
+}
