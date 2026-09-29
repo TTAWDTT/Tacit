@@ -112,15 +112,17 @@ class EmergentOODProtocolSelectionTests(unittest.TestCase):
             "card_sha256": card_digest, "validation_ledgers": [ledger_path.name],
         }
 
-    def _write_induction_manifest(self, candidates: list[dict[str, str]]) -> str:
-        prompt_path = self.root / "induction-prompt.json"
-        completion_path = self.root / "induction-completion.txt"
+    def _write_induction_manifest(
+        self, candidates: list[dict[str, str]], *, family: str = "compositional_symbolic",
+    ) -> str:
+        prompt_path = self.root / f"{family}-induction-prompt.json"
+        completion_path = self.root / f"{family}-induction-completion.txt"
         prompt = b"{\"messages\": []}"
         completion = b"{\"candidate_cards\": []}"
         prompt_path.write_bytes(prompt)
         completion_path.write_bytes(completion)
         project_root = Path(__file__).resolve().parents[1]
-        manifest_path = self.root / "induction-manifest.json"
+        manifest_path = self.root / f"{family}-induction-manifest.json"
         manifest = {
             "schema": INDUCER_SCHEMA,
             "mode": "execute",
@@ -129,11 +131,11 @@ class EmergentOODProtocolSelectionTests(unittest.TestCase):
             "split_seed": self.split_seed,
             "split_sha256": self.bundle["manifest"]["split_sha256"],
             "task_key_id": self.bundle["manifest"]["task_key_id"],
-            "protocol_family": "compositional_symbolic",
-            "inducer_model": "generator-model",
-            "tokenizer_id": "generator-tokenizer",
-            "input_tokens": 123,
-            "output_tokens": 45,
+            "protocol_family": family,
+            "inducer_model": f"{family}-generator",
+            "tokenizer_id": f"{family}-tokenizer",
+            "input_tokens": 123 if family == "compositional_symbolic" else 201,
+            "output_tokens": 45 if family == "compositional_symbolic" else 76,
             "service_seconds": 1.2,
             "prompt_path": prompt_path.relative_to(project_root).as_posix(),
             "prompt_sha256": hashlib.sha256(prompt).hexdigest(),
@@ -188,33 +190,38 @@ class EmergentOODProtocolSelectionTests(unittest.TestCase):
             self._write_candidate("accurate-costly", successes=8, wire_bytes=180, tokens=100),
             self._write_candidate("compact-lower-accuracy", successes=6, wire_bytes=80, tokens=40),
         ]
-        induction_manifest = self._write_induction_manifest(candidates)
+        induction_manifests = [
+            self._write_induction_manifest([candidates[0]], family="compositional_symbolic"),
+            self._write_induction_manifest([candidates[1]], family="plain_english"),
+        ]
         spec_path = self.root / "candidates.json"
         spec_path.write_text(json.dumps({
             "schema": SPEC_SCHEMA,
             "input_dir": "episodes",
             "split_seed": self.split_seed,
             "reuse_horizon_evaluation_episodes": 100,
-            "induction_manifests": [induction_manifest],
+            "induction_manifests": induction_manifests,
             "candidates": candidates,
         }), encoding="utf-8")
 
         report = freeze_protocol_frontier(spec_path)
         induction = report["selection_setup_cost"]["protocol_induction"]
         self.assertEqual(induction["status"], "verified_induction_manifests")
-        self.assertEqual(induction["model_calls"], 1)
+        self.assertEqual(induction["model_calls"], 2)
         self.assertEqual(induction["input_tokens_by_model_tokenizer"], {
-            "protocol_inducer|compositional_symbolic|generator-model|generator-tokenizer": 123,
+            "protocol_inducer|compositional_symbolic|compositional_symbolic-generator|compositional_symbolic-tokenizer": 123,
+            "protocol_inducer|plain_english|plain_english-generator|plain_english-tokenizer": 201,
         })
-        self.assertEqual(induction["prompt_completion_utf8_bytes"], 39)
+        self.assertEqual(induction["prompt_completion_utf8_bytes"], 78)
         self.assertEqual(induction["candidate_protocol_families"], {
             "accurate-costly": "compositional_symbolic",
-            "compact-lower-accuracy": "compositional_symbolic",
+            "compact-lower-accuracy": "plain_english",
         })
         amortized = report["selection_setup_cost"]["amortized_protocol_induction_cost_per_reuse_episode"]
-        self.assertAlmostEqual(amortized["model_calls"], 0.01)
+        self.assertAlmostEqual(amortized["model_calls"], 0.02)
         self.assertEqual(amortized["model_output_tokens_by_model_tokenizer"], {
-            "protocol_inducer|compositional_symbolic|generator-model|generator-tokenizer": 0.45,
+            "protocol_inducer|compositional_symbolic|compositional_symbolic-generator|compositional_symbolic-tokenizer": 0.45,
+            "protocol_inducer|plain_english|plain_english-generator|plain_english-tokenizer": 0.76,
         })
 
     def test_rejects_incomplete_or_repeated_validation_batch_coverage(self):
