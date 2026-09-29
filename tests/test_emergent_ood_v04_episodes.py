@@ -33,6 +33,14 @@ class EmergentOODV04EpisodeTests(unittest.TestCase):
         self.assertEqual(first, repeated)
         self.assertNotEqual(first["gold"], other["gold"])
 
+    def test_episode_ids_are_disjoint_across_split_seeds(self):
+        first = generate_ledgers(split=self.split, task_key=self.key, task_seed=19, k=4, sets_per_stage=2)
+        other_split = build_split(seed=18)
+        other = generate_ledgers(split=other_split, task_key=self.key, task_seed=19, k=4, sets_per_stage=2)
+        first_ids = {row["episode_id"] for stage in first["gold"].values() for row in stage}
+        other_ids = {row["episode_id"] for stage in other["gold"].values() for row in stage}
+        self.assertFalse(first_ids & other_ids)
+
     def test_rejects_short_keys_bad_k_and_escape_output_path(self):
         with self.assertRaises(ValueError):
             generate_ledgers(split=self.split, task_key=b"short")

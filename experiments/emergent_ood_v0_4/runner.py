@@ -480,9 +480,17 @@ def run_condition(
 
     complete_service_total = complete_total("service_seconds")
     message_delivered = bool(result.turns and result.turns[0].transmission is not None)
+    exact_selection = answer_id == gold["candidate_id"]
+    sender_model_id = getattr(sender_model, "model", getattr(sender_model, "model_name", "absent")) if sender_model is not None else "absent"
+    receiver_model_id = getattr(receiver_model, "model", getattr(receiver_model, "model_name", "unknown"))
+    transmissions = result.transmission_records()
+    wall_seconds = time.perf_counter() - started
     return {
+        "schema_version": "tlu.costs.v3",
         "schema": "tlu.emergent-ood-run.v0.4",
         "experiment_id": EXPERIMENT_ID,
+        "inference_cluster_id": f"split={split_seed}",
+        "candidate_set_cluster_id": gold["candidate_set_id"],
         "stage": stage,
         "split_seed": split_seed,
         "task_seed": task_seed,
@@ -495,8 +503,15 @@ def run_condition(
             "answer_format_valid": answer_valid,
             "answer_candidate_id": answer_id,
             "target_candidate_id": gold["candidate_id"],
-            "exact_selection": answer_id == gold["candidate_id"],
+            "exact_selection": exact_selection,
+            "joint_success": exact_selection,
+            "answer_score": 1.0 if exact_selection else 0.0,
             "bayes_no_message_reference": 1 / len(candidate_ids),
+        },
+        "protocol": {
+            "policy_id": condition,
+            "code_id": protocol.protocol_id,
+            "decoder_id": SCORER_ID,
         },
         "sender_audit": sender_audit,
         "costs": {
@@ -512,7 +527,7 @@ def run_condition(
             "application_wire_bytes": result.wire_bytes,
             "complete_reported_service_seconds": complete_service_total,
             "calls_with_service_time": sum(row["service_seconds"] is not None for row in calls),
-            "wall_seconds": time.perf_counter() - started,
+            "wall_seconds": wall_seconds,
             "protocol_card_bytes": {
                 "sender_instruction": len(protocol.agent_instructions["sender"].encode("utf-8")),
                 "receiver_instruction": len(protocol.agent_instructions["receiver"].encode("utf-8")),
@@ -523,16 +538,25 @@ def run_condition(
             "answer": answer_text,
             "candidate_ids_in_receiver_order": candidate_ids,
             "target_tuple_for_evaluator": target_row["attributes"],
-            "transmissions": result.transmission_records(),
+            "transmissions": transmissions,
             "stop_reason": result.stop_reason,
         },
         "stratum": {
-            "model_population_id": model_population_id,
-            "candidate_count": len(candidate_ids),
-            "inference_cluster_id": f"split={split_seed}",
-            "candidate_set_cluster_id": gold["candidate_set_id"],
+            "experiment_id": EXPERIMENT_ID,
+            "task_id": "four-attribute-higher-order-meaning-matching-v1",
+            "split": stage,
             "scorer_id": SCORER_ID,
+            "model_population_id": model_population_id,
+            "agent_models": {"sender": sender_model_id, "receiver": receiver_model_id},
+            "task_parameters": {
+                "candidate_count": len(candidate_ids),
+                "target_support_size": {"train": 192, "validation": 16, "test": 48}[stage],
+            },
         },
+        "transmissions": transmissions,
+        "model_calls": calls,
+        "runtime": {"wall_seconds": wall_seconds},
+        "setup": [],
     }
 
 

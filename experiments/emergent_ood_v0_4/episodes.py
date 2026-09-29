@@ -21,7 +21,8 @@ except ImportError:  # pragma: no cover - exercised by the CLI entry point
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-SCHEMA = "tlu.emergent-ood-episodes.v0.4"
+GENERATOR_VERSION = "0.4.1"
+SCHEMA = f"tlu.emergent-ood-episodes.v{GENERATOR_VERSION}"
 
 
 def _inside_project(path: Path) -> Path:
@@ -52,7 +53,7 @@ class _Stream:
         if isinstance(seed, bool) or not isinstance(seed, int) or seed < 0:
             raise ValueError("seed must be a non-negative integer")
         self.key = key
-        self.prefix = f"tlu.emergent-ood-episodes.v0.4/{domain}/{seed}/".encode("ascii")
+        self.prefix = f"tlu.emergent-ood-episodes.v{GENERATOR_VERSION}/{domain}/{seed}/".encode("ascii")
         self.counter = 0
         self.buffer = bytearray()
 
@@ -102,7 +103,7 @@ def load_task_key(path: Path) -> bytes:
 
 def _partition(split: dict[str, Any], key: bytes, seed: int) -> dict[str, list[str]]:
     held = list(split["held_out_meaning_ids"])
-    _Stream(key, "heldout-partition", seed).shuffle(held)
+    _Stream(key, f"heldout-partition-{split['split_sha256']}", seed).shuffle(held)
     # The held-out ontology has 64 meanings in the default design.
     validation = held[: max(1, len(held) // 4)]
     test = held[len(validation):]
@@ -111,7 +112,7 @@ def _partition(split: dict[str, Any], key: bytes, seed: int) -> dict[str, list[s
 
 def _make_sets(
     *, meaning_ids: Sequence[str], k: int,
-    set_count: int, key: bytes, seed: int, stage: str,
+    set_count: int, key: bytes, seed: int, stage: str, split_sha256: str,
 ) -> list[tuple[str, list[str], list[str]]]:
     if k < 2 or k > len(meaning_ids):
         raise ValueError(f"k must be between 2 and the {stage} pool size")
@@ -119,16 +120,16 @@ def _make_sets(
         raise ValueError("set_count must be positive")
     result = []
     for set_index in range(set_count):
-        rng = _Stream(key, f"{stage}-candidate-set-{set_index}", seed)
+        rng = _Stream(key, f"{stage}-candidate-set-{split_sha256}-{set_index}", seed)
         pool = list(meaning_ids)
         rng.shuffle(pool)
         selected = pool[:k]
         # Candidate IDs and row order are fixed across the k balanced targets.
-        id_rng = _Stream(key, f"{stage}-candidate-ids-{set_index}", seed)
+        id_rng = _Stream(key, f"{stage}-candidate-ids-{split_sha256}-{set_index}", seed)
         order = list(range(k))
         id_rng.shuffle(order)
         candidates = [f"c{order[i]:03d}" for i in range(k)]
-        set_id = hashlib.sha256(f"{stage}/{seed}/{set_index}".encode()).hexdigest()[:16]
+        set_id = hashlib.sha256(f"{stage}/{split_sha256}/{seed}/{set_index}".encode()).hexdigest()[:16]
         result.append((set_id, selected, candidates))
     return result
 
@@ -151,7 +152,7 @@ def generate_ledgers(
     for stage, pool in partitions.items():
         candidate_sets = _make_sets(
             meaning_ids=pool, k=k, set_count=sets_per_stage,
-            key=task_key, seed=task_seed, stage=stage,
+            key=task_key, seed=task_seed, stage=stage, split_sha256=split["split_sha256"],
         )
         for set_index, (set_id, selected, candidate_ids) in enumerate(candidate_sets):
             candidates = [
@@ -160,11 +161,11 @@ def generate_ledgers(
             ]
             # All k targets occur exactly once; shuffle target order independently.
             target_order = list(range(k))
-            _Stream(task_key, f"{stage}-target-order-{set_index}", task_seed).shuffle(target_order)
+            _Stream(task_key, f"{stage}-target-order-{split['split_sha256']}-{set_index}", task_seed).shuffle(target_order)
             for within_set, target_index in enumerate(target_order):
                 episode_id = hmac.new(
                     task_key,
-                    f"episode/{task_seed}/{stage}/{set_id}/{within_set}".encode("ascii"),
+                    f"episode/{split['split_sha256']}/{task_seed}/{stage}/{set_id}/{within_set}".encode("ascii"),
                     hashlib.sha256,
                 ).hexdigest()[:24]
                 target_mid = selected[target_index]
@@ -213,6 +214,7 @@ def generate_ledgers(
 
     safe_meta = {
         "schema": SCHEMA,
+        "generator_version": GENERATOR_VERSION,
         "split_sha256": split["split_sha256"],
         "attributes": list(split["attributes"]),
         "task_key_id": hashlib.sha256(task_key).hexdigest()[:16],

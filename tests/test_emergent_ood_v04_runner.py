@@ -17,6 +17,8 @@ from experiments.emergent_ood_v0_4.runner import (
 )
 from experiments.emergent_ood_v0_4.split import build_split
 from tacit.runtime import ChatCompletion
+from tools.cost_report import aggregate
+from tools.paired_report import paired_report
 
 
 class FakeSender:
@@ -90,7 +92,8 @@ class EmergentOODV04RunnerTests(unittest.TestCase):
         self.attributes = self.split["attributes"]
         self.values = self.split["values_by_attribute"]
 
-    def _run(self, condition):
+    def _run(self, condition, episode=None):
+        episode = self.episode if episode is None else episode
         mock_condition = "json" if condition == "shared_protocol_card" else condition
         sender = None if condition in {"full_information", "no_message"} else FakeSender(mock_condition, self.attributes, self.values)
         receiver = FakeReceiver(mock_condition, self.attributes, self.values)
@@ -102,7 +105,7 @@ class EmergentOODV04RunnerTests(unittest.TestCase):
                 "receiver_instruction": "Decode the tuple from the message.",
             }
         row = run_condition(
-            episode=self.episode,
+            episode=episode,
             condition=condition,
             stage="validation",
             sender_model=sender,
@@ -128,6 +131,9 @@ class EmergentOODV04RunnerTests(unittest.TestCase):
                 self.assertGreater(row["costs"]["application_wire_bytes"], row["costs"]["delivered_payload_bytes"])
                 self.assertEqual(row["costs"]["model_call_count"], 2)
                 self.assertEqual(row["costs"]["complete_input_tokens"], 53)
+                cost_report = aggregate([row])
+                self.assertEqual(cost_report["input_schema_version"], "tlu.costs.v3")
+                self.assertEqual(cost_report["groups"][0]["episodes"], 1)
                 self.assertEqual(
                     [call["tokenizer"] for call in row["costs"]["model_calls"]],
                     ["fake-sender-tokenizer-v1", "fake-receiver-tokenizer-v1"],
@@ -182,6 +188,21 @@ class EmergentOODV04RunnerTests(unittest.TestCase):
         self.assertIsNone(row["costs"]["complete_output_tokens"])
         self.assertEqual(row["costs"]["calls_with_input_token_usage"], 1)
         self.assertEqual(row["costs"]["calls_with_output_token_usage"], 1)
+
+    def test_costs_v3_paired_analysis_keeps_split_as_the_uncertainty_unit(self):
+        episodes = select_candidate_sets(self.bundle, "validation", 1)
+        records = []
+        for episode in episodes:
+            for condition in ("no_message", "natural_language"):
+                row, _, _ = self._run(condition, episode)
+                records.append(row)
+        report = paired_report(records, replicates=100, seed=5)
+        self.assertEqual(report["input_schema_version"], "tlu.costs.v3")
+        self.assertEqual(len(report["comparisons"]), 1)
+        comparison = report["comparisons"][0]
+        self.assertEqual(comparison["paired_episode_count"], 4)
+        self.assertEqual(comparison["paired_inference_cluster_count"], 1)
+        self.assertIsNone(comparison["metrics"]["joint_success"]["ci95_low"])
 
     def test_incomplete_candidate_set_selection_is_rejected(self):
         corrupt = {**self.bundle, "gold": {**self.bundle["gold"]}}
