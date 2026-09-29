@@ -6,6 +6,8 @@ The default episode has five candidates. For every 5-element subset of the 9 hel
 
 The sender does not know the receiver's candidate set. Since every pair of held-out meanings can occur together for any `k ≥ 2`, an exact zero-error one-way code must distinguish all 9 possible targets. Its worst-case fixed-width payload floor is therefore `ceil(log2 9) = 4` bits, independent of `k`. This assumes a shared target-index codebook is already installed; its setup and distribution cost is excluded from the bound and must be measured in any operational comparison. The proof and assumptions are recorded in [`docs/THEORY.md`, §12](../../docs/THEORY.md).
 
+The executable [`code_bounds.py`](code_bounds.py) compares this fixed-width reference with the exact uniform-source Huffman prefix-code lengths and the payload-only reference for distinct strings under an external packet boundary. Run `python experiments/emergent_ood_v0_2/code_bounds.py --symbols 9`. The latter omits the cost of encoding that boundary; none of these bit figures predicts LLM tokens or substitutes for measured `tlu.costs.v3` bytes.
+
 Generate role-separated files with:
 
 ```powershell
