@@ -13,7 +13,8 @@ from itertools import product
 
 from tacit import ChatCompletion, exchange_dialogue
 from experiments.private_match_v0_3.protocols import (
-    PROTOCOL_IDS, encode_coordinate_message, parse_coordinate_message, protocol_by_id,
+    ENCODABLE_PROTOCOL_IDS, PROTOCOL_IDS, encode_coordinate_message,
+    parse_coordinate_message, protocol_by_id,
 )
 from experiments.private_match_v0_3.runner import (
     episode_id_for_seed, main as runner_main, planned_model_calls, run_condition,
@@ -105,6 +106,8 @@ class FrozenFormatSender:
             text = str(int(value[1:]))
         elif self.protocol_id == "short_nl":
             text = f"{coordinate} is {value}."
+        elif self.protocol_id == "autoform":
+            text = f"{coordinate} -> {value}"
         elif self.protocol_id == "strict_json":
             text = json.dumps({coordinate: value}, separators=(",", ":"))
         elif self.protocol_id == "fixed_binary":
@@ -321,7 +324,7 @@ class PrivateMatchV03Tests(unittest.TestCase):
         )
 
     def test_frozen_protocols_have_strict_decoders_and_fail_closed(self):
-        self.assertEqual(len(PROTOCOL_IDS), 6)
+        self.assertEqual(len(PROTOCOL_IDS), 7)
         expected = {
             "compact_kv": "x=x0002",
             "decimal_index": "2",
@@ -334,7 +337,15 @@ class PrivateMatchV03Tests(unittest.TestCase):
                 self.assertEqual(parse_coordinate_message(name, valid, q=4, sender="sender_x"), (True, True, "x0002"))
                 self.assertFalse(parse_coordinate_message(name, valid + " ", q=4, sender="sender_x")[0])
                 protocol = protocol_by_id(name, 4)
-                self.assertIn("pmt3-prompts-5", protocol.protocol_id)
+                self.assertIn("pmt3-prompts-6", protocol.protocol_id)
+        autoform = protocol_by_id("autoform", 4)
+        self.assertIn("Choose a more efficient", autoform.sender_instruction)
+        self.assertEqual(
+            parse_coordinate_message("autoform", "x -> x0002", q=4, sender="sender_x"),
+            (None, None, None),
+        )
+        with self.assertRaisesRegex(ValueError, "no deterministic encoder"):
+            encode_coordinate_message("autoform", q=4, sender="sender_x", value="x0002")
         self.assertEqual(parse_coordinate_message("concise_nl", "The x coordinate is x0002.", q=4, sender="sender_x"), (True, True, "x0002"))
         self.assertEqual(parse_coordinate_message("concise_nl", "x is probably 0002", q=4, sender="sender_x"), (None, None, None))
         self.assertEqual(parse_coordinate_message("short_nl", "x is x0002.", q=4, sender="sender_x"), (True, True, "x0002"))
@@ -346,7 +357,7 @@ class PrivateMatchV03Tests(unittest.TestCase):
 
     def test_registered_encoders_roundtrip_every_value_across_q(self):
         for q in (2, 4, 8, 16, 64):
-            for name in PROTOCOL_IDS:
+            for name in ENCODABLE_PROTOCOL_IDS:
                 for sender, coordinate in (("sender_x", "x"), ("sender_y", "y")):
                     for index in range(q):
                         value = f"{coordinate}{index:04d}"
@@ -362,7 +373,7 @@ class PrivateMatchV03Tests(unittest.TestCase):
         ):
             with self.subTest(args=args), self.assertRaises(ValueError):
                 encode_coordinate_message(args[0], q=args[1], sender=args[2], value=args[3])
-        for name in PROTOCOL_IDS:
+        for name in ENCODABLE_PROTOCOL_IDS:
             message = encode_coordinate_message(
                 name, q=16384, sender="sender_x", value="x10000"
             )
@@ -396,7 +407,7 @@ class PrivateMatchV03Tests(unittest.TestCase):
         self.assertEqual(len({row["protocol"]["code_id"] for row in rows}), len(PROTOCOL_IDS))
         self.assertEqual(len({row["protocol"]["decoder_id"] for row in rows}), len(PROTOCOL_IDS))
         paired = paired_report(rows, replicates=100, seed=4)
-        self.assertEqual(len(paired["comparisons"]), 15)
+        self.assertEqual(len(paired["comparisons"]), 21)
         self.assertTrue(all(item["control_alignment"]["policy_matched"] for item in paired["comparisons"]))
         self.assertTrue(all(not item["control_alignment"]["decoder_matched"] for item in paired["comparisons"]))
         self.assertTrue(all(item["control_alignment"]["code_differs"] for item in paired["comparisons"]))

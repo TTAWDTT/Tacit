@@ -124,15 +124,21 @@ python -m experiments.private_match_v0_3.bit_frontier --q 4 --max-bits 8
 
 ## Frozen feasibility protocols and runner (model calls not run)
 
-`protocols.py` freezes prompt/parser/context revision `pmt3-prompts-5` and six representation
-IDs: `concise_nl`, `short_nl`, `compact_kv`, `decimal_index`, `strict_json`, and
-`fixed_binary`. It provides deterministic encoders alongside the model prompts
-and decoders. The parser accepts canonical compact KV/JSON strings, exactly
-`log2(q)` binary digits, canonical zero-based decimal indices, and the exact
-frozen sentences for both English templates. Noncanonical English paraphrases
-remain unknown pending a separate blinded semantic judge. The English baseline
-is selected from these two frozen templates using development outcomes only;
-neither development result is evaluation evidence.
+`protocols.py` freezes prompt/parser/context revision `pmt3-prompts-6` and seven
+representation arms: `concise_nl`, `short_nl`, `autoform`, `compact_kv`,
+`decimal_index`, `strict_json`, and `fixed_binary`. Six have deterministic
+reference encoders. `autoform` is a separate prompt-selected open-format arm
+adapted from Chen et al.'s AutoForm prompt and official-source audit: the model
+chooses a concise structured medium or code at runtime. It has no fixed syntax
+or deterministic encoder, so mechanical format validity and semantic fidelity
+are recorded as unknown; exact receiver success and complete costs remain
+scored. This is not a reproduction of the paper's HotpotQA benchmark. The
+parser accepts canonical compact KV/JSON strings, exactly `log2(q)` binary
+digits, canonical zero-based decimal indices, and the exact frozen sentences
+for both English templates. Other English paraphrases remain unknown pending a
+separate blinded semantic judge. The English baseline is selected from the two
+frozen templates using development outcomes only; neither development result
+is evaluation evidence.
 
 The deterministic encoder can be used directly without a model:
 
@@ -154,8 +160,9 @@ representation changes. `decimal_index` is a task-aware shorthand control,
 not a claim that decimal digits constitute a general-purpose language. Its
 sender-slot and zero-based-index schema are setup information and must be
 included in complete model-input cost. These functions are reference codecs
-and test fixtures. Model conditions still ask the LLM to emit and interpret the
-format.
+and test fixtures. `autoform` intentionally has no deterministic encoder; its
+message representation is selected by the prompted model. Model conditions
+still ask the LLM to emit and interpret each format.
 
 The runner is dry-run by default:
 

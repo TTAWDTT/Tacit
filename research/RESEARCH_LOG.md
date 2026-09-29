@@ -1,5 +1,40 @@
 # Research log
 
+## 2026-09-29 — Add a prompt-selected AutoForm comparison arm
+
+**Observation.** AutoForm is the closest prior method: it prompts agents to
+choose a concise alternative medium and reports lower message-token counts, but
+its task outcomes vary with the initiating model. In the audited split-context
+HotpotQA table, the paper reports GPT-4/GPT-4 F1 0.65→0.69 with generated
+tokens 151.0→100.0, while GPT-3.5/GPT-3.5 F1 falls 0.62→0.53 as tokens fall
+369.3→286.6. The project already recorded this source audit and the exact
+official prompt variants in [`AUTOFORM_BASELINE_AUDIT.md`](AUTOFORM_BASELINE_AUDIT.md).
+
+**Hypothesis and design.** A prompt-selected open format may use fewer message
+bytes or tokens on the exact coordinate-transfer task, but may trade away
+receiver success depending on model capability. Added a distinct `autoform`
+arm to Private Match v0.3, adapted from the official free-format prompt. The
+prompt invites concise structured data or code without fixing a grammar. Its
+parser therefore returns unknown for syntax and message fidelity; exact
+receiver candidate-ID success and complete input/output, payload, and latency
+costs remain measured. This is an AutoForm-style matched task arm, not a
+reproduction of the paper's HotpotQA benchmark. The preregistered family now
+has seven arms and 21 pairwise exploratory contrasts; the English-template
+development selector remains limited to its two frozen English prompts.
+
+**Prediction.** If prompted format choice preserves task utility on this simple
+transfer task, `autoform` may move the success/cost frontier relative to fixed
+formats. If it emits natural language or unparseable shorthand, that is an
+observed selection/adherence outcome, not evidence that any particular fixed
+grammar failed. The comparison cannot establish a general new language or
+outperform trained selectors such as OPTiMACS.
+
+**Verification.** The Private Match v0.3 fake-client suite passes all 20 tests;
+Python compilation, preregistration/protocol/contrast consistency, and
+whitespace checks pass. A four-episode AutoForm evaluation runner dry run
+reports 12 planned calls and `inference_started=false`. No model
+inference or training was run for this amendment.
+
 ## 2026-09-29 — Freeze a development-only English-template selector
 
 **Observation.** The decimal-index audit showed that concise English alone is a

@@ -1,6 +1,6 @@
 """Versioned message formats for Private Match v0.3.
 
-These are feasibility prompts, not an optimized natural-language baseline.
+These are feasibility prompts, not a claim that one representation is optimal.
 The protocol ID includes the frozen prompt/parser revision.
 """
 from __future__ import annotations
@@ -11,10 +11,11 @@ import re
 from typing import Any
 
 
-PROMPT_REVISION = "pmt3-prompts-5"
+PROMPT_REVISION = "pmt3-prompts-6"
 PROTOCOL_IDS = (
-    "concise_nl", "short_nl", "compact_kv", "decimal_index", "strict_json", "fixed_binary",
+    "concise_nl", "short_nl", "autoform", "compact_kv", "decimal_index", "strict_json", "fixed_binary",
 )
+ENCODABLE_PROTOCOL_IDS = tuple(name for name in PROTOCOL_IDS if name != "autoform")
 
 
 def _decimal_width(q: int) -> int:
@@ -60,6 +61,21 @@ def protocol_by_id(name: str, q: int) -> Protocol:
             "combine the two messages, match the candidate table, and return only candidate_id."
         )
         code, decoder = "pmt3-short-nl-v1", "pmt3-short-nl-coordinate-v1"
+    elif name == "autoform":
+        sender = sender_common + (
+            "You are collaborating with other intelligent assistants. Choose a more efficient "
+            "communication medium other than natural language, which can contain ambiguities. "
+            "Consider a concise structured representation or code suited to this exact coordinate. "
+            "Use your selected medium to communicate your coordinate and exact value to the receiver. "
+            "Be clear and brief. Do not claim the other coordinate."
+        )
+        receiver = (
+            "You receive one message from each coordinate source. Each source may choose its own concise "
+            "non-natural-language medium, such as structured data or code; no fixed syntax is guaranteed. "
+            "Interpret the messages using their sender identities, combine the exact x and y values, "
+            "match the candidate table, and return only candidate_id."
+        )
+        code, decoder = "pmt3-autoform-prompt-selected-v1", "pmt3-open-format-receiver-v1"
     elif name == "compact_kv":
         sender = sender_common + (
             'Return exactly one key-value string, such as x=x0001 or y=y0001. No spaces, punctuation, or explanation.'
@@ -114,8 +130,8 @@ def protocol_by_id(name: str, q: int) -> Protocol:
 
 def encode_coordinate_message(name: str, *, q: int, sender: str, value: str) -> str:
     """Encode one valid private coordinate with the registered format."""
-    if name not in PROTOCOL_IDS:
-        raise ValueError(f"unknown protocol: {name}")
+    if name not in ENCODABLE_PROTOCOL_IDS:
+        raise ValueError(f"unknown or model-selected protocol has no deterministic encoder: {name}")
     if isinstance(q, bool) or not isinstance(q, int) or q < 2 or q & (q - 1):
         raise ValueError("q must be a power of two >= 2")
     coordinate = {"sender_x": "x", "sender_y": "y"}.get(sender)
@@ -154,6 +170,8 @@ def parse_coordinate_message(name: str, message: str, *, q: int, sender: str) ->
         raise ValueError("q must be a power of two >= 2")
     if not isinstance(message, str):
         raise ValueError("message must be a string")
+    if name == "autoform":
+        return None, None, None
     if name == "concise_nl":
         digits = _decimal_width(q)
         match = re.fullmatch(rf"The ([xy]) coordinate is ([xy]\d{{{digits}}})\.", message)
