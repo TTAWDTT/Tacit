@@ -338,7 +338,7 @@ Uses Hanabi as a known-answer environment to separate literal communicated conte
 
 [arXiv](https://arxiv.org/abs/2512.17914)
 
-Proposes quantized, compressed KV-cache transfer with a heterogeneous-model calibration step and reports 5–6× compression on three QA datasets. This is an important representation-transfer alternative to tokenized messages, but its transfer cost is not directly comparable to text-token count: report transmitted bytes, compatibility/calibration cost, receiver compute, task utility, and persistent model-specific state. Before treating it as a baseline, inspect the full method, implementation availability, and reproducibility; its abstract-level claims do not establish superiority on interactive hidden-information coordination.
+Proposes a hybrid cache-plus-text-facts transfer: 70% layer selection, adaptive KV quantization, YAKE/NER fact extraction, and statistical calibration. The paper reports compression ratios and heuristic relevance/coherence scores on three QA sets, but its main results table does not provide exact task accuracy/F1 or numeric comparisons to its listed full-text, uncompressed-KV, and uniform-quantization baselines. The cache dtype and compression denominator, whether extracted facts count in bytes, and shape-compatible mapping across different layer/head dimensions are under-specified. Treat it as an unverified candidate, not as evidence of superiority; see the [source audit](Q_KVCOMM_AUDIT_V0_1.md).
 
 ### Shi et al. (2026), *KVComm: Enabling Efficient LLM Communication through Selective KV Sharing*, ICLR 2026
 
