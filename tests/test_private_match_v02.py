@@ -5,7 +5,7 @@ import io
 import sys
 import tempfile
 import unittest
-from contextlib import redirect_stdout
+from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from unittest.mock import patch
 
@@ -14,7 +14,7 @@ from experiments.private_match_v0_2.protocols import PROTOCOL_IDS, protocol_by_i
 from experiments.private_match_v0_2.report import main as report_main, private_match_report
 from experiments.private_match_v0_2.runner import (
     MAX_MODEL_CALLS_PER_BATCH, _loopback_url, _message_diagnostics,
-    episode_id_for_seed, planned_model_calls, run_condition,
+    episode_id_for_seed, main as runner_main, planned_model_calls, run_condition,
 )
 from tacit.runtime import ChatCompletion
 from tools.cost_report import read_jsonl
@@ -52,6 +52,42 @@ class PrivateMatchV02Tests(unittest.TestCase):
         for endpoint in ("https://api.example.com/v1", "http://192.168.1.4:8000/v1"):
             with self.subTest(endpoint=endpoint), self.assertRaisesRegex(ValueError, "loopback"):
                 _loopback_url(endpoint)
+
+    def test_execute_rejects_missing_resource_preflight_before_output_or_client_creation(self):
+        with tempfile.TemporaryDirectory() as directory:
+            output_path = Path(directory) / "must-not-exist.jsonl"
+            arguments = [
+                "runner.py", "--execute", "--protocols", "no_message", "--episodes", "1",
+                "--receiver-model", "local-receiver", "--receiver-tokenizer-id", "receiver-tokenizer",
+                "--output", str(output_path),
+            ]
+            with patch.object(sys, "argv", arguments):
+                with patch("experiments.private_match_v0_2.runner.OpenAICompatibleClient") as client:
+                    with redirect_stderr(io.StringIO()), self.assertRaises(SystemExit):
+                        runner_main()
+            self.assertFalse(output_path.exists())
+            client.assert_not_called()
+
+    def test_execute_checks_every_configured_endpoint_port(self):
+        with tempfile.TemporaryDirectory() as directory:
+            output_path = Path(directory) / "result.jsonl"
+            arguments = [
+                "runner.py", "--execute", "--protocols", "concise_nl", "--episodes", "1",
+                "--sender-model", "local-sender", "--sender-tokenizer-id", "sender-tokenizer",
+                "--receiver-model", "local-receiver", "--receiver-tokenizer-id", "receiver-tokenizer",
+                "--sender-base-url", "http://127.0.0.1:8001/v1",
+                "--receiver-base-url", "http://127.0.0.1:8002/v1",
+                "--resource-preflight", str(Path(directory) / "preflight.json"),
+                "--output", str(output_path),
+            ]
+            with patch.object(sys, "argv", arguments):
+                with patch("experiments.private_match_v0_2.runner.validate_resource_preflight") as validate:
+                    with patch("experiments.private_match_v0_2.runner.OpenAICompatibleClient"):
+                        with patch("experiments.private_match_v0_2.runner.run_condition", return_value={"fake": True}):
+                            with redirect_stdout(io.StringIO()):
+                                self.assertEqual(runner_main(), 0)
+            validate.assert_called_once_with(Path(directory) / "preflight.json", required_ports={8001, 8002})
+            self.assertTrue(output_path.exists())
 
     def test_hex_nibble_mapping_is_exact_for_registered_domain(self):
         for value in range(16):

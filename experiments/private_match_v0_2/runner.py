@@ -22,6 +22,10 @@ if str(REPOSITORY_ROOT) not in sys.path:
 from tacit.channel import LocalTCPMessageChannel
 from tacit.runtime import ChatCompletion, ChatModel, OpenAICompatibleClient
 
+from experiments.emergent_ood_v0_3.runner import (
+    _endpoint_port,
+    validate_resource_preflight,
+)
 from experiments.private_match_v0_1.generate_tasks import generate_episode, score_answer
 from experiments.private_match_v0_2.protocols import PROTOCOL_IDS, Protocol, protocol_by_id
 
@@ -238,6 +242,7 @@ def main() -> int:
     parser.add_argument("--features", type=int, default=5)
     parser.add_argument("--vocabulary-size", type=int, default=16)
     parser.add_argument("--output", type=Path, default=Path(".cache/private_match_v0_2/pilot.jsonl"))
+    parser.add_argument("--resource-preflight", type=Path, help="passing same-host report from emergent_ood_v0_3/resource_preflight.ps1, at most five minutes old")
     parser.add_argument("--force", action="store_true", help="overwrite an existing output file")
     parser.add_argument("--sender-model", default=os.environ.get("TLU_SENDER_MODEL", ""))
     parser.add_argument("--receiver-model", default=os.environ.get("TLU_RECEIVER_MODEL", ""))
@@ -281,6 +286,13 @@ def main() -> int:
         parser.error("the registered hex_nibbles condition requires vocabulary-size 16")
     sender_endpoint = _loopback_url(args.sender_base_url or args.base_url)
     receiver_endpoint = _loopback_url(args.receiver_base_url or args.base_url)
+    required_ports = {_endpoint_port(receiver_endpoint), _endpoint_port(sender_endpoint)} if any(
+        name != "no_message" for name in args.protocols
+    ) else {_endpoint_port(receiver_endpoint)}
+    try:
+        validate_resource_preflight(args.resource_preflight, required_ports=required_ports)
+    except ValueError as exc:
+        parser.error(str(exc))
     target = args.output.resolve()
     if target.exists() and not args.force:
         parser.error(f"refusing to overwrite {target}; pass --force explicitly")

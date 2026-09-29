@@ -32,22 +32,29 @@ The default seven-condition dry run still previews all 28 rows and reports the
 52 planned calls; execution will reject that oversized batch before creating
 an output file or calling an endpoint.
 
-Example first batch, after its resource gate passes and the local endpoint is
-already running:
+For the first batch, run the preflight while the endpoint port is free. After
+it passes, start the local endpoint and submit the report to the runner:
 
 ```powershell
-python experiments/private_match_v0_2/runner.py --execute --protocols no_message concise_nl --episodes 4 --seed 20260929 --output .cache/private_match_v0_2/baseline_concise.jsonl
+./experiments/emergent_ood_v0_3/resource_preflight.ps1 -Ports 8000
+python experiments/private_match_v0_2/runner.py --execute --protocols no_message concise_nl --episodes 4 --seed 20260929 --resource-preflight .cache/emergent_ood_v0_3/resource_preflight.json --output .cache/private_match_v0_2/baseline_concise.jsonl
 ```
 
 An additional protocol uses the same seed and episode count but a new ledger:
 
 ```powershell
-python experiments/private_match_v0_2/runner.py --execute --protocols compact_kv --episodes 4 --seed 20260929 --output .cache/private_match_v0_2/compact_kv.jsonl
+./experiments/emergent_ood_v0_3/resource_preflight.ps1 -Ports 8000
+python experiments/private_match_v0_2/runner.py --execute --protocols compact_kv --episodes 4 --seed 20260929 --resource-preflight .cache/emergent_ood_v0_3/resource_preflight.json --output .cache/private_match_v0_2/compact_kv.jsonl
 ```
 
 Repeat that additional-condition form for each registered protocol. Before
-every batch, independently satisfy the frozen resource gate. Never use
-`--force` to reuse a ledger when combining staged runs.
+every batch, run the read-only resource preflight with every configured
+endpoint port while those ports are free. `--execute` fails closed on a
+missing, rejected, stale, other-host, port-incomplete, or threshold-mismatched
+report before creating output or initializing an endpoint client. For separate
+sender and receiver endpoints, include both ports, e.g. `-Ports 8000,8001`,
+and use the same report path in `--resource-preflight`. Never use `--force` to
+reuse a ledger when combining staged runs.
 
 Run the paired fidelity/task/cost analysis after collecting the ledgers:
 
@@ -63,8 +70,9 @@ CLI accepts one or more ledgers and rejects duplicate condition/episode rows.
 ## Safe behavior
 
 The CLI is dry-run by default and never launches a model process. Model
-requests require `--execute`, explicit model IDs and tokenizer IDs, and a
-loopback OpenAI-compatible endpoint. Cloud endpoint URLs and HTTP redirects
+requests require `--execute`, explicit model IDs and tokenizer IDs, a fresh
+passing same-host resource report, and a loopback OpenAI-compatible endpoint.
+Cloud endpoint URLs and HTTP redirects
 are rejected. This runner was implemented and tested with fake clients only;
 no model was run.
 

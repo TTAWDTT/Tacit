@@ -35,7 +35,7 @@
   "resource_gate": {
     "required": "Before any model execution, satisfy all thresholds in experiments/index_v0_3/preregistration.json on the current machine; no remote/cloud inference.",
     "runner_default": "dry-run",
-    "execution_requires": "explicit --execute and one shared or separate sender/receiver loopback endpoint(s); redirects and non-loopback hosts are rejected; no batch may exceed 12 planned model requests; each request times out after 30 seconds",
+    "execution_requires": "explicit --execute, a passing same-host --resource-preflight report sampled within five minutes while every configured loopback endpoint port was free, and one shared or separate sender/receiver loopback endpoint(s); redirects and non-loopback hosts are rejected; no batch may exceed 12 planned model requests; each request times out after 30 seconds",
     "staged_execution": "Run no_message plus one message protocol at four episodes (12 requests), then add one message protocol at a time (8 requests per batch); run a fresh resource gate before every batch and use a distinct output ledger for every batch.",
     "episode_identity": "Episode IDs are derived from generation seeds so batches for the same seed pair and batches for distinct seeds can be combined without collisions.",
     "model_execution_performed_for_this_artifact": false
