@@ -8,7 +8,7 @@ from pathlib import Path
 from experiments.private_match_v0_1.generate_tasks import generate_episode
 from experiments.private_match_v0_2.protocols import PROTOCOL_IDS, protocol_by_id
 from experiments.private_match_v0_2.report import private_match_report
-from experiments.private_match_v0_2.runner import _message_diagnostics, run_condition
+from experiments.private_match_v0_2.runner import _loopback_url, _message_diagnostics, run_condition
 from tacit.runtime import ChatCompletion
 from tools.cost_report import read_jsonl
 
@@ -31,6 +31,13 @@ class PrivateMatchV02Tests(unittest.TestCase):
         protocols = [protocol_by_id(name) for name in PROTOCOL_IDS]
         self.assertEqual(len({item.protocol_id for item in protocols}), len(protocols))
         self.assertTrue(all(item.sender_instruction and item.receiver_instruction for item in protocols))
+
+    def test_endpoint_guard_accepts_loopback_and_rejects_remote_hosts(self):
+        self.assertEqual(_loopback_url("http://127.0.0.1:8001/v1"), "http://127.0.0.1:8001/v1")
+        self.assertEqual(_loopback_url("http://localhost:8002/v1"), "http://localhost:8002/v1")
+        for endpoint in ("https://api.example.com/v1", "http://192.168.1.4:8000/v1"):
+            with self.subTest(endpoint=endpoint), self.assertRaisesRegex(ValueError, "loopback"):
+                _loopback_url(endpoint)
 
     def test_hex_nibble_mapping_is_exact_for_registered_domain(self):
         for value in range(16):

@@ -51,9 +51,11 @@ python experiments/private_match_v0_2/runner.py
 ```
 
 Once the separately documented resource gate has passed and a local endpoint
-is already running, configure `TLU_BASE_URL`, `TLU_SENDER_MODEL`,
+is already running, configure `TLU_BASE_URL` (or separate
+`TLU_SENDER_BASE_URL` and `TLU_RECEIVER_BASE_URL`), `TLU_SENDER_MODEL`,
 `TLU_RECEIVER_MODEL`, `TLU_SENDER_TOKENIZER_ID`, and
-`TLU_RECEIVER_TOKENIZER_ID`, then add `--execute`. Sender and receiver token
+`TLU_RECEIVER_TOKENIZER_ID`, then add `--execute`. The separate loopback
+endpoints support heterogeneous local model servers. Sender and receiver token
 counts stay in separate tokenizer strata. Results write as `tlu.costs.v3`
 episode rows. An existing output is protected unless
 `--force` is explicit; `--force` overwrites the old ledger rather than

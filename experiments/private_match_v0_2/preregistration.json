@@ -28,7 +28,7 @@
   "resource_gate": {
     "required": "Before any model execution, satisfy all thresholds in experiments/index_v0_3/preregistration.json on the current machine; no remote/cloud inference.",
     "runner_default": "dry-run",
-    "execution_requires": "explicit --execute and a loopback endpoint",
+    "execution_requires": "explicit --execute and one shared or separate sender/receiver loopback endpoint(s); redirects and non-loopback hosts are rejected",
     "model_execution_performed_for_this_artifact": false
   },
   "analysis": {

@@ -1,5 +1,11 @@
 # Research log
 
+## 2026-09-29 — Enable separate loopback endpoints for heterogeneous Private Match agents
+
+- **Gap:** v0.2 allowed different sender/receiver model IDs and tokenizer IDs but forced both requests through one local server address. This did not cover deployments where independently hosted local model families expose different ports.
+- **Change:** added sender/receiver endpoint overrides with a shared local endpoint as the fallback. Both addresses are validated as loopback; the inference client rejects redirects, and the runner still never starts services or calls cloud endpoints.
+- **Validation:** added endpoint allow/deny tests and reran the full offline suite (71 tests). This exercises URL policy only; it does not claim heterogeneous-model transfer. Resource gates still govern starting either local model server.
+
 ## 2026-09-29 — Add compact key-value as a preregistered Private Match baseline
 
 - **Prior evidence:** the earlier DuoSum v0.4 local run reports compact-KV syntax in 10/10 submitted messages, but sender-value fidelity in only 9/10; this shows why the new comparison must separately score format adherence and exact content fidelity. The experiment plan already lists compact key-value text among required representation baselines.

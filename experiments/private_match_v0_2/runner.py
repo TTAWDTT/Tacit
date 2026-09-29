@@ -233,6 +233,8 @@ def main() -> int:
     parser.add_argument("--receiver-tokenizer-id", default=os.environ.get("TLU_RECEIVER_TOKENIZER_ID", ""))
     parser.add_argument("--model-population-id", default=os.environ.get("TLU_MODEL_POPULATION_ID", "local-unspecified"))
     parser.add_argument("--base-url", default=os.environ.get("TLU_BASE_URL", "http://127.0.0.1:8000/v1"))
+    parser.add_argument("--sender-base-url", default=os.environ.get("TLU_SENDER_BASE_URL", ""))
+    parser.add_argument("--receiver-base-url", default=os.environ.get("TLU_RECEIVER_BASE_URL", ""))
     args = parser.parse_args()
     if args.episodes < 1:
         parser.error("--episodes must be positive")
@@ -255,13 +257,14 @@ def main() -> int:
         parser.error("the registered hex_nibbles condition requires at most 16 features and values")
     if "hex_nibbles" in args.protocols and args.vocabulary_size != 16:
         parser.error("the registered hex_nibbles condition requires vocabulary-size 16")
-    endpoint = _loopback_url(args.base_url)
+    sender_endpoint = _loopback_url(args.sender_base_url or args.base_url)
+    receiver_endpoint = _loopback_url(args.receiver_base_url or args.base_url)
     target = args.output.resolve()
     if target.exists() and not args.force:
         parser.error(f"refusing to overwrite {target}; pass --force explicitly")
     target.parent.mkdir(parents=True, exist_ok=True)
-    sender = _NamedClient(OpenAICompatibleClient(endpoint, args.sender_model, max_tokens=64, follow_redirects=False)) if args.sender_model else None
-    receiver = _NamedClient(OpenAICompatibleClient(endpoint, args.receiver_model, max_tokens=16, follow_redirects=False))
+    sender = _NamedClient(OpenAICompatibleClient(sender_endpoint, args.sender_model, max_tokens=64, follow_redirects=False)) if args.sender_model else None
+    receiver = _NamedClient(OpenAICompatibleClient(receiver_endpoint, args.receiver_model, max_tokens=16, follow_redirects=False))
     with target.open("w", encoding="utf-8", newline="\n") as out:
         for index in range(args.episodes):
             for name in args.protocols:
