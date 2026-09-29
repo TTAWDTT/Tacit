@@ -4,7 +4,9 @@ import hashlib
 import json
 import tempfile
 import unittest
+from types import SimpleNamespace
 from pathlib import Path
+from unittest.mock import patch
 
 from experiments.emergent_ood_v0_4.induce_protocol_cards import (
     OUTPUT_SCHEMA,
@@ -83,6 +85,52 @@ class EmergentOODProtocolInductionTests(unittest.TestCase):
             self.assertFalse(plan["model_loaded"])
             self.assertEqual(plan["test_examples_in_prompt"], 0)
             self.assertFalse(output_dir.exists())
+
+    def test_mocked_execute_writes_auditable_cards_and_full_cost_manifest(self):
+        cache_root = Path(__file__).resolve().parents[1] / ".cache"
+        cache_root.mkdir(exist_ok=True)
+        response = json.dumps({
+            "schema": OUTPUT_SCHEMA,
+            "protocols": [
+                {"sender_instruction": "Encode each value with a stable symbol.", "receiver_instruction": "Decode symbols by field and select the exact candidate."},
+                {"sender_instruction": "Emit ordered field-value pairs with boundaries.", "receiver_instruction": "Parse ordered pairs and select the matching candidate."},
+            ],
+        })
+        with tempfile.TemporaryDirectory(dir=cache_root) as temporary:
+            root = Path(temporary)
+            key_path = root / "task.key"
+            key_path.write_bytes(self.key)
+            preflight_path = root / "passing-preflight.json"
+            preflight_path.write_text("{}", encoding="utf-8")
+            output_dir = root / "induced"
+            completion = SimpleNamespace(
+                text=response, model="mock-generator", input_tokens=310,
+                output_tokens=80, service_seconds=0.25,
+            )
+            with patch(
+                "experiments.emergent_ood_v0_4.induce_protocol_cards.validate_resource_preflight"
+            ) as preflight, patch(
+                "experiments.emergent_ood_v0_4.induce_protocol_cards.OpenAICompatibleClient"
+            ) as client_type:
+                client_type.return_value.complete.return_value = completion
+                manifest = run_induction(
+                    split_seed=31, task_key_path=key_path, example_count=16, candidate_count=2,
+                    output_dir=output_dir, execute=True, model="mock-requested-model",
+                    tokenizer_id="mock-tokenizer", resource_preflight=preflight_path,
+                )
+
+            preflight.assert_called_once()
+            client_type.assert_called_once()
+            client_type.return_value.complete.assert_called_once()
+            self.assertTrue(manifest["inference_started"])
+            self.assertEqual(manifest["model_calls"], 1)
+            self.assertEqual(manifest["input_tokens"], 310)
+            self.assertEqual(manifest["output_tokens"], 80)
+            self.assertEqual(len(manifest["candidate_cards"]), 2)
+            self.assertEqual(manifest["prompt_utf8_bytes"], (output_dir / "induction-prompt.json").stat().st_size)
+            self.assertEqual(manifest["completion_utf8_bytes"], (output_dir / "induction-completion.txt").stat().st_size)
+            saved_manifest = json.loads((output_dir / "induction-manifest.json").read_text(encoding="utf-8"))
+            self.assertEqual(saved_manifest, manifest)
 
 
 if __name__ == "__main__":
