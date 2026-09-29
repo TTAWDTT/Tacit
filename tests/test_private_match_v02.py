@@ -1,14 +1,21 @@
 from __future__ import annotations
 
 import json
+import io
+import sys
 import tempfile
 import unittest
+from contextlib import redirect_stdout
 from pathlib import Path
+from unittest.mock import patch
 
 from experiments.private_match_v0_1.generate_tasks import generate_episode
 from experiments.private_match_v0_2.protocols import PROTOCOL_IDS, protocol_by_id
-from experiments.private_match_v0_2.report import private_match_report
-from experiments.private_match_v0_2.runner import _loopback_url, _message_diagnostics, run_condition
+from experiments.private_match_v0_2.report import main as report_main, private_match_report
+from experiments.private_match_v0_2.runner import (
+    MAX_MODEL_CALLS_PER_BATCH, _loopback_url, _message_diagnostics,
+    episode_id_for_seed, planned_model_calls, run_condition,
+)
 from tacit.runtime import ChatCompletion
 from tools.cost_report import read_jsonl
 
@@ -27,6 +34,13 @@ class FakeModel:
 
 
 class PrivateMatchV02Tests(unittest.TestCase):
+    def test_batch_call_budget_and_seed_stable_episode_ids(self):
+        self.assertEqual(MAX_MODEL_CALLS_PER_BATCH, 12)
+        self.assertEqual(planned_model_calls(4, ["no_message", "concise_nl"]), 12)
+        self.assertEqual(planned_model_calls(4, ["no_message", *PROTOCOL_IDS]), 52)
+        self.assertEqual(episode_id_for_seed(20260929), "pm2-000020260929")
+        self.assertEqual(episode_id_for_seed(20260929), episode_id_for_seed(20260929))
+
     def test_registered_protocols_are_explicit_and_unique(self):
         protocols = [protocol_by_id(name) for name in PROTOCOL_IDS]
         self.assertEqual(len({item.protocol_id for item in protocols}), len(protocols))
@@ -144,9 +158,13 @@ class PrivateMatchV02Tests(unittest.TestCase):
             rows.extend((no_message, json_row))
 
         with tempfile.TemporaryDirectory() as directory:
-            path = Path(directory) / "rows.jsonl"
-            path.write_text("".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8")
-            report = private_match_report(read_jsonl(path), replicates=100)
+            baseline_path = Path(directory) / "baseline.jsonl"
+            message_path = Path(directory) / "message.jsonl"
+            baseline_path.write_text("".join(json.dumps(rows[index]) + "\n" for index in range(0, len(rows), 2)), encoding="utf-8")
+            message_path.write_text("".join(json.dumps(rows[index]) + "\n" for index in range(1, len(rows), 2)), encoding="utf-8")
+            report = private_match_report(
+                read_jsonl(baseline_path) + read_jsonl(message_path), replicates=100,
+            )
 
         json_condition = next(item for item in report["conditions"] if item["protocol"]["policy_id"] == "json")
         self.assertEqual(json_condition["episodes"], 2)
@@ -157,6 +175,41 @@ class PrivateMatchV02Tests(unittest.TestCase):
         self.assertEqual(comparison["metrics"]["joint_success"]["mean_left_minus_right"], 1.0)
         self.assertEqual(comparison["metrics"]["message_semantic_fidelity"]["paired_episodes"], 0)
         self.assertEqual(comparison["metrics"]["message_semantic_fidelity"]["missing_pairs"], 2)
+
+    def test_report_cli_combines_staged_ledgers(self):
+        rows = []
+        for seed in (71, 72):
+            episode_id = episode_id_for_seed(seed)
+            sender_view, _, gold = generate_episode(
+                episode_id=episode_id, seed=seed, candidate_count=8,
+                feature_count=5, vocabulary_size=16,
+            )
+            rows.append(run_condition(
+                episode_id=episode_id, seed=seed, candidate_count=8,
+                feature_count=5, vocabulary_size=16, protocol=protocol_by_id("no_message"),
+                sender_model=None, receiver_model=FakeModel("receiver", lambda _: "bad"),
+                sender_tokenizer_id=None, receiver_tokenizer_id="receiver-tok",
+                model_population_id="pair-v1",
+            ))
+            target = sender_view["target_record"]
+            rows.append(run_condition(
+                episode_id=episode_id, seed=seed, candidate_count=8,
+                feature_count=5, vocabulary_size=16, protocol=protocol_by_id("json"),
+                sender_model=FakeModel("sender", lambda _, target=target: json.dumps(target)),
+                receiver_model=FakeModel("receiver", lambda _: gold["target_candidate_id"]),
+                sender_tokenizer_id="sender-tok", receiver_tokenizer_id="receiver-tok",
+                model_population_id="pair-v1",
+            ))
+        with tempfile.TemporaryDirectory() as directory:
+            first, second = Path(directory) / "a.jsonl", Path(directory) / "b.jsonl"
+            first.write_text("".join(json.dumps(row) + "\n" for row in rows[::2]), encoding="utf-8")
+            second.write_text("".join(json.dumps(row) + "\n" for row in rows[1::2]), encoding="utf-8")
+            output = io.StringIO()
+            with patch.object(sys, "argv", ["report.py", str(first), str(second), "--replicates", "100"]), redirect_stdout(output):
+                self.assertEqual(report_main(), 0)
+            report = json.loads(output.getvalue())
+        comparison = next(item for item in report["paired_comparisons"] if item["paired_episode_count"] == 2)
+        self.assertEqual(comparison["metrics"]["joint_success"]["paired_episodes"], 2)
 
 
 if __name__ == "__main__":

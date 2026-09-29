@@ -28,6 +28,18 @@ from experiments.private_match_v0_2.protocols import PROTOCOL_IDS, Protocol, pro
 
 EXPERIMENT_ID = "private-match-v0.2"
 SCORER_ID = "private-match-exact-candidate-id-v1"
+MAX_MODEL_CALLS_PER_BATCH = 12
+REQUEST_TIMEOUT_SECONDS = 30.0
+
+
+def planned_model_calls(episodes: int, protocols: list[str]) -> int:
+    """Count model requests before execution so staged runs have a hard cap."""
+    return episodes * sum(1 if name == "no_message" else 2 for name in protocols)
+
+
+def episode_id_for_seed(seed: int) -> str:
+    """Stable episode identity shared across separately executed protocol batches."""
+    return f"pm2-{seed:012d}"
 
 
 def _json(value: Any) -> str:
@@ -244,13 +256,23 @@ def main() -> int:
         parser.error("the requested task has fewer unique records than candidates")
     if args.seed < 0:
         parser.error("--seed must be non-negative")
+    calls_planned = planned_model_calls(args.episodes, args.protocols)
     if not args.execute:
         print(json.dumps({
             "mode": "dry-run", "would_run": args.episodes * len(args.protocols),
+            "planned_model_calls": calls_planned,
+            "maximum_model_calls_per_batch": MAX_MODEL_CALLS_PER_BATCH,
+            "fits_call_cap": calls_planned <= MAX_MODEL_CALLS_PER_BATCH,
+            "request_timeout_seconds": REQUEST_TIMEOUT_SECONDS,
             "protocols": args.protocols, "output": str(args.output),
             "inference_started": False,
         }, indent=2))
         return 0
+    if calls_planned > MAX_MODEL_CALLS_PER_BATCH:
+        parser.error(
+            f"this batch plans {calls_planned} model calls, above the hard limit of "
+            f"{MAX_MODEL_CALLS_PER_BATCH}; split protocols or reduce --episodes"
+        )
     if not args.receiver_tokenizer_id or not args.receiver_model or any(p != "no_message" for p in args.protocols) and (not args.sender_model or not args.sender_tokenizer_id):
         parser.error("--execute requires receiver model/tokenizer IDs and sender model/tokenizer IDs for message protocols")
     if "hex_nibbles" in args.protocols and (args.features > 16 or args.vocabulary_size > 16):
@@ -263,13 +285,13 @@ def main() -> int:
     if target.exists() and not args.force:
         parser.error(f"refusing to overwrite {target}; pass --force explicitly")
     target.parent.mkdir(parents=True, exist_ok=True)
-    sender = _NamedClient(OpenAICompatibleClient(sender_endpoint, args.sender_model, max_tokens=64, follow_redirects=False)) if args.sender_model else None
-    receiver = _NamedClient(OpenAICompatibleClient(receiver_endpoint, args.receiver_model, max_tokens=16, follow_redirects=False))
+    sender = _NamedClient(OpenAICompatibleClient(sender_endpoint, args.sender_model, timeout_seconds=REQUEST_TIMEOUT_SECONDS, max_tokens=64, follow_redirects=False)) if args.sender_model else None
+    receiver = _NamedClient(OpenAICompatibleClient(receiver_endpoint, args.receiver_model, timeout_seconds=REQUEST_TIMEOUT_SECONDS, max_tokens=16, follow_redirects=False))
     with target.open("w", encoding="utf-8", newline="\n") as out:
         for index in range(args.episodes):
             for name in args.protocols:
                 row = run_condition(
-                    episode_id=f"pm2-{index:06d}", seed=args.seed + index,
+                    episode_id=episode_id_for_seed(args.seed + index), seed=args.seed + index,
                     candidate_count=args.candidates, feature_count=args.features,
                     vocabulary_size=args.vocabulary_size,
                     protocol=protocol_by_id(name),
@@ -281,7 +303,10 @@ def main() -> int:
                 )
                 out.write(json.dumps(row, ensure_ascii=False, sort_keys=True) + "\n")
                 out.flush()
-    print(json.dumps({"mode": "executed", "episodes": args.episodes, "output": str(target)}, indent=2))
+    print(json.dumps({
+        "mode": "executed", "episodes": args.episodes,
+        "model_calls": calls_planned, "output": str(target),
+    }, indent=2))
     return 0
 
 

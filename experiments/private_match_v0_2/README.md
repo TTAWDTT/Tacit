@@ -21,15 +21,44 @@ sender-selected semantic fidelity are left null instead of being guessed.
 This makes failed messages auditable while keeping the synthetic target out of
 the scorer fields.
 
-Run the paired fidelity/task/cost analysis after collecting a ledger:
+The execution path is deliberately staged. A batch has a hard ceiling of 12
+planned model requests and each HTTP request has a 30-second timeout. At four
+episodes, run the no-message baseline and one message condition together (12
+requests), then run one additional message condition per batch (8 requests).
+Use the same `--seed` and task parameters for every batch, write to a distinct
+output path, and pass every ledger to the report. Episode IDs derive from the
+generation seed, so the report can pair conditions collected in separate runs.
+The default seven-condition dry run still previews all 28 rows and reports the
+52 planned calls; execution will reject that oversized batch before creating
+an output file or calling an endpoint.
+
+Example first batch, after its resource gate passes and the local endpoint is
+already running:
 
 ```powershell
-python experiments/private_match_v0_2/report.py .cache/private_match_v0_2/pilot.jsonl --output .cache/private_match_v0_2/report.json
+python experiments/private_match_v0_2/runner.py --execute --protocols no_message concise_nl --episodes 4 --seed 20260929 --output .cache/private_match_v0_2/baseline_concise.jsonl
+```
+
+An additional protocol uses the same seed and episode count but a new ledger:
+
+```powershell
+python experiments/private_match_v0_2/runner.py --execute --protocols compact_kv --episodes 4 --seed 20260929 --output .cache/private_match_v0_2/compact_kv.jsonl
+```
+
+Repeat that additional-condition form for each registered protocol. Before
+every batch, independently satisfy the frozen resource gate. Never use
+`--force` to reuse a ledger when combining staged runs.
+
+Run the paired fidelity/task/cost analysis after collecting the ledgers:
+
+```powershell
+python experiments/private_match_v0_2/report.py .cache/private_match_v0_2/baseline_concise.jsonl .cache/private_match_v0_2/compact_kv.jsonl --output .cache/private_match_v0_2/report.json
 ```
 
 Task parameters contain fixed task-scale settings; episode seeds are stored
 under diagnostics so independent episodes pool into the same task/model
-stratum and paired bootstrap intervals use the full episode set.
+stratum and paired bootstrap intervals use the full episode set. The report
+CLI accepts one or more ledgers and rejects duplicate condition/episode rows.
 
 ## Safe behavior
 

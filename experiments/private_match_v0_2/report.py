@@ -214,13 +214,14 @@ def private_match_report(
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("input", type=Path, help="Private Match v0.2 per-episode tlu.costs.v3 JSONL")
+    parser.add_argument("inputs", nargs="+", type=Path, help="one or more Private Match v0.2 per-episode tlu.costs.v3 JSONL ledgers")
     parser.add_argument("-o", "--output", type=Path, help="write JSON report (default: stdout)")
     parser.add_argument("--replicates", type=int, default=5000)
     parser.add_argument("--seed", type=int, default=1729)
     args = parser.parse_args()
     try:
-        report = private_match_report(read_jsonl(args.input), replicates=args.replicates, seed=args.seed)
+        records = [record for input_path in args.inputs for record in read_jsonl(input_path)]
+        report = private_match_report(records, replicates=args.replicates, seed=args.seed)
     except (OSError, RecordError) as exc:
         parser.error(str(exc))
     encoded = json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
