@@ -27,6 +27,19 @@ def holistic_onboarding_accuracy(*, meaning_count: int, distinct_examples: int) 
     return Fraction(distinct_examples + 1, meaning_count)
 
 
+def disjoint_holdout_candidate_accuracy(*, candidate_count: int) -> Fraction:
+    """Bayes accuracy when every candidate is unseen under a random bijection.
+
+    The receiver sees the candidate meanings and a transmitted code symbol;
+    calibration examples cover meanings outside the candidate set. A uniform
+    random unknown bijection makes the symbol independent of which candidate
+    is the target, so this equals the no-message reference.
+    """
+    if isinstance(candidate_count, bool) or not isinstance(candidate_count, int) or candidate_count < 1:
+        raise ValueError("candidate_count must be a positive integer")
+    return Fraction(1, candidate_count)
+
+
 def build_report(*, meaning_count: int) -> dict[str, Any]:
     if isinstance(meaning_count, bool) or not isinstance(meaning_count, int) or meaning_count < 1:
         raise ValueError("meaning_count must be a positive integer")
@@ -56,6 +69,10 @@ def build_report(*, meaning_count: int) -> dict[str, Any]:
             "calibration cost, test-message cost, and decoder compute are not included",
         ],
         "frontier": rows,
+        "disjoint_holdout_reference": {
+            "description": "when all candidate meanings are unseen in calibration, an arbitrary holistic bijection conveys no information about which candidate is the target",
+            "expected_accuracy_for_candidate_count_k": "1/k",
+        },
         "limits": [
             "a structured or pretrained receiver may have informative priors and outperform this reference",
             "the result concerns a one-to-one holistic lookup code, not compositional protocols",

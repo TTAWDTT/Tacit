@@ -2,9 +2,14 @@ from __future__ import annotations
 
 import itertools
 import unittest
+from math import factorial
 from fractions import Fraction
 
-from research.protocol_onboarding import build_report, holistic_onboarding_accuracy
+from research.protocol_onboarding import (
+    build_report,
+    disjoint_holdout_candidate_accuracy,
+    holistic_onboarding_accuracy,
+)
 
 
 class ProtocolOnboardingTests(unittest.TestCase):
@@ -41,6 +46,35 @@ class ProtocolOnboardingTests(unittest.TestCase):
         self.assertTrue(all(a <= b for a, b in zip(accuracies, accuracies[1:])))
         self.assertFalse(report["is_language_or_llm_result"])
         self.assertTrue(any("not compositional" in limit for limit in report["limits"]))
+
+    def test_random_holistic_code_has_no_value_on_disjoint_candidate_support(self):
+        self.assertEqual(disjoint_holdout_candidate_accuracy(candidate_count=1), Fraction(1, 1))
+        self.assertEqual(disjoint_holdout_candidate_accuracy(candidate_count=4), Fraction(1, 4))
+        with self.assertRaises(ValueError):
+            disjoint_holdout_candidate_accuracy(candidate_count=0)
+
+    def test_disjoint_support_null_matches_exhaustive_unseen_bijections(self):
+        for meaning_count in range(2, 6):
+            meanings = set(range(meaning_count))
+            for calibration_size in range(meaning_count):
+                for calibrated in itertools.combinations(sorted(meanings), calibration_size):
+                    remaining = sorted(meanings - set(calibrated))
+                    for candidate_count in range(1, len(remaining) + 1):
+                        for candidates in itertools.combinations(remaining, candidate_count):
+                            unseen_symbols = set(range(meaning_count - calibration_size))
+                            assignment_count = factorial(len(remaining))
+                            success_mass = Fraction()
+                            all_assignments = list(itertools.permutations(sorted(unseen_symbols)))
+                            for symbol in unseen_symbols:
+                                best_count = max(
+                                    sum(assignment[remaining.index(candidate)] == symbol for assignment in all_assignments)
+                                    for candidate in candidates
+                                )
+                                success_mass += Fraction(best_count, candidate_count * assignment_count)
+                            self.assertEqual(
+                                success_mass,
+                                disjoint_holdout_candidate_accuracy(candidate_count=candidate_count),
+                            )
 
     def test_rejects_invalid_domains(self):
         for meaning_count, examples in ((0, 0), (True, 0), (4, -1), (4, 4), (4, True)):
