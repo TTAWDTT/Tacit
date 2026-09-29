@@ -233,15 +233,28 @@ class OpenAICompatibleClient:
     timeout_seconds: float = 120.0
     max_tokens: int = 512
     follow_redirects: bool = True
+    temperature: float | None = None
 
     def complete(self, messages: Sequence[Mapping[str, str]]) -> ChatCompletion:
         if self.timeout_seconds <= 0:
             raise ValueError("timeout_seconds must be positive")
         if self.max_tokens < 1:
             raise ValueError("max_tokens must be positive")
+        if self.temperature is not None and (
+            isinstance(self.temperature, bool)
+            or not isinstance(self.temperature, (int, float))
+            or not math.isfinite(self.temperature)
+            or self.temperature < 0
+        ):
+            raise ValueError("temperature must be a finite non-negative number or None")
         url = self.base_url.rstrip("/") + "/chat/completions"
+        request_body: dict[str, Any] = {
+            "model": self.model, "messages": list(messages), "max_tokens": self.max_tokens
+        }
+        if self.temperature is not None:
+            request_body["temperature"] = self.temperature
         body = json.dumps(
-            {"model": self.model, "messages": list(messages), "max_tokens": self.max_tokens},
+            request_body,
             ensure_ascii=False,
         ).encode("utf-8")
         headers = {"Content-Type": "application/json"}
@@ -359,8 +372,10 @@ def exchange_dialogue(
     acknowledgment, but not TCP/IP headers or model inference tokens.
     """
     names = set(agents)
-    if len(names) < 2 or any(not isinstance(name, str) or not name.strip() for name in names):
-        raise ValueError("agents must contain at least two non-empty string names")
+    if not names or any(not isinstance(name, str) or not name.strip() for name in names):
+        raise ValueError("agents must contain non-empty string names")
+    if len(names) < 2 and final_answer_agent is None:
+        raise ValueError("a single-agent exchange requires a sealed final-answer agent")
     if set(private_contexts) != names:
         raise ValueError("private_contexts must contain exactly one entry per agent")
     if any(not isinstance(context, str) for context in private_contexts.values()):
@@ -372,16 +387,18 @@ def exchange_dialogue(
         raise ValueError("agent_instructions must contain exactly one instruction per agent")
     if any(not isinstance(text, str) or not text.strip() for text in instructions.values()):
         raise ValueError("each agent instruction must be a non-empty string")
-    if isinstance(max_turns, bool) or not isinstance(max_turns, int) or max_turns < 1:
-        raise ValueError("max_turns must be a positive integer")
+    if isinstance(max_turns, bool) or not isinstance(max_turns, int) or max_turns < 0:
+        raise ValueError("max_turns must be a non-negative integer")
     if wire_budget_bytes is not None and (
         isinstance(wire_budget_bytes, bool)
         or not isinstance(wire_budget_bytes, int)
         or wire_budget_bytes < 0
     ):
         raise ValueError("wire_budget_bytes must be a non-negative integer or None")
-    if isinstance(schedule, (str, bytes)) or not isinstance(schedule, Sequence) or not schedule:
-        raise ValueError("schedule must be a non-empty sequence of agents or sender-recipient pairs")
+    if isinstance(schedule, (str, bytes)) or not isinstance(schedule, Sequence):
+        raise ValueError("schedule must be a sequence of agents or sender-recipient pairs")
+    if not schedule and final_answer_agent is None:
+        raise ValueError("an empty schedule requires a sealed final-answer agent")
     if len(schedule) > max_turns:
         raise ValueError("schedule exceeds max_turns")
     routes: list[tuple[str, str]] = []

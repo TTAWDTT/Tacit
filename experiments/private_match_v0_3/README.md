@@ -58,6 +58,37 @@ bits. The two coordinates attain this bound. This is a bound for this
 finite, noiseless, simultaneous task model; it says nothing about LLM token
 cost, decoding errors, instructions, or setup cost.
 
+## Frozen feasibility protocols and runner (model calls not run)
+
+`protocols.py` freezes prompt revision `pmt3-prompts-1` and four representation
+IDs: `concise_nl`, `compact_kv`, `strict_json`, and `fixed_binary`. The parser
+accepts only canonical compact KV/JSON strings and exactly `log2(q)` binary
+digits. Natural-language format and semantic fidelity are recorded as unknown
+until a separate blinded judging procedure is preregistered. `concise_nl` is a
+feasibility arm; it has not been optimized and must not be described as the
+strong natural-language baseline.
+
+The runner is dry-run by default:
+
+```powershell
+python -m experiments.private_match_v0_3.runner --condition both_sources `
+  --protocol compact_kv --episodes 4 --q 4
+```
+
+Execution requires the explicit `--execute` flag, a passing recent local
+resource preflight, endpoint/model/tokenizer identifiers, and a disjoint
+perfect full-information calibration ledger for evaluation batches. It uses
+loopback endpoints only, disables redirects, caps requests at 30 seconds, and
+rejects batches above 12 planned calls before opening output or contacting an
+endpoint. Full-information calibration is run separately; its receiver sees
+both exact coordinates and only its sealed final submission is scored. The
+no-message arm performs no inter-agent transmission and still records one
+receiver inference call.
+
+The exact endpoint/model and tokenizer settings remain pending. No inference
+has been authorized or run by this preregistration. The default run path is a
+dry-run summary and makes no model request.
+
 ## Planned model comparison (not run)
 
 The future paired comparison should retain every generated episode and include
@@ -66,7 +97,8 @@ conditions where both source agents send are representation comparisons. Keep
 the task, fixed schedule (`X → receiver`, then `Y → receiver`), model
 population, decoding, and receiver answer contract fixed while comparing:
 
-- optimized natural language;
+- concise natural language (feasibility only until a disjoint optimization
+  stage establishes a stronger baseline);
 - compact key-value text;
 - strict JSON;
 - a fixed-width binary code with its schema/codebook setup charged;

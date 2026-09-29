@@ -305,6 +305,16 @@ class TacitRuntimeTests(unittest.TestCase):
             with self.subTest(changes=changes), self.assertRaises(ValueError):
                 exchange_dialogue(**(common | {"schedule": ("A", "B")} | changes))
 
+    def test_empty_schedule_is_valid_only_for_sealed_final_answer(self) -> None:
+        agents = {"A": FakeModel(ChatCompletion("a", "A")), "B": FakeModel(ChatCompletion("b", "B"))}
+        result = exchange_dialogue(
+            agents, protocol=FakeDialogueProtocol(), private_contexts={"A": "a", "B": "b"},
+            schedule=(), task="task", max_turns=0, final_answer_agent="B",
+        )
+        self.assertEqual(result.turns, ())
+        self.assertEqual(result.model_calls, 1)
+        self.assertEqual(result.transmission_records(), [])
+
     def test_multi_agent_dialogue_rejects_implicit_or_invalid_routes_before_calls(self) -> None:
         agents = {
             name: FakeModel(ChatCompletion(name, f"model-{name}"))
@@ -568,6 +578,26 @@ class TacitRuntimeTests(unittest.TestCase):
         self.assertEqual(completion, ChatCompletion(
             "  wire text\n", "actual-model", 31, 4, 0.25, "request-1", "stop"
         ))
+
+    def test_openai_compatible_client_sends_frozen_temperature_when_configured(self) -> None:
+        class Response:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *args):
+                return False
+
+            def read(self):
+                return json.dumps({"model": "m", "choices": [{"message": {"content": "ok"}}]}).encode()
+
+        with patch("tacit.runtime.urlopen", return_value=Response()) as open_url:
+            OpenAICompatibleClient("http://localhost:8000/v1", "m", temperature=0.0).complete(
+                [{"role": "user", "content": "hello"}]
+            )
+        request_body = json.loads(open_url.call_args.args[0].data)
+        self.assertEqual(request_body["temperature"], 0.0)
+        with self.assertRaisesRegex(ValueError, "temperature"):
+            OpenAICompatibleClient("http://localhost:8000/v1", "m", temperature=float("nan")).complete([])
 
     def test_loopback_client_can_reject_redirects(self) -> None:
         redirected_requests = []

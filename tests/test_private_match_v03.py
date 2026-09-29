@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import importlib.util
+import io
 import json
 import tempfile
 import unittest
@@ -9,6 +10,13 @@ from fractions import Fraction
 from pathlib import Path
 
 from tacit import ChatCompletion, exchange_dialogue
+from experiments.private_match_v0_3.protocols import (
+    PROTOCOL_IDS, parse_coordinate_message, protocol_by_id,
+)
+from experiments.private_match_v0_3.runner import (
+    main as runner_main, planned_model_calls, run_condition, validate_capability_ledger,
+)
+from contextlib import redirect_stdout
 
 
 MODULE_PATH = (
@@ -57,7 +65,109 @@ class CandidateTableOracle:
         return ChatCompletion(answer, "oracle-receiver")
 
 
+class FrozenFormatSender:
+    model_name = "fake-sender-v1"
+
+    def __init__(self, protocol_id):
+        self.protocol_id = protocol_id.split(":", 1)[0]
+
+    def complete(self, messages):
+        request = json.loads(messages[1]["content"])
+        view = json.loads(request["private_context"])
+        coordinate = view["coordinate"]
+        value = view["private_value"]
+        if self.protocol_id == "compact_kv":
+            text = f"{coordinate}={value}"
+        elif self.protocol_id == "strict_json":
+            text = json.dumps({coordinate: value}, separators=(",", ":"))
+        elif self.protocol_id == "fixed_binary":
+            text = f"{int(value[1:]):02b}"
+        else:
+            text = f"The {coordinate} coordinate is {value}."
+        return ChatCompletion(text, self.model_name, input_tokens=10, output_tokens=4)
+
+
+class FrozenFormatReceiver:
+    model_name = "fake-receiver-v1"
+
+    def complete(self, messages):
+        request = json.loads(messages[1]["content"])
+        view = json.loads(request["private_context"])
+        if "calibration_coordinates" in view:
+            coords = view["calibration_coordinates"]
+            answer = module.oracle_answer(view, coords["x"], coords["y"])
+        else:
+            values = {}
+            for entry in request["visible_transcript"]:
+                coordinate, message = entry["sender"], entry["message"]
+                role_coord = "x" if coordinate == "sender_x" else "y"
+                if message.startswith("{"):
+                    value = json.loads(message)[role_coord]
+                elif "=" in message:
+                    value = message.split("=", 1)[1]
+                elif message and set(message) <= {"0", "1"}:
+                    value = f"{role_coord}{int(message, 2):04d}"
+                else:
+                    value = message.rsplit(" ", 1)[-1].rstrip(".")
+                values[role_coord] = value
+            if len(values) == 2:
+                answer = module.oracle_answer(view, values["x"], values["y"])
+            else:
+                answer = view["candidates"][0]["candidate_id"]
+        return ChatCompletion(answer, self.model_name, input_tokens=20, output_tokens=1)
+
+
 class PrivateMatchV03Tests(unittest.TestCase):
+    def test_frozen_protocols_have_strict_decoders_and_fail_closed(self):
+        self.assertEqual(len(PROTOCOL_IDS), 4)
+        expected = {
+            "compact_kv": "x=x0002",
+            "strict_json": '{"x":"x0002"}',
+            "fixed_binary": "10",
+        }
+        for name, valid in expected.items():
+            with self.subTest(name=name):
+                self.assertEqual(parse_coordinate_message(name, valid, q=4, sender="sender_x"), (True, True, "x0002"))
+                self.assertFalse(parse_coordinate_message(name, valid + " ", q=4, sender="sender_x")[0])
+                protocol = protocol_by_id(name, 4)
+                self.assertIn("pmt3-prompts-1", protocol.protocol_id)
+        self.assertEqual(parse_coordinate_message("concise_nl", "The x coordinate is x0002.", q=4, sender="sender_x"), (None, None, None))
+
+    def test_model_free_runner_rows_cover_calibration_no_message_and_both_sources(self):
+        for condition, planned in (("full_information", 1), ("no_message", 1), ("both_sources", 3)):
+            self.assertEqual(planned_model_calls(1, condition), planned)
+            protocol = protocol_by_id("compact_kv", 4)
+            sender = None if condition in {"full_information", "no_message"} else FrozenFormatSender(protocol.protocol_id)
+            row = run_condition(seed=304001, q=4, condition=condition, protocol=protocol,
+                sender_model=sender, receiver_model=FrozenFormatReceiver(),
+                sender_tokenizer_id="fake-tokenizer", receiver_tokenizer_id="fake-tokenizer",
+                model_population_id="fake-population-v1")
+            self.assertEqual(len(row["model_calls"]), planned)
+            self.assertEqual(len(row["transmissions"]), 2 if condition == "both_sources" else 0)
+            self.assertEqual(row["outcome"]["joint_success"], condition in {"full_information", "both_sources"})
+            self.assertEqual(row["diagnostics"]["generation_seed"], 304001)
+
+    def test_runner_defaults_to_dry_run_and_capability_ledger_is_seed_disjoint(self):
+        output = io.StringIO()
+        with redirect_stdout(output):
+            self.assertEqual(runner_main(["--condition", "both_sources", "--episodes", "4"]), 0)
+        self.assertIn('"inference_started": false', output.getvalue())
+        rows = [run_condition(seed=303000 + i, q=4, condition="full_information",
+            protocol=protocol_by_id("compact_kv", 4), sender_model=None,
+            receiver_model=FrozenFormatReceiver(), sender_tokenizer_id=None,
+            receiver_tokenizer_id="fake-tokenizer", model_population_id="fake-population-v1")
+            for i in range(2)]
+        with tempfile.TemporaryDirectory() as temporary:
+            ledger = Path(temporary) / "calibration.jsonl"
+            ledger.write_text("\n".join(json.dumps(row) for row in rows) + "\n", encoding="utf-8")
+            validate_capability_ledger(ledger, episodes=2, seed=304000, q=4,
+                receiver_model="fake-receiver-v1", receiver_tokenizer_id="fake-tokenizer",
+                model_population_id="fake-population-v1")
+            with self.assertRaisesRegex(ValueError, "disjoint"):
+                validate_capability_ledger(ledger, episodes=2, seed=303000, q=4,
+                    receiver_model="fake-receiver-v1", receiver_tokenizer_id="fake-tokenizer",
+                    model_population_id="fake-population-v1")
+
     def test_generation_is_deterministic_and_role_separated(self):
         first = module.generate_episode(episode_id="triad-1", seed=42, q=4)
         second = module.generate_episode(episode_id="triad-1", seed=42, q=4)

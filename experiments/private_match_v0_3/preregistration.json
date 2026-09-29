@@ -1,7 +1,7 @@
 {
   "study": "Private Match three-agent complementary-evidence pilot",
   "version": "0.3",
-  "status": "task_and_estimands_frozen_prompts_pending",
+  "status": "task_estimands_prompt_parsers_frozen_model_settings_pending",
   "objective": "Validate a three-agent task where two senders hold complementary private coordinates and the receiver must combine both messages to identify one row. Then, only after passing resource and disjoint calibration gates, compare message representations with schedule and call structure fixed.",
   "task_family": "Complete Cartesian product [q] x [q] with q a power of two >= 2; hidden target uniform over q^2 rows; Sender X sees only x, Sender Y sees only y, and Receiver sees the candidate table only.",
   "default_pilot": {
@@ -39,17 +39,16 @@
     "no_message",
     "sender_x_only",
     "sender_y_only",
-    "full_information_calibration",
-    "oracle_both_sources",
-    "optimized_natural_language_both_sources",
-    "compact_key_value_both_sources",
-    "strict_json_both_sources",
-    "fixed_width_binary_both_sources"
+    "full_information",
+    "both_sources:concise_nl",
+    "both_sources:compact_kv",
+    "both_sources:strict_json",
+    "both_sources:fixed_binary"
   ],
-  "primary_representation_comparisons": [
-    "optimized_natural_language_both_sources vs compact_key_value_both_sources",
-    "optimized_natural_language_both_sources vs strict_json_both_sources",
-    "optimized_natural_language_both_sources vs fixed_width_binary_both_sources"
+  "exploratory_feasibility_comparisons_only": [
+    "concise_nl vs compact_kv",
+    "concise_nl vs strict_json",
+    "concise_nl vs fixed_binary"
   ],
   "primary_outcomes": [
     "joint receiver exact candidate-ID success",
@@ -59,8 +58,16 @@
     "all sender and receiver input/output tokens and model calls",
     "end-to-end latency"
   ],
-  "prompt_freeze_status": "Protocol prompts, parser definitions, model IDs, decoding parameters, and protocol code IDs are not frozen by this task-only preregistration. No model call is authorized until these are recorded in a versioned amendment before inference.",
-  "optimized_natural_language_baseline": "Develop on a seed-disjoint development shard, freeze before evaluation, and charge prompt-selection calls and inputs to setup/inference cost. If no candidate is developed without violating local resource gates, report only a concise-NL feasibility arm and do not call it optimized.",
+  "protocol_freeze": {
+    "status": "prompts_parsers_and_code_ids_frozen; model_endpoint_settings_pending",
+    "revision": "pmt3-prompts-1",
+    "specification": "experiments/private_match_v0_3/protocols.py",
+    "protocol_ids": ["concise_nl", "compact_kv", "strict_json", "fixed_binary"],
+    "parser_policy": "compact_kv and strict_json require exact canonical strings; fixed_binary requires exactly log2(q) bits; concise_nl syntax and semantic fidelity remain undecidable by the deterministic parser and are reported null pending a separately frozen blinded judging procedure.",
+    "decode_limits": {"sender_max_tokens": 48, "receiver_max_tokens": 32, "temperature": 0.0, "top_p": "omitted; endpoint default", "timeout_seconds": 30, "redirects": false},
+    "execution_gate": "No inference until model IDs, tokenizer IDs, endpoint settings, resource preflight, and disjoint perfect full-information ledger are supplied and validated."
+  },
+  "natural_language_baseline": "The frozen concise_nl arm is a feasibility baseline, not an optimized natural-language baseline. Develop an optimized arm only on a seed-disjoint development shard, freeze it before evaluation, and charge prompt-selection calls and inputs to setup/inference cost. Do not claim a primary representation ranking against optimized natural language until that work is complete.",
   "fixed_code_semantics": "For q=2^w, encode each coordinate index as exactly w bits in its sender slot. The fixed schedule identifies which slot is x or y. Count protocol instructions and codebook exposition in model input tokens; measure delivered payload and envelope bytes separately.",
   "analysis": "Pair all representation arms by episode_id and keep all preregistered held-out episodes. Report exact task-level discordances and descriptive uncertainty only for this pilot. Do not use the capability calibration ledger to filter evaluation tasks. Treat the three format contrasts as one exploratory family and correct or explicitly label unadjusted p-values. Plot success against both delivered channel bytes and complete inference tokens; do not combine unlike tokenizers or collapse the two budgets into one score.",
   "capability_gate": "Before any comparison call, the Receiver must answer every disjoint calibration episode correctly when supplied both exact coordinates. Calibration tasks must not occur in the evaluation shard.",
@@ -71,7 +78,7 @@
     "This deterministic Cartesian task is a calibration family, not a naturalistic collaboration benchmark.",
     "The oracle bound does not predict LLM token efficiency or model success.",
     "A single-q pilot cannot establish a scaling law or generalized language advantage.",
-    "This preregistration does not authorize inference and none has been run."
+    "Prompts and deterministic parsers are frozen, but endpoint/model settings remain pending; no inference has been run or is authorized by this preregistration alone."
   ],
   "task_generator": "experiments/private_match_v0_3/generate_tasks.py",
   "expected_runtime": "Pure Python standard library; task generation and analytic controls make no model or network calls."
