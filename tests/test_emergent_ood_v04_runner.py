@@ -448,6 +448,8 @@ class EmergentOODV04RunnerTests(unittest.TestCase):
                 input_manifest_sha256=manifest_digest
             )
             output_path = temporary_path / "validation.jsonl"
+            preflight_path = temporary_path / "preflight.json"
+            preflight_path.write_text('{"schema":"test-preflight"}\n', encoding="utf-8")
             args = [
                 "runner",
                 "--input-dir", str(evaluation_dir),
@@ -464,6 +466,7 @@ class EmergentOODV04RunnerTests(unittest.TestCase):
                 "--capability-ledger", str(capability_path),
                 "--capability-input-dir", str(calibration_dir),
                 "--capability-split-seed", "17",
+                "--resource-preflight", str(preflight_path),
                 "--output", str(output_path),
             ]
             clients = [
@@ -480,6 +483,76 @@ class EmergentOODV04RunnerTests(unittest.TestCase):
             run_manifest = json.loads(output_path.with_suffix(".jsonl.manifest.json").read_text(encoding="utf-8"))
             self.assertEqual(run_manifest["capability_split_seed"], 17)
             self.assertEqual(run_manifest["split_seed"], 18)
+
+    def test_cli_resumes_only_matching_atomic_checkpoint_after_interruption(self):
+        cache_root = Path(__file__).resolve().parents[1] / ".cache"
+        cache_root.mkdir(exist_ok=True)
+        with tempfile.TemporaryDirectory(dir=cache_root) as temporary:
+            root = Path(temporary)
+            input_dir = root / "episodes"
+            write_ledgers(self.bundle, input_dir)
+            output_path = root / "recoverable.jsonl"
+            preflight_path = root / "preflight.json"
+            preflight_path.write_text('{"schema":"test-preflight"}\n', encoding="utf-8")
+            args = [
+                "runner", "--input-dir", str(input_dir), "--split-seed", "17",
+                "--stage", "validation", "--sets", "1", "--conditions", "full_information",
+                "--execute", "--receiver-model", "fake-receiver",
+                "--receiver-tokenizer-id", "fake-receiver-tokenizer-v1",
+                "--model-population-id", "fake-test-population", "--resource-preflight",
+                str(preflight_path), "--output", str(output_path),
+            ]
+
+            def fake_row(*, episode, condition, **_kwargs):
+                return {
+                    "episode_id": episode["gold"]["episode_id"],
+                    "condition": condition,
+                    "stratum": {},
+                }
+
+            interruption_calls = 0
+
+            def interrupt_after_one(*, episode, condition, **kwargs):
+                nonlocal interruption_calls
+                interruption_calls += 1
+                if interruption_calls == 2:
+                    raise RuntimeError("simulated interruption")
+                return fake_row(episode=episode, condition=condition, **kwargs)
+
+            checkpoint_path = runner_module._checkpoint_path(output_path)
+            with patch("sys.argv", args), patch.object(
+                runner_module, "OpenAICompatibleClient"
+            ), patch.object(runner_module, "validate_resource_preflight"), patch.object(
+                runner_module, "run_condition", side_effect=interrupt_after_one
+            ), contextlib.redirect_stdout(io.StringIO()):
+                with self.assertRaisesRegex(RuntimeError, "simulated interruption"):
+                    runner_module.main()
+            checkpoint = runner_module._read_checkpoint(checkpoint_path)
+            self.assertEqual(len(checkpoint["rows"]), 1)
+            self.assertFalse(output_path.exists())
+
+            resumed_args = [*args, "--resume"]
+            with patch("sys.argv", resumed_args), patch.object(
+                runner_module, "OpenAICompatibleClient"
+            ), patch.object(runner_module, "validate_resource_preflight"), patch.object(
+                runner_module, "run_condition", side_effect=fake_row
+            ) as resumed_call, contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(runner_module.main(), 0)
+            self.assertEqual(resumed_call.call_count, 3)
+            result_rows = runner_module._jsonl(output_path)
+            self.assertEqual(len(result_rows), 4)
+            self.assertFalse(checkpoint_path.exists())
+            manifest = json.loads(output_path.with_suffix(".jsonl.manifest.json").read_text(encoding="utf-8"))
+            self.assertTrue(manifest["resumed_from_checkpoint"])
+            self.assertEqual(manifest["checkpoint_rows_reused"], 1)
+            self.assertEqual(len(manifest["resource_preflight_sha256s"]), 1)
+
+    def test_checkpoint_rejects_rows_that_are_not_a_batch_prefix(self):
+        with self.assertRaisesRegex(ValueError, "exact prefix"):
+            runner_module._validate_checkpoint_prefix(
+                [{"episode_id": "wrong", "condition": "full_information"}],
+                [("expected", "full_information")],
+            )
 
     def test_cli_runs_shared_protocol_card_with_sender_endpoint_and_cost_ids(self):
         cache_root = Path(__file__).resolve().parents[1] / ".cache"
@@ -506,6 +579,8 @@ class EmergentOODV04RunnerTests(unittest.TestCase):
                 "receiver_instruction": "Decode the tuple from the message.",
             }), encoding="utf-8")
             output_path = root / "card-validation.jsonl"
+            preflight_path = root / "preflight.json"
+            preflight_path.write_text('{"schema":"test-preflight"}\n', encoding="utf-8")
             args = [
                 "runner", "--input-dir", str(evaluation_dir), "--split-seed", "18",
                 "--stage", "validation", "--sets", "1", "--conditions", "shared_protocol_card",
@@ -514,6 +589,7 @@ class EmergentOODV04RunnerTests(unittest.TestCase):
                 "--sender-tokenizer-id", "fake-sender-tokenizer-v1", "--model-population-id",
                 "fake-test-population", "--capability-ledger", str(capability_path),
                 "--capability-input-dir", str(calibration_dir), "--capability-split-seed", "17",
+                "--resource-preflight", str(preflight_path),
                 "--output", str(output_path),
             ]
             clients = [

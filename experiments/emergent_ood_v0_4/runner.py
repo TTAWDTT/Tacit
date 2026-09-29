@@ -42,6 +42,7 @@ MAX_COLORING_SEARCH_NODES_PER_COLOR_COUNT = 10000
 REQUEST_TIMEOUT_SECONDS = 45.0
 DEFAULT_WIRE_BUDGET_BYTES = 4096
 STAGES = ("train", "validation", "test")
+CHECKPOINT_SCHEMA = "tlu.emergent-ood-run-checkpoint.v1"
 
 
 class _Protocol:
@@ -734,6 +735,62 @@ def _write_results(
     return digest
 
 
+def _checkpoint_path(output_path: Path) -> Path:
+    return output_path.with_suffix(output_path.suffix + ".checkpoint.json")
+
+
+def _checkpoint_rows_digest(rows: Sequence[dict[str, Any]]) -> str:
+    payload = "".join(json.dumps(row, ensure_ascii=False, sort_keys=True) + "\n" for row in rows).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
+def _write_checkpoint(path: Path, checkpoint: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    updated = {
+        **checkpoint,
+        "updated_at_utc": datetime.now(timezone.utc).isoformat(),
+        "rows_sha256": _checkpoint_rows_digest(checkpoint["rows"]),
+    }
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    temporary.write_text(json.dumps(updated, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    temporary.replace(path)
+
+
+def _read_checkpoint(path: Path) -> dict[str, Any]:
+    try:
+        checkpoint = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ValueError("run checkpoint is missing or invalid") from exc
+    if (
+        not isinstance(checkpoint, dict)
+        or checkpoint.get("schema") != CHECKPOINT_SCHEMA
+        or not isinstance(checkpoint.get("rows"), list)
+        or any(not isinstance(row, dict) for row in checkpoint["rows"])
+        or checkpoint.get("rows_sha256") != _checkpoint_rows_digest(checkpoint["rows"])
+        or not isinstance(checkpoint.get("resource_preflight_sha256s"), list)
+        or any(not isinstance(digest, str) or len(digest) != 64 for digest in checkpoint["resource_preflight_sha256s"])
+        or not isinstance(checkpoint.get("run_config"), dict)
+        or checkpoint.get("run_signature") != _run_signature(checkpoint["run_config"])
+    ):
+        raise ValueError("run checkpoint failed schema or content-integrity validation")
+    return checkpoint
+
+
+def _run_signature(value: dict[str, Any]) -> str:
+    payload = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
+def _validate_checkpoint_prefix(
+    rows: Sequence[dict[str, Any]], expected_pairs: Sequence[tuple[str, str]],
+) -> None:
+    if len(rows) > len(expected_pairs):
+        raise ValueError("run checkpoint contains more result rows than this batch")
+    for index, row in enumerate(rows):
+        if (row.get("episode_id"), row.get("condition")) != expected_pairs[index]:
+            raise ValueError("run checkpoint rows are not an exact prefix of this batch order")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input-dir", type=Path, default=Path(".cache/emergent_ood_v0_4/episodes"))
@@ -751,6 +808,7 @@ def main() -> int:
     parser.add_argument("--conditions", nargs="+", choices=CONDITIONS, default=["natural_language"])
     parser.add_argument("--protocol-card", type=Path, help="shared sender/receiver card JSON for the shared_protocol_card condition")
     parser.add_argument("--output", type=Path, default=Path(".cache/emergent_ood_v0_4/runs/validation.jsonl"))
+    parser.add_argument("--resume", action="store_true", help="resume the matching atomic checkpoint for this output path")
     parser.add_argument("--capability-ledger", type=Path, help="verified train-only full_information screen required before message conditions")
     parser.add_argument("--capability-input-dir", type=Path, help="episode bundle used for the independent train-only receiver screen")
     parser.add_argument("--capability-split-seed", type=int, help="split seed for the independent train-only receiver screen")
@@ -810,6 +868,8 @@ def main() -> int:
             "wire_budget_bytes": args.wire_budget_bytes,
             "planned_model_calls": calls_planned,
             "maximum_model_calls_per_batch": MAX_MODEL_CALLS_PER_BATCH,
+            "resume_supported": True,
+            "checkpoint_path": str(_checkpoint_path(_inside_project(args.output))),
             "input_dir": str(_inside_project(args.input_dir)),
             "output": str(_inside_project(args.output)),
             "model_loaded": False,
@@ -885,8 +945,94 @@ def main() -> int:
     except ValueError as exc:
         parser.error(str(exc))
     output_manifest_path = output_path.with_suffix(output_path.suffix + ".manifest.json")
-    if not args.force and (output_path.exists() or output_manifest_path.exists()):
+    checkpoint_path = _inside_project(_checkpoint_path(output_path))
+    if args.resume and (output_path.exists() or output_manifest_path.exists()):
+        parser.error("cannot resume because a completed output or manifest already exists")
+    if not args.force and not args.resume and (output_path.exists() or output_manifest_path.exists()):
         parser.error(f"refusing to overwrite {output_path}; pass --force explicitly")
+
+    if args.resume and not checkpoint_path.exists():
+        parser.error(f"no checkpoint exists to resume: {checkpoint_path}")
+    if not args.resume and checkpoint_path.exists():
+        parser.error(f"checkpoint already exists; pass --resume to continue it: {checkpoint_path}")
+
+    input_manifest_path = _inside_project(_inside_project(args.input_dir) / "manifest.json")
+    input_manifest_sha256 = hashlib.sha256(input_manifest_path.read_bytes()).hexdigest()
+    capability_ledger_sha256 = (
+        hashlib.sha256(_inside_project(args.capability_ledger).read_bytes()).hexdigest()
+        if needs_capability and args.capability_ledger is not None else None
+    )
+    capability_ledger_manifest_sha256 = (
+        hashlib.sha256(_inside_project(args.capability_ledger).with_suffix(
+            _inside_project(args.capability_ledger).suffix + ".manifest.json"
+        ).read_bytes()).hexdigest()
+        if needs_capability and args.capability_ledger is not None else None
+    )
+    capability_bundle_manifest_sha256 = (
+        hashlib.sha256((_inside_project(args.capability_input_dir) / "manifest.json").read_bytes()).hexdigest()
+        if needs_capability and args.capability_input_dir is not None else None
+    )
+    runtime_source = ROOT / "tacit" / "runtime.py"
+    run_config = {
+        "experiment_id": EXPERIMENT_ID,
+        "stage": args.stage,
+        "conditions": args.conditions,
+        "sets": args.sets,
+        "set_offset": args.set_offset,
+        "wire_budget_bytes": args.wire_budget_bytes,
+        "split_seed": args.split_seed,
+        "split_sha256": split["split_sha256"],
+        "task_seed": bundle["manifest"]["task_seed"],
+        "task_key_id": bundle["manifest"]["task_key_id"],
+        "input_episode_manifest_sha256": input_manifest_sha256,
+        "protocol_card_sha256": protocol_card_digest,
+        "capability_ledger_sha256": capability_ledger_sha256,
+        "capability_ledger_manifest_sha256": capability_ledger_manifest_sha256,
+        "capability_bundle_manifest_sha256": capability_bundle_manifest_sha256,
+        "capability_split_seed": args.capability_split_seed if needs_capability else None,
+        "model_population_id": args.model_population_id,
+        "sender_endpoint": sender_endpoint,
+        "receiver_endpoint": receiver_endpoint,
+        "sender_model": args.sender_model if needs_sender else None,
+        "receiver_model": args.receiver_model,
+        "sender_tokenizer_id": args.sender_tokenizer_id if needs_sender else None,
+        "receiver_tokenizer_id": args.receiver_tokenizer_id,
+        "runner_source_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+        "runtime_source_sha256": hashlib.sha256(runtime_source.read_bytes()).hexdigest(),
+    }
+    signature = _run_signature(run_config)
+    expected_pairs = [
+        (episode["gold"]["episode_id"], condition)
+        for episode in episodes for condition in args.conditions
+    ]
+    current_preflight_sha256 = hashlib.sha256(preflight_path.read_bytes()).hexdigest() if preflight_path else None
+    if args.resume:
+        try:
+            checkpoint = _read_checkpoint(checkpoint_path)
+            if checkpoint.get("run_signature") != signature:
+                raise ValueError("checkpoint configuration does not match this batch; no rows were reused")
+            rows = checkpoint["rows"]
+            _validate_checkpoint_prefix(rows, expected_pairs)
+            checkpoint["resource_preflight_sha256s"] = list(checkpoint["resource_preflight_sha256s"])
+            if current_preflight_sha256 and current_preflight_sha256 not in checkpoint["resource_preflight_sha256s"]:
+                checkpoint["resource_preflight_sha256s"].append(current_preflight_sha256)
+            checkpoint["resumed"] = True
+            _write_checkpoint(checkpoint_path, checkpoint)
+        except (OSError, ValueError) as exc:
+            parser.error(str(exc))
+    else:
+        if current_preflight_sha256 is None:
+            parser.error("execution requires a resource preflight report")
+        rows = []
+        checkpoint = {
+            "schema": CHECKPOINT_SCHEMA,
+            "run_signature": signature,
+            "run_config": run_config,
+            "rows": rows,
+            "resource_preflight_sha256s": [current_preflight_sha256],
+            "resumed": False,
+        }
+        _write_checkpoint(checkpoint_path, checkpoint)
 
     sender_client = OpenAICompatibleClient(
         sender_endpoint, args.sender_model, timeout_seconds=REQUEST_TIMEOUT_SECONDS,
@@ -896,10 +1042,14 @@ def main() -> int:
         receiver_endpoint, args.receiver_model, timeout_seconds=REQUEST_TIMEOUT_SECONDS,
         max_tokens=48, follow_redirects=False, temperature=0.0,
     )
-    rows = []
     candidate_graph = conflict_graph_summary(episodes)
+    checkpoint_rows_reused = len(rows) if args.resume else 0
+    completed = len(rows)
     for episode in episodes:
         for condition in args.conditions:
+            if completed:
+                completed -= 1
+                continue
             row = run_condition(
                 episode=episode, condition=condition, stage=args.stage,
                 sender_model=sender_client, receiver_model=receiver_client,
@@ -913,7 +1063,11 @@ def main() -> int:
             )
             row["stratum"]["candidate_suite_conflict_graph"] = candidate_graph
             rows.append(row)
-    preflight_digest = hashlib.sha256(preflight_path.read_bytes()).hexdigest() if preflight_path else None
+            checkpoint["rows"] = rows
+            _write_checkpoint(checkpoint_path, checkpoint)
+    if len(rows) != len(expected_pairs):
+        parser.error("completed results do not cover the exact planned episode-condition batch")
+    preflight_digests = list(checkpoint["resource_preflight_sha256s"])
     output_digest = _write_results(
         rows,
         output_path,
@@ -939,17 +1093,19 @@ def main() -> int:
             "temperature": 0.0,
             "sender_max_tokens": 160 if needs_sender else None,
             "receiver_max_tokens": 48,
-            "resource_preflight_sha256": preflight_digest,
+            "resource_preflight_sha256": current_preflight_sha256,
+            "resource_preflight_sha256s": preflight_digests,
+            "run_signature": signature,
+            "resumed_from_checkpoint": bool(args.resume),
+            "checkpoint_rows_reused": checkpoint_rows_reused,
             "capability_split_seed": args.capability_split_seed if needs_capability else None,
-            "capability_input_episode_manifest_sha256": (
-                hashlib.sha256((_inside_project(args.capability_input_dir) / "manifest.json").read_bytes()).hexdigest()
-                if needs_capability else None
-            ),
-            "input_episode_manifest_sha256": hashlib.sha256(
-                (_inside_project(args.input_dir) / "manifest.json").read_bytes()
-            ).hexdigest(),
+            "capability_input_episode_manifest_sha256": capability_bundle_manifest_sha256,
+            "capability_ledger_sha256": capability_ledger_sha256,
+            "capability_ledger_manifest_sha256": capability_ledger_manifest_sha256,
+            "input_episode_manifest_sha256": input_manifest_sha256,
         },
     )
+    checkpoint_path.unlink(missing_ok=True)
     print(json.dumps({
         "mode": "executed", "episodes": len(episodes), "conditions": args.conditions,
         "model_calls": calls_planned, "output": str(output_path), "sha256": output_digest,
