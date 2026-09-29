@@ -55,6 +55,8 @@ The evidence thus sharpens the immediate research question: find or construct a 
 
 **H5 — Receiver dependence.** A compact code optimized for one model or model family can lose to natural/structured text for heterogeneous receivers when decoder mismatch cost is included.
 
+**H6 — Protocol onboarding.** If a learned protocol is not zero-shot compatible with a new receiver, a small calibration exchange may still be worthwhile for repeated collaboration. Its advantage should depend on adaptation accuracy, complete onboarding cost, and reuse horizon; for one-off or weakly transferable tasks, a pre-established natural/structured convention should remain on the frontier. Compare zero-shot transfer, fixed shared specifications, and exemplar-based adaptation on the same held-out tasks and receivers.
+
 ## Measurement commitments
 
 Report task success and calibration/fidelity alongside output and input tokens, serialized bytes, number of turns, wall-clock latency, setup/training cost, local inference time or energy where measurable, parse/decode failures, recovery cost, and cross-model transfer. Plot a Pareto frontier rather than collapsing these dimensions into an arbitrary scalar. Compare both equal-budget and equal-quality operating points.
