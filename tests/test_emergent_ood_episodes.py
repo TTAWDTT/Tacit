@@ -28,6 +28,33 @@ class EmergentOODEpisodeTests(unittest.TestCase):
         self.assertEqual(len(set(targets)), 9)
         self.assertEqual({target: targets.count(target) for target in set(targets)}, {target: 70 for target in set(targets)})
 
+    def test_candidate_order_is_constant_within_each_set_and_cannot_encode_target(self):
+        ledgers = module.generate_ledgers(19, candidate_count=5)
+        orders_by_set = {}
+        target_positions_by_set = {}
+        for receiver, gold in zip(ledgers["receiver"], ledgers["gold"]):
+            candidate_ids = tuple(row["candidate_id"] for row in receiver["candidates"])
+            candidate_set = tuple(sorted(candidate_ids))
+            self.assertEqual(gold["candidate_ids"], list(candidate_ids))
+            self.assertEqual(gold["target_position"], candidate_ids.index(gold["target_id"]))
+            self.assertEqual(orders_by_set.setdefault(candidate_set, candidate_ids), candidate_ids)
+            target_positions_by_set.setdefault(candidate_set, set()).add(gold["target_position"])
+        self.assertTrue(all(positions == set(range(5)) for positions in target_positions_by_set.values()))
+
+    def test_verifier_rejects_candidate_order_that_depends_on_target(self):
+        ledgers = module.generate_ledgers(19, candidate_count=3)
+        same_set_rows = {}
+        for receiver, gold in zip(ledgers["receiver"], ledgers["gold"]):
+            key = tuple(sorted(gold["candidate_ids"]))
+            same_set_rows.setdefault(key, []).append((receiver, gold))
+        pair = next(rows[:2] for rows in same_set_rows.values() if len(rows) >= 2)
+        receiver, gold = pair[1]
+        receiver["candidates"] = list(reversed(receiver["candidates"]))
+        gold["candidate_ids"] = [row["candidate_id"] for row in receiver["candidates"]]
+        gold["target_position"] = gold["candidate_ids"].index(gold["target_id"])
+        with self.assertRaisesRegex(ValueError, "independent of the private target"):
+            module.verify_ledgers(ledgers)
+
     def test_role_ledgers_do_not_expose_answer_key_to_receiver(self):
         ledgers = module.generate_ledgers(23, candidate_count=4)
         for sender, receiver, gold in zip(ledgers["sender"], ledgers["receiver"], ledgers["gold"]):

@@ -14,6 +14,7 @@
     "default_candidate_count": 5,
     "candidate_support": "all candidates are distinct held-out meanings",
     "episode_sampling": "For every candidate_count-sized subset of the held-out set, enumerate each member once as the private target.",
+    "candidate_order": "A deterministic order is sampled from seed and candidate subset only; all target variants of a subset have identical order.",
     "default_episode_count": "5 * choose(9,5) = 630",
     "no_message_bayes_accuracy": "1 / candidate_count; exactly 0.2 for the default five-candidate task",
     "sender_candidate_information": "sender does not observe the receiver candidate set",

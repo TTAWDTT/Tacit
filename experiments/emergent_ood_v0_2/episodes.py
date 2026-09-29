@@ -68,7 +68,7 @@ def generate_ledgers(seed: int, candidate_count: int = 5) -> dict[str, Any]:
             ordered_candidates = sorted(
                 subset,
                 key=lambda values: hashlib.sha256(
-                    f"{seed}|{candidate_count}|{subset_hash}|{target_id}|{meaning_id(values)}".encode("ascii")
+                    f"{seed}|{candidate_count}|{subset_hash}|{meaning_id(values)}".encode("ascii")
                 ).digest(),
             )
             candidate_ids = [meaning_id(values) for values in ordered_candidates]
@@ -150,6 +150,7 @@ def verify_ledgers(ledgers: dict[str, Any]) -> None:
         raise ValueError("split hash does not match the declared seed")
 
     targets_by_candidate_set: dict[tuple[str, ...], set[str]] = {}
+    candidate_order_by_set: dict[tuple[str, ...], tuple[str, ...]] = {}
     for episode_id in sender_by_id:
         source = sender_by_id[episode_id]
         choices = receiver_by_id[episode_id]
@@ -190,6 +191,10 @@ def verify_ledgers(ledgers: dict[str, Any]) -> None:
         if source.get("split_sha256") != choices.get("split_sha256") or source.get("split_sha256") != ledgers.get("split_sha256"):
             raise ValueError("episode rows must refer to the declared split")
         candidate_set = tuple(sorted(candidate_ids))
+        observed_order = tuple(candidate_ids)
+        previous_order = candidate_order_by_set.setdefault(candidate_set, observed_order)
+        if observed_order != previous_order:
+            raise ValueError("candidate order must be independent of the private target")
         target_set = targets_by_candidate_set.setdefault(candidate_set, set())
         if answer["target_id"] in target_set:
             raise ValueError("each candidate set may use each member as target only once")
