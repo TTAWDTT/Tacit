@@ -346,7 +346,7 @@ def main() -> int:
             "paired_episode_ids": [row["sender"]["episode_id"] for row in episodes],
             "candidate_count": REGISTERED_CANDIDATE_COUNT,
             "no_message_bayes_accuracy": 1 / REGISTERED_CANDIDATE_COUNT,
-            "ideal_zero_error_payload_floor_bits": 4,
+            "fixed_width_zero_error_payload_floor_bits": 4,
             "planned_model_calls": calls_planned,
             "maximum_model_calls_per_batch": MAX_MODEL_CALLS_PER_BATCH,
             "fits_call_cap": calls_planned <= MAX_MODEL_CALLS_PER_BATCH,

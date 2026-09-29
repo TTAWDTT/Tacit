@@ -2,7 +2,7 @@
 
 This runner connects the corrected v0.2 role-separated task to local chat models. Its purpose is to find out whether the receiver can solve the task when given the answer, how it behaves with no message, and whether a plain-English description can transfer the private target. It is a feasibility screen, not a protocol comparison and not a test of an invented language.
 
-The default batch has five paired episodes. They share one fixed ordered candidate set and rotate every candidate through the private target, so target position is balanced. The conditions are:
+The default batch has five paired episodes. They share one fixed ordered candidate set and rotate every candidate through the private target, so target position is balanced. The theoretical four-bit reference is specifically a fixed-width payload bound; prefix-free coding, external packet boundaries, and their serialized framing costs are distinguished in [`docs/THEORY.md` §12](../../docs/THEORY.md). The conditions are:
 
 - `full_information`: one receiver call receives a direct English description of the target. This is a capability ceiling control; it has no channel transmission.
 - `no_message`: one receiver call sees only candidates. Across this five-episode block, a fixed positional guess is correct once; the analytic Bayes accuracy is 20%.
