@@ -196,6 +196,12 @@
 - **Prediction/design consequence:** compare the serialized tensor boundary, generator setup/compute, and receiver overhead; use true, same-shape mismatched-instance, neutral, and no-message controls. Treat TFlow as a conditional systems baseline. A text protocol claim must name the deployment setting in which weight-space access is unavailable or unsuitable.
 - **Artifacts:** added [`research/TFLOW_AUDIT_V0_1.md`](TFLOW_AUDIT_V0_1.md), updated the related-work map, thesis, experiment baseline list, and README. No checkpoint was downloaded, no model was loaded, and no inference or training was run.
 
+## 2026-09-29 — TFlow source audit: sender tokens and receiver need
+
+- Pinned the public implementation at `7aef170594336c6bda2f8baa1ac51f503f6096ce` and statically traced TFlow, TextMAS, the hidden-state extraction wrapper, and the evaluator. The repository returns receiver-only `token_usage` for TFlow although each sender performs a full role-prompt/question forward pass. TextMAS adds prompt and completion usage from both senders and the receiver. The official TFlow token metric therefore omits sender prompt processing; the published token-reduction percentages need corrected total-token accounting. This does not refute reported accuracy or wall-time results.
+- Found a second scope constraint: the official runtime shares one Qwen3-4B model instance among all three role wrappers, and all see the same question. It tests query-conditioned computation/role prompting, not transfer of sender-private evidence over a portable link. TFlow remains a useful co-located weight-space systems baseline.
+- Added [TFlow audit v0.2](TFLOW_AUDIT_V0_2.md), kept the prior v0.1 summary intact, and updated related work and the baseline plan with token, transport, and receiver-need controls. No models, checkpoints, or datasets were downloaded or run.
+
 ## 2026-09-29 — Factor learned selection policy from message representation
 
 - **Observation:** the OPTiMACS audit shows that recent systems jointly vary task categorization, format inventory, and format selection. Existing shorthand such as “language wins” can therefore conflate changing which content/turn is chosen with changing how fixed content is encoded.
