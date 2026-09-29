@@ -162,6 +162,13 @@ def validate_private_match_records(records: list[dict[str, Any]], *, task_key: b
 def private_match_report(records: list[dict[str, Any]], *, replicates: int = 5000,
                          seed: int = 1729, task_key: bytes) -> dict[str, Any]:
     validate_private_match_records(records, task_key=task_key)
+    if any(
+        (row.get("_normalized_stratum") or row["stratum"]).get("split") == "development"
+        for row in records
+    ):
+        raise RecordError(
+            "development records are selection-only and cannot enter evaluation reports"
+        )
     cost_summary = aggregate(records)
     return {
         "schema_version": "tlu.private-match-report.v2",

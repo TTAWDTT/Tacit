@@ -217,10 +217,13 @@ python -m experiments.private_match_v0_3.report `
   .cache/private_match_v0_3/no_message.jsonl `
   .cache/private_match_v0_3/sender_x_only.jsonl `
   .cache/private_match_v0_3/sender_y_only.jsonl `
-  .cache/private_match_v0_3/both_nl.jsonl `
-  .cache/private_match_v0_3/both_kv.jsonl `
-  .cache/private_match_v0_3/both_json.jsonl `
-  .cache/private_match_v0_3/both_binary.jsonl `
+  .cache/private_match_v0_3/both_concise_nl.jsonl `
+  .cache/private_match_v0_3/both_short_nl.jsonl `
+  .cache/private_match_v0_3/both_autoform.jsonl `
+  .cache/private_match_v0_3/both_compact_kv.jsonl `
+  .cache/private_match_v0_3/both_decimal_index.jsonl `
+  .cache/private_match_v0_3/both_strict_json.jsonl `
+  .cache/private_match_v0_3/both_fixed_binary.jsonl `
   --task-key-file .cache/private_match_v0_3/task.key `
   --output .cache/private_match_v0_3/report.json
 ```
@@ -233,9 +236,9 @@ uncertainty, and Pareto-frontier calculations to the repository's shared
 fixed-width bit-budget curve separately for each q in the input. It keeps
 calibration and evaluation strata separate,
 preserves model strata, and reports decoder alignment explicitly. Natural-
-language format/fidelity is marked missing by design until an independently
-frozen semantic-judging method exists. No diagnostic pools distinct task/model
-strata.
+language paraphrase fidelity and AutoForm free-format fidelity are marked
+missing by design; they are not mislabeled as malformed. No diagnostic pools
+distinct task/model strata.
 
 For exact ideal references under independent non-uniform coordinate priors,
 `bit_frontier.py` also exposes

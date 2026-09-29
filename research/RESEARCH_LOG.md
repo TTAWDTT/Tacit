@@ -1,5 +1,30 @@
 # Research log
 
+## 2026-09-29 — Prepare private task shards and recheck the local gate
+
+**Observation.** The preregistered v0.3 key and its calibration, development,
+and evaluation shards were absent from the current ignored cache. A live,
+read-only resource preflight then sampled host CPU at 57.60%, 74.83%, and
+85.26% (72.56% mean), with 3,221 MiB free RAM. The frozen gate requires mean
+CPU below 20%, every sample below 30%, and at least 6,000 MiB free RAM; this
+preflight is rejected. GPU use was 13% with 1,352 MiB allocated, and requested
+port 8000 was idle.
+
+**Action.** Generated one evaluator-only 256-bit key and three q=4 shards in
+`.cache/private_match_v0_3/shards/`: calibration seeds 303000–303003,
+development seeds 302000–302007, and held-out evaluation seeds 304000–304007.
+The local audit verified the key size, shard sizes/seed starts, matching key
+IDs, all four role-file digests per shard, and Git ignore coverage. The key and
+role data remain local. The report command now rejects development records so
+selection data cannot silently enter the evaluation analysis; its example
+lists all seven registered representation ledgers.
+
+**Result.** The task fixtures are concretely prepared, but the model gate is
+closed. No model artifact was read, no service was started, and no inference
+request was made. Do not retry model work until a fresh preflight passes and
+the endpoint/tokenizer plus full-information receiver calibration gates are
+also ready.
+
 ## 2026-09-29 — Add a prompt-selected AutoForm comparison arm
 
 **Observation.** AutoForm is the closest prior method: it prompts agents to

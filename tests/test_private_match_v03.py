@@ -572,6 +572,10 @@ class PrivateMatchV03Tests(unittest.TestCase):
             selection = select_natural_language_baseline(
                 ledger_paths=paths, task_key=TEST_TASK_KEY,
             )
+            with self.assertRaisesRegex(ValueError, "selection-only"):
+                private_match_report(
+                    rows_by_protocol["short_nl"], replicates=10, task_key=TEST_TASK_KEY,
+                )
             evaluation_rows = copy.deepcopy(rows_by_protocol["short_nl"])
             for row in evaluation_rows:
                 row["stratum"]["split"] = "evaluation"
