@@ -15,6 +15,7 @@ from experiments.emergent_ood_v0_4.runner import (
     _strict_json_tuple,
     conflict_graph_summary,
     load_protocol_card,
+    load_usage_examples,
     load_episode_bundle,
     run_condition,
     select_candidate_sets,
@@ -608,6 +609,77 @@ class EmergentOODV04RunnerTests(unittest.TestCase):
             self.assertEqual(manifest["sender_model"], "fake-sender")
             self.assertEqual(manifest["sender_tokenizer_id"], "fake-sender-tokenizer-v1")
 
+    def test_cli_runs_usage_only_transfer_and_records_artifact_setup_costs(self):
+        cache_root = Path(__file__).resolve().parents[1] / ".cache"
+        cache_root.mkdir(exist_ok=True)
+        with tempfile.TemporaryDirectory(dir=cache_root) as temporary:
+            root = Path(temporary)
+            calibration_dir = root / "calibration"
+            evaluation_dir = root / "evaluation"
+            write_ledgers(self.bundle, calibration_dir)
+            evaluation_split = build_split(seed=18)
+            evaluation_bundle = generate_ledgers(
+                split=evaluation_split, task_key=bytes(range(32)), task_seed=9, k=4, sets_per_stage=3
+            )
+            write_ledgers(evaluation_bundle, evaluation_dir)
+            calibration_manifest_hash = hashlib.sha256((calibration_dir / "manifest.json").read_bytes()).hexdigest()
+            capability_path, _, _ = self._write_capability_fixture(input_manifest_sha256=calibration_manifest_hash)
+            card_path = root / "card.json"
+            card_path.write_text(json.dumps({
+                "schema": "tlu.shared_protocol_card.v1",
+                "protocol_id": "frozen-card-usage-cli-v1",
+                "sender_instruction": "Encode the tuple as compact JSON.",
+                "receiver_instruction": "This must not reach the usage-only receiver.",
+            }), encoding="utf-8")
+            card, card_hash = load_protocol_card(card_path)
+            train_meaning = evaluation_bundle["sender"]["train"][0]["private_meaning"]
+            train_tuple = tuple(train_meaning[axis] for axis in evaluation_split["attributes"])
+            meaning_id = next(
+                row["meaning_id"] for row in evaluation_split["meanings"]
+                if tuple(row["values"]) == train_tuple
+            )
+            usage_path = root / "usage.json"
+            usage_path.write_text(json.dumps({
+                "schema": "tlu.usage_examples.v1",
+                "protocol_id": card["protocol_id"],
+                "protocol_card_sha256": card_hash,
+                "training_split_sha256": evaluation_split["split_sha256"],
+                "training_episode_manifest_sha256": hashlib.sha256((evaluation_dir / "manifest.json").read_bytes()).hexdigest(),
+                "acquisition": {
+                    "method": "model_generated", "model_id": "fake-sender",
+                    "generation_calls": 1, "input_tokens": 17, "output_tokens": 8,
+                },
+                "examples": [{
+                    "meaning_id": meaning_id, "meaning": train_meaning,
+                    "message": json.dumps(train_meaning, separators=(",", ":")),
+                }],
+            }), encoding="utf-8")
+            output_path = root / "usage-validation.jsonl"
+            preflight_path = root / "preflight.json"
+            preflight_path.write_text('{"schema":"test-preflight"}\n', encoding="utf-8")
+            args = [
+                "runner", "--input-dir", str(evaluation_dir), "--split-seed", "18",
+                "--stage", "validation", "--sets", "1", "--conditions", "usage_only_transfer",
+                "--protocol-card", str(card_path), "--usage-examples", str(usage_path), "--execute",
+                "--receiver-model", "fake-receiver", "--receiver-tokenizer-id", "fake-receiver-tokenizer-v1",
+                "--sender-model", "fake-sender", "--sender-tokenizer-id", "fake-sender-tokenizer-v1",
+                "--model-population-id", "fake-test-population", "--capability-ledger", str(capability_path),
+                "--capability-input-dir", str(calibration_dir), "--capability-split-seed", "17",
+                "--resource-preflight", str(preflight_path), "--output", str(output_path),
+            ]
+            clients = [FakeSender("json", self.attributes, self.values), FakeReceiver("json", self.attributes, self.values)]
+            with patch("sys.argv", args), patch.object(
+                runner_module, "OpenAICompatibleClient", side_effect=clients
+            ), patch.object(runner_module, "validate_resource_preflight"), contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(runner_module.main(), 0)
+            rows = runner_module._jsonl(output_path)
+            self.assertEqual(len(rows), 4)
+            self.assertTrue(all(row["outcome"]["exact_selection"] for row in rows))
+            manifest = json.loads(output_path.with_suffix(".jsonl.manifest.json").read_text(encoding="utf-8"))
+            self.assertEqual(manifest["usage_example_metadata"]["acquisition"]["input_tokens"], 17)
+            self.assertEqual(manifest["usage_example_metadata"]["example_count"], 1)
+            self.assertTrue(all(row["costs"]["usage_example_bytes_per_receiver_request"] > 0 for row in rows))
+
     def test_incomplete_candidate_set_selection_is_rejected(self):
         corrupt = {**self.bundle, "gold": {**self.bundle["gold"]}}
         corrupt["gold"]["validation"] = corrupt["gold"]["validation"][:-1]
@@ -697,6 +769,94 @@ class EmergentOODV04RunnerTests(unittest.TestCase):
         row, _, _ = self._run("shared_protocol_card")
         self.assertEqual(row["protocol_id"], "frozen-card-test-v1")
         self.assertTrue(row["outcome"]["exact_selection"])
+
+    def test_usage_only_transfer_exposes_train_examples_but_never_card_decoder_or_ids(self):
+        meaning = self.bundle["sender"]["train"][0]["private_meaning"]
+        examples = [{
+            "meaning_id": self.split["train_meaning_ids"][0],
+            "meaning": meaning,
+            "message": json.dumps(meaning, separators=(",", ":")),
+        }]
+        card = {
+            "protocol_id": "frozen-card-usage-test-v1",
+            "sender_instruction": "Encode the tuple as compact JSON.",
+            "receiver_instruction": "Secret decoder text that must not be shown.",
+        }
+        sender = FakeSender("json", self.attributes, self.values)
+        receiver = FakeReceiver("json", self.attributes, self.values)
+        row = run_condition(
+            episode=self.episode, condition="usage_only_transfer", stage="validation",
+            sender_model=sender, receiver_model=receiver,
+            sender_tokenizer_id="fake-sender-tokenizer-v1", receiver_tokenizer_id="fake-receiver-tokenizer-v1",
+            attributes=self.attributes, values=self.values, protocol_card=card,
+            usage_examples=examples, split_seed=17, task_seed=9,
+            model_population_id="fake-test-population",
+        )
+        self.assertTrue(row["outcome"]["exact_selection"])
+        self.assertEqual(row["costs"]["usage_example_count"], 1)
+        receiver_prompt = "\n".join(message["content"] for message in receiver.prompts[0])
+        self.assertIn("training_examples", receiver_prompt)
+        self.assertNotIn("compact JSON", receiver_prompt)
+        self.assertNotIn("Secret decoder text", receiver_prompt)
+        self.assertNotIn("meaning_id", receiver_prompt)
+
+    def test_usage_example_loader_binds_card_manifest_and_training_support(self):
+        cache_root = Path(__file__).resolve().parents[1] / ".cache"
+        cache_root.mkdir(exist_ok=True)
+        with tempfile.TemporaryDirectory(dir=cache_root) as temporary:
+            root = Path(temporary)
+            bundle_dir = root / "episodes"
+            write_ledgers(self.bundle, bundle_dir)
+            loaded, split = load_episode_bundle(bundle_dir, split_seed=17)
+            card_path = root / "card.json"
+            card_payload = {
+                "schema": "tlu.shared_protocol_card.v1",
+                "protocol_id": "usage-loader-card-v1",
+                "sender_instruction": "Encode as JSON.",
+                "receiver_instruction": "Decode JSON.",
+            }
+            card_path.write_text(json.dumps(card_payload), encoding="utf-8")
+            card, card_hash = load_protocol_card(card_path)
+            training_manifest_hash = hashlib.sha256((bundle_dir / "manifest.json").read_bytes()).hexdigest()
+            train_meaning = loaded["sender"]["train"][0]["private_meaning"]
+            train_tuple = tuple(train_meaning[axis] for axis in split["attributes"])
+            meaning_id = next(row["meaning_id"] for row in split["meanings"] if tuple(row["values"]) == train_tuple)
+            example = {
+                "meaning_id": meaning_id,
+                "meaning": train_meaning,
+                "message": json.dumps(train_meaning, separators=(",", ":")),
+            }
+            artifact_path = root / "usage.json"
+            artifact = {
+                "schema": "tlu.usage_examples.v1",
+                "protocol_id": card["protocol_id"],
+                "protocol_card_sha256": card_hash,
+                "training_split_sha256": split["split_sha256"],
+                "training_episode_manifest_sha256": training_manifest_hash,
+                "acquisition": {
+                    "method": "model_generated", "model_id": "fake-sender",
+                    "generation_calls": 1, "input_tokens": 17, "output_tokens": 8,
+                },
+                "examples": [example],
+            }
+            artifact_path.write_text(json.dumps(artifact), encoding="utf-8")
+            examples, digest, metadata = load_usage_examples(
+                artifact_path, split=split, bundle=loaded, protocol_card=card,
+                protocol_card_sha256=card_hash,
+                training_episode_manifest_sha256=training_manifest_hash,
+            )
+            self.assertEqual(len(digest), 64)
+            self.assertEqual(metadata["acquisition"]["input_tokens"], 17)
+            self.assertEqual(examples[0]["meaning"], example["meaning"])
+
+            artifact["examples"][0]["meaning_id"] = split["held_out_meaning_ids"][0]
+            artifact_path.write_text(json.dumps(artifact), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "non-training"):
+                load_usage_examples(
+                    artifact_path, split=split, bundle=loaded, protocol_card=card,
+                    protocol_card_sha256=card_hash,
+                    training_episode_manifest_sha256=training_manifest_hash,
+                )
 
 
 if __name__ == "__main__":

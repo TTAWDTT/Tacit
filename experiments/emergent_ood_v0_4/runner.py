@@ -32,8 +32,8 @@ from experiments.emergent_ood_v0_4.split import build_split
 
 EXPERIMENT_ID = "emergent-ood-v0.4-receiver-utility"
 SCORER_ID = "strict-candidate-id-and-canonical-sender-fidelity-v1"
-CONDITIONS = ("full_information", "no_message", "natural_language", "autoform", "json", "symbolic", "shared_protocol_card")
-CALLS_PER_EPISODE = {"full_information": 1, "no_message": 1, "natural_language": 2, "autoform": 2, "json": 2, "symbolic": 2, "shared_protocol_card": 2}
+CONDITIONS = ("full_information", "no_message", "natural_language", "autoform", "json", "symbolic", "shared_protocol_card", "usage_only_transfer")
+CALLS_PER_EPISODE = {condition: (1 if condition in {"full_information", "no_message"} else 2) for condition in CONDITIONS}
 MAX_MODEL_CALLS_PER_BATCH = 12
 MAX_CANDIDATE_SETS_PER_BATCH = 3
 CAPABILITY_CALIBRATION_SETS = 3
@@ -49,10 +49,11 @@ class _Protocol:
     def __init__(
         self, condition: str, attributes: Sequence[str], values: Mapping[str, Sequence[str]],
         protocol_card: dict[str, str] | None = None,
+        usage_examples: Sequence[dict[str, Any]] | None = None,
     ) -> None:
-        if condition == "shared_protocol_card":
+        if condition in {"shared_protocol_card", "usage_only_transfer"}:
             if protocol_card is None:
-                raise ValueError("shared_protocol_card requires a validated protocol card")
+                raise ValueError(f"{condition} requires a validated protocol card")
             self.protocol_id = protocol_card["protocol_id"]
             role_boundary = (
                 "Use only the information in your private context and the fixed one-message schedule. "
@@ -63,12 +64,22 @@ class _Protocol:
                 + "\nShared protocol card (follow exactly):\n" + protocol_card["sender_instruction"]
                 + "\nReturn only the message payload."
             )
-            receiver_instruction = (
-                "You are the receiver. The one received message and your candidate table are your only task information. "
-                + role_boundary + "\nShared protocol card (follow exactly):\n"
-                + protocol_card["receiver_instruction"]
-                + "\nSelect the exact matching candidate and return only its candidate_id, with no explanation."
-            )
+            if condition == "usage_only_transfer":
+                if not usage_examples:
+                    raise ValueError("usage_only_transfer requires non-empty training usage examples")
+                receiver_instruction = (
+                    "You are a new receiver. Infer the sender's message convention only from the training examples "
+                    "in your private context. Do not assume access to the protocol card or any external decoder. "
+                    "Apply the inferred mapping to the one received message, match the full tuple against your candidate "
+                    "table, and return only the exact candidate_id with no explanation. " + role_boundary
+                )
+            else:
+                receiver_instruction = (
+                    "You are the receiver. The one received message and your candidate table are your only task information. "
+                    + role_boundary + "\nShared protocol card (follow exactly):\n"
+                    + protocol_card["receiver_instruction"]
+                    + "\nSelect the exact matching candidate and return only its candidate_id, with no explanation."
+                )
             self.agent_instructions = {"sender": sender_instruction, "receiver": receiver_instruction}
             return
         self.protocol_id = f"tlu.emergent-ood.v0.4.{condition}.v1"
@@ -170,6 +181,86 @@ def load_protocol_card(path: Path) -> tuple[dict[str, str], str]:
     if any(len(card[field].encode("utf-8")) > 32768 for field in ("sender_instruction", "receiver_instruction")):
         raise ValueError("protocol card instructions exceed 32 KiB per role")
     return {field: card[field] for field in required if field != "schema"}, hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def load_usage_examples(
+    path: Path, *, split: dict[str, Any], bundle: dict[str, Any],
+    protocol_card: dict[str, str], protocol_card_sha256: str,
+    training_episode_manifest_sha256: str,
+) -> tuple[list[dict[str, Any]], str, dict[str, Any]]:
+    """Load a protocol-bound, training-only exemplar trace for receiver onboarding."""
+    path = _inside_project(path)
+    try:
+        payload = path.read_bytes()
+        artifact = json.loads(payload)
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ValueError("usage-example artifact is missing or invalid JSON") from exc
+    if len(payload) > 1_048_576:
+        raise ValueError("usage-example artifact exceeds 1 MiB")
+    required = {
+        "schema", "protocol_id", "protocol_card_sha256", "training_split_sha256",
+        "training_episode_manifest_sha256", "acquisition", "examples",
+    }
+    if not isinstance(artifact, dict) or set(artifact) != required or artifact.get("schema") != "tlu.usage_examples.v1":
+        raise ValueError("usage-example artifact fields or schema are invalid")
+    if artifact["protocol_id"] != protocol_card["protocol_id"]:
+        raise ValueError("usage examples name a different protocol card")
+    if artifact["protocol_card_sha256"] != protocol_card_sha256:
+        raise ValueError("usage examples are not bound to the supplied protocol card")
+    if artifact["training_split_sha256"] != split["split_sha256"]:
+        raise ValueError("usage examples are not bound to this training split")
+    if artifact["training_episode_manifest_sha256"] != training_episode_manifest_sha256:
+        raise ValueError("usage examples are not bound to this exact training episode manifest")
+    acquisition = artifact["acquisition"]
+    if not isinstance(acquisition, dict) or set(acquisition) != {"method", "model_id", "generation_calls", "input_tokens", "output_tokens"}:
+        raise ValueError("usage-example acquisition accounting is malformed")
+    if acquisition["method"] not in {"model_generated", "human_authored", "programmatic"}:
+        raise ValueError("usage-example acquisition method is invalid")
+    if not isinstance(acquisition["model_id"], str):
+        raise ValueError("usage-example acquisition model_id must be a string")
+    for field in ("generation_calls", "input_tokens", "output_tokens"):
+        value = acquisition[field]
+        if value is not None and (isinstance(value, bool) or not isinstance(value, int) or value < 0):
+            raise ValueError(f"usage-example acquisition {field} must be a non-negative integer or null")
+    examples = artifact["examples"]
+    if not isinstance(examples, list) or not 1 <= len(examples) <= 192:
+        raise ValueError("usage examples must contain between 1 and 192 rows")
+    train_rows = bundle["sender"]["train"]
+    train_meanings = {
+        tuple(row["private_meaning"].get(axis) for axis in split["attributes"])
+        for row in train_rows
+    }
+    meanings_by_id = {
+        row["meaning_id"]: tuple(row["values"])
+        for row in split["meanings"] if row["meaning_id"] in set(split["train_meaning_ids"])
+    }
+    seen_ids: set[str] = set()
+    seen_meanings: set[tuple[str, ...]] = set()
+    clean: list[dict[str, Any]] = []
+    for example in examples:
+        if not isinstance(example, dict) or set(example) != {"meaning_id", "meaning", "message"}:
+            raise ValueError("each usage example must have exactly meaning_id, meaning, and message")
+        meaning_id, meaning, message = example["meaning_id"], example["meaning"], example["message"]
+        if not isinstance(meaning_id, str) or meaning_id not in meanings_by_id or meaning_id in seen_ids:
+            raise ValueError("usage example contains a duplicate or non-training meaning ID")
+        if not isinstance(meaning, dict) or set(meaning) != set(split["attributes"]):
+            raise ValueError("usage-example meaning does not match the task ontology")
+        meaning_tuple = tuple(meaning[axis] for axis in split["attributes"])
+        if meaning_tuple != meanings_by_id[meaning_id] or meaning_tuple not in train_meanings:
+            raise ValueError("usage example meaning does not match the bound training ledger")
+        if not isinstance(message, str) or not message.strip() or len(message.encode("utf-8")) > 4096:
+            raise ValueError("usage-example message must be non-empty and at most 4096 UTF-8 bytes")
+        seen_ids.add(meaning_id)
+        seen_meanings.add(meaning_tuple)
+        clean.append({"meaning_id": meaning_id, "meaning": dict(meaning), "message": message})
+    if acquisition["method"] == "model_generated" and acquisition["generation_calls"] != len(clean):
+        raise ValueError("model-generated usage traces must account for one generation call per example")
+    digest = hashlib.sha256(payload).hexdigest()
+    return clean, digest, {
+        "acquisition": acquisition,
+        "example_count": len(clean),
+        "training_support_covered": len(seen_meanings),
+    }
 
 
 def _jsonl(path: Path) -> list[dict[str, Any]]:
@@ -554,6 +645,7 @@ def run_condition(
     sender_tokenizer_id: str | None = None, receiver_tokenizer_id: str = "not_reported",
     attributes: Sequence[str], values: Mapping[str, Sequence[str]],
     protocol_card: dict[str, str] | None = None,
+    usage_examples: Sequence[dict[str, Any]] | None = None,
     split_seed: int, task_seed: int, model_population_id: str,
     wire_budget_bytes: int = DEFAULT_WIRE_BUDGET_BYTES,
 ) -> dict[str, Any]:
@@ -567,6 +659,15 @@ def run_condition(
         raise ValueError("episode candidate view or evaluator target is malformed")
 
     receiver_context: dict[str, Any] = {"candidates": candidates}
+    if condition == "usage_only_transfer":
+        if not usage_examples:
+            raise ValueError("usage_only_transfer requires validated training usage examples")
+        # Deliberately expose only the semantic tuple and observed message. Provenance IDs
+        # stay in the evaluator artifact and never cross the model boundary.
+        receiver_context["training_examples"] = [
+            {"meaning": example["meaning"], "message": example["message"]}
+            for example in usage_examples
+        ]
     if condition == "full_information":
         receiver_context["calibration_target"] = target
         protocol = _Protocol("full_information", attributes, values)
@@ -579,7 +680,10 @@ def run_condition(
     else:
         if sender_model is None:
             raise ValueError(f"{condition} requires a sender model")
-        protocol = _Protocol(condition, attributes, values, protocol_card=protocol_card)
+        protocol = _Protocol(
+            condition, attributes, values, protocol_card=protocol_card,
+            usage_examples=usage_examples,
+        )
         schedule = (("sender", "receiver"),)
 
     # The receiver gets the private tuple only in the explicit full-information control.
@@ -670,6 +774,11 @@ def run_condition(
                 "sender_instruction": len(protocol.agent_instructions["sender"].encode("utf-8")),
                 "receiver_instruction": len(protocol.agent_instructions["receiver"].encode("utf-8")),
             },
+            "usage_example_count": len(usage_examples or []) if condition == "usage_only_transfer" else 0,
+            "usage_example_bytes_per_receiver_request": (
+                len(json.dumps(receiver_context["training_examples"], ensure_ascii=False, separators=(",", ":")).encode("utf-8"))
+                if condition == "usage_only_transfer" else 0
+            ),
         },
         "trace": {
             "message": message,
@@ -807,6 +916,7 @@ def main() -> int:
     )
     parser.add_argument("--conditions", nargs="+", choices=CONDITIONS, default=["natural_language"])
     parser.add_argument("--protocol-card", type=Path, help="shared sender/receiver card JSON for the shared_protocol_card condition")
+    parser.add_argument("--usage-examples", type=Path, help="train-only meaning/message artifact required by usage_only_transfer")
     parser.add_argument("--output", type=Path, default=Path(".cache/emergent_ood_v0_4/runs/validation.jsonl"))
     parser.add_argument("--resume", action="store_true", help="resume the matching atomic checkpoint for this output path")
     parser.add_argument("--capability-ledger", type=Path, help="verified train-only full_information screen required before message conditions")
@@ -833,12 +943,26 @@ def main() -> int:
         protocol_card, protocol_card_digest = (
             load_protocol_card(args.protocol_card) if args.protocol_card else (None, None)
         )
+        input_manifest_sha256 = hashlib.sha256(
+            (_inside_project(args.input_dir) / "manifest.json").read_bytes()
+        ).hexdigest()
+        usage_examples, usage_examples_digest, usage_metadata = (None, None, None)
+        if "usage_only_transfer" in args.conditions:
+            if args.usage_examples is None or protocol_card is None:
+                raise ValueError("usage_only_transfer requires both --protocol-card and --usage-examples")
+            usage_examples, usage_examples_digest, usage_metadata = load_usage_examples(
+                args.usage_examples, split=split, bundle=bundle,
+                protocol_card=protocol_card, protocol_card_sha256=protocol_card_digest,
+                training_episode_manifest_sha256=input_manifest_sha256,
+            )
     except (ValueError, OSError) as exc:
         parser.error(str(exc))
-    if "shared_protocol_card" in args.conditions and protocol_card is None:
-        parser.error("shared_protocol_card requires --protocol-card")
-    if args.protocol_card is not None and "shared_protocol_card" not in args.conditions:
-        parser.error("--protocol-card is only valid with shared_protocol_card")
+    if any(condition in args.conditions for condition in ("shared_protocol_card", "usage_only_transfer")) and protocol_card is None:
+        parser.error("shared_protocol_card and usage_only_transfer require --protocol-card")
+    if args.protocol_card is not None and not any(condition in args.conditions for condition in ("shared_protocol_card", "usage_only_transfer")):
+        parser.error("--protocol-card requires shared_protocol_card or usage_only_transfer")
+    if "usage_only_transfer" not in args.conditions and args.usage_examples is not None:
+        parser.error("--usage-examples is only valid with usage_only_transfer")
     if args.stage == "train" and (
         args.conditions != ["full_information"] or args.sets != CAPABILITY_CALIBRATION_SETS
         or args.set_offset != 0
@@ -866,6 +990,9 @@ def main() -> int:
             "candidate_count": bundle["manifest"]["k"],
             "analytic_no_message_accuracy": 1 / bundle["manifest"]["k"],
             "wire_budget_bytes": args.wire_budget_bytes,
+            "protocol_card_sha256": protocol_card_digest,
+            "usage_examples_sha256": usage_examples_digest,
+            "usage_example_count": usage_metadata["example_count"] if usage_metadata else 0,
             "planned_model_calls": calls_planned,
             "maximum_model_calls_per_batch": MAX_MODEL_CALLS_PER_BATCH,
             "resume_supported": True,
@@ -882,7 +1009,7 @@ def main() -> int:
     if not args.receiver_tokenizer_id:
         parser.error("--execute requires --receiver-tokenizer-id")
     needs_capability = any(
-        condition in {"natural_language", "autoform", "json", "symbolic", "shared_protocol_card"}
+        condition in {"natural_language", "autoform", "json", "symbolic", "shared_protocol_card", "usage_only_transfer"}
         for condition in args.conditions
     )
     if needs_capability:
@@ -926,7 +1053,7 @@ def main() -> int:
         except (OSError, ValueError) as exc:
             parser.error(str(exc))
     needs_sender = any(
-        condition in {"natural_language", "autoform", "json", "symbolic", "shared_protocol_card"}
+        condition in {"natural_language", "autoform", "json", "symbolic", "shared_protocol_card", "usage_only_transfer"}
         for condition in args.conditions
     )
     if needs_sender and not args.sender_model:
@@ -957,7 +1084,6 @@ def main() -> int:
         parser.error(f"checkpoint already exists; pass --resume to continue it: {checkpoint_path}")
 
     input_manifest_path = _inside_project(_inside_project(args.input_dir) / "manifest.json")
-    input_manifest_sha256 = hashlib.sha256(input_manifest_path.read_bytes()).hexdigest()
     capability_ledger_sha256 = (
         hashlib.sha256(_inside_project(args.capability_ledger).read_bytes()).hexdigest()
         if needs_capability and args.capability_ledger is not None else None
@@ -986,6 +1112,7 @@ def main() -> int:
         "task_key_id": bundle["manifest"]["task_key_id"],
         "input_episode_manifest_sha256": input_manifest_sha256,
         "protocol_card_sha256": protocol_card_digest,
+        "usage_examples_sha256": usage_examples_digest,
         "capability_ledger_sha256": capability_ledger_sha256,
         "capability_ledger_manifest_sha256": capability_ledger_manifest_sha256,
         "capability_bundle_manifest_sha256": capability_bundle_manifest_sha256,
@@ -1056,7 +1183,8 @@ def main() -> int:
                 sender_tokenizer_id=args.sender_tokenizer_id or None,
                 receiver_tokenizer_id=args.receiver_tokenizer_id,
                 attributes=split["attributes"], values=split["values_by_attribute"],
-                protocol_card=protocol_card if condition == "shared_protocol_card" else None,
+                protocol_card=protocol_card if condition in {"shared_protocol_card", "usage_only_transfer"} else None,
+                usage_examples=usage_examples if condition == "usage_only_transfer" else None,
                 split_seed=args.split_seed, task_seed=bundle["manifest"]["task_seed"],
                 model_population_id=args.model_population_id,
                 wire_budget_bytes=args.wire_budget_bytes,
@@ -1077,6 +1205,8 @@ def main() -> int:
             "stage": args.stage,
             "conditions": args.conditions,
             "protocol_card_sha256": protocol_card_digest,
+            "usage_examples_sha256": usage_examples_digest,
+            "usage_example_metadata": usage_metadata,
             "candidate_sets": args.sets,
             "candidate_set_offset": args.set_offset,
             "candidate_count": bundle["manifest"]["k"],
