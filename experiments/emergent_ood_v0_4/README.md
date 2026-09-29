@@ -51,6 +51,8 @@ Every message-condition batch then supplies that ledger:
 python -m experiments.emergent_ood_v0_4.runner --input-dir .cache/emergent_ood_v0_4/episodes --split-seed 17 --stage validation --conditions natural_language --capability-ledger .cache/emergent_ood_v0_4/runs/capability.jsonl --output .cache/emergent_ood_v0_4/runs/validation-natural-language.jsonl --execute --resource-preflight .cache/emergent_ood_v0_4/resource_preflight.json
 ```
 
+Use `--set-offset` to process later candidate sets without reusing the first batch. For example, the validation fixture's 16 sets can be divided into offsets `0,1,...,15` with `--sets 1`; each single-condition message batch uses eight calls and stays under the 12-call cap. Give every batch a unique output path, then concatenate only the result JSONL rows for analysis. The output manifests preserve each batch's offset; one split seed remains one independent inference cluster regardless of the number of candidate sets processed.
+
 The current local resource gate has not passed; these commands document the workflow and are not permission to launch inference. Run the dry-run form by omitting `--execute` before a future model batch.
 
 Dry-run is the default and makes no model request:

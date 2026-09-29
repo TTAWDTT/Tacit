@@ -243,23 +243,27 @@ def load_episode_bundle(directory: Path, *, split_seed: int) -> tuple[dict[str, 
     return bundle, split
 
 
-def select_candidate_sets(bundle: dict[str, Any], stage: str, set_count: int) -> list[dict[str, Any]]:
+def select_candidate_sets(
+    bundle: dict[str, Any], stage: str, set_count: int, *, set_offset: int = 0
+) -> list[dict[str, Any]]:
     if stage not in STAGES:
         raise ValueError("stage must be train, validation, or test")
     if isinstance(set_count, bool) or not isinstance(set_count, int) or not 1 <= set_count <= MAX_CANDIDATE_SETS_PER_BATCH:
         raise ValueError(f"set_count must be in 1..{MAX_CANDIDATE_SETS_PER_BATCH} per batch")
+    if isinstance(set_offset, bool) or not isinstance(set_offset, int) or set_offset < 0:
+        raise ValueError("set_offset must be a non-negative integer")
     sender, receiver, gold = (bundle[role][stage] for role in ("sender", "receiver", "gold"))
     if not (len(sender) == len(receiver) == len(gold)):
         raise ValueError("role ledgers are not aligned")
+    ordered_set_ids = list(dict.fromkeys(row["candidate_set_id"] for row in gold))
+    selected_set_ids = ordered_set_ids[set_offset:set_offset + set_count]
+    if len(selected_set_ids) != set_count:
+        raise ValueError("candidate-set offset/count exceeds the available stage sets")
+    selected_set_id_set = set(selected_set_ids)
     picked = []
-    selected_set_ids: list[str] = []
     for index, gold_row in enumerate(gold):
         set_id = gold_row["candidate_set_id"]
-        if set_id not in selected_set_ids:
-            if len(selected_set_ids) >= set_count:
-                continue
-            selected_set_ids.append(set_id)
-        if set_id in selected_set_ids:
+        if set_id in selected_set_id_set:
             picked.append({"sender": sender[index], "receiver": receiver[index], "gold": gold_row})
     expected_k = bundle["manifest"]["k"]
     if len(picked) != set_count * expected_k:
@@ -748,6 +752,10 @@ def main() -> int:
     parser.add_argument("--stage", choices=STAGES, default="validation")
     parser.add_argument("--sets", type=int, default=1)
     parser.add_argument(
+        "--set-offset", type=int, default=0,
+        help="number of complete candidate sets to skip within the stage (default: 0)",
+    )
+    parser.add_argument(
         "--wire-budget-bytes", type=int, default=DEFAULT_WIRE_BUDGET_BYTES,
         help="maximum complete application-layer message bytes per episode (default: 4096)",
     )
@@ -772,7 +780,7 @@ def main() -> int:
 
     try:
         bundle, split = load_episode_bundle(args.input_dir, split_seed=args.split_seed)
-        episodes = select_candidate_sets(bundle, args.stage, args.sets)
+        episodes = select_candidate_sets(bundle, args.stage, args.sets, set_offset=args.set_offset)
         protocol_card, protocol_card_digest = (
             load_protocol_card(args.protocol_card) if args.protocol_card else (None, None)
         )
@@ -784,9 +792,10 @@ def main() -> int:
         parser.error("--protocol-card is only valid with shared_protocol_card")
     if args.stage == "train" and (
         args.conditions != ["full_information"] or args.sets != CAPABILITY_CALIBRATION_SETS
+        or args.set_offset != 0
     ):
         parser.error(
-            f"train stage is reserved for exactly {CAPABILITY_CALIBRATION_SETS} full-information capability sets"
+            f"train stage is reserved for exactly {CAPABILITY_CALIBRATION_SETS} full-information capability sets at offset zero"
         )
     if args.capability_ledger is not None and args.stage == "train":
         parser.error("train-stage calibration cannot consume another capability ledger")
@@ -800,6 +809,8 @@ def main() -> int:
             "stage": args.stage,
             "conditions": args.conditions,
             "candidate_sets": args.sets,
+            "candidate_set_offset": args.set_offset,
+            "available_candidate_sets": len({row["candidate_set_id"] for row in bundle["gold"][args.stage]}),
             "episodes": len(episodes),
             "candidate_count": bundle["manifest"]["k"],
             "analytic_no_message_accuracy": 1 / bundle["manifest"]["k"],
@@ -897,6 +908,7 @@ def main() -> int:
             "conditions": args.conditions,
             "protocol_card_sha256": protocol_card_digest,
             "candidate_sets": args.sets,
+            "candidate_set_offset": args.set_offset,
             "candidate_count": bundle["manifest"]["k"],
             "communication_budget_bytes": args.wire_budget_bytes,
             "split_seed": args.split_seed,

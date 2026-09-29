@@ -382,6 +382,22 @@ class EmergentOODV04RunnerTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             select_candidate_sets(corrupt, "validation", 1)
 
+    def test_candidate_set_offsets_cover_stage_once_without_overlap(self):
+        batches = [
+            select_candidate_sets(self.bundle, "validation", 1, set_offset=offset)
+            for offset in range(3)
+        ]
+        observed_set_ids = [batch[0]["gold"]["candidate_set_id"] for batch in batches]
+        observed_episode_ids = [row["gold"]["episode_id"] for batch in batches for row in batch]
+        expected_episode_ids = [row["episode_id"] for row in self.bundle["gold"]["validation"]]
+        self.assertEqual(len(set(observed_set_ids)), 3)
+        self.assertEqual(len(set(observed_episode_ids)), len(observed_episode_ids))
+        self.assertEqual(set(observed_episode_ids), set(expected_episode_ids))
+        with self.assertRaisesRegex(ValueError, "exceeds"):
+            select_candidate_sets(self.bundle, "validation", 1, set_offset=3)
+        with self.assertRaisesRegex(ValueError, "non-negative"):
+            select_candidate_sets(self.bundle, "validation", 1, set_offset=-1)
+
     def test_single_candidate_set_has_exact_four_color_zero_error_floor(self):
         episodes = select_candidate_sets(self.bundle, "validation", 1)
         graph = conflict_graph_summary(episodes)
