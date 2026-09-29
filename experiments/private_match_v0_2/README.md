@@ -2,8 +2,8 @@
 
 This milestone turns the role-separated calibration task into a runnable,
 paired communication experiment. It compares no-message, concise natural
-language, JSON, ordered tuple, a fixed hex-nibble code, and a sender-selected
-form. The hex condition is a task-specific coded baseline, not a claim of a
+language, compact key-value text, JSON, ordered tuple, a fixed hex-nibble code,
+and a sender-selected form. The hex condition is a task-specific coded baseline, not a claim of a
 new language. Conditions share generated episode IDs, candidate tables, and
 hidden target records.
 

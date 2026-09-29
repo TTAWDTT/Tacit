@@ -1,5 +1,12 @@
 # Research log
 
+## 2026-09-29 — Add compact key-value as a preregistered Private Match baseline
+
+- **Prior evidence:** the earlier DuoSum v0.4 local run reports compact-KV syntax in 10/10 submitted messages, but sender-value fidelity in only 9/10; this shows why the new comparison must separately score format adherence and exact content fidelity. The experiment plan already lists compact key-value text among required representation baselines.
+- **Protocol amendment:** before any v0.2 model inference or data collection, amended preregistration revision 2 to add `compact_kv`. The condition uses ordered `feature=value` pairs with semicolon separators and no spaces. The amendment records its date, reason, and that no data existed before the change.
+- **Implementation:** added the sender/receiver instructions and a mechanical parser that checks the exact field order and value syntax, then compares the decoded record with sender-private state. Receiver task success remains a separate outcome. This is an established structured-text baseline, not a proposed new language.
+- **Limits / next gate:** no local inference, model load, or host-resource check was performed. The condition list is now more complete for this small exact task but remains weaker than optimized NL/AutoForm and does not establish an efficiency frontier. Run it only with the frozen model resource and full-information receiver-capability gates satisfied.
+
 ## 2026-09-29 — Correct Private Match episode stratification and add diagnostic analysis
 
 - **Failure found:** the first v0.2 report test showed that putting the random generation seed inside `task_parameters` split each replicate into its own stratum. Paired records still shared IDs one at a time, but episodes could not pool for condition summaries or confidence intervals. This is an analysis-design error, not a model result.

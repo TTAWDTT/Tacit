@@ -83,6 +83,17 @@ def _message_diagnostics(
             valid = len(values) == len(feature_order) and all(re.fullmatch(r"v\d{4}", value) for value in values)
             decoded = dict(zip(feature_order, values)) if valid else None
             return valid, valid and decoded == target_record
+        if protocol_id == "compact_kv":
+            parts = message.split(";")
+            pairs = [part.split("=", 1) for part in parts if part.count("=") == 1]
+            valid = (
+                len(parts) == len(feature_order)
+                and len(pairs) == len(parts)
+                and [pair[0] for pair in pairs] == feature_order
+                and all(re.fullmatch(r"v\d{4}", pair[1]) for pair in pairs)
+            )
+            decoded = {key: value for key, value in pairs} if valid else None
+            return valid, valid and decoded == target_record
         if protocol_id == "hex_nibbles":
             valid = len(message) == len(feature_order) and all(ch in "0123456789abcdef" for ch in message)
             numbers = [int(ch, 16) for ch in message] if valid else []

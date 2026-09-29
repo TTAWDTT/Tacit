@@ -35,6 +35,12 @@ def protocol_by_id(name: str) -> Protocol:
             'Serialize the target record as one compact JSON object. Preserve every key and value exactly. Return only the JSON object.',
             f"Interpret the message as a JSON object containing feature/value pairs. Find the exact record match in the table and return its candidate_id. {_OUTPUT}",
         )
+    if name == "compact_kv":
+        return Protocol(
+            name, "fixed-kv-v1", "ordered-kv-exact-match-v1",
+            "Encode every feature as name=value, in the stated feature order, with pairs separated by semicolons and no spaces. Use the exact feature names and values. Return only the pairs, for example f0=v0002;f1=v0010.",
+            f"Interpret the message as semicolon-separated name=value pairs. Match the exact values against the candidate table and return the matching candidate_id. {_OUTPUT}",
+        )
     if name == "tuple":
         return Protocol(
             name, "prompt-v1", "ordered-tuple-match-v1",
@@ -56,4 +62,4 @@ def protocol_by_id(name: str) -> Protocol:
     raise ValueError(f"unknown protocol: {name}")
 
 
-PROTOCOL_IDS = ("concise_nl", "json", "tuple", "hex_nibbles", "autoform")
+PROTOCOL_IDS = ("concise_nl", "compact_kv", "json", "tuple", "hex_nibbles", "autoform")

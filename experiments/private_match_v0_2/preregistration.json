@@ -1,9 +1,19 @@
 {
   "experiment_id": "private-match-v0.2",
   "status": "runner implemented; inference not yet authorized by resource gate",
+  "preregistration_revision": 2,
+  "amendment_history": [
+    {
+      "revision": 2,
+      "date": "2026-09-29",
+      "change": "Added a fixed compact key-value representation baseline before any model inference.",
+      "rationale": "The experiment plan and prior DuoSum v0.4 identify compact key-value as a practical structured-text baseline, with prior evidence that syntax validity and sender-value fidelity differ.",
+      "data_collected_before_amendment": false
+    }
+  ],
   "hypothesis": "Explicit low-overhead codes may reduce measured application-layer communication while preserving exact matching accuracy on a fixed, shared task. This pilot cannot establish general superiority.",
   "task": "Role-separated deterministic private-record matching. Sender sees one target tuple; receiver sees a shuffled table of unique candidate tuples. Target index is sampled independently and uniformly.",
-  "conditions": ["no_message", "concise_nl", "json", "tuple", "hex_nibbles", "autoform"],
+  "conditions": ["no_message", "concise_nl", "compact_kv", "json", "tuple", "hex_nibbles", "autoform"],
   "primary_outcomes": ["exact joint success", "application-layer bytes per episode", "sender plus receiver model tokens", "end-to-end wall seconds"],
   "secondary_outcomes": ["receiver payload tokenizer count (null unless separately measured)", "sender and receiver output truncation", "message syntax validity", "exact semantic fidelity for mechanically decodable formats", "protocol decoding errors"],
   "design": {
