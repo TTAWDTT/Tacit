@@ -8,7 +8,7 @@ from .runtime import (
     TextProtocol,
     exchange_once,
 )
-from .channel import LocalTCPMessageChannel, Transmission
+from .channel import FrameTransmission, LocalTCPFrameChannel, LocalTCPMessageChannel, Transmission
 
 __all__ = [
     "ChatCompletion",
@@ -18,5 +18,7 @@ __all__ = [
     "TextProtocol",
     "exchange_once",
     "LocalTCPMessageChannel",
+    "LocalTCPFrameChannel",
     "Transmission",
+    "FrameTransmission",
 ]

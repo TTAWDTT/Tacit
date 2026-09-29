@@ -7,7 +7,10 @@ import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.request import Request
 
-from tacit import ChatCompletion, LocalTCPMessageChannel, OpenAICompatibleClient, exchange_once
+from tacit import (
+    ChatCompletion, LocalTCPFrameChannel, LocalTCPMessageChannel,
+    OpenAICompatibleClient, exchange_once,
+)
 from tools.cost_report import aggregate
 
 
@@ -28,6 +31,65 @@ class FakeModel:
 
 
 class TacitRuntimeTests(unittest.TestCase):
+    def test_loopback_frame_channel_transmits_opaque_bytes_and_accounts_exactly(self) -> None:
+        received = []
+        payload = b"\x00\xffKV\x80\x00"
+        with LocalTCPFrameChannel(lambda metadata, body: received.append((metadata, body))) as channel:
+            transmission = channel.send(
+                payload,
+                protocol_id="opaque-repr-v1",
+                round_number=3,
+                sender="A",
+                recipient="B",
+                media_type="application/vnd.tlu.tensor",
+                encoding="float16-le",
+                payload_metadata={"dtype": "float16", "shape": [1, 3]},
+            )
+
+        self.assertEqual(received[0][1], payload)
+        self.assertEqual(received[0][0]["payload_length"], len(payload))
+        self.assertEqual(transmission.payload_bytes, len(payload))
+        self.assertEqual(
+            transmission.total_application_bytes,
+            transmission.payload_bytes + transmission.framing_bytes,
+        )
+        record = transmission.cost_record()
+        self.assertEqual(record["payload_bytes"], len(payload))
+        self.assertEqual(record["media_type"], "application/vnd.tlu.tensor")
+        self.assertEqual(record["encoding"], "float16-le")
+        self.assertEqual(record["payload_metadata"]["shape"], [1, 3])
+        self.assertEqual(record["payload_bytes"] + record["framing_bytes"], transmission.total_application_bytes)
+        episode = {
+            "schema_version": "tlu.costs.v3",
+            "episode_id": "binary-loopback-test",
+            "stratum": {
+                "experiment_id": "frame-channel-test", "task_id": "toy@1", "split": "test",
+                "task_parameters": {}, "model_population_id": "fake",
+                "agent_models": {"A": "fake-v1", "B": "fake-v1"}, "scorer_id": "none",
+            },
+            "protocol": {"policy_id": "fixed", "code_id": "opaque-repr-v1", "decoder_id": "none"},
+            "outcome": {"joint_success": True, "answer_score": 1.0},
+            "transmissions": [record], "model_calls": [], "runtime": {}, "setup": [],
+        }
+        report = aggregate([episode])
+        self.assertEqual(report["groups"][0]["channel"]["wire_bytes"]["observed_sum"],
+                         transmission.total_application_bytes)
+
+    def test_frame_channel_rejects_invalid_metadata_and_callback_errors(self) -> None:
+        with LocalTCPFrameChannel(lambda _metadata, _payload: None, max_frame_bytes=128) as channel:
+            with self.assertRaisesRegex(ValueError, "JSON values"):
+                channel.send(b"x", protocol_id="p", round_number=1, sender="A", recipient="B",
+                             payload_metadata={"unsupported": object()})
+            with self.assertRaisesRegex(ValueError, "exceeds"):
+                channel.send(b"x" * 128, protocol_id="p", round_number=1, sender="A", recipient="B")
+
+        def reject(_metadata, _payload):
+            raise ValueError("rejected")
+
+        with LocalTCPFrameChannel(reject) as channel:
+            with self.assertRaisesRegex(RuntimeError, "callback failed"):
+                channel.send(b"opaque", protocol_id="p", round_number=1, sender="A", recipient="B")
+
     def test_loopback_channel_delivers_exact_utf8_and_partitions_wire_body(self) -> None:
         received = []
         message = '事实: "café" 🧪\\line\n'
