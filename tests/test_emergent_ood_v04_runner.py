@@ -41,7 +41,7 @@ class FakeSender:
         target = private["private_meaning"]
         if self.condition == "natural_language":
             text = ", ".join(f"{attribute} {target[attribute]}" for attribute in self.attributes)
-        elif self.condition == "json":
+        elif self.condition in {"autoform", "json"}:
             ordered = {attribute: target[attribute] for attribute in self.attributes}
             text = json.dumps(ordered, separators=(",", ":"))
         else:
@@ -73,7 +73,7 @@ class FakeReceiver:
                 meaning = {}
                 for axis in self.attributes:
                     meaning[axis] = next(value for value in self.values[axis] if value in message)
-            elif self.condition == "json":
+            elif self.condition in {"autoform", "json"}:
                 meaning = json.loads(message)
             else:
                 meaning = {axis: self.values[axis][int(code)] for axis, code in zip(self.attributes, message)}
@@ -126,7 +126,7 @@ class EmergentOODV04RunnerTests(unittest.TestCase):
         return row, sender, receiver
 
     def test_message_conditions_route_exact_payload_and_score_end_to_end(self):
-        for condition in ("natural_language", "json", "symbolic"):
+        for condition in ("natural_language", "autoform", "json", "symbolic"):
             with self.subTest(condition=condition):
                 row, sender, receiver = self._run(condition)
                 self.assertTrue(row["outcome"]["answer_format_valid"])
@@ -144,6 +144,13 @@ class EmergentOODV04RunnerTests(unittest.TestCase):
                 )
                 self.assertEqual(len(sender.prompts), 1)
                 self.assertEqual(len(receiver.prompts), 1)
+                if condition == "autoform":
+                    self.assertIsNone(row["sender_audit"]["semantic_parse_valid"])
+                    self.assertIsNone(row["sender_audit"]["exact_format_valid"])
+                    sender_prompt = sender.prompts[0][0]["content"]
+                    receiver_prompt = receiver.prompts[0][0]["content"]
+                    self.assertIn("medium other than ordinary prose", sender_prompt)
+                    self.assertIn("no fixed syntax is guaranteed", receiver_prompt)
 
     def test_message_conditions_keep_private_roles_and_evaluator_labels_separate(self):
         row, sender, receiver = self._run("json")
@@ -315,24 +322,26 @@ class EmergentOODV04RunnerTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(dir=cache_root) as temporary:
             input_dir = Path(temporary) / "episodes"
             write_ledgers(self.bundle, input_dir)
-            args = [
-                "runner",
-                "--input-dir", str(input_dir),
-                "--split-seed", "17",
-                "--stage", "validation",
-                "--conditions", "natural_language",
-                "--execute",
-                "--receiver-model", "fake-receiver",
-                "--receiver-tokenizer-id", "fake-receiver-tokenizer-v1",
-                "--sender-model", "fake-sender",
-                "--sender-tokenizer-id", "fake-sender-tokenizer-v1",
-            ]
-            with patch("sys.argv", args), patch.object(
-                runner_module, "OpenAICompatibleClient"
-            ) as endpoint_client, contextlib.redirect_stderr(io.StringIO()):
-                with self.assertRaises(SystemExit):
-                    runner_module.main()
-            endpoint_client.assert_not_called()
+            for condition in ("natural_language", "autoform"):
+                with self.subTest(condition=condition):
+                    args = [
+                        "runner",
+                        "--input-dir", str(input_dir),
+                        "--split-seed", "17",
+                        "--stage", "validation",
+                        "--conditions", condition,
+                        "--execute",
+                        "--receiver-model", "fake-receiver",
+                        "--receiver-tokenizer-id", "fake-receiver-tokenizer-v1",
+                        "--sender-model", "fake-sender",
+                        "--sender-tokenizer-id", "fake-sender-tokenizer-v1",
+                    ]
+                    with patch("sys.argv", args), patch.object(
+                        runner_module, "OpenAICompatibleClient"
+                    ) as endpoint_client, contextlib.redirect_stderr(io.StringIO()):
+                        with self.assertRaises(SystemExit):
+                            runner_module.main()
+                    endpoint_client.assert_not_called()
 
     def test_incomplete_candidate_set_selection_is_rejected(self):
         corrupt = {**self.bundle, "gold": {**self.bundle["gold"]}}

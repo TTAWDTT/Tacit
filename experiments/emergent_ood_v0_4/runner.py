@@ -32,8 +32,8 @@ from experiments.emergent_ood_v0_4.split import build_split
 
 EXPERIMENT_ID = "emergent-ood-v0.4-receiver-utility"
 SCORER_ID = "strict-candidate-id-and-canonical-sender-fidelity-v1"
-CONDITIONS = ("full_information", "no_message", "natural_language", "json", "symbolic", "shared_protocol_card")
-CALLS_PER_EPISODE = {"full_information": 1, "no_message": 1, "natural_language": 2, "json": 2, "symbolic": 2, "shared_protocol_card": 2}
+CONDITIONS = ("full_information", "no_message", "natural_language", "autoform", "json", "symbolic", "shared_protocol_card")
+CALLS_PER_EPISODE = {"full_information": 1, "no_message": 1, "natural_language": 2, "autoform": 2, "json": 2, "symbolic": 2, "shared_protocol_card": 2}
 MAX_MODEL_CALLS_PER_BATCH = 12
 MAX_CANDIDATE_SETS_PER_BATCH = 3
 CAPABILITY_CALIBRATION_SETS = 3
@@ -86,6 +86,14 @@ class _Protocol:
             return common + " No sender message is required for this control."
         if condition == "natural_language":
             return common + " Describe all four attribute names and their exact values in one short sentence."
+        if condition == "autoform":
+            return common + (
+                " Choose a concise, efficient communication medium other than ordinary prose, suited to this exact tuple. "
+                "You may use structured data, a table, mathematical notation, pseudocode, or a compact code. "
+                "Your partner has the attribute vocabulary and candidate table, but not your private tuple; no fixed message grammar "
+                "is shared, so make your representation "
+                "decodable and preserve all four exact attribute values. Return only the message."
+            )
         if condition == "json":
             return common + " Return one compact JSON object with exactly the four attribute names as keys and their exact string values."
         if condition == "symbolic":
@@ -118,6 +126,12 @@ class _Protocol:
             )
         if condition == "natural_language":
             return common + " Interpret ordinary English descriptions of the named attributes."
+        if condition == "autoform":
+            return common + (
+                " The sender may choose an open concise format, including structured data, tables, equations, pseudocode, "
+                "or code; no fixed syntax is guaranteed. Infer the four exact attribute values from the message and match "
+                "the complete tuple against your candidate table."
+            )
         if condition == "json":
             return common + " Interpret the sender's JSON object as attribute names and exact values."
         if condition == "symbolic":
@@ -793,7 +807,7 @@ def main() -> int:
     if not args.receiver_tokenizer_id:
         parser.error("--execute requires --receiver-tokenizer-id")
     needs_capability = any(
-        condition in {"natural_language", "json", "symbolic", "shared_protocol_card"}
+        condition in {"natural_language", "autoform", "json", "symbolic", "shared_protocol_card"}
         for condition in args.conditions
     )
     if needs_capability:
@@ -816,7 +830,7 @@ def main() -> int:
             )
         except (OSError, ValueError) as exc:
             parser.error(str(exc))
-    needs_sender = any(condition in {"natural_language", "json", "symbolic"} for condition in args.conditions)
+    needs_sender = any(condition in {"natural_language", "autoform", "json", "symbolic"} for condition in args.conditions)
     if needs_sender and not args.sender_model:
         parser.error("message conditions require --sender-model")
     if needs_sender and not args.sender_tokenizer_id:
