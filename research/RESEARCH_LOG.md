@@ -11,7 +11,8 @@
 - **Reproducibility finding:** `generate_dataset(...)` assigned IDs from the row index (`pmt3-000000`), while runner records encoded the public task seed (`pmt3-000000003000`). The same key/seed generated the same task content, but the separate IDs prevented direct joins between offline role shards and runner ledgers.
 - **Correction:** shard IDs now use the runner's canonical `pmt3-{seed:012d}` form; generator version advanced to 0.3.2 and preregistration/README were amended before any model observations.
 - **Regression evidence:** the dataset test reconstructs seed 3000 through the single-episode generator and asserts the complete sender view and canonical ID match byte-for-byte at the decoded-record level.
-- **Scope:** this aligns identities; task contents and scoring are unchanged. No inference was run.
+- **Verification:** all 13 Private Match v0.3 tests pass after the version/ID change; Python compilation, preregistration JSON parsing, and `git diff --check` also pass. No model or endpoint was run.
+- **Scope:** this aligns identities; task contents and scoring are unchanged.
 
 ## 2026-09-29 — Reconcile root project status with frozen v0.3 artifact
 
