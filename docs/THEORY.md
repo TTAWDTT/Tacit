@@ -345,3 +345,22 @@ P^*_\infty(k,B)\to\frac{1-e^{-\lambda}}{\lambda}.
 \]
 
 Thus keeping a constant number of payload bits while the number of candidate choices grows gives success proportional to (B/k); keeping a fixed bits-per-choice ratio instead gives a nonzero limiting accuracy below one. These are scaling laws for the ideal private-record task and balanced codebooks, not for model inference or natural-language length. The calculator reports both the exact finite-(N) value and this large-record-space limit. A falsifiable model experiment must vary (k) and measured serialized-byte budgets while holding the record prior and receiver capability fixed; deviation from the oracle can arise from codebook, model, or framing constraints, all of which must be reported rather than folded into a language claim.
+
+## 14. Exact bit-budget frontier for complementary coordinate matching
+
+This result formalizes the three-agent [Private Match v0.3](../experiments/private_match_v0_3/README.md) task. It is a finite simultaneous-communication bound for that task family, not a language-efficiency or LLM-performance theorem.
+
+**Model.** Let `q = 2^w`, with integer `w >= 1`. Independent uniform coordinates `X,Y ∈ [q]` define the hidden target row `(X,Y)`. The receiver observes the complete `q × q` Cartesian table, with candidate order and IDs randomized independently of the target and source values. Sender X observes only `X`, Sender Y only `Y`; they each send one simultaneous, noiseless, fixed-width binary message of `b_x` and `b_y` bits. The receiver knows the sender slot from a fixed schedule and must output the exact target row ID. There is no target-dependent shared state, feedback, or task-dependent codebook setup in the bound. The total payload cap `B` is a nonnegative integer and requires `b_x + b_y ≤ B`.
+
+**Proposition (exact finite-budget Bayes frontier).** The maximum exact-match probability is
+
+\[
+A^*(q,B)=\max_{b_x+b_y\le B}\frac{\min(q,2^{b_x})\min(q,2^{b_y})}{q^2}
+=\frac{2^{\min(B,2w)}}{q^2}.
+\]
+
+**Proof.** For fixed encoders `f:[q] → {0,1}^{b_x}` and `g:[q] → {0,1}^{b_y}`, let `K_x = |im(f)|` and `K_y = |im(g)|`. Every message pair `(u,v)` with nonempty source classes corresponds to one Cartesian block `f⁻¹(u) × g⁻¹(v)`. Conditional on that message pair and the receiver's complete table, the target is uniform over that block. A decoder can select at most one row from the block, so its unconditional success contribution is at most `1/q²`, with equality when it outputs a row from the block. All `K_x K_y` source-class pairs are possible, and a decoder can select one row from each block, giving optimal success `K_x K_y / q²`. A `b_x`-bit encoder has at most `min(q, 2^{b_x})` classes, attainable by partitioning `[q]` into that many nonempty classes; likewise for Y. Maximizing the product under the integer budget gives the first expression. Since `q = 2^w`, the numerator is `2^{min(w,b_x)+min(w,b_y)}`. The largest feasible exponent is `min(B,2w)`, attained by allocating at most `w` bits to each source, which proves the second expression. Randomized encoders or decoders are mixtures of deterministic strategies and cannot exceed the deterministic maximum. ∎
+
+The endpoint `B = 0` gives the no-message Bayes accuracy `1/q²`. At `B = w`, one source can be encoded exactly and the frontier is `1/q`; at `B = 2w = log₂(q²)`, both coordinates are exact and success is 1. For `q = 4`, the values for `B = 0,1,2,3,4` are `1/16, 1/8, 1/4, 1/2, 1`. The executable exact-rational calculator is [`bit_frontier.py`](../experiments/private_match_v0_3/bit_frontier.py); its q=4 results are checked against exhaustive encoder-pair enumeration in [`test_private_match_v03.py`](../tests/test_private_match_v03.py).
+
+**Scaling prediction.** For fixed `B` and `q ≥ 2^{B/2}`, `A*(q,B) = 2^B/q²`, so ideal accuracy falls as `q⁻²` while receiver-table size grows as `q²`. If payload scales as a fraction `ρ ∈ [0,1]` of the zero-error budget, `B ≈ 2ρ log₂(q)`, then ideal success scales as `q^{2ρ−2}`, up to integer-budget rounding. These are predictions for the noiseless payload-only task; table-context tokens, framing, codebook exposition, model errors, and inference compute are excluded. They are not an LLM scaling law. An empirical study should vary q and total payload caps, measure complete model and channel costs separately, and compare outcomes with this oracle rather than treating the ideal curve as an expected model result.

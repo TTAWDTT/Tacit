@@ -1,5 +1,12 @@
 # Research log
 
+## 2026-09-29 — Promote the v0.3 bit frontier into the working theory
+
+- **Theory gap:** the exact three-agent complementary-coordinate frontier was documented in the task README and executable calculator, but the central theory document did not yet state its assumptions, proof, or scaling prediction.
+- **Formal result:** for a complete uniform `q × q` target table with `q=2^w`, two simultaneous fixed-width noiseless source messages, and total payload cap `B`, the exact Bayes optimum is `A*(q,B)=2^min(B,2w)/q²`. The proof counts nonempty Cartesian products of sender equivalence classes; each product cell contributes at most `1/q²`, attained by choosing a row in the cell.
+- **Falsifiable prediction:** at fixed `B` and sufficiently large q, ideal task success falls as `q^-2`; at a fixed fraction of the zero-error payload budget it follows `q^(2ρ−2)`, up to integer rounding. Candidate-table context cost, serialization, inference, and model errors remain excluded, so this is not an LLM scaling claim.
+- **Verification:** the existing q=4 exhaustive encoder-pair test passes; a direct allocation enumeration independently matched the exact calculator for q ∈ {2,4,8,16,32} over every budget through the zero-error endpoint plus two extra bits. No model or endpoint was used.
+
 ## 2026-09-29 — Update the experiment sequence for Private Match v0.3
 
 - **Plan audit:** `docs/EXPERIMENT_PLAN.md` described the older model-free codec/scaling work but did not capture the newer three-agent complementary-evidence extension, frozen `pmt3-prompts-3` representation arms, evaluator-keyed generation, or the real remaining execution gates.
