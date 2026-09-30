@@ -29,6 +29,8 @@ because the only removed bytes are the JSON object's opening and closing braces.
 
 The finite held-out support check covers all 64 held-out tuples in each of the default, robotics, and music fixtures (192 tuples total). On every row, v0.3 saves 18 payload bytes versus compact JSON, while the standard-string-safe challenger saves exactly 2. These are exact UTF-8 serialization lengths, not tokenizer costs, network framing, total request cost, or task success.
 
+For plain strings that need no JSON escaping, the v0.3 difference generalizes to `4n+2`: every one of `n` keys and `n` values loses its two JSON quote bytes, then the two object braces are omitted. The v0.3 codec requires at least two attributes, and the offline test checks this formula for widths two through eight; the 192-row suite verifies its four-field instance (`4×4+2=18`).
+
 ## Interpretation and decision
 
 The 16-byte difference between the two field formats comes from omitting quotes around ordinary labels and values under a restricted alphabet. Quoting restores general string safety but leaves only a two-byte punctuation advantage over the standard JSON object. The two-byte difference can be erased by tokenizer segmentation, envelope framing, or any one extra prompt token; only a matched model/tokenizer and end-to-end run can determine that.

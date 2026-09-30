@@ -40,6 +40,20 @@ class QuotedLabeledFieldsTests(unittest.TestCase):
             "bytes_saved_vs_json": 2,
         })
 
+    def test_v3_punctuation_saving_is_four_quotes_per_field_plus_object_braces(self) -> None:
+        from experiments.emergent_ood_v0_4.compact_fields import encode_fields as encode_v3
+
+        for field_count in range(2, 9):
+            meaning = {
+                f"key{index}": f"value{index}"
+                for index in range(field_count)
+            }
+            json_bytes = compare_payload_bytes(meaning)["compact_json_bytes"]
+            self.assertEqual(
+                json_bytes - len(encode_v3(meaning).encode("utf-8")),
+                4 * field_count + 2,
+            )
+
     def test_parser_rejects_duplicates_bad_json_and_dangling_separator(self) -> None:
         for malformed in (
             '"a"="1";"a"="2"',
