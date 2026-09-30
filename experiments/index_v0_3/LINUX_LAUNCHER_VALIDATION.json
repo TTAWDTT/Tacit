@@ -1,0 +1,390 @@
+{
+  "kind": "offline_launcher_validation",
+  "scientific_result": false,
+  "tests_run": 14,
+  "successful": true,
+  "cases": [
+    {
+      "scenario": "exception",
+      "offline": true,
+      "result": {
+        "timestamp_utc": "2026-09-30T13:38:28.758827+00:00",
+        "event": "finished",
+        "exit_code": 1,
+        "status": "failed",
+        "reason": "RuntimeError",
+        "detail": "injected offline exception"
+      },
+      "children_started": [
+        "preflight",
+        "server"
+      ]
+    },
+    {
+      "scenario": "cpu_mean",
+      "offline": true,
+      "result": {
+        "timestamp_utc": "2026-09-30T13:38:28.761864+00:00",
+        "event": "finished",
+        "exit_code": 1,
+        "status": "stopped",
+        "reason": "idle_resource_rejection:cpu_mean"
+      },
+      "children_started": []
+    },
+    {
+      "scenario": "cpu_peak",
+      "offline": true,
+      "result": {
+        "timestamp_utc": "2026-09-30T13:38:28.763041+00:00",
+        "event": "finished",
+        "exit_code": 1,
+        "status": "stopped",
+        "reason": "idle_resource_rejection:cpu_peak"
+      },
+      "children_started": []
+    },
+    {
+      "scenario": "gpu_utilization",
+      "offline": true,
+      "result": {
+        "timestamp_utc": "2026-09-30T13:38:28.764070+00:00",
+        "event": "finished",
+        "exit_code": 1,
+        "status": "stopped",
+        "reason": "idle_resource_rejection:gpu_utilization"
+      },
+      "children_started": []
+    },
+    {
+      "scenario": "gpu_memory",
+      "offline": true,
+      "result": {
+        "timestamp_utc": "2026-09-30T13:38:28.765163+00:00",
+        "event": "finished",
+        "exit_code": 1,
+        "status": "stopped",
+        "reason": "idle_resource_rejection:gpu_memory"
+      },
+      "children_started": []
+    },
+    {
+      "scenario": "system_memory",
+      "offline": true,
+      "result": {
+        "timestamp_utc": "2026-09-30T13:38:28.765878+00:00",
+        "event": "finished",
+        "exit_code": 1,
+        "status": "stopped",
+        "reason": "idle_resource_rejection:system_memory"
+      },
+      "children_started": []
+    },
+    {
+      "scenario": "normal",
+      "offline": true,
+      "result": {
+        "timestamp_utc": "2026-09-30T13:38:28.895076+00:00",
+        "event": "finished",
+        "exit_code": 0,
+        "status": "completed",
+        "runner_status": "complete",
+        "model_requests": 12
+      },
+      "children_started": [
+        "preflight",
+        "server",
+        "runner"
+      ]
+    },
+    {
+      "scenario": "descendant",
+      "offline": true,
+      "result": {
+        "timestamp_utc": "2026-09-30T13:38:29.014479+00:00",
+        "event": "finished",
+        "exit_code": 0,
+        "status": "completed",
+        "runner_status": "complete",
+        "model_requests": 12
+      },
+      "children_started": [
+        "preflight",
+        "server",
+        "runner"
+      ]
+    },
+    {
+      "scenario": "hash_failure",
+      "offline": true,
+      "result": {
+        "timestamp_utc": "2026-09-30T13:38:29.058238+00:00",
+        "event": "finished",
+        "exit_code": 1,
+        "status": "stopped",
+        "reason": "artifact_preflight_failed"
+      },
+      "children_started": [
+        "preflight"
+      ]
+    },
+    {
+      "scenario": "startup_failure",
+      "offline": true,
+      "result": {
+        "timestamp_utc": "2026-09-30T13:38:29.610563+00:00",
+        "event": "finished",
+        "exit_code": 1,
+        "status": "stopped",
+        "reason": "server_start_failed"
+      },
+      "children_started": [
+        "preflight",
+        "server"
+      ]
+    },
+    {
+      "scenario": "startup_timeout",
+      "offline": true,
+      "result": {
+        "timestamp_utc": "2026-09-30T13:38:30.214918+00:00",
+        "event": "finished",
+        "exit_code": 1,
+        "status": "stopped",
+        "reason": "startup_timeout"
+      },
+      "children_started": [
+        "preflight",
+        "server"
+      ]
+    },
+    {
+      "scenario": "run_timeout",
+      "offline": true,
+      "result": {
+        "timestamp_utc": "2026-09-30T13:38:30.805257+00:00",
+        "event": "finished",
+        "exit_code": 1,
+        "status": "stopped",
+        "reason": "run_timeout"
+      },
+      "children_started": [
+        "preflight",
+        "server",
+        "runner"
+      ]
+    },
+    {
+      "scenario": "runner_failure",
+      "offline": true,
+      "result": {
+        "timestamp_utc": "2026-09-30T13:38:30.923504+00:00",
+        "event": "finished",
+        "exit_code": 1,
+        "status": "stopped",
+        "reason": "runner_failed"
+      },
+      "children_started": [
+        "preflight",
+        "server",
+        "runner"
+      ]
+    },
+    {
+      "scenario": "server_exit",
+      "offline": true,
+      "result": {
+        "timestamp_utc": "2026-09-30T13:38:31.085226+00:00",
+        "event": "finished",
+        "exit_code": 1,
+        "status": "stopped",
+        "reason": "server_exited_during_run"
+      },
+      "children_started": [
+        "preflight",
+        "server",
+        "runner"
+      ]
+    },
+    {
+      "scenario": "bad_summary",
+      "offline": true,
+      "result": {
+        "timestamp_utc": "2026-09-30T13:38:31.209589+00:00",
+        "event": "finished",
+        "exit_code": 1,
+        "status": "failed",
+        "reason": "JSONDecodeError",
+        "detail": "Expecting value: line 1 column 1 (char 0)"
+      },
+      "children_started": [
+        "preflight",
+        "server",
+        "runner"
+      ]
+    },
+    {
+      "scenario": "over_limit",
+      "offline": true,
+      "result": {
+        "timestamp_utc": "2026-09-30T13:38:31.353824+00:00",
+        "event": "finished",
+        "exit_code": 1,
+        "status": "stopped",
+        "reason": "invalid_request_count"
+      },
+      "children_started": [
+        "preflight",
+        "server",
+        "runner"
+      ]
+    },
+    {
+      "scenario": "missing_telemetry",
+      "offline": true,
+      "result": {
+        "timestamp_utc": "2026-09-30T13:38:31.364624+00:00",
+        "event": "finished",
+        "exit_code": 1,
+        "status": "failed",
+        "reason": "FileNotFoundError",
+        "detail": "offline missing nvidia-smi"
+      },
+      "children_started": []
+    },
+    {
+      "scenario": "port_in_use",
+      "offline": true,
+      "result": {
+        "timestamp_utc": "2026-09-30T13:38:31.367118+00:00",
+        "event": "finished",
+        "exit_code": 1,
+        "status": "stopped",
+        "reason": "port_in_use"
+      },
+      "children_started": []
+    },
+    {
+      "scenario": "prepare",
+      "offline": true,
+      "result": {
+        "timestamp_utc": "2026-09-30T13:38:31.408316+00:00",
+        "event": "finished",
+        "exit_code": 0,
+        "status": "prepared",
+        "model_requests": 0
+      },
+      "children_started": [
+        "preflight"
+      ]
+    },
+    {
+      "scenario": "resource_stop",
+      "offline": true,
+      "result": {
+        "timestamp_utc": "2026-09-30T13:38:31.563557+00:00",
+        "event": "finished",
+        "exit_code": 1,
+        "status": "stopped",
+        "reason": "automatic_resource_stop"
+      },
+      "children_started": [
+        "preflight",
+        "server",
+        "runner"
+      ]
+    },
+    {
+      "scenario": "resource_stop",
+      "offline": true,
+      "result": {
+        "timestamp_utc": "2026-09-30T13:38:31.707502+00:00",
+        "event": "finished",
+        "exit_code": 1,
+        "status": "stopped",
+        "reason": "automatic_resource_stop"
+      },
+      "children_started": [
+        "preflight",
+        "server",
+        "runner"
+      ]
+    },
+    {
+      "scenario": "resource_stop",
+      "offline": true,
+      "result": {
+        "timestamp_utc": "2026-09-30T13:38:31.831523+00:00",
+        "event": "finished",
+        "exit_code": 1,
+        "status": "stopped",
+        "reason": "automatic_resource_stop"
+      },
+      "children_started": [
+        "preflight",
+        "server",
+        "runner"
+      ]
+    },
+    {
+      "scenario": "telemetry_error",
+      "offline": true,
+      "result": {
+        "timestamp_utc": "2026-09-30T13:38:31.939703+00:00",
+        "event": "finished",
+        "exit_code": 1,
+        "status": "failed",
+        "reason": "RuntimeError",
+        "detail": "offline telemetry failure"
+      },
+      "children_started": [
+        "preflight",
+        "server",
+        "runner"
+      ]
+    },
+    {
+      "scenario": "sigterm",
+      "offline": true,
+      "result": {
+        "timestamp_utc": "2026-09-30T13:38:32.055352+00:00",
+        "event": "finished",
+        "exit_code": 143,
+        "status": "stopped",
+        "reason": "signal_SIGTERM"
+      },
+      "children_started": [
+        "preflight",
+        "server",
+        "runner"
+      ]
+    },
+    {
+      "scenario": "startup_resource_stop",
+      "offline": true,
+      "result": {
+        "timestamp_utc": "2026-09-30T13:38:32.161411+00:00",
+        "event": "finished",
+        "exit_code": 1,
+        "status": "stopped",
+        "reason": "automatic_resource_stop"
+      },
+      "children_started": [
+        "preflight",
+        "server"
+      ]
+    }
+  ],
+  "baseline_commit": "5dd260c5824b280b5323a1707ab132524afa8e4c",
+  "python": "3.12.14",
+  "command": "TACIT_LAUNCHER_TEST_REPORT=/tmp/tacit-launcher-offline.json python tests/test_index_linux_launcher.py -v",
+  "interpretation": "Expected rejection/failure cases passed their assertions; all processes and telemetry are offline fixtures. Not a scientific result.",
+  "source_sha256": {
+    "experiments/index_v0_3/run_local_capability.py": "c260a1177ae052ff786f36e8b405a7841742302a625d5dfebfd00c857f38c724",
+    "tests/test_index_linux_launcher.py": "9bbd58af85881228f748928040f022be992f4d295ae62a3ed76db438521e286d",
+    "tests/fixtures/index_launcher_fake.py": "e6c296c1fb94d3baa7d3531598eafb9633033ee8687cceb3e49812dcf28c66be",
+    "experiments/index_v0_3/run_capability_pilot.py": "5594b61b4ba46a2035efbb378d4bd2c98514e052285c6505235fe1e21e87c9dd",
+    "experiments/index_v0_3/preregistration.json": "6de313be4242c524ea05e3d827d660316c98dd7a4cf1aecbef9f81703767b861",
+    "experiments/index_v0_3/run_local_capability.ps1": "19ae8178282e3a538f6d75c5003b4a0dba6f65427aac330e10927620a709313e"
+  }
+}
