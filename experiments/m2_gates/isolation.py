@@ -102,8 +102,16 @@ class Scope:
         self.check_source(inv['training'], stage='train')
         self.check_source(validation_source, stage='validation')
         names = set(inv['candidates'])
-        feasible = frontier(plans, discovery, policy=ledger.policy, reuse=reuse)
+        all_rows = ledger.snapshot()
+        if any(r['status'] in ('inflight', 'halted') for r in all_rows):
+            raise GateError('unresolved cost or in-flight attempt blocks freeze')
+        if any(r['binding'] == self.binding and r['phase'] in ('deployment', 'execution') for r in all_rows):
+            raise GateError('freeze must precede deployment and execution')
         history = self._discovery_history(ledger)
+        history_ids = {r['id'] for r in history}
+        zero = {a: 0 for a in ledger.policy.axes}
+        prior = [Charge(r['reserved'], zero) for r in all_rows if r['id'] not in history_ids]
+        feasible = frontier(plans, discovery, policy=ledger.policy, reuse=reuse, prior=prior)
         for name in names:
             rows = [r for r in history if r['candidate'] == name]
             expected = [packed(c.total(ledger.policy.axes)) for c in discovery.get(name, [])]

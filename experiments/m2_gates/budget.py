@@ -55,6 +55,12 @@ class Charge:
 
 @dataclass(frozen=True)
 class Policy:
+    axes: tuple
+    per_request: object
+    cumulative: object
+    max_calls: int
+    identity: str
+
     def __init__(self, *, per_request, cumulative, max_calls):
         if not isinstance(per_request, dict) or not per_request or any(
                 not isinstance(a, str) or not a for a in per_request):
@@ -87,7 +93,7 @@ class Policy:
                     calls=len(charges), reserved=packed(totals))
 
 
-def frontier(plans, discovery, *, policy, reuse):
+def frontier(plans, discovery, *, policy, reuse, prior=()):
     """All search/failed-candidate attempts charge every deployment comparison.
 
     plans[name] = {'deployment': [Charge,...], 'per_use': [Charge,...]}.
@@ -97,6 +103,8 @@ def frontier(plans, discovery, *, policy, reuse):
     """
     if type(reuse) is not int or reuse < 1 or not plans or set(plans) != set(discovery):
         raise GateError('positive reuse and complete candidate discovery inventory required')
+    prior = list(prior)
+    prior_totals = policy.check(prior)['reserved']
     search = []
     for name in sorted(plans):
         if not discovery[name]:
@@ -106,7 +114,7 @@ def frontier(plans, discovery, *, policy, reuse):
     for name, plan in plans.items():
         if set(plan) != {'deployment', 'per_use'} or not plan['per_use']:
             raise GateError('deployment and recurring attempts required')
-        fixed = policy.check(search + list(plan['deployment']))
+        fixed = policy.check(prior + search + list(plan['deployment']))
         recurring = policy.check(plan['per_use'])
         totals = {a: Fraction(fixed['reserved'][a]) + reuse * Fraction(recurring['reserved'][a])
                   for a in policy.axes}
@@ -116,7 +124,8 @@ def frontier(plans, discovery, *, policy, reuse):
             reasons.add('call_ceiling')
         reasons.update('cumulative:' + a for a in policy.axes if totals[a] > policy.cumulative[a])
         output[name] = dict(feasible=not reasons, reasons=sorted(reasons), calls=calls,
-                            reserved=packed(totals), average_reserved=packed({a: v / reuse for a, v in totals.items()}))
+                            reserved=packed(totals), prior_reserved=prior_totals,
+                            average_reserved=packed({a: (v - Fraction(prior_totals[a])) / reuse for a, v in totals.items()}))
     return output
 
 

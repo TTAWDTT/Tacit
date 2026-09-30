@@ -156,6 +156,9 @@
       },
       "calls": 7,
       "feasible": true,
+      "prior_reserved": {
+        "synthetic_units": "0"
+      },
       "reasons": [],
       "reserved": {
         "synthetic_units": "10"
@@ -167,6 +170,9 @@
       },
       "calls": 6,
       "feasible": false,
+      "prior_reserved": {
+        "synthetic_units": "0"
+      },
       "reasons": [
         "cumulative:synthetic_units",
         "per_request:synthetic_units"

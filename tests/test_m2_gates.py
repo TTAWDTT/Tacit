@@ -289,6 +289,19 @@ class IsolationTests(unittest.TestCase):
         bad, _ = fixture(self.root, seed=23, train_override=meaning)
         with self.assertRaises(GateError): bad.read_development(self.root, stage='train')
 
+    def test_other_split_spending_reduces_remaining_global_budget(self):
+        self.develop()
+        for i in range(10):
+            self.ledger.run('other' + str(i), phase='train', candidate='other', binding='other-split',
+                            charge=cost(9), operation=lambda: Outcome(None, {'bytes': 9}, True))
+        # Current split needs 10, other scope already reserved 90: exact equality is feasible.
+        artifact = self.freeze()
+        self.assertEqual(artifact['feasibility']['b']['reserved']['bytes'], '100')
+        self.assertEqual(artifact['feasibility']['b']['prior_reserved']['bytes'], '90')
+        self.ledger.run('extra', phase='train', candidate='other', binding='other-split',
+                        charge=cost(), operation=lambda: Outcome(None, {'bytes': 1}, True))
+        with self.assertRaises(GateError): self.freeze()
+
     def test_no_feasible_candidates_and_unknown_deployment_fail_closed(self):
         self.develop()
         self.plans['b']['deployment'] = [cost(None)]
