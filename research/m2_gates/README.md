@@ -1,11 +1,11 @@
 # M2 离线预算门槛与逐 split 发现隔离
 
-2026-09-30。状态：新增扩展入口与离线回归完成；**不放行真实模型，不改变冻结实验**。这是 [PR #6 的集成审查](https://github.com/TTAWDTT/Tacit/pull/6) 后续最小工程工作，不是协议优势或模型资格证据。
+2026-09-30。状态：已根据独立审查的两项P1提交修订候选，**等待固定新head独立复审，不称fail-closed已验证**；不放行真实模型，不改变冻结实验。这是 [PR #6 的集成审查](https://github.com/TTAWDTT/Tacit/pull/6) 后续最小工程工作，不是协议优势或模型资格证据。
 
 ## 行为与复现
 
 ```sh
-python -m unittest tests.test_m2_gates -v
+python -m unittest tests.test_m2_gates tests.test_m2_snapshot_races -v
 python -m experiments.m2_gates.demo > /tmp/tacit-m2-demo.json
 diff -u research/m2_gates/offline_demo.json /tmp/tacit-m2-demo.json
 python -m unittest tests.test_emergent_ood_v04_split tests.test_emergent_ood_v04_episodes tests.test_emergent_ood_v04_induction tests.test_emergent_ood_v04_nl_feedback -v
@@ -85,3 +85,14 @@ Inventory 必须在验证前持久化封存，不能验证后添加新候选；�
 ## 本次验证证据
 
 Python 3.12.14。最终新门槛27/27测试通过；相关split/episode/induction/NL-feedback回归20/20，组合命令47/47通过。另在**只本地**的隔离树整合六个固定PR与本包，最终114/114（新27、A9、B21、diagnostics7、冻结OOD runner26、runtime24）通过；没有发布该merge分支。#6独立审计JSON和本包demo JSON均逐字节复现，全部base既有blob不变。compileall及diff检查通过。测试重叠，不累计作科学样本；完整仓库suite未运行，没有模型端到端测试。六个既有PR heads 的PR workflow runs和commit statuses本次再查均为空；这是无报告CI，不是CI通过。新PR发布后的CI查询见其描述/评论。
+
+
+## 两项 P1 的修订候选（等待独立复审）
+
+[固定旧head 8fb5419 的独立评论](https://github.com/TTAWDTT/Tacit/pull/7#issuecomment-5914001217)发现真实绕过，旧测试通过不能抵消它们。新增最初7项针对性测试在未修改旧head上全部失败：原11单位请求在等待SQLite锁时被改成1，出现检查1/预留11/执行11；dispatch在验证旧discovery后采用新快照，接受了已经变化的历史。旧head不得当作工作中的预算/隔离放行版本。
+
+修订：Charge构造时复制为只读mapping和精确Fraction，Ledger.run再固定同一规范化Charge及Policy；检查、总预留、work/context和actual比较全部使用该副本，不跨锁等待重读调用方字典。dispatch一次读取账本，discovery、deployment、执行计数和事务内CAS哈希全部派生于该次读取。freeze也从同一份all_rows派生history/prior，在返回前比对账本是否变化；freeze仍是某一时刻的计划验证而不是资源预留，后续改变由dispatch重新验证/拒绝。
+
+同类审计修正了verified/sealed、inventory/source和freeze计划的浅层别名：哈希验证和实际使用现在共享脱离调用方嵌套字典/列表的副本。额外回归覆盖等待锁期间合法请求成本增大、异常后的原始context计费、锁超时无记录且连接可复用、事务前写入、freeze写入交错、验证后修改调用方schedule及可行性后修改计划。
+
+修订候选观察：新增10项对抗/并发测试，加原27项门槛和20项相关回归，共57/57通过；demo JSON逐字节不变，compileall/diff检查通过。以上是作者测试，**不是独立复审通过**。单SQLite连接仍要求按线程使用；两个连接用数据库锁串行预留。操作者篡改数据库、绕过入口、伪造trusted来源、任意callback谎报上界、真实provider硬限额和外部session污染仍不由这些测试证明安全。资源资格/完整端点费用/统计冻结/用户支出授权仍是独立阻塞。

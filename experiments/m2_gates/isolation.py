@@ -10,12 +10,17 @@ from .budget import Charge, GateError, digest, frontier, packed, vector
 from experiments.emergent_ood_v0_4.split import validate_split
 
 
+def snapshot(value):
+    return json.loads(json.dumps(value, allow_nan=False))
+
+
 def sealed(body):
+    body = snapshot(body)
     return dict(body, sha256=digest(body))
 
 
 def verified(record):
-    body = dict(record)
+    body = snapshot(record)
     claimed = body.pop('sha256', None)
     if digest(body) != claimed:
         raise GateError('artifact digest mismatch')
@@ -85,6 +90,7 @@ class Scope:
             raise GateError('discovery support leakage')
 
     def inventory(self, candidates, *, training_source, ledger):
+        training_source, candidates = snapshot([training_source, candidates])
         self.check_source(training_source, stage='train')
         if not isinstance(candidates, dict) or not candidates or any(
                 not isinstance(k, str) or not k or not isinstance(v, str) or not v for k, v in candidates.items()):
@@ -94,6 +100,12 @@ class Scope:
         return result
 
     def freeze(self, inventory, *, validation_source, successes, plans, discovery, reuse, ledger):
+        inventory, validation_source, successes = snapshot([inventory, validation_source, successes])
+        plans = {name: {part: tuple(Charge(c.work, c.context) for c in charges)
+                        for part, charges in plan.items()} for name, plan in plans.items()}
+        discovery = {name: tuple(Charge(c.work, c.context) for c in charges)
+                     for name, charges in discovery.items()}
+        policy = ledger.policy
         inv = verified(inventory)
         if ledger.inventory_for(self.binding) != inventory:
             raise GateError('inventory was not sealed before validation')
@@ -107,14 +119,14 @@ class Scope:
             raise GateError('unresolved cost or in-flight attempt blocks freeze')
         if any(r['binding'] == self.binding and r['phase'] in ('deployment', 'execution') for r in all_rows):
             raise GateError('freeze must precede deployment and execution')
-        history = self._discovery_history(ledger)
+        history = self._discovery_history(all_rows)
         history_ids = {r['id'] for r in history}
-        zero = {a: 0 for a in ledger.policy.axes}
+        zero = {a: 0 for a in policy.axes}
         prior = [Charge(r['reserved'], zero) for r in all_rows if r['id'] not in history_ids]
-        feasible = frontier(plans, discovery, policy=ledger.policy, reuse=reuse, prior=prior)
+        feasible = frontier(plans, discovery, policy=policy, reuse=reuse, prior=prior)
         for name in names:
             rows = [r for r in history if r['candidate'] == name]
-            expected = [packed(c.total(ledger.policy.axes)) for c in discovery.get(name, [])]
+            expected = [packed(c.total(policy.axes)) for c in discovery.get(name, [])]
             if [r['reserved'] for r in rows] != expected or any(
                     r['status'] not in ('success', 'failed') for r in rows):
                 raise GateError('missing or uncharged discovery/failed candidate')
@@ -139,12 +151,14 @@ class Scope:
         if not eligible:
             raise GateError('no budget-feasible candidate')
         chosen = min(eligible, key=lambda n: (-sum(successes[n]), n))
-        schedule = [dict(work=packed(vector(c.work, ledger.policy.axes)),
-                         context=packed(vector(c.context, ledger.policy.axes)))
+        schedule = [dict(work=packed(vector(c.work, policy.axes)),
+                         context=packed(vector(c.context, policy.axes)))
                     for c in plans[chosen]['per_use']]
-        deployment = [packed(c.total(ledger.policy.axes)) for c in plans[chosen]['deployment']]
+        deployment = [packed(c.total(policy.axes)) for c in plans[chosen]['deployment']]
+        if digest(ledger.snapshot()) != digest(all_rows) or ledger.policy.identity != policy.identity:
+            raise GateError('ledger/policy changed during freeze; retry complete preflight')
         return sealed(dict(binding=self.binding, receiver=self.receiver, candidate=chosen,
-                           policy=ledger.policy.identity, discovery_hash=digest(history),
+                           policy=policy.identity, discovery_hash=digest(history),
                            deployment=deployment, schedule=schedule, reuse=reuse,
                            card=inv['candidates'][chosen], inventory=inventory,
                            validation=validation_source, successes=successes, feasibility=feasible,
@@ -163,11 +177,13 @@ class Scope:
             raise GateError('selected card differs from frozen inventory')
         return body
 
-    def _discovery_history(self, ledger):
-        return [r for r in ledger.snapshot() if r['binding'] == self.binding and
+    def _discovery_history(self, rows):
+        # Pure projection: callers must pass the SAME snapshot used by all guards.
+        return [r for r in rows if r['binding'] == self.binding and
                 r['phase'] in ('proposal', 'train', 'validation', 'retry')]
 
     def development_call(self, ledger, source, *, row_index, candidate, phase, charge, operation):
+        source = snapshot(source)
         if phase not in ('train', 'validation'):
             raise GateError('development phase unavailable')
         self.check_source(source, stage=phase)
@@ -192,9 +208,9 @@ class Scope:
         body = self.check_artifact(artifact)  # before reserving or calling anything
         if ledger.policy.identity != body['policy']:
             raise GateError('execution policy differs from freeze')
-        if digest(self._discovery_history(ledger)) != body['discovery_hash']:
-            raise GateError('discovery ledger missing, changed or extended after freeze')
         rows = ledger.snapshot()
+        if digest(self._discovery_history(rows)) != body['discovery_hash']:
+            raise GateError('discovery ledger missing, changed or extended after freeze')
         deployment = [r for r in rows if r['phase'] == 'deployment' and
                       r['binding'] == self.binding and r['candidate'] == body['candidate']]
         if [r['reserved'] for r in deployment] != body['deployment'] or any(

@@ -64,11 +64,11 @@ class GateTests(unittest.TestCase):
         self.assertEqual(sum(int(r['reserved']['bytes']) for r in ledger.snapshot()), 3)
 
     def test_unknown_negative_bool_float_missing_extra_axis_no_callback(self):
-        bad = [cost(None), cost(-1), cost(True), cost(1.1), Charge({}, {'bytes': 0}),
-               Charge({'bytes': 1, 'tokens': 0}, {'bytes': 0})]
+        bad = [lambda: cost(None), lambda: cost(-1), lambda: cost(True), lambda: cost(1.1),
+               lambda: Charge({}, {'bytes': 0}), lambda: Charge({'bytes': 1, 'tokens': 0}, {'bytes': 0})]
         for charge in bad:
             with self.subTest(charge=charge), self.assertRaises(GateError):
-                self.ledger.run('x', phase='train', candidate='a', binding='s', charge=charge,
+                self.ledger.run('x', phase='train', candidate='a', binding='s', charge=charge(),
                                 operation=lambda: self.fail('callback entered'))
         self.assertEqual(self.ledger.snapshot(), [])
 
@@ -137,8 +137,9 @@ class GateTests(unittest.TestCase):
         self.assertEqual(result['b']['reserved']['bytes'], '10')
         self.assertTrue(result['b']['feasible'])
         with self.assertRaises(GateError): frontier(plans, {'a': [cost(2)]}, policy=policy(), reuse=2)
-        discovery['b'] = [cost(None)]
-        with self.assertRaises(GateError): frontier(plans, discovery, policy=policy(), reuse=2)
+        with self.assertRaises(GateError):
+            discovery['b'] = [cost(None)]
+            frontier(plans, discovery, policy=policy(), reuse=2)
 
     def test_large_reuse_is_bounded_arithmetic_and_demo_is_offline(self):
         result = frontier({'a': dict(deployment=[], per_use=[cost()])}, {'a': [cost()]},
@@ -304,8 +305,9 @@ class IsolationTests(unittest.TestCase):
 
     def test_no_feasible_candidates_and_unknown_deployment_fail_closed(self):
         self.develop()
-        self.plans['b']['deployment'] = [cost(None)]
-        with self.assertRaises(GateError): self.freeze()
+        with self.assertRaises(GateError):
+            self.plans['b']['deployment'] = [cost(None)]
+            self.freeze()
         self.plans['b']['deployment'] = [cost(101)]
         with self.assertRaises(GateError): self.freeze()
 

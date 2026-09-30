@@ -4,6 +4,7 @@ No model client. Bounds must come from a reviewed adapter; this is not a sandbox
 Conservative reservation is never refunded, even after a failed attempt.
 """
 from dataclasses import dataclass
+from collections.abc import Mapping
 from fractions import Fraction
 import hashlib
 import json
@@ -33,7 +34,7 @@ def amount(value):
 
 
 def vector(values, axes):
-    if not isinstance(values, dict) or set(values) != set(axes):
+    if not isinstance(values, Mapping) or set(values) != set(axes):
         raise GateError('missing, extra or incomparable cost axis')
     return {a: amount(values[a]) for a in axes}
 
@@ -45,8 +46,19 @@ def packed(values):
 @dataclass(frozen=True)
 class Charge:
     # context is explicit on EVERY attempt, never hidden in amortized setup.
-    work: dict
-    context: dict
+    work: Mapping
+    context: Mapping
+
+    def __post_init__(self):
+        # Detach once, before any wait/transaction; values are exact and immutable.
+        for name in ('work', 'context'):
+            source = getattr(self, name)
+            if not isinstance(source, Mapping):
+                raise GateError('cost component must be a mapping')
+            copied = dict(source)
+            if any(not isinstance(a, str) or not a for a in copied):
+                raise GateError('cost axes must be nonempty strings')
+            object.__setattr__(self, name, MappingProxyType({a: amount(v) for a, v in copied.items()}))
 
     def total(self, axes):
         work, context = vector(self.work, axes), vector(self.context, axes)
@@ -168,6 +180,7 @@ class Ledger:
         self.db.close()
 
     def register_inventory(self, binding, artifact):
+        artifact = json.loads(json.dumps(artifact, allow_nan=False))
         self.db.execute('BEGIN IMMEDIATE')
         try:
             old = self.inventory_for(binding)
@@ -197,10 +210,13 @@ class Ledger:
             raise GateError('event/candidate/binding identity required')
         if phase not in ('proposal', 'train', 'validation', 'deployment', 'execution', 'retry', 'scoring'):
             raise GateError('unknown event phase')
-        values = charge.total(self.policy.axes)  # unknown bound rejects before dispatch
+        policy = self.policy  # pin the same immutable policy across lock acquisition/receipt
+        charge = Charge(charge.work, charge.context)
+        values = charge.total(policy.axes)  # one canonical immutable request snapshot
+        components = dict(work=packed(charge.work), context=packed(charge.context))
         self.db.execute('BEGIN IMMEDIATE')
         try:
-            if self.db.execute('SELECT identity FROM policy').fetchall() != [(self.policy.identity,)]:
+            if self.db.execute('SELECT identity FROM policy').fetchall() != [(policy.identity,)]:
                 raise GateError('active policy differs from ledger')
             rows = self.snapshot()
             if expected_ledger_hash is not None and digest(rows) != expected_ledger_hash:
@@ -214,15 +230,14 @@ class Ledger:
                             and r['binding'] == binding for r in rows)
                 if count != expected_execution_index:
                     raise GateError('execution schedule changed concurrently')
-            zero = {a: 0 for a in self.policy.axes}
+            zero = {a: 0 for a in policy.axes}
             old = [Charge(r['reserved'], zero) for r in rows]
-            result = self.policy.check(old + [charge])
+            result = policy.check(old + [charge])
             if not result['feasible']:
                 raise GateError('budget denied: ' + ','.join(result['reasons']))
             self.db.execute('INSERT INTO events VALUES (?,?,?,?,?,?,?,?)',
                             (event_id, phase, candidate, binding, json.dumps(packed(values)), None, 'inflight',
-                             json.dumps(dict(work=packed(vector(charge.work, self.policy.axes)),
-                                             context=packed(vector(charge.context, self.policy.axes))))))
+                             json.dumps(components)))
             self.db.execute('COMMIT')  # reservation survives crash before callback/receipt
         except BaseException:
             self.db.execute('ROLLBACK')
@@ -231,9 +246,9 @@ class Ledger:
             outcome = operation()
             if not isinstance(outcome, Outcome) or type(outcome.success) is not bool:
                 raise GateError('missing strict outcome/cost receipt')
-            actual = vector(outcome.actual, self.policy.axes)
+            actual = vector(outcome.actual, policy.axes)
             self.db.execute('UPDATE events SET actual=? WHERE id=?', (json.dumps(packed(actual)), event_id))
-            if any(actual[a] > values[a] for a in self.policy.axes):
+            if any(actual[a] > values[a] for a in policy.axes):
                 raise GateError('adapter violated reserved bound')
             self.db.execute('UPDATE events SET actual=?,status=? WHERE id=?',
                             (json.dumps(packed(actual)), 'success' if outcome.success else 'failed', event_id))
