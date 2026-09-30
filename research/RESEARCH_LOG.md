@@ -1,5 +1,14 @@
 # Research log
 
+## 2026-09-30 - Densely confirm the tokenizer-specific cost crossover
+
+- **Question:** where does the previously exploratory compact-fields/JSON cost sign change occur, and is it stable over the four tested cardinalities?
+- **Freeze:** committed and pushed P20a–P20c before generating intermediate-dimension outcomes. The plan fixed every integer `d=20…40`, `V∈{2,4,8,10}`, 16 prompt fixtures per setting, exact runner/tokenizer accounting, endpoint sign replication, the predicted first non-positive point `{23,24,25}`, and the symbolic-arm trend.
+- **Method/result:** ran 84 settings × 16 deterministic fixtures × three representations using only the pinned Qwen3-4B tokenizer. P20a–P20c all hold. For every V, the compact-fields minus JSON difference is +1 at d=23 and −1 at d=24. Over the full grid it is exactly `47−2d`, invariant to V. Fixed symbols remain more expensive than JSON in all cells and increase strictly with V at each d.
+- **Change:** add the complete machine-readable grid, a confirmation report, the preregistered prediction to Theory §22, and this log entry. The earlier exploratory report and data remain intact.
+- **Verification/resource:** preregistration and both predecessor-artifact hashes match; all 84 deltas and P20c inequalities were checked from the saved JSON. The text-only sweep ran for about 33 seconds; it read no model weights and used no inference server, endpoint, or GPU.
+- **Limit / next gate:** this confirms deterministic tokenizer arithmetic only for one tokenizer, one card, synthetic four-candidate fixtures, and the declared finite grid. It has no inferential error bars and does not predict semantic success, task utility, actual billing, or cross-model transfer. Any model comparison must first pass the existing independent receiver and resource gates.
+
 ## 2026-09-30 - Extend tokenizer cost scaling to a high-dimensional crossover
 
 - **Question:** does v0.3's recurring instruction premium over JSON persist as field count grows, or can repeated per-field output/context savings eventually repay it? The fixed digit-code arm also needs to be charged for explicitly listing every axis/value mapping.
