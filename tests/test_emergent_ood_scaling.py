@@ -13,6 +13,11 @@ class EmergentOODScalingTests(unittest.TestCase):
         self.assertEqual((report["universe_size"], report["training_size"], report["held_out_size"]),
                          (256, 192, 64))
         self.assertEqual(report["one_way_zero_error_payload_lower_bound_bits"], 8)
+        self.assertEqual(report["held_out_support_fixed_width_zero_error_payload_lower_bound_bits"], 6)
+        self.assertEqual(report["held_out_support_rank_code_payload_bytes"], 1)
+        self.assertEqual(report["full_universe_rank_code_payload_bytes"], 1)
+        self.assertEqual(report["held_out_rank_code_vs_full_universe_ideal_bit_saving"], 2)
+        self.assertEqual(report["held_out_rank_code_vs_full_universe_serialized_byte_saving"], 0)
         self.assertEqual([
             (row["partial_assignments"], row["held_out_completions_per_assignment"],
              row["training_completions_per_assignment"])
@@ -68,6 +73,31 @@ class EmergentOODScalingTests(unittest.TestCase):
         ):
             with self.assertRaises(ValueError):
                 scaling_report(**kwargs)
+
+    def test_bit_savings_and_rounded_byte_savings_are_reported_separately(self):
+        reports = [
+            scaling_report(dimensions=dimensions, value_count=value_count)
+            for dimensions in range(2, 7)
+            for value_count in range(2, 6)
+        ]
+        for report in reports:
+            full_bits = report["one_way_zero_error_payload_lower_bound_bits"]
+            heldout_bits = report["held_out_support_fixed_width_zero_error_payload_lower_bound_bits"]
+            full_bytes = report["full_universe_rank_code_payload_bytes"]
+            heldout_bytes = report["held_out_support_rank_code_payload_bytes"]
+            self.assertEqual(
+                report["held_out_rank_code_vs_full_universe_ideal_bit_saving"],
+                full_bits - heldout_bits,
+            )
+            self.assertEqual(
+                report["held_out_rank_code_vs_full_universe_serialized_byte_saving"],
+                full_bytes - heldout_bytes,
+            )
+            self.assertGreaterEqual(full_bytes, heldout_bytes)
+        self.assertTrue(any(
+            report["held_out_rank_code_vs_full_universe_serialized_byte_saving"] > 0
+            for report in reports
+        ))
 
 
 if __name__ == "__main__":

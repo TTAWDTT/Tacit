@@ -1,5 +1,13 @@
 # Research log
 
+## 2026-09-30 - Add byte-rounded held-out oracle accounting
+
+- **Observation:** a two-bit ideal payload advantage does not necessarily save an application byte. The default `(d,V)=(4,4)` held-out rank and full-universe rank both occupy one byte, while nearby scaling points can cross a byte boundary.
+- **Prediction:** extend P16's observable implication to fixed-byte serialization: the support-aware payload saves one byte at `(4,5)`, `(5,4)`, and `(6,3)`, but zero bytes at `(4,4)`. This remains payload-only and can be erased by framing or shared-decoder setup.
+- **Change:** the exact `research/emergent_ood_scaling.py` JSON report now separately exposes full-universe/support-aware bit floors, rounded payload byte counts, and their bit/byte savings. The audit note and v0.4 usage guide include the boundary examples and cost limits.
+- **Verification:** the scaling report CLI returned the predicted default values (8 versus 6 bits; 1 versus 1 payload byte). Tests across 20 `(d,V)` grid points checked that ideal and rounded savings equal the underlying widths; focused scaling tests passed. No model or inference was involved.
+- **Limit / next step:** these formulas still assume a shared public decoder and a target guaranteed in the held-out support. They do not charge code/setup distribution, delimiters, or model interpretation. Only add this as a model-facing condition if those boundaries can be implemented and measured without exposing test labels or giving the sender an invalid stage oracle.
+
 ## 2026-09-30 - Derive and implement held-out support rank oracle
 
 - **Observation:** the v0.4 modular split's 64-element held-out support is smaller than its 256-element universe. The existing fixed-width full-universe rank code is not the exact lower-bound control when the target is guaranteed held out and both endpoints know the public split. For the default fixture the support-aware floor is six bits, but byte serialization remains one byte, tied with the eight-bit full-universe payload.

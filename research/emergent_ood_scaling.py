@@ -37,6 +37,11 @@ def scaling_report(*, dimensions: int, value_count: int, candidate_count: int = 
             "training_support_pairs": assignments * train_completions,
         })
 
+    full_universe_bits = (universe - 1).bit_length()
+    held_out_support_bits = (held_out - 1).bit_length()
+    full_universe_bytes = (full_universe_bits + 7) // 8
+    held_out_support_bytes = (held_out_support_bits + 7) // 8
+
     return {
         "schema": SCHEMA,
         "dimensions": dimensions,
@@ -50,15 +55,25 @@ def scaling_report(*, dimensions: int, value_count: int, candidate_count: int = 
         "balanced_no_message_accuracy": 1 / candidate_count,
         "balanced_no_message_accuracy_exact": {"numerator": 1, "denominator": candidate_count},
         "candidate_count": candidate_count,
-        "one_way_zero_error_payload_lower_bound_bits": (universe - 1).bit_length(),
+        "one_way_zero_error_payload_lower_bound_bits": full_universe_bits,
         "rank_code_achieves_lower_bound_bits": True,
+        "held_out_support_fixed_width_zero_error_payload_lower_bound_bits": held_out_support_bits,
+        "held_out_support_rank_code_payload_bytes": held_out_support_bytes,
+        "full_universe_rank_code_payload_bytes": full_universe_bytes,
+        "held_out_rank_code_vs_full_universe_ideal_bit_saving": (
+            full_universe_bits - held_out_support_bits
+        ),
+        "held_out_rank_code_vs_full_universe_serialized_byte_saving": (
+            full_universe_bytes - held_out_support_bytes
+        ),
         "assumptions": [
             "equal value cardinality V on every one of d categorical axes",
             "hold out a tuple when the sum of its independently permuted axis ranks is 0 modulo V",
             "uniform target among k candidates with candidate order independent of the target",
             "fixed-length worst-case payload, noiseless one-way communication, and sender does not observe the candidate table for the payload lower bound",
+            "held-out-support payload bound additionally assumes the target is guaranteed held out and both endpoints share the public split and decoder",
         ],
-        "interpretation_limit": "These are exact task-geometry and ideal payload predictions, not LLM performance or language-efficiency evidence.",
+        "interpretation_limit": "These are exact task-geometry and ideal payload predictions, not LLM performance or language-efficiency evidence; rounded payload bytes exclude framing and shared decoder setup.",
     }
 
 

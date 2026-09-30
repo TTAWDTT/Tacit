@@ -18,6 +18,8 @@ This is attained without a lookup table. Rank the values on each axis using the 
 
 For the default `d=4, V=4` fixture, the held-out support has 64 elements. Its support-aware floor is 6 bits versus 8 bits for an arbitrary full-universe tuple. Both serialize to one byte, before framing, so the oracle predicts no reduction in application wire bytes in this default setting. For non-power-of-two support sizes, the codec rejects unused fixed-width codewords and nonzero canonical padding bits.
 
+The scaling report now lists ideal bit savings and byte-rounded payload savings separately. For example, with `d=4, V=5`, the full-universe rank needs 10 bits (2 bytes) while the held-out rank needs 7 bits (1 byte); this saves one payload byte before framing. The same one-byte saving occurs for `(d,V)=(5,4)` and `(6,3)`. Such a saving is still only a payload comparison: protocol framing and sharing/setup cost can erase it.
+
 ## Limits and accounting
 
 - This code is valid only for tasks whose target is known to be in the held-out support. It is not a code for training targets or arbitrary tuples.
