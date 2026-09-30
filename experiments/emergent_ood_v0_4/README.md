@@ -64,6 +64,36 @@ The runner uses the repository's protocol-neutral runtime and leaves model serve
 
 Available conditions are `no_message`, `full_information`, `natural_language`, `autoform`, `json`, `symbolic`, `shared_protocol_card`, and `usage_only_transfer`. The English arm is a plain baseline, not development-optimized natural language. `autoform` is an AutoForm-style prompt-selected open-format baseline adapted from the existing Private Match prompt: the sender chooses a concise medium and the receiver gets no fixed grammar. We score exact end-task selection and complete measured cost; semantic parsing and fixed-format validity remain unknown, so this is not labeled a new language. It does not claim an exact reproduction of the published AutoForm setup. JSON is fixed structured text. The symbolic condition is a fixed four-axis digit code and a strong handcrafted control; it is not Tacit's learned language. `shared_protocol_card` evaluates a previously frozen sender/receiver instruction artifact using this JSON schema: `{"schema":"tlu.shared_protocol_card.v1","protocol_id":"...","sender_instruction":"...","receiver_instruction":"..."}`. The runner hashes and applies the card unchanged. The separate `induce_protocol_cards.py` tool can propose compositional-symbolic or plain-English instruction candidates from training meanings; candidates remain hypotheses until evaluated, and there is no real-model induction result yet. The receiver must return an exact candidate ID. Malformed/truncated answers remain failures. Reported token totals are `null` when any call lacks provider usage, with per-call missingness preserved. The run records tokenizer/model IDs, generated versus delivered bytes, the full loopback application envelope, call/service/wall costs, sender-format audits, and an exact small-batch conflict-graph coloring floor. `--wire-budget-bytes` caps the complete serialized application message for the episode (default 4096 bytes); the budget and actually delivered bytes are both recorded. A sender completion that exceeds the cap is not delivered, but its model call and generated output remain charged. This is a wire-byte budget, not a model-token budget. Temperature is fixed at zero; sender/receiver completion caps are 160/48 tokens.
 
+### Iterative exact-score natural-language search
+
+The plain-English inducer can now take train-only exact task feedback from a previous search round. To use it, first induce several plain-English cards. Evaluate every card on the same training candidate-set block with `shared_protocol_card`, the same model/settings, and the exact candidate-ID scorer. For each candidate, create a feedback artifact and then freeze the paired training frontier:
+
+```powershell
+python -m experiments.emergent_ood_v0_4.induce_protocol_cards `
+  --protocol-family plain_english `
+  --candidates 4 `
+  --max-optimization-rounds 2 `
+  --execute `
+  --resource-preflight .cache/emergent_ood_v0_3/resource_preflight.json `
+  --output-dir .cache/emergent_ood_v0_4/induced-cards/round-01
+
+python -m experiments.emergent_ood_v0_4.nl_feedback `
+  --episode-dir .cache/emergent_ood_v0_4/episodes `
+  --run .cache/emergent_ood_v0_4/runs/train-card-01.jsonl `
+  --card .cache/emergent_ood_v0_4/induced-cards/round-01/candidate-01-{protocol_id}.json `
+  --induction-manifest .cache/emergent_ood_v0_4/induced-cards/round-01/induction-manifest.json `
+  --output .cache/emergent_ood_v0_4/search/round-01-card-01.feedback.json
+
+python -m experiments.emergent_ood_v0_4.select_nl_search_parent `
+  --feedback .cache/emergent_ood_v0_4/search/round-01-card-01.feedback.json `
+  --feedback .cache/emergent_ood_v0_4/search/round-01-card-02.feedback.json `
+  --output .cache/emergent_ood_v0_4/search/round-01.frontier.json
+```
+
+`nl_feedback.py` reads and hash-checks only `manifest.json` and the three `*_train.jsonl` role ledgers; it never opens validation/test role files. It verifies the run, candidate range, model population, exact outcomes, card, and induction-manifest hashes, then records training-only failures and complete measured costs. The parent selector rebuilds every feedback artifact from its source files, requires identical training episode IDs and model settings, emits the nondominated exact-success/application-byte/token frontier, and picks the next proposal parent by highest exact training success followed by lower complete cost. Pass that parent's feedback artifact to a fresh `induce_protocol_cards.py --protocol-family plain_english --candidates 4 --max-optimization-rounds 2 --feedback ... --episode-dir ...` call. The frozen default allows at most two proposal rounds and four candidates per round; the parent selector rejects mismatched budgets and marks search exhausted after round two. Each separate candidate run remains under the 12-call batch cap; use the same complete train candidate-set block for every card, and count every proposal/evaluation batch. Record each round's proposal, candidate runs, frontier, and cumulative cost. Search feedback is optimization data, never confirmatory evidence.
+
+Before any model-executing proposal or candidate run, pass the existing local resource preflight and independent receiver-capability gates. The current maximum is two proposal rounds of four cards; freeze the candidate-evaluation episode block before the search and carry all run/proposal costs into the final baseline report. Use validation only for the final Pareto freeze and open test once. This loop is a budgeted OPRO-style baseline implementation, not a reproduction of MIPRO, and its current local model result is **none**.
+
 ### Usage-only protocol transfer
 
 The `usage_only_transfer` condition tests in-context receiver onboarding. The sender receives the sender half of a frozen protocol card. A new receiver gets its candidate table and train-only meaning/message exemplars, but receives neither the card nor its decoder instruction. It must infer the convention from use. This is a one-message transfer comparison, not online adaptation or evidence that the protocol is compositional.

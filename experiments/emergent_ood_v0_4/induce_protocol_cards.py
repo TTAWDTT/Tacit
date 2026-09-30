@@ -61,7 +61,7 @@ def sample_training_examples(
 
 def build_induction_messages(
     *, split: dict[str, Any], examples: list[dict[str, str]], candidate_count: int = DEFAULT_CANDIDATES,
-    protocol_family: str = "compositional_symbolic",
+    protocol_family: str = "compositional_symbolic", feedback: dict[str, Any] | None = None,
 ) -> list[dict[str, str]]:
     if isinstance(candidate_count, bool) or not isinstance(candidate_count, int) or not 2 <= candidate_count <= MAX_CANDIDATES:
         raise ValueError(f"candidate_count must be in 2..{MAX_CANDIDATES}")
@@ -139,6 +139,24 @@ def build_induction_messages(
             ],
         },
     }
+    if feedback is not None:
+        if protocol_family != "plain_english":
+            raise ValueError("exact-score feedback is supported only for the plain-English family")
+        user_payload["prior_training_feedback"] = {
+            key: feedback[key]
+            for key in (
+                "optimization_round", "protocol_id", "sender_instruction", "receiver_instruction",
+                "episodes", "exact_successes", "exact_success_rate", "invalid_answers",
+                "failure_count", "failure_examples_truncated", "failure_examples",
+            )
+        }
+        user_payload["iterative_search_instructions"] = [
+            "Use prior exact task outcomes as training feedback to propose a better sender/receiver instruction pair.",
+            "Diagnose recurring failure patterns; do not memorize any complete meaning, candidate table, candidate ID, or episode-specific answer.",
+            "Keep all transmitted messages as ordinary grammatical English with canonical attribute names and values.",
+            "Propose genuinely different, generalizable instructions while preserving the task and answer contract.",
+            "The feedback is from training only. No validation or test result is available; do not claim these candidates were tested.",
+        ]
     user = (
         "Create exactly " + str(candidate_count) + " genuinely different candidate protocol cards. "
         "Do not reproduce a full-tuple lookup from the examples. Follow the specified candidate_family constraints, "
@@ -191,9 +209,14 @@ def run_induction(
     output_dir: Path, execute: bool, model: str = "", tokenizer_id: str = "",
     protocol_family: str = "compositional_symbolic",
     ontology_path: Path | None = None,
+    feedback_path: Path | None = None,
+    episode_dir: Path | None = None,
+    max_optimization_rounds: int = 2,
     base_url: str = "http://127.0.0.1:8002/v1", resource_preflight: Path | None = None,
     temperature: float = 0.7, max_tokens: int = 4096,
 ) -> dict[str, Any]:
+    if isinstance(max_optimization_rounds, bool) or not isinstance(max_optimization_rounds, int) or not 1 <= max_optimization_rounds <= 8:
+        raise ValueError("max optimization rounds must be an integer in 1..8")
     ontology = load_ontology_spec(ontology_path) if ontology_path else None
     if ontology is None:
         split = build_split(seed=split_seed)
@@ -206,9 +229,112 @@ def run_induction(
         )
     task_key = _read_inside(task_key_path)
     examples = sample_training_examples(split=split, task_key=task_key, example_count=example_count)
+    feedback: dict[str, Any] | None = None
+    feedback_sha256: str | None = None
+    input_episode_manifest_sha256: str | None = None
+    if feedback_path is not None:
+        if protocol_family != "plain_english" or episode_dir is None:
+            raise ValueError("--feedback requires --protocol-family plain_english and --episode-dir")
+        feedback_file = _inside_project(feedback_path)
+        feedback_bytes = feedback_file.read_bytes()
+        if len(feedback_bytes) > 1_048_576:
+            raise ValueError("feedback artifact exceeds 1 MiB")
+        try:
+            feedback = json.loads(feedback_bytes)
+        except json.JSONDecodeError as exc:
+            raise ValueError("feedback artifact is not valid JSON") from exc
+        if not isinstance(feedback, dict) or feedback.get("schema") != "tlu.emergent-ood-nl-feedback.v0.1":
+            raise ValueError("feedback artifact has an unsupported schema")
+        if (
+            feedback.get("split") != "train"
+            or feedback.get("split_seed") != split_seed
+            or feedback.get("split_sha256") != split["split_sha256"]
+            or feedback.get("task_key_id") != hashlib.sha256(task_key).hexdigest()[:16]
+            or feedback.get("protocol_family") != "plain_english"
+            or feedback.get("validation_files_opened") is not False
+            or feedback.get("test_files_opened") is not False
+        ):
+            raise ValueError("feedback artifact is not bound to this training split/task key")
+        feedback_round = feedback.get("optimization_round")
+        if isinstance(feedback_round, bool) or not isinstance(feedback_round, int) or feedback_round < 1:
+            raise ValueError("feedback optimization round must be a positive integer")
+        if (
+            isinstance(feedback.get("episodes"), bool)
+            or not isinstance(feedback.get("episodes"), int)
+            or feedback["episodes"] < 1
+            or isinstance(feedback.get("exact_successes"), bool)
+            or not isinstance(feedback.get("exact_successes"), int)
+            or not 0 <= feedback["exact_successes"] <= feedback["episodes"]
+            or feedback.get("exact_success_rate") != feedback["exact_successes"] / feedback["episodes"]
+            or not isinstance(feedback.get("failure_examples"), list)
+            or len(feedback["failure_examples"]) > 24
+        ):
+            raise ValueError("feedback aggregate outcomes or failure-example list are invalid")
+        if (
+            feedback.get("max_optimization_rounds") != max_optimization_rounds
+            or feedback.get("candidate_count") != candidate_count
+            or feedback_round >= max_optimization_rounds
+        ):
+            raise ValueError("feedback has exhausted or disagrees with the frozen search round/candidate budget")
+        episode_manifest_path = _inside_project(episode_dir) / "manifest.json"
+        input_episode_manifest_sha256 = hashlib.sha256(episode_manifest_path.read_bytes()).hexdigest()
+        if feedback.get("input_episode_manifest_sha256") != input_episode_manifest_sha256:
+            raise ValueError("feedback artifact comes from a different episode bundle")
+        source_induction_path = _inside_project(ROOT / feedback.get("source_induction_manifest", ""))
+        source_induction_bytes = source_induction_path.read_bytes()
+        if hashlib.sha256(source_induction_bytes).hexdigest() != feedback.get("source_induction_manifest_sha256"):
+            raise ValueError("feedback source induction manifest hash mismatch")
+        source_induction = json.loads(source_induction_bytes)
+        if (
+            source_induction.get("schema") != OUTPUT_SCHEMA
+            or source_induction.get("split_seed") != split_seed
+            or source_induction.get("split_sha256") != split["split_sha256"]
+            or source_induction.get("protocol_family") != "plain_english"
+            or source_induction.get("optimization_round", 1) != feedback.get("optimization_round")
+            or source_induction.get("max_optimization_rounds", 2) != max_optimization_rounds
+            or source_induction.get("candidate_count") != candidate_count
+            or source_induction.get("feedback_sha256") != feedback.get("parent_feedback_sha256")
+            or not any(
+                isinstance(item, dict)
+                and item.get("protocol_id") == feedback.get("protocol_id")
+                and item.get("sha256") == feedback.get("protocol_card_sha256")
+                for item in source_induction.get("candidate_cards", [])
+            )
+        ):
+            raise ValueError("feedback does not match its source induction round/card")
+        source_results_path = _inside_project(ROOT / feedback.get("source_results", ""))
+        source_results_bytes = source_results_path.read_bytes()
+        if hashlib.sha256(source_results_bytes).hexdigest() != feedback.get("source_results_sha256"):
+            raise ValueError("feedback source result hash mismatch")
+        source_run_manifest_path = _inside_project(ROOT / feedback.get("source_run_manifest", ""))
+        source_run_manifest_bytes = source_run_manifest_path.read_bytes()
+        if hashlib.sha256(source_run_manifest_bytes).hexdigest() != feedback.get("source_run_manifest_sha256"):
+            raise ValueError("feedback source run manifest hash mismatch")
+        source_run_manifest = json.loads(source_run_manifest_bytes)
+        if (
+            source_run_manifest.get("schema") != "tlu.emergent-ood-run-manifest.v0.4"
+            or source_run_manifest.get("stage") != "train"
+            or source_run_manifest.get("conditions") != ["shared_protocol_card"]
+            or source_run_manifest.get("results_sha256") != feedback.get("source_results_sha256")
+            or source_run_manifest.get("protocol_card_sha256") != feedback.get("protocol_card_sha256")
+        ):
+            raise ValueError("feedback source run manifest is not a matching train-only card run")
+        from experiments.emergent_ood_v0_4.nl_feedback import build_feedback
+
+        rebuilt_feedback = build_feedback(
+            episode_dir=episode_dir,
+            run_path=ROOT / feedback["source_results"],
+            card_path=ROOT / feedback["source_card"],
+            induction_manifest_path=ROOT / feedback["source_induction_manifest"],
+            split_seed=split_seed,
+        )
+        canonical = lambda value: json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+        if canonical(rebuilt_feedback) != canonical(feedback):
+            raise ValueError("feedback artifact does not match its reconstructed training evidence")
+        feedback_sha256 = hashlib.sha256(feedback_bytes).hexdigest()
     messages = build_induction_messages(
         split=split, examples=examples, candidate_count=candidate_count,
-        protocol_family=protocol_family,
+        protocol_family=protocol_family, feedback=feedback,
     )
     prompt_bytes = json.dumps(messages, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
     plan = {
@@ -225,6 +351,14 @@ def run_induction(
         )).encode("utf-8")).hexdigest(),
         "candidate_count": candidate_count,
         "protocol_family": protocol_family,
+        "optimization_round": 1 if feedback is None else feedback_round + 1,
+        "max_optimization_rounds": max_optimization_rounds,
+        "feedback_sha256": feedback_sha256,
+        "feedback_source_episode_manifest_sha256": input_episode_manifest_sha256,
+        "feedback_source_induction_manifest": feedback.get("source_induction_manifest") if feedback is not None else None,
+        "feedback_source_results": feedback.get("source_results") if feedback is not None else None,
+        "feedback_episodes": feedback.get("episodes") if feedback is not None else 0,
+        "feedback_exact_success_rate": feedback.get("exact_success_rate") if feedback is not None else None,
         "prompt_sha256": hashlib.sha256(prompt_bytes).hexdigest(),
         "prompt_utf8_bytes": len(prompt_bytes),
         "test_examples_in_prompt": 0,
@@ -345,9 +479,12 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--split-seed", type=int, default=17)
     parser.add_argument("--ontology", type=Path, help="project-local ontology spec; omit for the default fixture")
+    parser.add_argument("--episode-dir", type=Path, help="episode bundle for validating training feedback provenance")
+    parser.add_argument("--feedback", type=Path, help="training-only exact-score feedback from nl_feedback.py")
     parser.add_argument("--task-key", type=Path, default=Path(".cache/emergent_ood_v0_4/evaluator.key"))
     parser.add_argument("--training-examples", type=int, default=DEFAULT_EXAMPLES)
     parser.add_argument("--candidates", type=int, default=DEFAULT_CANDIDATES)
+    parser.add_argument("--max-optimization-rounds", type=int, default=2)
     parser.add_argument(
         "--protocol-family", choices=PROTOCOL_FAMILIES, default="compositional_symbolic",
         help="propose a symbolic protocol or plain-English prompt candidates",
@@ -368,6 +505,9 @@ def main() -> int:
             output_dir=args.output_dir, execute=args.execute, model=args.model,
             protocol_family=args.protocol_family,
             ontology_path=args.ontology,
+            feedback_path=args.feedback,
+            episode_dir=args.episode_dir,
+            max_optimization_rounds=args.max_optimization_rounds,
             tokenizer_id=args.tokenizer_id, base_url=args.base_url,
             resource_preflight=args.resource_preflight, temperature=args.temperature,
             max_tokens=args.max_tokens,
