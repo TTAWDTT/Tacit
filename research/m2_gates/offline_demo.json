@@ -1,0 +1,188 @@
+{
+  "events": [
+    {
+      "actual": {
+        "synthetic_units": "1"
+      },
+      "binding": "5b5fe01be6f49fea1367805c1c83a32fa776a2f766e6ce2bebe6509aba2fef14",
+      "candidate": "costly",
+      "components": {
+        "context": {
+          "synthetic_units": "0"
+        },
+        "work": {
+          "synthetic_units": "1"
+        }
+      },
+      "id": "5b5fe01be6f49fea1367805c1c83a32fa776a2f766e6ce2bebe6509aba2fef14/train/costly/0",
+      "phase": "train",
+      "reserved": {
+        "synthetic_units": "1"
+      },
+      "status": "success"
+    },
+    {
+      "actual": {
+        "synthetic_units": "1"
+      },
+      "binding": "5b5fe01be6f49fea1367805c1c83a32fa776a2f766e6ce2bebe6509aba2fef14",
+      "candidate": "cheap",
+      "components": {
+        "context": {
+          "synthetic_units": "0"
+        },
+        "work": {
+          "synthetic_units": "1"
+        }
+      },
+      "id": "5b5fe01be6f49fea1367805c1c83a32fa776a2f766e6ce2bebe6509aba2fef14/train/cheap/0",
+      "phase": "train",
+      "reserved": {
+        "synthetic_units": "1"
+      },
+      "status": "failed"
+    },
+    {
+      "actual": {
+        "synthetic_units": "1"
+      },
+      "binding": "5b5fe01be6f49fea1367805c1c83a32fa776a2f766e6ce2bebe6509aba2fef14",
+      "candidate": "costly",
+      "components": {
+        "context": {
+          "synthetic_units": "0"
+        },
+        "work": {
+          "synthetic_units": "1"
+        }
+      },
+      "id": "5b5fe01be6f49fea1367805c1c83a32fa776a2f766e6ce2bebe6509aba2fef14/validation/costly/0",
+      "phase": "validation",
+      "reserved": {
+        "synthetic_units": "1"
+      },
+      "status": "success"
+    },
+    {
+      "actual": {
+        "synthetic_units": "1"
+      },
+      "binding": "5b5fe01be6f49fea1367805c1c83a32fa776a2f766e6ce2bebe6509aba2fef14",
+      "candidate": "cheap",
+      "components": {
+        "context": {
+          "synthetic_units": "0"
+        },
+        "work": {
+          "synthetic_units": "1"
+        }
+      },
+      "id": "5b5fe01be6f49fea1367805c1c83a32fa776a2f766e6ce2bebe6509aba2fef14/validation/cheap/0",
+      "phase": "validation",
+      "reserved": {
+        "synthetic_units": "1"
+      },
+      "status": "failed"
+    },
+    {
+      "actual": {
+        "synthetic_units": "2"
+      },
+      "binding": "5b5fe01be6f49fea1367805c1c83a32fa776a2f766e6ce2bebe6509aba2fef14",
+      "candidate": "cheap",
+      "components": {
+        "context": {
+          "synthetic_units": "0"
+        },
+        "work": {
+          "synthetic_units": "2"
+        }
+      },
+      "id": "setup",
+      "phase": "deployment",
+      "reserved": {
+        "synthetic_units": "2"
+      },
+      "status": "success"
+    },
+    {
+      "actual": {
+        "synthetic_units": "2"
+      },
+      "binding": "5b5fe01be6f49fea1367805c1c83a32fa776a2f766e6ce2bebe6509aba2fef14",
+      "candidate": "cheap",
+      "components": {
+        "context": {
+          "synthetic_units": "1"
+        },
+        "work": {
+          "synthetic_units": "1"
+        }
+      },
+      "id": "execution-0",
+      "phase": "execution",
+      "reserved": {
+        "synthetic_units": "2"
+      },
+      "status": "success"
+    },
+    {
+      "actual": {
+        "synthetic_units": "2"
+      },
+      "binding": "5b5fe01be6f49fea1367805c1c83a32fa776a2f766e6ce2bebe6509aba2fef14",
+      "candidate": "cheap",
+      "components": {
+        "context": {
+          "synthetic_units": "1"
+        },
+        "work": {
+          "synthetic_units": "1"
+        }
+      },
+      "id": "execution-1",
+      "phase": "execution",
+      "reserved": {
+        "synthetic_units": "2"
+      },
+      "status": "success"
+    }
+  ],
+  "exhausted_schedule_denied": true,
+  "feasible": {
+    "cheap": {
+      "average_reserved": {
+        "synthetic_units": "5"
+      },
+      "calls": 7,
+      "feasible": true,
+      "prior_reserved": {
+        "synthetic_units": "0"
+      },
+      "reasons": [],
+      "reserved": {
+        "synthetic_units": "10"
+      }
+    },
+    "costly": {
+      "average_reserved": {
+        "synthetic_units": "13"
+      },
+      "calls": 6,
+      "feasible": false,
+      "prior_reserved": {
+        "synthetic_units": "0"
+      },
+      "reasons": [
+        "cumulative:synthetic_units",
+        "per_request:synthetic_units"
+      ],
+      "reserved": {
+        "synthetic_units": "26"
+      }
+    }
+  },
+  "kind": "offline-gates-not-model-evidence",
+  "model_calls": 0,
+  "selected": "cheap"
+}
