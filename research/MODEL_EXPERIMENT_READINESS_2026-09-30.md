@@ -1,7 +1,7 @@
 # Model experiment readiness report — 2026-09-30
 
 **Purpose:** select the next executable model task from the existing research plan and report what is genuinely ready.
-**Current disposition:** prepared; waiting for the resource manager to allocate the local CPU/GPU slot. The three launcher refusals below are historical, invocation-scoped gate measurements, not a statement about current machine load. No standalone preflight was run while preparing this update.
+**Current disposition:** the frozen INDEX_m inputs are staged in a remote project cache as well as the local cache, but neither host has produced an eligible model run. The local Windows launcher remains resource-gated. The remote Linux host fails the same GPU-memory threshold in a one-shot snapshot and needs a Linux-compatible launcher before it can run the contract. Historical launcher refusals below are invocation-scoped, not statements about current machine load.
 
 ## Recommendation
 
@@ -21,6 +21,8 @@ Use one bounded launch. The PowerShell launcher performs its own three-sample re
 ```
 
 Do not run `-PrepareOnly` and then immediately repeat the full launch: that would take a second resource sample without a material state change. Do not run the command during the current resource reservation. If its integrated gate rejects, it exits before model hashing/service startup; retry only after the resource manager reports a materially changed allocation.
+
+That command is the frozen Windows entry point. A remote Linux host cannot run this PowerShell script as-is: it has no `pwsh`, and the script depends on Windows-specific counters and process APIs. Its project cache is staged, but any remote run first needs a Linux launcher that preserves the same thresholds and request contract; do not substitute a manual model call.
 
 ### Frozen run contract
 
@@ -45,6 +47,12 @@ No standalone resource poll was run for this report, per the active resource coo
 | Integrated launch `run_local_capability.ps1`, run directory `.cache/index_v0_3/20260930T092414Z` | `2026-09-30T09:24:14Z`, exit `1`, 9.7 s; console output captured in the session; run directory empty | CPU mean 15.8%, max 16.5%; GPU 29% (limit `<25%`); GPU memory 1,630 MiB; free RAM 12,668 MiB. GPU utilization failed. | Same exact console error as above. No artifact hash, service start, identity check, model call, or message call. |
 
 The first is the latest archived shared-host report; the three integrated-launch rows are newer snapshots produced by the authorized launcher itself. They are not standalone polls and do not establish current machine state. The launcher creates a timestamped run directory before checking resources, but its gate rejection happens before the resource JSONL writer; these three directories contain no persisted stdout/stderr/telemetry, so the table transcribes the captured console results and explicitly records that retention gap. The manager's allocation is the authority for whether the resource slot has changed; this session did not inspect or alter any other task's processes.
+
+### Remote cache staging check
+
+On 2026-09-30, a read-only check of the SSH-configured Linux host found Ubuntu, no Tacit checkout at the standard home-directory paths checked, no PowerShell, and Python 3.10/3.13 binaries (with `python3` defaulting to 3.8). The public Tacit `main` checkout was created under the user's home directory at commit `770915cb1964b498ccbfaa42b448ec6725d85f98`. A direct HTTPS request to Hugging Face timed out after 131 seconds, so the existing local cache was copied into that checkout's ignored `.cache/models/Qwen3-1.7B`; the frozen `.cache/index_v0_2/tasks.jsonl` shard was copied too. The remote file sizes match the local source sizes and preregistered weight-shard sizes. No hashes were computed: artifact identity remains deferred until the integrated resource gate passes.
+
+A one-shot GPU snapshot during this staging attempt reported two RTX 6000 Ada devices with 49,140 MiB each; their memory use was 31,622 MiB and 34,038 MiB (utilization 44% and 0%). Both fail the frozen `<1,800 MiB` launch condition. This is a timestamp-scoped observation, not a repeated three-sample gate or a claim about current state. No model service, inference, training, or dependency installation occurred. Do not modify the resident GPU processes. The remote cache is ready for later gated identity verification, but remote execution remains blocked by GPU memory and the missing Linux launcher.
 
 ## Existing scientific entry points and actual gaps
 
@@ -72,8 +80,8 @@ The first is the latest archived shared-host report; the three integrated-launch
 
 ## Required sequence after resource coordination
 
-1. Wait for the resource manager to assign this task a slot; do not poll or compete with the ocean-solver session.
-2. Run the single INDEX_m launcher command above. Its own gate is the first resource sample for that run.
+1. Wait for an eligible resource slot; do not poll or compete with another session's workloads.
+2. On Windows, run the single INDEX_m launcher command above. On the staged Linux host, first add and review a Linux launcher that preserves the frozen gate, then let that launcher's gate be the first resource sample for that run.
 3. If the full-information gate fails, stop at four calls and report only the capability/interface failure. If it passes, allow its eight preregistered message calls to complete; inspect the sanitized exact outcomes and scoped telemetry. Treat any result as feasibility only.
 4. Only after that, choose a capability-qualified model/task configuration for the v0.4 validation pilot. Use train-only development/search and validation-only protocol/cap selection. Freeze an independent-split analysis plan and test seed derivation before opening any test role files. Do not claim superiority if the local resource ceiling cannot support the declared sample.
 
