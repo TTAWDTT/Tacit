@@ -1,0 +1,6003 @@
+{
+  "calculator_sha256": "761162d1815ef47952d495eaaaa117da1573244a786541deb134b8e3cfae1f1e",
+  "enumeration": "all set partitions of the source alphabet, up to sender permutation; message-label permutations are equivalent",
+  "frontiers": {
+    "2": [
+      {
+        "input_vector_count": 16,
+        "optimal_exact_sum_success": 0.25,
+        "optimal_receiver_decoder": [
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              0,
+              0
+            ]
+          }
+        ],
+        "optimal_sender_partition_sizes": [
+          1,
+          1
+        ],
+        "optimal_sender_partitions": [
+          [
+            [
+              0,
+              1,
+              2,
+              3
+            ]
+          ],
+          [
+            [
+              0,
+              1,
+              2,
+              3
+            ]
+          ]
+        ],
+        "optimal_success_numerator": 4,
+        "payload_budget_bits": 0,
+        "protocol_minimum_bits": 0
+      },
+      {
+        "input_vector_count": 16,
+        "optimal_exact_sum_success": 0.25,
+        "optimal_receiver_decoder": [
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              0,
+              0
+            ]
+          }
+        ],
+        "optimal_sender_partition_sizes": [
+          1,
+          1
+        ],
+        "optimal_sender_partitions": [
+          [
+            [
+              0,
+              1,
+              2,
+              3
+            ]
+          ],
+          [
+            [
+              0,
+              1,
+              2,
+              3
+            ]
+          ]
+        ],
+        "optimal_success_numerator": 4,
+        "payload_budget_bits": 1,
+        "protocol_minimum_bits": 0
+      },
+      {
+        "input_vector_count": 16,
+        "optimal_exact_sum_success": 0.5,
+        "optimal_receiver_decoder": [
+          {
+            "decoded_sum": 1,
+            "message_ids": [
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              1,
+              1
+            ]
+          }
+        ],
+        "optimal_sender_partition_sizes": [
+          2,
+          2
+        ],
+        "optimal_sender_partitions": [
+          [
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              3
+            ]
+          ],
+          [
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              3
+            ]
+          ]
+        ],
+        "optimal_success_numerator": 8,
+        "payload_budget_bits": 2,
+        "protocol_minimum_bits": 2
+      },
+      {
+        "input_vector_count": 16,
+        "optimal_exact_sum_success": 0.5,
+        "optimal_receiver_decoder": [
+          {
+            "decoded_sum": 1,
+            "message_ids": [
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              1,
+              1
+            ]
+          }
+        ],
+        "optimal_sender_partition_sizes": [
+          2,
+          2
+        ],
+        "optimal_sender_partitions": [
+          [
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              3
+            ]
+          ],
+          [
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              3
+            ]
+          ]
+        ],
+        "optimal_success_numerator": 8,
+        "payload_budget_bits": 3,
+        "protocol_minimum_bits": 2
+      },
+      {
+        "input_vector_count": 16,
+        "optimal_exact_sum_success": 1.0,
+        "optimal_receiver_decoder": [
+          {
+            "decoded_sum": 0,
+            "message_ids": [
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 1,
+            "message_ids": [
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 2,
+            "message_ids": [
+              0,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              0,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 1,
+            "message_ids": [
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 2,
+            "message_ids": [
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              1,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              1,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 2,
+            "message_ids": [
+              2,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              2,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              2,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              2,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              3,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              3,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              3,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              3,
+              3
+            ]
+          }
+        ],
+        "optimal_sender_partition_sizes": [
+          4,
+          4
+        ],
+        "optimal_sender_partitions": [
+          [
+            [
+              0
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              3
+            ]
+          ],
+          [
+            [
+              0
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              3
+            ]
+          ]
+        ],
+        "optimal_success_numerator": 16,
+        "payload_budget_bits": 4,
+        "protocol_minimum_bits": 4
+      }
+    ],
+    "3": [
+      {
+        "input_vector_count": 64,
+        "optimal_exact_sum_success": 0.1875,
+        "optimal_receiver_decoder": [
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              0,
+              0,
+              0
+            ]
+          }
+        ],
+        "optimal_sender_partition_sizes": [
+          1,
+          1,
+          1
+        ],
+        "optimal_sender_partitions": [
+          [
+            [
+              0,
+              1,
+              2,
+              3
+            ]
+          ],
+          [
+            [
+              0,
+              1,
+              2,
+              3
+            ]
+          ],
+          [
+            [
+              0,
+              1,
+              2,
+              3
+            ]
+          ]
+        ],
+        "optimal_success_numerator": 12,
+        "payload_budget_bits": 0,
+        "protocol_minimum_bits": 0
+      },
+      {
+        "input_vector_count": 64,
+        "optimal_exact_sum_success": 0.21875,
+        "optimal_receiver_decoder": [
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              1,
+              0,
+              0
+            ]
+          }
+        ],
+        "optimal_sender_partition_sizes": [
+          2,
+          1,
+          1
+        ],
+        "optimal_sender_partitions": [
+          [
+            [
+              0
+            ],
+            [
+              1,
+              2,
+              3
+            ]
+          ],
+          [
+            [
+              0,
+              1,
+              2,
+              3
+            ]
+          ],
+          [
+            [
+              0,
+              1,
+              2,
+              3
+            ]
+          ]
+        ],
+        "optimal_success_numerator": 14,
+        "payload_budget_bits": 1,
+        "protocol_minimum_bits": 1
+      },
+      {
+        "input_vector_count": 64,
+        "optimal_exact_sum_success": 0.25,
+        "optimal_receiver_decoder": [
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              2,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              3,
+              0,
+              0
+            ]
+          }
+        ],
+        "optimal_sender_partition_sizes": [
+          4,
+          1,
+          1
+        ],
+        "optimal_sender_partitions": [
+          [
+            [
+              0
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              3
+            ]
+          ],
+          [
+            [
+              0,
+              1,
+              2,
+              3
+            ]
+          ],
+          [
+            [
+              0,
+              1,
+              2,
+              3
+            ]
+          ]
+        ],
+        "optimal_success_numerator": 16,
+        "payload_budget_bits": 2,
+        "protocol_minimum_bits": 2
+      },
+      {
+        "input_vector_count": 64,
+        "optimal_exact_sum_success": 0.375,
+        "optimal_receiver_decoder": [
+          {
+            "decoded_sum": 1,
+            "message_ids": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              0,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              0,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              0,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              1,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              1,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              1,
+              1,
+              1
+            ]
+          }
+        ],
+        "optimal_sender_partition_sizes": [
+          2,
+          2,
+          2
+        ],
+        "optimal_sender_partitions": [
+          [
+            [
+              0
+            ],
+            [
+              1,
+              2,
+              3
+            ]
+          ],
+          [
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              3
+            ]
+          ],
+          [
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              3
+            ]
+          ]
+        ],
+        "optimal_success_numerator": 24,
+        "payload_budget_bits": 3,
+        "protocol_minimum_bits": 3
+      },
+      {
+        "input_vector_count": 64,
+        "optimal_exact_sum_success": 0.5,
+        "optimal_receiver_decoder": [
+          {
+            "decoded_sum": 1,
+            "message_ids": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              0,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              0,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              0,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 2,
+            "message_ids": [
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              1,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              1,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              1,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              2,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              2,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              2,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              2,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              3,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              3,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              3,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              3,
+              1,
+              1
+            ]
+          }
+        ],
+        "optimal_sender_partition_sizes": [
+          4,
+          2,
+          2
+        ],
+        "optimal_sender_partitions": [
+          [
+            [
+              0
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              3
+            ]
+          ],
+          [
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              3
+            ]
+          ],
+          [
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              3
+            ]
+          ]
+        ],
+        "optimal_success_numerator": 32,
+        "payload_budget_bits": 4,
+        "protocol_minimum_bits": 4
+      },
+      {
+        "input_vector_count": 64,
+        "optimal_exact_sum_success": 0.5,
+        "optimal_receiver_decoder": [
+          {
+            "decoded_sum": 1,
+            "message_ids": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              0,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              0,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              0,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 2,
+            "message_ids": [
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              1,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              1,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              1,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              2,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              2,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              2,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              2,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              3,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              3,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              3,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              3,
+              1,
+              1
+            ]
+          }
+        ],
+        "optimal_sender_partition_sizes": [
+          4,
+          2,
+          2
+        ],
+        "optimal_sender_partitions": [
+          [
+            [
+              0
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              3
+            ]
+          ],
+          [
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              3
+            ]
+          ],
+          [
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              3
+            ]
+          ]
+        ],
+        "optimal_success_numerator": 32,
+        "payload_budget_bits": 5,
+        "protocol_minimum_bits": 4
+      },
+      {
+        "input_vector_count": 64,
+        "optimal_exact_sum_success": 1.0,
+        "optimal_receiver_decoder": [
+          {
+            "decoded_sum": 0,
+            "message_ids": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 1,
+            "message_ids": [
+              0,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 2,
+            "message_ids": [
+              0,
+              0,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              0,
+              0,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 1,
+            "message_ids": [
+              0,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 2,
+            "message_ids": [
+              0,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              0,
+              1,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              0,
+              1,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 2,
+            "message_ids": [
+              0,
+              2,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              0,
+              2,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              0,
+              2,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              0,
+              2,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              0,
+              3,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              0,
+              3,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              0,
+              3,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              0,
+              3,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 1,
+            "message_ids": [
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 2,
+            "message_ids": [
+              1,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              1,
+              0,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              1,
+              0,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 2,
+            "message_ids": [
+              1,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              1,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              1,
+              1,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              1,
+              1,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              1,
+              2,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              1,
+              2,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              1,
+              2,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              1,
+              2,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              1,
+              3,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              1,
+              3,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              1,
+              3,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              1,
+              3,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 2,
+            "message_ids": [
+              2,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              2,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              2,
+              0,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              2,
+              0,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              2,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              2,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              2,
+              1,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              2,
+              1,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              2,
+              2,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              2,
+              2,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              2,
+              2,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              2,
+              2,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              2,
+              3,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              2,
+              3,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              2,
+              3,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              2,
+              3,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              3,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              3,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              3,
+              0,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              3,
+              0,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              3,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              3,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              3,
+              1,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              3,
+              1,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              3,
+              2,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              3,
+              2,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              3,
+              2,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              3,
+              2,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              3,
+              3,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              3,
+              3,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              3,
+              3,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 9,
+            "message_ids": [
+              3,
+              3,
+              3
+            ]
+          }
+        ],
+        "optimal_sender_partition_sizes": [
+          4,
+          4,
+          4
+        ],
+        "optimal_sender_partitions": [
+          [
+            [
+              0
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              3
+            ]
+          ],
+          [
+            [
+              0
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              3
+            ]
+          ],
+          [
+            [
+              0
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              3
+            ]
+          ]
+        ],
+        "optimal_success_numerator": 64,
+        "payload_budget_bits": 6,
+        "protocol_minimum_bits": 6
+      }
+    ],
+    "4": [
+      {
+        "input_vector_count": 256,
+        "optimal_exact_sum_success": 0.171875,
+        "optimal_receiver_decoder": [
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ],
+        "optimal_sender_partition_sizes": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "optimal_sender_partitions": [
+          [
+            [
+              0,
+              1,
+              2,
+              3
+            ]
+          ],
+          [
+            [
+              0,
+              1,
+              2,
+              3
+            ]
+          ],
+          [
+            [
+              0,
+              1,
+              2,
+              3
+            ]
+          ],
+          [
+            [
+              0,
+              1,
+              2,
+              3
+            ]
+          ]
+        ],
+        "optimal_success_numerator": 44,
+        "payload_budget_bits": 0,
+        "protocol_minimum_bits": 0
+      },
+      {
+        "input_vector_count": 256,
+        "optimal_exact_sum_success": 0.1875,
+        "optimal_receiver_decoder": [
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              1,
+              0,
+              0,
+              0
+            ]
+          }
+        ],
+        "optimal_sender_partition_sizes": [
+          2,
+          1,
+          1,
+          1
+        ],
+        "optimal_sender_partitions": [
+          [
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              3
+            ]
+          ],
+          [
+            [
+              0,
+              1,
+              2,
+              3
+            ]
+          ],
+          [
+            [
+              0,
+              1,
+              2,
+              3
+            ]
+          ],
+          [
+            [
+              0,
+              1,
+              2,
+              3
+            ]
+          ]
+        ],
+        "optimal_success_numerator": 48,
+        "payload_budget_bits": 1,
+        "protocol_minimum_bits": 1
+      },
+      {
+        "input_vector_count": 256,
+        "optimal_exact_sum_success": 0.21875,
+        "optimal_receiver_decoder": [
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              0,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              1,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              1,
+              1,
+              0,
+              0
+            ]
+          }
+        ],
+        "optimal_sender_partition_sizes": [
+          2,
+          2,
+          1,
+          1
+        ],
+        "optimal_sender_partitions": [
+          [
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              3
+            ]
+          ],
+          [
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              3
+            ]
+          ],
+          [
+            [
+              0,
+              1,
+              2,
+              3
+            ]
+          ],
+          [
+            [
+              0,
+              1,
+              2,
+              3
+            ]
+          ]
+        ],
+        "optimal_success_numerator": 56,
+        "payload_budget_bits": 2,
+        "protocol_minimum_bits": 2
+      },
+      {
+        "input_vector_count": 256,
+        "optimal_exact_sum_success": 0.25,
+        "optimal_receiver_decoder": [
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              0,
+              0,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              0,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              0,
+              1,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              1,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              1,
+              0,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              1,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 9,
+            "message_ids": [
+              1,
+              1,
+              1,
+              0
+            ]
+          }
+        ],
+        "optimal_sender_partition_sizes": [
+          2,
+          2,
+          2,
+          1
+        ],
+        "optimal_sender_partitions": [
+          [
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              3
+            ]
+          ],
+          [
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              3
+            ]
+          ],
+          [
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              3
+            ]
+          ],
+          [
+            [
+              0,
+              1,
+              2,
+              3
+            ]
+          ]
+        ],
+        "optimal_success_numerator": 64,
+        "payload_budget_bits": 3,
+        "protocol_minimum_bits": 3
+      },
+      {
+        "input_vector_count": 256,
+        "optimal_exact_sum_success": 0.375,
+        "optimal_receiver_decoder": [
+          {
+            "decoded_sum": 2,
+            "message_ids": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              0,
+              0,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              0,
+              0,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              0,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              0,
+              1,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              0,
+              1,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              0,
+              1,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              1,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              1,
+              0,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              1,
+              0,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              1,
+              0,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              1,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              1,
+              1,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              1,
+              1,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 10,
+            "message_ids": [
+              1,
+              1,
+              1,
+              1
+            ]
+          }
+        ],
+        "optimal_sender_partition_sizes": [
+          2,
+          2,
+          2,
+          2
+        ],
+        "optimal_sender_partitions": [
+          [
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              3
+            ]
+          ],
+          [
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              3
+            ]
+          ],
+          [
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              3
+            ]
+          ],
+          [
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              3
+            ]
+          ]
+        ],
+        "optimal_success_numerator": 96,
+        "payload_budget_bits": 4,
+        "protocol_minimum_bits": 4
+      },
+      {
+        "input_vector_count": 256,
+        "optimal_exact_sum_success": 0.375,
+        "optimal_receiver_decoder": [
+          {
+            "decoded_sum": 2,
+            "message_ids": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              0,
+              0,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              0,
+              0,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              0,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              0,
+              1,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              0,
+              1,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              0,
+              1,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              1,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              1,
+              0,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              1,
+              0,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              1,
+              0,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              1,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              1,
+              1,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              1,
+              1,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 10,
+            "message_ids": [
+              1,
+              1,
+              1,
+              1
+            ]
+          }
+        ],
+        "optimal_sender_partition_sizes": [
+          2,
+          2,
+          2,
+          2
+        ],
+        "optimal_sender_partitions": [
+          [
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              3
+            ]
+          ],
+          [
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              3
+            ]
+          ],
+          [
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              3
+            ]
+          ],
+          [
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              3
+            ]
+          ]
+        ],
+        "optimal_success_numerator": 96,
+        "payload_budget_bits": 5,
+        "protocol_minimum_bits": 4
+      },
+      {
+        "input_vector_count": 256,
+        "optimal_exact_sum_success": 0.5,
+        "optimal_receiver_decoder": [
+          {
+            "decoded_sum": 1,
+            "message_ids": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              0,
+              0,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              0,
+              0,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 2,
+            "message_ids": [
+              0,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              0,
+              1,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              0,
+              1,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              0,
+              1,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              0,
+              2,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              0,
+              2,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              0,
+              2,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              0,
+              2,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              0,
+              3,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              0,
+              3,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              0,
+              3,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              0,
+              3,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 2,
+            "message_ids": [
+              1,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              1,
+              0,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              1,
+              0,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              1,
+              0,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              1,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              1,
+              1,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              1,
+              1,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              1,
+              1,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              1,
+              2,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              1,
+              2,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              1,
+              2,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              1,
+              2,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              1,
+              3,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              1,
+              3,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              1,
+              3,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 9,
+            "message_ids": [
+              1,
+              3,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              2,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              2,
+              0,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              2,
+              0,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              2,
+              0,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              2,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              2,
+              1,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              2,
+              1,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              2,
+              1,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              2,
+              2,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              2,
+              2,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              2,
+              2,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 9,
+            "message_ids": [
+              2,
+              2,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              2,
+              3,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              2,
+              3,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              2,
+              3,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 10,
+            "message_ids": [
+              2,
+              3,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              3,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              3,
+              0,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              3,
+              0,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              3,
+              0,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              3,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              3,
+              1,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              3,
+              1,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 9,
+            "message_ids": [
+              3,
+              1,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              3,
+              2,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              3,
+              2,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              3,
+              2,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 10,
+            "message_ids": [
+              3,
+              2,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              3,
+              3,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 9,
+            "message_ids": [
+              3,
+              3,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 9,
+            "message_ids": [
+              3,
+              3,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 11,
+            "message_ids": [
+              3,
+              3,
+              1,
+              1
+            ]
+          }
+        ],
+        "optimal_sender_partition_sizes": [
+          4,
+          4,
+          2,
+          2
+        ],
+        "optimal_sender_partitions": [
+          [
+            [
+              0
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              3
+            ]
+          ],
+          [
+            [
+              0
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              3
+            ]
+          ],
+          [
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              3
+            ]
+          ],
+          [
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              3
+            ]
+          ]
+        ],
+        "optimal_success_numerator": 128,
+        "payload_budget_bits": 6,
+        "protocol_minimum_bits": 6
+      },
+      {
+        "input_vector_count": 256,
+        "optimal_exact_sum_success": 0.5,
+        "optimal_receiver_decoder": [
+          {
+            "decoded_sum": 1,
+            "message_ids": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              0,
+              0,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              0,
+              0,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 2,
+            "message_ids": [
+              0,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              0,
+              1,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              0,
+              1,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              0,
+              1,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              0,
+              2,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              0,
+              2,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              0,
+              2,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              0,
+              2,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              0,
+              3,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              0,
+              3,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              0,
+              3,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              0,
+              3,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 2,
+            "message_ids": [
+              1,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              1,
+              0,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              1,
+              0,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              1,
+              0,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              1,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              1,
+              1,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              1,
+              1,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              1,
+              1,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              1,
+              2,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              1,
+              2,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              1,
+              2,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              1,
+              2,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              1,
+              3,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              1,
+              3,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              1,
+              3,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 9,
+            "message_ids": [
+              1,
+              3,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              2,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              2,
+              0,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              2,
+              0,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              2,
+              0,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              2,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              2,
+              1,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              2,
+              1,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              2,
+              1,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              2,
+              2,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              2,
+              2,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              2,
+              2,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 9,
+            "message_ids": [
+              2,
+              2,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              2,
+              3,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              2,
+              3,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              2,
+              3,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 10,
+            "message_ids": [
+              2,
+              3,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              3,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              3,
+              0,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              3,
+              0,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              3,
+              0,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              3,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              3,
+              1,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              3,
+              1,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 9,
+            "message_ids": [
+              3,
+              1,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              3,
+              2,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              3,
+              2,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              3,
+              2,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 10,
+            "message_ids": [
+              3,
+              2,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              3,
+              3,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 9,
+            "message_ids": [
+              3,
+              3,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 9,
+            "message_ids": [
+              3,
+              3,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 11,
+            "message_ids": [
+              3,
+              3,
+              1,
+              1
+            ]
+          }
+        ],
+        "optimal_sender_partition_sizes": [
+          4,
+          4,
+          2,
+          2
+        ],
+        "optimal_sender_partitions": [
+          [
+            [
+              0
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              3
+            ]
+          ],
+          [
+            [
+              0
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              3
+            ]
+          ],
+          [
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              3
+            ]
+          ],
+          [
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              3
+            ]
+          ]
+        ],
+        "optimal_success_numerator": 128,
+        "payload_budget_bits": 7,
+        "protocol_minimum_bits": 6
+      },
+      {
+        "input_vector_count": 256,
+        "optimal_exact_sum_success": 1.0,
+        "optimal_receiver_decoder": [
+          {
+            "decoded_sum": 0,
+            "message_ids": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 1,
+            "message_ids": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 2,
+            "message_ids": [
+              0,
+              0,
+              0,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              0,
+              0,
+              0,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 1,
+            "message_ids": [
+              0,
+              0,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 2,
+            "message_ids": [
+              0,
+              0,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              0,
+              0,
+              1,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              0,
+              0,
+              1,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 2,
+            "message_ids": [
+              0,
+              0,
+              2,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              0,
+              0,
+              2,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              0,
+              0,
+              2,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              0,
+              0,
+              2,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              0,
+              0,
+              3,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              0,
+              0,
+              3,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              0,
+              0,
+              3,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              0,
+              0,
+              3,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 1,
+            "message_ids": [
+              0,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 2,
+            "message_ids": [
+              0,
+              1,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              0,
+              1,
+              0,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              0,
+              1,
+              0,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 2,
+            "message_ids": [
+              0,
+              1,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              0,
+              1,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              0,
+              1,
+              1,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              0,
+              1,
+              1,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              0,
+              1,
+              2,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              0,
+              1,
+              2,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              0,
+              1,
+              2,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              0,
+              1,
+              2,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              0,
+              1,
+              3,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              0,
+              1,
+              3,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              0,
+              1,
+              3,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              0,
+              1,
+              3,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 2,
+            "message_ids": [
+              0,
+              2,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              0,
+              2,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              0,
+              2,
+              0,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              0,
+              2,
+              0,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              0,
+              2,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              0,
+              2,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              0,
+              2,
+              1,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              0,
+              2,
+              1,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              0,
+              2,
+              2,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              0,
+              2,
+              2,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              0,
+              2,
+              2,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              0,
+              2,
+              2,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              0,
+              2,
+              3,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              0,
+              2,
+              3,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              0,
+              2,
+              3,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              0,
+              2,
+              3,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              0,
+              3,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              0,
+              3,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              0,
+              3,
+              0,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              0,
+              3,
+              0,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              0,
+              3,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              0,
+              3,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              0,
+              3,
+              1,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              0,
+              3,
+              1,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              0,
+              3,
+              2,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              0,
+              3,
+              2,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              0,
+              3,
+              2,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              0,
+              3,
+              2,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              0,
+              3,
+              3,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              0,
+              3,
+              3,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              0,
+              3,
+              3,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 9,
+            "message_ids": [
+              0,
+              3,
+              3,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 1,
+            "message_ids": [
+              1,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 2,
+            "message_ids": [
+              1,
+              0,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              1,
+              0,
+              0,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              1,
+              0,
+              0,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 2,
+            "message_ids": [
+              1,
+              0,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              1,
+              0,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              1,
+              0,
+              1,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              1,
+              0,
+              1,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              1,
+              0,
+              2,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              1,
+              0,
+              2,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              1,
+              0,
+              2,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              1,
+              0,
+              2,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              1,
+              0,
+              3,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              1,
+              0,
+              3,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              1,
+              0,
+              3,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              1,
+              0,
+              3,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 2,
+            "message_ids": [
+              1,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              1,
+              1,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              1,
+              1,
+              0,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              1,
+              1,
+              0,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              1,
+              1,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              1,
+              1,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              1,
+              1,
+              1,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              1,
+              1,
+              1,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              1,
+              1,
+              2,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              1,
+              1,
+              2,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              1,
+              1,
+              2,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              1,
+              1,
+              2,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              1,
+              1,
+              3,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              1,
+              1,
+              3,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              1,
+              1,
+              3,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              1,
+              1,
+              3,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              1,
+              2,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              1,
+              2,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              1,
+              2,
+              0,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              1,
+              2,
+              0,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              1,
+              2,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              1,
+              2,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              1,
+              2,
+              1,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              1,
+              2,
+              1,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              1,
+              2,
+              2,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              1,
+              2,
+              2,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              1,
+              2,
+              2,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              1,
+              2,
+              2,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              1,
+              2,
+              3,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              1,
+              2,
+              3,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              1,
+              2,
+              3,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 9,
+            "message_ids": [
+              1,
+              2,
+              3,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              1,
+              3,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              1,
+              3,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              1,
+              3,
+              0,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              1,
+              3,
+              0,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              1,
+              3,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              1,
+              3,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              1,
+              3,
+              1,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              1,
+              3,
+              1,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              1,
+              3,
+              2,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              1,
+              3,
+              2,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              1,
+              3,
+              2,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 9,
+            "message_ids": [
+              1,
+              3,
+              2,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              1,
+              3,
+              3,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              1,
+              3,
+              3,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 9,
+            "message_ids": [
+              1,
+              3,
+              3,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 10,
+            "message_ids": [
+              1,
+              3,
+              3,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 2,
+            "message_ids": [
+              2,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              2,
+              0,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              2,
+              0,
+              0,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              2,
+              0,
+              0,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              2,
+              0,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              2,
+              0,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              2,
+              0,
+              1,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              2,
+              0,
+              1,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              2,
+              0,
+              2,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              2,
+              0,
+              2,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              2,
+              0,
+              2,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              2,
+              0,
+              2,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              2,
+              0,
+              3,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              2,
+              0,
+              3,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              2,
+              0,
+              3,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              2,
+              0,
+              3,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              2,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              2,
+              1,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              2,
+              1,
+              0,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              2,
+              1,
+              0,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              2,
+              1,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              2,
+              1,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              2,
+              1,
+              1,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              2,
+              1,
+              1,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              2,
+              1,
+              2,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              2,
+              1,
+              2,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              2,
+              1,
+              2,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              2,
+              1,
+              2,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              2,
+              1,
+              3,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              2,
+              1,
+              3,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              2,
+              1,
+              3,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 9,
+            "message_ids": [
+              2,
+              1,
+              3,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              2,
+              2,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              2,
+              2,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              2,
+              2,
+              0,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              2,
+              2,
+              0,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              2,
+              2,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              2,
+              2,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              2,
+              2,
+              1,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              2,
+              2,
+              1,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              2,
+              2,
+              2,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              2,
+              2,
+              2,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              2,
+              2,
+              2,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 9,
+            "message_ids": [
+              2,
+              2,
+              2,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              2,
+              2,
+              3,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              2,
+              2,
+              3,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 9,
+            "message_ids": [
+              2,
+              2,
+              3,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 10,
+            "message_ids": [
+              2,
+              2,
+              3,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              2,
+              3,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              2,
+              3,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              2,
+              3,
+              0,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              2,
+              3,
+              0,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              2,
+              3,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              2,
+              3,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              2,
+              3,
+              1,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 9,
+            "message_ids": [
+              2,
+              3,
+              1,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              2,
+              3,
+              2,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              2,
+              3,
+              2,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 9,
+            "message_ids": [
+              2,
+              3,
+              2,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 10,
+            "message_ids": [
+              2,
+              3,
+              2,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              2,
+              3,
+              3,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 9,
+            "message_ids": [
+              2,
+              3,
+              3,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 10,
+            "message_ids": [
+              2,
+              3,
+              3,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 11,
+            "message_ids": [
+              2,
+              3,
+              3,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 3,
+            "message_ids": [
+              3,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              3,
+              0,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              3,
+              0,
+              0,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              3,
+              0,
+              0,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              3,
+              0,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              3,
+              0,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              3,
+              0,
+              1,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              3,
+              0,
+              1,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              3,
+              0,
+              2,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              3,
+              0,
+              2,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              3,
+              0,
+              2,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              3,
+              0,
+              2,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              3,
+              0,
+              3,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              3,
+              0,
+              3,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              3,
+              0,
+              3,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 9,
+            "message_ids": [
+              3,
+              0,
+              3,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 4,
+            "message_ids": [
+              3,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              3,
+              1,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              3,
+              1,
+              0,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              3,
+              1,
+              0,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              3,
+              1,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              3,
+              1,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              3,
+              1,
+              1,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              3,
+              1,
+              1,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              3,
+              1,
+              2,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              3,
+              1,
+              2,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              3,
+              1,
+              2,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 9,
+            "message_ids": [
+              3,
+              1,
+              2,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              3,
+              1,
+              3,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              3,
+              1,
+              3,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 9,
+            "message_ids": [
+              3,
+              1,
+              3,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 10,
+            "message_ids": [
+              3,
+              1,
+              3,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 5,
+            "message_ids": [
+              3,
+              2,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              3,
+              2,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              3,
+              2,
+              0,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              3,
+              2,
+              0,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              3,
+              2,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              3,
+              2,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              3,
+              2,
+              1,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 9,
+            "message_ids": [
+              3,
+              2,
+              1,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              3,
+              2,
+              2,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              3,
+              2,
+              2,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 9,
+            "message_ids": [
+              3,
+              2,
+              2,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 10,
+            "message_ids": [
+              3,
+              2,
+              2,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              3,
+              2,
+              3,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 9,
+            "message_ids": [
+              3,
+              2,
+              3,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 10,
+            "message_ids": [
+              3,
+              2,
+              3,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 11,
+            "message_ids": [
+              3,
+              2,
+              3,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 6,
+            "message_ids": [
+              3,
+              3,
+              0,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              3,
+              3,
+              0,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              3,
+              3,
+              0,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 9,
+            "message_ids": [
+              3,
+              3,
+              0,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 7,
+            "message_ids": [
+              3,
+              3,
+              1,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              3,
+              3,
+              1,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 9,
+            "message_ids": [
+              3,
+              3,
+              1,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 10,
+            "message_ids": [
+              3,
+              3,
+              1,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 8,
+            "message_ids": [
+              3,
+              3,
+              2,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 9,
+            "message_ids": [
+              3,
+              3,
+              2,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 10,
+            "message_ids": [
+              3,
+              3,
+              2,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 11,
+            "message_ids": [
+              3,
+              3,
+              2,
+              3
+            ]
+          },
+          {
+            "decoded_sum": 9,
+            "message_ids": [
+              3,
+              3,
+              3,
+              0
+            ]
+          },
+          {
+            "decoded_sum": 10,
+            "message_ids": [
+              3,
+              3,
+              3,
+              1
+            ]
+          },
+          {
+            "decoded_sum": 11,
+            "message_ids": [
+              3,
+              3,
+              3,
+              2
+            ]
+          },
+          {
+            "decoded_sum": 12,
+            "message_ids": [
+              3,
+              3,
+              3,
+              3
+            ]
+          }
+        ],
+        "optimal_sender_partition_sizes": [
+          4,
+          4,
+          4,
+          4
+        ],
+        "optimal_sender_partitions": [
+          [
+            [
+              0
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              3
+            ]
+          ],
+          [
+            [
+              0
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              3
+            ]
+          ],
+          [
+            [
+              0
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              3
+            ]
+          ],
+          [
+            [
+              0
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              3
+            ]
+          ]
+        ],
+        "optimal_success_numerator": 256,
+        "payload_budget_bits": 8,
+        "protocol_minimum_bits": 8
+      }
+    ]
+  },
+  "payload_only": true,
+  "protocol_class": "deterministic simultaneous one-message encoders; each sender uses a fixed-width binary codeword; arbitrary sender-specific partitions and exact-sum MAP decoders",
+  "schema_version": "tlu.multiparty-sum-lossy-frontier.v0.1.0",
+  "source_domain": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "source_prior": "independent_uniform_per_sender"
+}
