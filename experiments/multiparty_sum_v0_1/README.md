@@ -39,4 +39,19 @@ python experiments/multiparty_sum_v0_1/generate_tasks.py `
 
 Every sender file contains only that sender's private value; the receiver file contains only the episode ID, sender count, role, and prior; `gold_mNN.jsonl` is evaluator-only. Strip `episode_id` before constructing a model prompt. The manifest binds all role files by SHA-256 and documents the task seed and key ID, but not the secret key. HMAC-SHA256 streams are domain-separated and use rejection sampling for unbiased values; the public seed alone is insufficient to reconstruct the tuple. Generation refuses overwrite by default. Keep the key and bundle under `.cache/` during development.
 
+## Run a frozen batch
+
+`runner.py` consumes these ledgers through the existing private-sum SDK example. It verifies bundle hashes and all selected role rows before the first request, enforces a **12-call total batch cap** before dispatch, requires a fresh passing resource report for the sender/receiver endpoints and frozen ports 8000/8001/8002, and accepts only HTTP loopback endpoints. The JSON result includes tuple IDs, exact scores, SDK cost/message diagnostics, task-manifest hash, model IDs, endpoint settings, and resource-report hash.
+
+For example, an `m=11` communicating episode uses exactly 12 planned calls; `m=2` can fit up to four communicating episodes per batch. No-message and full-information conditions use one receiver call per episode, so up to 12 fixed episode indices fit. Reuse the same `--episode-indices` across conditions for pairing. Each run uses a newly passing report:
+
+```powershell
+python experiments/multiparty_sum_v0_1/runner.py `
+  --bundle .cache/multiparty_sum_v0_1/bundle_v0_1_1 `
+  --agent-count 2 --episode-indices 0 1 2 3 --condition communicate `
+  --message-format decimal --resource-preflight .cache/emergent_ood_v0_3/resource_preflight.json
+```
+
+This command is an interface example, not an instruction to bypass the resource gate. The currently recorded report is rejected; do not run it until a fresh report passes all frozen limits. The runner has only been exercised with fake clients so far.
+
 The bundle is not yet a public benchmark result. Before any model comparison, preregister the protocol cards, episode count/power rationale, statistical analysis, transport accounting, and a passing fresh resource preflight; first pass an independent full-information capability screen under the frozen call cap.

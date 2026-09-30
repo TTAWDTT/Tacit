@@ -239,6 +239,52 @@ def validate_dataset(output: Path) -> dict[str, Any]:
     return manifest
 
 
+def _read_episode(output: Path, agent_count: int, episode_index: int) -> dict[str, Any]:
+    output = _inside_project(output)
+    receiver = json.loads((output / f"receiver_m{agent_count:02d}.jsonl").read_text(encoding="utf-8").splitlines()[episode_index])
+    gold = json.loads((output / f"gold_m{agent_count:02d}.jsonl").read_text(encoding="utf-8").splitlines()[episode_index])
+    senders = [
+        json.loads((output / f"sender_m{agent_count:02d}_s{index + 1:02d}.jsonl").read_text(encoding="utf-8").splitlines()[episode_index])
+        for index in range(agent_count)
+    ]
+    values = [row["private_value"] for row in senders]
+    episode_id = receiver["episode_id"]
+    if any(row["episode_id"] != episode_id for row in (*senders, gold)):
+        raise ValueError("episode role ledgers do not align")
+    return {
+        "episode_id": episode_id,
+        "sender_count": agent_count,
+        "sender_values": values,
+        "receiver_view": model_visible_view(receiver),
+        "expected_sum": gold["exact_sum"],
+    }
+
+
+def load_episode(output: Path, agent_count: int, episode_index: int) -> dict[str, Any]:
+    """Load one validated tuple for a trusted runner/scorer boundary."""
+    manifest = validate_dataset(output)
+    if agent_count not in manifest["agent_counts"]:
+        raise ValueError("agent_count is not registered in this bundle")
+    count = manifest["episodes_per_agent_count"]
+    if isinstance(episode_index, bool) or not isinstance(episode_index, int) or not 0 <= episode_index < count:
+        raise ValueError("episode_index is outside the frozen bundle")
+    return _read_episode(output, agent_count, episode_index)
+
+
+def load_episodes(output: Path, agent_count: int, episode_indices: tuple[int, ...]) -> list[dict[str, Any]]:
+    """Validate a bundle once, then load a requested batch of aligned episodes."""
+    manifest = validate_dataset(output)
+    if agent_count not in manifest["agent_counts"]:
+        raise ValueError("agent_count is not registered in this bundle")
+    count = manifest["episodes_per_agent_count"]
+    if not episode_indices:
+        raise ValueError("episode_indices must be non-empty")
+    for index in episode_indices:
+        if isinstance(index, bool) or not isinstance(index, int) or not 0 <= index < count:
+            raise ValueError("episode_index is outside the frozen bundle")
+    return [_read_episode(output, agent_count, index) for index in episode_indices]
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path)
