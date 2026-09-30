@@ -20,9 +20,9 @@ from experiments.emergent_ood_v0_4.compact_fields import (  # noqa: E402
 from tacit.protocol import ProtocolCard  # noqa: E402
 
 
-SCHEMA = "tlu.compact-labeled-fields-audit.v1"
-DEFAULT_CARD = ROOT / "examples" / "compact_labeled_fields_default_v1.json"
-EXPECTED_CARD_SHA256 = "91a64dde1b0ab1738f83b6acacbe4f1c0af06bdf2503814a66f7e7190488c0f6"
+SCHEMA = "tlu.compact-labeled-fields-audit.v2"
+DEFAULT_CARD = ROOT / "examples" / "compact_labeled_fields_v2.json"
+EXPECTED_CARD_SHA256 = "7bfac2608f45636edb1367feece9d0a16588ff5cd28e87c1fbfd4fd3bf7c2c50"
 
 
 def _inside_project(path: Path) -> Path:
@@ -91,6 +91,7 @@ def build_report(
     audited = audit_result_rows(rows)
     count = len(audited)
     syntax_count = sum(row["exact_format_valid"] for row in audited)
+    parse_syntax_count = sum(row["syntactic_parse_valid"] for row in audited)
     parse_count = sum(row["semantic_parse_valid"] for row in audited)
     fidelity_count = sum(row["canonical_label_fidelity"] for row in audited)
     task_count = sum(row["exact_selection"] for row in audited)
@@ -103,6 +104,7 @@ def build_report(
         "protocol_card_sha256": card_sha256,
         "row_count": count,
         "summary": {
+            "syntactic_parse_valid_count": parse_syntax_count,
             "exact_format_valid_count": syntax_count,
             "semantic_parse_valid_count": parse_count,
             "canonical_label_fidelity_count": fidelity_count,

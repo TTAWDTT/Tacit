@@ -1,5 +1,13 @@
 # Research log
 
+## 2026-09-30 - Generalize compact text control across ontology shifts
+
+- **Observation:** v0.1 hardcoded default fields and could only assess whether that one task-specific convention transferred. The fixture already includes robotics and music vocabularies, providing a direct, model-free check that a strong label-preserving text comparator can remain unchanged across lexical domains.
+- **Change:** retired the v0.1 card before inference and froze the ontology-general v0.2 card: exact `name=value` fields sorted by Unicode code-point order and delimited by semicolons. It requires no stage label, task ID, split seed, or per-ontology examples. Updated the encoder/scorer to use the target's field schema, distinguish parse, canonical-order, schema-parse, and value-fidelity outcomes, and pin the new card hash.
+- **Model-free result:** exhaustive serialization over all 64 held-out tuples per included ontology (default, robotics, music) found a constant 18-byte payload reduction versus compact JSON carrying the same labels and values. This is punctuation accounting only. The same card passed one-set runner dry-runs for all three ontology bundles; each plans eight calls and reports no model load or inference.
+- **Verification:** 12 focused unit tests pass, including all 192 finite-support encode/audit round trips across the three ontologies, internal-space preservation, hash-pinned card and run-manifest validation, and an end-to-end temporary JSONL/sidecar scorer invocation with source-overwrite rejection. Python compilation and CLI help also pass. The final pinned card passed default, robotics, and music dry-runs; each planned eight calls and reported no model load or inference.
+- **Limit / next gate:** these are three hand-authored symbolic ontologies, not natural-domain grounding. The card cannot encode keys/values containing `;` or `=` and has no escape grammar. Dry-run bypasses the independent receiver capability and fresh resource gates. There are still no LLM messages, receiver outcomes, or frontier comparisons.
+
 ## 2026-09-30 - Implement compact-field message audit
 
 - **Observation:** the existing v0.4 generic shared-card path retains the raw sender message and exact evaluator target but does not populate its syntax/fidelity audit fields. Without a separate scorer, format nonadherence and semantic transmission failure are conflated with the receiver's final selection.

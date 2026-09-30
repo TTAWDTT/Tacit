@@ -16,6 +16,7 @@ from experiments.emergent_ood_v0_4.compact_fields import (
     audit_result_rows,
     encode_fields,
 )
+from experiments.emergent_ood_v0_4.split import build_split
 from research.score_compact_fields import (
     DEFAULT_CARD,
     EXPECTED_CARD_SHA256,
@@ -31,7 +32,7 @@ TARGET = {
     "quantity": "one",
     "texture": "smooth",
 }
-CANONICAL = "shape=circle;color=red;quantity=one;texture=smooth"
+CANONICAL = "color=red;quantity=one;shape=circle;texture=smooth"
 
 
 def result_row(episode_id: str, message: str, *, exact_selection: bool = True) -> dict:
@@ -49,22 +50,33 @@ def result_row(episode_id: str, message: str, *, exact_selection: bool = True) -
 
 
 class CompactLabeledFieldsTests(unittest.TestCase):
-    def test_default_card_matches_pinned_digest(self) -> None:
+    def test_generic_card_matches_pinned_digest(self) -> None:
         digest = hashlib.sha256(Path(DEFAULT_CARD).read_bytes()).hexdigest()
         self.assertEqual(digest, EXPECTED_CARD_SHA256)
 
     def test_encoder_emits_exact_canonical_payload(self) -> None:
         self.assertEqual(encode_fields(TARGET), CANONICAL)
 
-    def test_encoder_rejects_missing_or_out_of_ontology_fields(self) -> None:
-        with self.assertRaisesRegex(ValueError, "exactly"):
+    def test_encoder_rejects_missing_fields_or_reserved_delimiters(self) -> None:
+        with self.assertRaisesRegex(ValueError, "at least two attributes"):
             encode_fields({"shape": "circle"})
         invalid = dict(TARGET, color="red;quantity=two")
-        with self.assertRaisesRegex(ValueError, "unknown value"):
+        with self.assertRaisesRegex(ValueError, "grammar delimiters"):
             encode_fields(invalid)
+        with self.assertRaisesRegex(ValueError, "surrounding whitespace"):
+            encode_fields(dict(TARGET, color=" red"))
+
+    def test_internal_spaces_in_semantic_fields_are_preserved(self) -> None:
+        meaning = {"first name": "Ada Lovelace", "role": "early researcher"}
+        payload = encode_fields(meaning)
+        self.assertEqual(payload, "first name=Ada Lovelace;role=early researcher")
+        audit = audit_fields(payload, meaning)
+        self.assertTrue(audit["exact_format_valid"])
+        self.assertTrue(audit["canonical_label_fidelity"])
 
     def test_valid_syntax_parse_and_fidelity_are_distinct_flags(self) -> None:
         self.assertEqual(audit_fields(CANONICAL, TARGET), {
+            "syntactic_parse_valid": True,
             "exact_format_valid": True,
             "semantic_parse_valid": True,
             "canonical_label_fidelity": True,
@@ -76,21 +88,71 @@ class CompactLabeledFieldsTests(unittest.TestCase):
         self.assertTrue(result["semantic_parse_valid"])
         self.assertFalse(result["canonical_label_fidelity"])
 
-    def test_noncanonical_syntax_and_unknown_values_fail_separately(self) -> None:
+    def test_noncanonical_format_and_unknown_labels_fail_separately(self) -> None:
         for message in (
             CANONICAL + ";extra=value",
             CANONICAL.replace("color=red", "color=red "),
             CANONICAL.replace("color=red", "red=red"),
-            CANONICAL.replace("shape=circle;color=red", "color=red;shape=circle"),
+            CANONICAL.replace("color=red;quantity=one", "quantity=one;color=red"),
             CANONICAL.replace("color=red", "color=red=blue"),
         ):
             with self.subTest(message=message):
                 self.assertFalse(audit_fields(message, TARGET)["exact_format_valid"])
+        reordered = CANONICAL.replace(
+            "color=red;quantity=one", "quantity=one;color=red"
+        )
+        reordered_audit = audit_fields(reordered, TARGET)
+        self.assertTrue(reordered_audit["syntactic_parse_valid"])
+        self.assertTrue(reordered_audit["semantic_parse_valid"])
+        self.assertFalse(reordered_audit["exact_format_valid"])
+        self.assertTrue(reordered_audit["canonical_label_fidelity"])
+        unknown_label = CANONICAL.replace("color=red", "red=red")
+        unknown_label_audit = audit_fields(unknown_label, TARGET)
+        self.assertTrue(unknown_label_audit["syntactic_parse_valid"])
+        self.assertFalse(unknown_label_audit["semantic_parse_valid"])
         unknown = CANONICAL.replace("color=red", "color=violet")
         result = audit_fields(unknown, TARGET)
+        self.assertTrue(result["syntactic_parse_valid"])
         self.assertTrue(result["exact_format_valid"])
-        self.assertFalse(result["semantic_parse_valid"])
+        self.assertTrue(result["semantic_parse_valid"])
         self.assertFalse(result["canonical_label_fidelity"])
+
+    def test_same_frozen_grammar_round_trips_all_included_ontologies(self) -> None:
+        project_root = Path(__file__).resolve().parents[1]
+        ontology_paths = [
+            project_root / "experiments" / "emergent_ood_v0_4" / "ontologies" / "robotics_v1.json",
+            project_root / "experiments" / "emergent_ood_v0_4" / "ontologies" / "music_v1.json",
+        ]
+        default = {
+            "attributes": ["shape", "color", "quantity", "texture"],
+            "values_by_attribute": {
+                "shape": ["circle", "square", "triangle", "hexagon"],
+                "color": ["red", "blue", "green", "yellow"],
+                "quantity": ["one", "two", "three", "four"],
+                "texture": ["smooth", "rough", "striped", "dotted"],
+            },
+        }
+        specs = [default] + [json.loads(path.read_text(encoding="utf-8")) for path in ontology_paths]
+        for spec in specs:
+            attributes = spec["attributes"]
+            split = build_split(
+                seed=17,
+                attributes=attributes,
+                values=[spec["values_by_attribute"][attribute] for attribute in attributes],
+                ontology_id=spec.get("ontology_id"),
+            )
+            rows = [row for row in split["meanings"] if row["split"] == "held_out"]
+            self.assertEqual(len(rows), 64)
+            for row in rows:
+                meaning = dict(zip(attributes, row["values"]))
+                payload = encode_fields(meaning)
+                audit = audit_fields(payload, meaning)
+                self.assertTrue(all(audit[name] for name in (
+                    "syntactic_parse_valid",
+                    "exact_format_valid",
+                    "semantic_parse_valid",
+                    "canonical_label_fidelity",
+                )))
 
     def test_result_audit_preserves_task_success_separately_from_fidelity(self) -> None:
         rows = [
@@ -117,6 +179,7 @@ class CompactLabeledFieldsTests(unittest.TestCase):
         )
         self.assertEqual(report["row_count"], 2)
         self.assertEqual(report["summary"], {
+            "syntactic_parse_valid_count": 1,
             "exact_format_valid_count": 1,
             "semantic_parse_valid_count": 1,
             "canonical_label_fidelity_count": 1,

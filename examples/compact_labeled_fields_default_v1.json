@@ -1,6 +1,0 @@
-{
-  "schema": "tlu.shared_protocol_card.v1",
-  "protocol_id": "compact-labeled-fields-default-v1",
-  "sender_instruction": "For the default task ontology, copy the four exact name=value fields from your private meaning in this order: shape, color, quantity, texture. Separate fields with semicolons and no spaces. Do not add prose, quotes, or extra punctuation. Example syntax only: shape=circle;color=red;quantity=one;texture=smooth.",
-  "receiver_instruction": "For the default task ontology, parse exactly four semicolon-separated name=value fields in this order: shape, color, quantity, texture. Match each exact value against the candidate tuples; do not infer, normalize, or omit a field. Then return the candidate_id whose complete tuple matches."
-}

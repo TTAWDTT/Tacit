@@ -1,12 +1,12 @@
 # Compact labeled-fields baseline v0.1
 
-**Status:** frozen prompt-card candidate for a future v0.4 comparison. No model result exists. This is an optimized, human-authored structured-text baseline, not a new language or evidence for protocol superiority.
+**Status:** superseded before inference by [v0.2](COMPACT_LABELED_FIELDS_BASELINE_V0_2.md). This default-ontology-only version was frozen but never run on a model. It remains as a record of the initial baseline and its exact payload calculation.
 
 ## Motivation
 
 The current v0.4 `natural_language` arm requests a short sentence that repeats all attribute names. The `json` arm uses a compact JSON object. Neither is a lower-overhead human-readable field serialization. A deterministic `name=value` line provides a stronger compact-text control while preserving explicit labels and exact domain values.
 
-The card is [`examples/compact_labeled_fields_default_v1.json`](../examples/compact_labeled_fields_default_v1.json) and can be run through the existing `shared_protocol_card` condition. It is deliberately restricted to the default ontology because its delimiter grammar does not escape semicolons or equals signs inside values. The format is stage-independent and does not encode meaning IDs, candidate IDs, or split membership. The sender must still receive only its private tuple; the receiver only gets the card, its candidate table, and the transmitted message.
+The initial card used `shape`, `color`, `quantity`, and `texture` in a fixed order. It was replaced with one ontology-general card before model outcomes existed, so the default-only card is no longer part of the active comparison. The format did not encode meaning IDs, candidate IDs, or split membership.
 
 ## Frozen message grammar
 
