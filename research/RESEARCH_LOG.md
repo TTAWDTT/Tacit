@@ -1,5 +1,12 @@
 # Research log
 
+## 2026-09-30 - Verify the installable communication runtime artifact
+
+- **Question:** can the documented SDK be built as a distributable wheel, installed without runtime dependencies, and import its public protocol/runtime API outside the source package path?
+- **Method:** built `tacit-llm-runtime 0.1.0` with `pip wheel --no-build-isolation --no-deps`, then installed the wheel with `--no-index --no-deps --target` into project-local `.cache`. Wheel SHA-256: `fbd362bcd68467e0c32a5a5696e399261a9613363a9ec986d9617d3e729e4d4e`.
+- **Verification:** imported the installed package from the isolated target path; parsed the checked-in `ProtocolCard`; ran `exchange_once` with deterministic fake sender/receiver clients; confirmed the exact 25-byte message was passed verbatim and provider-style input/output token fields were preserved. No endpoint, model, or inference was used. Generated build metadata was removed from the working tree; install target and wheel remain under ignored project `.cache`.
+- **Limit:** this checks Python 3.13.5 packaging/API wiring only. It does not test a real OpenAI-compatible endpoint, another Python version, production transport, protocol effectiveness, or any LLM behavior; full runtime tests and model experiments remain separate evidence requirements.
+
 ## 2026-09-30 - Test crossover transfer with a Mistral tokenizer
 
 - **Question:** does the Qwen3 compact-fields/JSON crossover at `d=24` persist under an independent tokenizer family, and does the exact location transfer?
