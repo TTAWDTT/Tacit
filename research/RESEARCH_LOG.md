@@ -1,5 +1,14 @@
 # Research log
 
+## 2026-09-30 - Bound compact labeled-text savings under general strings
+
+- **Question:** v0.3 saves 18 UTF-8 payload bytes against compact JSON on the current three fixtures but rejects `;` and `=` inside keys and values. Does a standard, delimiter-safe version keep a meaningful structural saving?
+- **Research basis:** RFC 8259 defines quoted JSON strings and UTF-8 interchange, including escaping quotation marks, reverse solidus, and control characters. Use its established string primitive rather than inventing a new escape convention.
+- **Change:** added the independent quoted-label serializer/parser and audit, plus Proposition P17. The format sorts label/value pairs and represents each key and value as a canonical JSON string, so arbitrary delimiters remain parseable and duplicate keys are rejected.
+- **Prediction/result:** with identical JSON-string serialization and sorted keys, replacing JSON object's `:`/`,` with `=`/`;` preserves all per-field bytes and removes only `{}`. The challenger is exactly two UTF-8 bytes shorter for any nonempty string mapping. Exhaustive accounting on all 192 held-out tuples confirms exactly two bytes saved, while v0.3's unquoted restricted-alphabet form saves 18 bytes on those same tuples.
+- **Verification:** six focused tests cover special characters, control escapes, Unicode, malformed and noncanonical messages, unpaired surrogate rejection, and all 192 matched held-out serializations/round-trips. No model, service, key, or endpoint was accessed.
+- **Limit / interpretation:** two payload bytes are not tokenizer units; prompt, framing, latency, and task-success effects are unmeasured. This is a robustness challenger, not a new frozen LLM card or evidence of a better language. For general interoperable string data, conventional JSON remains the default strong baseline.
+
 ## 2026-09-30 - Audit repeated prompt cost of compact-text baseline
 
 - **Observation:** the v0.2 ontology-general card added substantial fixed instruction text to every sender/receiver episode. Under the current `_Protocol`, its final role-instruction strings total 1,574 UTF-8 bytes per episode, compared with 665 for JSON and 630 for plain NL. The compact payload is 18 bytes shorter than compact JSON, so payload savings alone are an incomplete and potentially misleading cost claim.

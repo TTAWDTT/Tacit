@@ -16,6 +16,8 @@ The card is ontology-general across the included default, robotics, and music fi
 
 The three-ontology serializer calculation remains exactly 18 fewer payload bytes than compact JSON for the same tuple. That is only an application-payload reduction. Whether it survives full input/output token use, receiver errors, and total inference costs is unknown.
 
+This byte result depends on the fixture alphabet: v0.3 does not represent keys or values containing `;` or `=`. A later RFC 8259 quoted-string challenger supports those characters, but its exact structural saving over compact JSON is only two bytes (the omitted braces), including on the same 192 held-out tuples. See the [quoted-fields audit](QUOTED_LABELED_FIELDS_AUDIT_V0_1.md) and [Theory P17](../docs/THEORY.md#20-punctuation-ceiling-for-quoted-labeled-fields). Neither byte result is model-token evidence.
+
 ## Falsifiable experiment and accounting
 
 - Keep one protocol-card hash unchanged across all three ontology strata and held-out test rows.

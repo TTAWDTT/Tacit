@@ -619,3 +619,23 @@ If `C(0,∅)>0`, choose the next donor `j` with probability `C(i+1,S∪{j})/C(i,
 **Proof.** For any fixed perfect matching, each step's selected edge has `C(i+1,S∪{j})` completions among `C(i,S)` possible completions. Multiplying its conditional probabilities telescopes to `C(n, all)/C(0,∅)=1/C(0,∅)`. Every matching is therefore equally likely. The recurrence enumerates every valid next donor exactly once, so zero total completions is equivalent to infeasibility. ∎
 
 The v0.4 replay implementation computes these integer counts with a subset dynamic program, then samples by integer-weighted branches. Its `n≤12` bound follows the frozen per-batch call cap; exact feasibility and counting are exponential in `n`, not a scalable general matching service. A fixed seed and source-artifact hash make the assignment reproducible. Uniformity is conditional on an unbiased pseudorandom integer draw and the graph defined before receiver outcomes. It does not establish that this null isolates every semantic mechanism or substitutes for randomizing treatment at the appropriate statistical unit.
+
+## 20. Punctuation ceiling for quoted labeled fields
+
+Consider a finite mapping with `n ≥ 1` string keys and string values. Let `J(x)` be the same canonical JSON-string serializer applied to every string in both candidate encodings, and sort keys identically. Define a compact JSON object
+
+\[
+JSON = \{\; J(k_1):J(v_1),\ldots,J(k_n):J(v_n)\;\}
+\]
+
+and a quoted labeled-field record
+
+\[
+Q = J(k_1)=J(v_1);\ldots;J(k_n)=J(v_n).
+\]
+
+Both use `n` identical key strings, `n` identical value strings, `n` one-byte key/value delimiters, and `n-1` one-byte pair delimiters. JSON contributes two additional one-byte object braces. Thus the exact UTF-8 byte difference is `|JSON| - |Q| = 2`, independent of the contents, delimiter characters, quotes, backslashes, control characters, and number of pairs. This conclusion assumes both serializers use the same UTF-8 JSON-string output and key ordering; it says nothing about model tokenization or decoder behavior.
+
+The executable comparator in [`quoted_labeled_fields.py`](../research/quoted_labeled_fields.py) implements the challenger. On the three current 64-item held-out supports, a restricted unquoted `key=value;...` string is 18 bytes shorter than JSON, while the quoted form is only two bytes shorter. The restricted form obtains an extra 16-byte saving on these values by omitting string quotes, under the assumption that keys/values contain neither `;` nor `=`. The [counter-baseline audit](../research/QUOTED_LABELED_FIELDS_AUDIT_V0_1.md) includes the exact support calculation and compatibility boundary.
+
+**Falsifiable prediction P17.** For any nonempty finite mapping of Unicode-scalar string keys and values and any shared canonical JSON-string serializer/order, the quoted labeled-field encoder must be exactly two UTF-8 bytes shorter than the compact JSON object. Any counterexample falsifies the serializer assumptions or implementation. At equal actual model-task success, this two-byte bound predicts no general token-efficiency advantage; model-specific tokenization, setup instructions, framing, and inference must be measured separately before a deployment claim.
