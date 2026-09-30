@@ -34,6 +34,7 @@ EPISODES_PER_SETTING = 16
 CANDIDATES_PER_EPISODE = 4
 CONDITIONS = ("json", "shared_protocol_card", "symbolic")
 EXTENSION_DIMENSIONS = (20, 40, 80)
+CONFIRMATION_DIMENSIONS = tuple(range(20, 41))
 
 
 def _tuple_from_support_rank(rank: int, *, dimensions: int, values: int) -> tuple[int, ...]:
@@ -230,7 +231,7 @@ def build_report(
     cardinalities: Sequence[int] = CARDINALITIES,
     preregistration_path: Path | None = None,
     schema: str = SCHEMA,
-    exploratory: bool = False,
+    status_label: str | None = None,
 ) -> dict[str, Any]:
     tokenizer_json = _project_path(tokenizer_json)
     tokenizer_bytes = tokenizer_json.read_bytes()
@@ -284,8 +285,8 @@ def build_report(
             for values in cardinalities
         ],
     }
-    if exploratory:
-        report["status"] = "post-sweep exploratory extension"
+    if status_label is not None:
+        report["status"] = status_label
     return report
 
 
@@ -293,7 +294,9 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--tokenizer-json", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--extension", action="store_true", help="run the frozen post-sweep exploratory dimensions")
+    modes = parser.add_mutually_exclusive_group()
+    modes.add_argument("--extension", action="store_true", help="run the frozen post-sweep exploratory dimensions")
+    modes.add_argument("--confirmation", action="store_true", help="run the preregistered dense crossover grid")
     parser.add_argument("--force", action="store_true")
     args = parser.parse_args()
     output = _project_path(args.output)
@@ -309,7 +312,7 @@ def main() -> int:
             dimensions=EXTENSION_DIMENSIONS,
             preregistration_path=preregistration_path,
             schema="tlu.protocol-token-scaling-extension.v1",
-            exploratory=True,
+            status_label="post-sweep exploratory extension",
         )
         report["prior_frozen_sweep_sha256"] = hashlib.sha256(prior_report_path.read_bytes()).hexdigest()
         report["exploratory_range"] = {
@@ -317,6 +320,29 @@ def main() -> int:
             "cardinalities": list(CARDINALITIES),
             "episodes_per_setting": EPISODES_PER_SETTING,
             "prediction": "P19c",
+        }
+    elif args.confirmation:
+        preregistration_path = ROOT / "research" / "PROTOCOL_TOKEN_SCALING_CONFIRMATION_PREREG_V0_1.md"
+        extension_path = ROOT / "research" / "data" / "PROTOCOL_TOKEN_SCALING_EXTENSION_V0_1.json"
+        original_path = ROOT / "research" / "data" / "PROTOCOL_TOKEN_SCALING_V0_1.json"
+        if not extension_path.is_file() or not original_path.is_file():
+            parser.error("both preceding scaling JSON artifacts are required before the confirmation sweep")
+        report = build_report(
+            args.tokenizer_json,
+            dimensions=CONFIRMATION_DIMENSIONS,
+            preregistration_path=preregistration_path,
+            schema="tlu.protocol-token-scaling-confirmation.v1",
+            status_label="preregistered dense tokenizer-cost confirmation",
+        )
+        report["prior_artifact_sha256"] = {
+            "frozen_v0_1_sweep": hashlib.sha256(original_path.read_bytes()).hexdigest(),
+            "exploratory_extension": hashlib.sha256(extension_path.read_bytes()).hexdigest(),
+        }
+        report["confirmation_design"] = {
+            "dimensions": list(CONFIRMATION_DIMENSIONS),
+            "cardinalities": list(CARDINALITIES),
+            "episodes_per_setting": EPISODES_PER_SETTING,
+            "prediction": "P20a-P20c",
         }
     else:
         report = build_report(args.tokenizer_json)
