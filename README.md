@@ -21,7 +21,7 @@ An LLM-designed communication protocol is also not novel by itself: LMAC uses an
 5. When is natural language already the best practical representation?
 6. As the number of private-information holders grows, which costs scale with total information and which scale with agent count?
 
-A new model-free [simultaneous-sum scaling reference](research/MULTIPARTY_SUM_SCALING_V0_1.md) gives an exact linear-in-agent-count zero-error payload floor for one narrow aggregation task and an exact no-message Bayes baseline. It guides future scaling experiments; it is not LLM performance evidence.
+A new model-free [simultaneous-sum scaling reference](research/MULTIPARTY_SUM_SCALING_V0_1.md) gives an exact linear-in-agent-count zero-error payload floor for one narrow aggregation task and an exact no-message Bayes baseline. Its follow-up [wire-accounting diagnostic](research/MULTIPARTY_SUM_WIRE_ACCOUNTING_V0_1.md) measures the current SDK envelope costs for the runnable private-sum formats, including a common-ID control; it shows that framing dominates these tiny scalar messages and reports no task or LLM result.
 
 The installable runtime now also has a runnable [private-sum exchange example](examples/multiparty_private_sum.py): independent sender prompts, a receiver that sees only routed messages, separate sender syntax/value-fidelity and final-answer scores, decimal/JSON/labeled/two-character base-2 text/fixed-sentence encodings, no-message and full-information controls, constant-size shared task wording across agent counts, and bounded request/wire budgets. The base-2 arm is text sent through the UTF-8/JSON channel, not a two-bit wire codec. It is an SDK example, not a benchmark result; model calls still require a fresh passing local resource preflight.
 

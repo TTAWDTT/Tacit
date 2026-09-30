@@ -49,8 +49,8 @@ def _format_instructions(message_format: str) -> tuple[str, str]:
         )
     if message_format == "binary":
         return (
-            "Use this shared two-bit code: 00 means 0, 01 means 1, 10 means 2, and 11 means 3. Transmit only the two bits.",
-            "Decode each exact two-bit sender message with 00→0, 01→1, 10→2, 11→3, then sum the decoded values.",
+            "Use this shared base-2 text codebook: 00 means 0, 01 means 1, 10 means 2, and 11 means 3. Transmit exactly the matching two-character string.",
+            "Decode each exact two-character text message with 00→0, 01→1, 10→2, 11→3, then sum the decoded values.",
         )
     if message_format == "sentence":
         return (
