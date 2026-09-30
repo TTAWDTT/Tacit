@@ -1,7 +1,7 @@
 # Model experiment readiness report — 2026-09-30
 
 **Purpose:** select the next executable model task from the existing research plan and report what is genuinely ready.
-**Current disposition:** prepared; waiting for the resource manager to allocate the local CPU/GPU slot. No service, inference, training, or new resource poll was started for this report.
+**Current disposition:** prepared; waiting for the resource manager to allocate the local CPU/GPU slot. The three launcher refusals below are historical, invocation-scoped gate measurements, not a statement about current machine load. No standalone preflight was run while preparing this update.
 
 ## Recommendation
 
@@ -34,14 +34,17 @@ The two pinned model shards total 4,063,515,592 bytes. This is the artifact payl
 
 ## Resource-gate evidence
 
-No resource poll was repeated for this report, per the active resource coordination. These are archived observations, not claims about the machine's present state:
+No standalone resource poll was run for this report, per the active resource coordination. The experiment launcher performs its own mandatory idle gate; its three invocation-scoped snapshots are listed after the archived preflight records below. None of these observations is a claim about the machine's present state:
 
 | Evidence | Timestamp / result | Measured reason for rejection | What the record says did not happen |
 |---|---|---|---|
 | Shared three-port report `.cache/emergent_ood_v0_3/resource_preflight_followup-20260930-0818-allports.json` | `2026-09-30T08:19:04Z`, `rejected`; SHA-256 `5ce17199359d40e601757246a01e75ca6177449ce156150b801d513a713c42e2` | CPU samples 10.98%, 35.22%, 17.23%; mean 21.14% (limit `<20%`), max 35.22% (limit `<30%`); GPU utilization 49% (limit `<25%`). Free RAM 12,502 MiB and GPU memory 1,779/8,188 MiB passed; ports 8000/8001/8002 were idle. | No model artifact hashed/read, no load, service start, or inference request. |
 | Candidate-specific `experiments/index_v0_3/PRECHECK_ATTEMPT_10.json` | `2026-09-29T01:30:23Z`, `idle_gate_not_met`; SHA-256 `BFCC6572CC5B95CEDFD01BA05D7631DAE4E983EB0F84C121156BA0797B858C4E` | CPU mean 33.8%, max 35.5%; GPU utilization 60%; free RAM 2,892 MiB. GPU memory use was 953 MiB; port 8001 was unused. | Rejected before artifact verification; no model load, service start, or inference request. |
+| Integrated launch `run_local_capability.ps1`, run directory `.cache/index_v0_3/20260930T091927Z` | `2026-09-30T09:19:27Z`, exit `1`, ~10 s; console output captured in the session; run directory empty | CPU mean 22.0% (limit `<20%`), max 27.9%; GPU 24%; GPU memory 2,389 MiB (limit `<1,800 MiB`); free RAM 11,820 MiB. CPU mean and GPU memory failed. | Exact console error: `Idle resource gate rejected this attempt. No model artifact was hashed and no service was started.` No identity check, model call, or message call. |
+| Integrated launch `run_local_capability.ps1`, run directory `.cache/index_v0_3/20260930T092103Z` | `2026-09-30T09:21:03Z`, exit `1`, 9.6 s; console output captured in the session; run directory empty | CPU mean 17.5%, max 20.9%; GPU 28% (limit `<25%`); GPU memory 2,487 MiB (limit `<1,800 MiB`); free RAM 12,102 MiB. GPU utilization and memory failed. | Same exact console error as above. No artifact hash, service start, identity check, model call, or message call. |
+| Integrated launch `run_local_capability.ps1`, run directory `.cache/index_v0_3/20260930T092414Z` | `2026-09-30T09:24:14Z`, exit `1`, 9.7 s; console output captured in the session; run directory empty | CPU mean 15.8%, max 16.5%; GPU 29% (limit `<25%`); GPU memory 1,630 MiB; free RAM 12,668 MiB. GPU utilization failed. | Same exact console error as above. No artifact hash, service start, identity check, model call, or message call. |
 
-The first is the latest archived shared-host evidence, not a fresh check. The manager's allocation is the authority for whether the resource slot has changed; this session did not inspect or alter any other task's processes.
+The first is the latest archived shared-host report; the three integrated-launch rows are newer snapshots produced by the authorized launcher itself. They are not standalone polls and do not establish current machine state. The launcher creates a timestamped run directory before checking resources, but its gate rejection happens before the resource JSONL writer; these three directories contain no persisted stdout/stderr/telemetry, so the table transcribes the captured console results and explicitly records that retention gap. The manager's allocation is the authority for whether the resource slot has changed; this session did not inspect or alter any other task's processes.
 
 ## Existing scientific entry points and actual gaps
 
@@ -62,6 +65,7 @@ The first is the latest archived shared-host evidence, not a fresh check. The ma
 - **Implementation / evaluation:** [`runner.py`](../experiments/emergent_ood_v0_4/runner.py) enforces role separation, exact candidate-ID scoring, 12 calls per batch, measured application bytes, and a hard per-episode wire cap. `induce_protocol_cards.py`, `generate_usage_examples.py`, `shuffle_usage_examples.py`, and `replay_usage_messages.py` provide train-only proposal/onboarding/control paths. `tools.paired_report` and `tools.frontier_report` analyze paired results and matched-budget strata.
 - **Frozen design protections:** fixed train/validation/test support split and scorer rules; test ledger must remain unopened during card/search/cap selection; protocol card, model/tokenizer population, common cap grid, comparison family and stopping rule must be frozen before test. The resource/capability gates remain mandatory. A previous Qwen3-4B interface screen returned zero strict-format-valid receiver outputs in 12 attempts under each of three server response modes, although some raw strings ended in the gold ID; it is a format diagnostic, not authorization or evidence for changing the scorer.
 - **Blocking gaps:** no fresh resource clearance; no eligible, independently verified receiver capability ledger for the selected model; no model-backed validation messages or protocol induction; no selected/pinned sender/receiver model and tokenizer population; no independent-split confirmatory count, practical effect, multiplicity family, or stopping plan; no validation-derived binding common cap grid; no locked final protocol. The 4,096-byte default alone does not test bandwidth pressure. These are why v0.4 is not the immediate run.
+- **PACT/Proxifield follow-up:** the existing audit and plan already encode their applicability boundary. Neither is a valid intervention in INDEX_m's fixed one-receiver, one-shot prerequisite screen, so neither is a direct blocker or an added task for the next run. Revisit their empirical controls only if a later task has evolving action/state or a meaningful recipient-routing choice.
 - **Directly blocking documentation defect fixed in this report:** the v0.4 README invoked `resource_preflight.ps1` through `python`, even though that file starts with a PowerShell `param(...)` block. The documented invocation now uses PowerShell script syntax. No script was executed to make this correction.
 
 ## Required sequence after resource coordination
