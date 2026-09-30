@@ -19,6 +19,9 @@ An LLM-designed communication protocol is also not novel by itself: LMAC uses an
 3. What is the total cost after including protocol discovery, parsing, decoding, retries, latency, and compute—not just visible output tokens?
 4. Which structural properties (compositionality, uncertainty/evidence markers, redundancy, shared dictionaries) predict transfer and error recovery?
 5. When is natural language already the best practical representation?
+6. As the number of private-information holders grows, which costs scale with total information and which scale with agent count?
+
+A new model-free [simultaneous-sum scaling reference](research/MULTIPARTY_SUM_SCALING_V0_1.md) gives an exact linear-in-agent-count zero-error payload floor for one narrow aggregation task and an exact no-message Bayes baseline. It guides future scaling experiments; it is not LLM performance evidence.
 
 ## Current status
 
