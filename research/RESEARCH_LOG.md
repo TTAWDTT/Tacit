@@ -1,5 +1,13 @@
 # Research log
 
+## 2026-09-30 - Complete the shipped private-sum format cost baseline
+
+- **Question:** what are the exact-runner tokenizer and application-byte costs of the two pre-existing sum encodings not included in the corrected P24 comparison: `v=N` and a fixed English sentence?
+- **Preregistration/method:** froze P26 before counting; reused the exact shared `_role_instructions` constructor, pinned Qwen3-4B tokenizer, all 336 private input vectors, completion accounting, and pure SDK framing measurement. Joined results to the hash-bound P24 no-message, decimal, JSON, binary, and zero-error codebook references.
+- **Result:** all fixed formats are idealized at 100% exact success. Per-episode content tokens for `m=2/3/4`: decimal 510/637/764.0586; labeled 515/645/775.0586; JSON 517/650/783.0586; sentence 550/695/840.0586; binary 580/736/892.0586. Decimal is lowest in the five shipped communicating formats at every size. Fixed English sentence costs +40/+58/+76 tokens over decimal; `v=N` costs +5/+8/+11. The sentence condition also adds 48/72/96 application bytes over decimal; labeled adds 4/6/8.
+- **Change/verification:** publish the P26 preregistration, 336-vector deterministic auditor, hash-bound data, short interpretation report, and multiparty README entry. Both extension arms are exactly 100% on the exhaustive scorer; all input script, preregistration, tokenizer, and P24 reference hashes match. Eleven private-sum example tests pass, including exact runtime prompt-constructor identity.
+- **Limit/next:** this completes accounting for the five pre-existing fixed message formats only. The sentence template is not optimized English, and no model was loaded or called. Real adherence, latency, compute, and provider usage remain unknown; a development-only natural-language search and held-out confirmation still require a frozen budget plus passing local-resource and receiver-capability gates. See the [P26 report](MULTIPARTY_SUM_FORMAT_TOKEN_EXTENSION_V0_1.md), [preregistration](MULTIPARTY_SUM_FORMAT_TOKEN_EXTENSION_PREREG_V0_1.md), and [data](data/MULTIPARTY_SUM_FORMAT_TOKEN_EXTENSION_V0_1.json).
+
 ## 2026-09-30 - Correct the finite-sum token frontier and add no-message
 
 - **Audit correction:** while reviewing v0.1, found that decimal/JSON/binary receiver prompts omitted the common runtime guardrail in `run_sum_episode`; the earlier baseline costs were undercounted. The original v0.1 record is retained but marked superseded for comparative claims.
