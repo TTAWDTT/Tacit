@@ -1,6 +1,6 @@
 # Iterative prompt optimization as an optimized-natural-language baseline v0.1
 
-**Status:** baseline-method audit and preregistration requirements; no optimizer or model was run.
+**Status:** baseline-method audit and preregistration requirements; no model-based optimizer experiment was run.
 
 ## Primary sources
 
@@ -33,4 +33,4 @@ If zero-shot optimized English or its costed few-shot variant matches or dominat
 
 ## Current decision
 
-Keep the existing unoptimized English and one-shot-induced English conditions for a first feasibility pilot. Before promoting any representation superiority claim, add or adapt an iterative exact-score NL optimizer, preregister its explicit local search budget, and evaluate its frozen output on untouched test clusters. No corresponding model result exists, and no model was loaded during this audit.
+The one-shot-induced English condition remains a lower-tier feasibility control. Since this audit was written, Tacit added an iterative exact-score OPRO-style controller, complete call-capped candidate rounds, and train-only batch aggregation; see the updates in the research log. That controller has not been run against a model. GEPA is a further reflective-Pareto candidate, audited separately in [`PROMPT_OPTIMIZATION_GEPA_AUDIT_V0_1.md`](PROMPT_OPTIMIZATION_GEPA_AUDIT_V0_1.md). Before any representation-superiority claim, compare against the strongest feasible frozen English optimizer on untouched test clusters and charge its full search cost. No optimized-English model result exists, and no model was loaded during the source audit.
