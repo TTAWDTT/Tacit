@@ -34,6 +34,12 @@ python research/emergent_ood_scaling.py --dimensions 4 --values 4 --candidates 4
 
 Its formulas and limits are in [Theory §17](../../docs/THEORY.md). They calibrate task geometry; they do not predict LLM token efficiency or success.
 
+For an explicitly support-aware fixed-width oracle control, the public held-out support has `V^(d-1)` targets, so its ideal payload floor is `ceil((d-1) log2 V)` bits. The [held-out rank codec](heldout_rank_codec.py) attains this floor using the first `d-1` permuted ranks; the final rank follows from the modular split rule. It must only be used when the task guarantees a held-out target and both endpoints share the split/decoder. It is not a normal model-facing protocol and does not show that an LLM can use the bits. At default `d=V=4`, the six ideal bits serialize to one byte, the same byte count as the eight-bit full-universe rank code. Charge framing and shared-code setup separately; do not claim a wire saving from the bit count alone. The exact bound, proof, and limitations are in [Theory §17](../../docs/THEORY.md), and the implementation is exhaustively checked on the finite support by:
+
+```powershell
+python -m unittest tests.test_emergent_ood_v04_heldout_rank_codec -v
+```
+
 ## Keyed communication episodes
 
 Create a local evaluator-only 256-bit key once, then generate role ledgers:

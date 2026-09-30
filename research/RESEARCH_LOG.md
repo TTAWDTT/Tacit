@@ -1,5 +1,13 @@
 # Research log
 
+## 2026-09-30 - Derive and implement held-out support rank oracle
+
+- **Observation:** the v0.4 modular split's 64-element held-out support is smaller than its 256-element universe. The existing fixed-width full-universe rank code is not the exact lower-bound control when the target is guaranteed held out and both endpoints know the public split. For the default fixture the support-aware floor is six bits, but byte serialization remains one byte, tied with the eight-bit full-universe payload.
+- **Formalization:** Theory §17 now separates the arbitrary-universe `ceil(d log2 V)` bound from the fixed-width known-held-out-support bound `ceil((d-1) log2 V)`, gives the injectivity lower bound and constructive bijection, and states P16. P16 predicts an exact bit saving but only a wire saving when serialization size actually falls; it makes no LLM token or performance prediction.
+- **Change:** added `experiments/emergent_ood_v0_4/heldout_rank_codec.py` as an explicitly task-support-aware oracle control, plus an audit note and usage/limitation documentation. Its rank representation is computed from the public split permutations, not an episode key, target label, or learned dictionary.
+- **Verification:** `python -m unittest tests.test_emergent_ood_v04_heldout_rank_codec -v` passed five tests, including exhaustive round trips over all 64 default held-out tuples, a non-power-of-two support, train/out-of-support rejection, strict payload and padding checks, and five split seeds. `py_compile` and `git diff --check` passed. No model was loaded, no inference was run, and no resource preflight or data download occurred in this implementation step.
+- **Limit / next step:** this only establishes the exact oracle control. It does not demonstrate LLM readability or improve the default wire-byte budget. Next, compare it against the existing full-universe symbol code using explicit bit, byte, framing, setup-amortization, and receiver-availability ledgers before deciding whether it belongs in any model-facing condition.
+
 ## 2026-09-30 - Implement episode-level message-association replay
 
 - **Observation:** the existing shuffled onboarding control permutes training-example associations, not the episode-specific held-out messages seen by the receiver. The v0.4 runner's 12-call batch cap also means that a default `k=4` message condition can produce only one candidate set per result file; every private meaning in that set appears in each receiver's candidate table, so same-set shuffling cannot satisfy the candidate-disjoint null.
