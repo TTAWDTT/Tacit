@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import copy
+from functools import lru_cache
 import hashlib
 import json
 import os
@@ -47,6 +48,7 @@ from experiments.emergent_ood_v0_4.split import split_task_id
 REPLAY_SCHEMA = "tlu.emergent-ood-message-association-replay.v0.1"
 RUN_MANIFEST_SCHEMA = "tlu.emergent-ood-replay-manifest.v0.1"
 CHECKPOINT_SCHEMA = "tlu.emergent-ood-replay-checkpoint.v1"
+MATCHING_SAMPLER = "uniform-exact-count-dp-v1"
 TASK = "Select the candidate ID whose full tuple is the sender's private meaning."
 FINAL_INSTRUCTION = "Return only the exact candidate_id of your selected candidate for external scoring."
 
@@ -118,6 +120,66 @@ def _canonical_tuple(value: Mapping[str, Any], attributes: Sequence[str]) -> tup
     return result
 
 
+def _uniform_perfect_matching(
+    edges: Mapping[str, Sequence[str]],
+    recipients: Sequence[str],
+    rng: random.Random,
+) -> tuple[dict[str, str], int]:
+    """Sample uniformly from all perfect matchings of a small bipartite graph.
+
+    Exact completion counts let each matching receive probability 1/N. The
+    O(n 2^n) dynamic program is deliberately bounded by the runner's 12-call
+    batch ceiling; this is not intended as a general large-graph matcher.
+    """
+    n = len(recipients)
+    if n < 1 or n > MAX_MODEL_CALLS_PER_BATCH:
+        raise ValueError(
+            f"exact uniform matching supports 1..{MAX_MODEL_CALLS_PER_BATCH} episodes per batch"
+        )
+    if len(set(recipients)) != n or set(edges) != set(recipients):
+        raise ValueError("matching graph must contain one edge list per unique receiver")
+    donor_ids = sorted({donor for options in edges.values() for donor in options})
+    if len(donor_ids) != n:
+        raise ValueError("matching graph must contain exactly one donor per receiver")
+    donor_index = {donor: i for i, donor in enumerate(donor_ids)}
+    adjacency = {
+        recipient: tuple(sorted({donor_index[d] for d in edges[recipient]}))
+        for recipient in recipients
+    }
+
+    @lru_cache(maxsize=None)
+    def count_from(index: int, used_mask: int) -> int:
+        if index == n:
+            return 1
+        return sum(
+            count_from(index + 1, used_mask | (1 << donor))
+            for donor in adjacency[recipients[index]]
+            if not used_mask & (1 << donor)
+        )
+
+    total = count_from(0, 0)
+    if total == 0:
+        raise ValueError("no complete compatible message derangement exists for this batch")
+
+    assignment: dict[str, str] = {}
+    used_mask = 0
+    for index, recipient in enumerate(recipients):
+        ticket = rng.randrange(count_from(index, used_mask))
+        for donor in adjacency[recipient]:
+            bit = 1 << donor
+            if used_mask & bit:
+                continue
+            completions = count_from(index + 1, used_mask | bit)
+            if ticket < completions:
+                assignment[recipient] = donor_ids[donor]
+                used_mask |= bit
+                break
+            ticket -= completions
+        else:  # pragma: no cover - guarded by the exact completion count
+            raise RuntimeError("uniform matching sampler exhausted a valid completion count")
+    return assignment, total
+
+
 def build_compatible_derangement(
     episodes: Sequence[dict[str, Any]],
     source_rows: Sequence[dict[str, Any]],
@@ -130,7 +192,8 @@ def build_compatible_derangement(
 
     A donor is compatible only if it is a different episode and its private
     meaning is absent from the recipient's entire candidate table. The
-    bipartite matching preserves the delivered-message multiset exactly.
+    seeded sampler is uniform over all compatible perfect matchings, and the
+    matching preserves the delivered-message multiset exactly.
     """
     if isinstance(seed, bool) or not isinstance(seed, int) or seed < 0:
         raise ValueError("seed must be a non-negative integer")
@@ -207,27 +270,9 @@ def build_compatible_derangement(
         if not edges[recipient_id]:
             raise ValueError(f"no compatible foreign message exists for receiver episode {recipient_id}")
 
-    # Augmenting paths find a perfect matching when one exists, without
-    # repeatedly shuffling mappings until a chance permutation happens to fit.
-    donor_to_recipient: dict[str, str] = {}
-
-    def augment(recipient_id: str, seen_donors: set[str]) -> bool:
-        for donor_id in edges[recipient_id]:
-            if donor_id in seen_donors:
-                continue
-            seen_donors.add(donor_id)
-            owner = donor_to_recipient.get(donor_id)
-            if owner is None or augment(owner, seen_donors):
-                donor_to_recipient[donor_id] = recipient_id
-                return True
-        return False
-
-    priority = {episode_id: rank for rank, episode_id in enumerate(episode_order)}
-    episode_order.sort(key=lambda episode_id: (len(edges[episode_id]), priority[episode_id]))
-    for recipient_id in episode_order:
-        if not augment(recipient_id, set()):
-            raise ValueError("no complete compatible message derangement exists for this batch")
-    recipient_to_donor = {recipient: donor for donor, recipient in donor_to_recipient.items()}
+    recipient_to_donor, _matching_count = _uniform_perfect_matching(
+        edges, episode_order, rng,
+    )
     if set(recipient_to_donor) != set(ids) or len(set(recipient_to_donor.values())) != len(ids):
         raise RuntimeError("internal matching error: result is not a bijection")
     for recipient_id, donor_id in recipient_to_donor.items():
@@ -721,6 +766,7 @@ def main() -> int:
             "maximum_calls_per_batch": MAX_MODEL_CALLS_PER_BATCH,
             "compatible_derangement_complete": True,
             "messages_reused_once_each": True,
+            "matching_sampler": MATCHING_SAMPLER,
             "source_results_sha256": source_digest,
             "source_result_artifacts": source_artifacts,
             "protocol_card_sha256": card_digest,
@@ -811,6 +857,7 @@ def main() -> int:
         "receiver_max_tokens": 48,
         "wire_budget_bytes": source_manifest["communication_budget_bytes"],
         "max_replay_calls": args.max_replay_calls,
+        "matching_sampler": MATCHING_SAMPLER,
     }
     run_signature = _signature(run_config)
     try:
@@ -903,6 +950,7 @@ def main() -> int:
             "resumed_from_checkpoint": resumed,
             "checkpoint_rows_reused": reused_rows,
             "recipient_to_donor_episode_ids": assignment,
+            "matching_sampler": MATCHING_SAMPLER,
             "seed": args.seed,
             "receiver_only_cost_scope": True,
         }

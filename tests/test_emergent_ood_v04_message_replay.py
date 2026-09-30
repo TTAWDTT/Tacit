@@ -19,6 +19,7 @@ from experiments.emergent_ood_v0_4.episodes import generate_ledgers, write_ledge
 from experiments.emergent_ood_v0_4.runner import load_protocol_card, select_candidate_sets
 from experiments.emergent_ood_v0_4.split import build_split, split_task_id
 from experiments.emergent_ood_v0_4.replay_usage_messages import (
+    _uniform_perfect_matching,
     build_compatible_derangement,
     receiver_request,
     run_replay,
@@ -109,6 +110,39 @@ class MessageReplayTests(unittest.TestCase):
                 episodes, rows, attributes=self.attributes, seed=1,
                 source_results_sha256="b" * 64,
             )
+
+    def test_uniform_matching_sampler_counts_and_reaches_each_matching_once(self):
+        class TicketRng:
+            def __init__(self, ticket):
+                self.tickets = [ticket]
+
+            def randrange(self, stop):
+                ticket = self.tickets.pop(0) if self.tickets else 0
+                if not 0 <= ticket < stop:
+                    raise AssertionError("sampler requested an unexpected random range")
+                return ticket
+
+        edges = {"r0": ["a", "b"], "r1": ["a", "b"], "r2": ["c"]}
+        sampled = []
+        for ticket in range(2):
+            assignment, matching_count = _uniform_perfect_matching(
+                edges, ["r0", "r1", "r2"], TicketRng(ticket),
+            )
+            self.assertEqual(matching_count, 2)
+            sampled.append(tuple(assignment[key] for key in ("r0", "r1", "r2")))
+        self.assertEqual(len(set(sampled)), 2)
+
+    def test_uniform_matching_sampler_handles_the_frozen_twelve_call_ceiling(self):
+        import random
+        recipients = [f"r{i}" for i in range(12)]
+        donors = [f"d{i}" for i in range(12)]
+        assignment, matching_count = _uniform_perfect_matching(
+            {recipient: donors for recipient in recipients}, recipients,
+            random.Random(123),
+        )
+        self.assertEqual(matching_count, 479001600)
+        self.assertEqual(set(assignment), set(recipients))
+        self.assertEqual(set(assignment.values()), set(donors))
 
     def test_receiver_prompt_contains_counterfactual_message_and_private_table_only(self):
         prompt = receiver_request(
