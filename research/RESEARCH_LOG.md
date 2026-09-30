@@ -1,5 +1,13 @@
 # Research log
 
+## 2026-09-30 - Audit repeated prompt cost of compact-text baseline
+
+- **Observation:** the v0.2 ontology-general card added substantial fixed instruction text to every sender/receiver episode. Under the current `_Protocol`, its final role-instruction strings total 1,574 UTF-8 bytes per episode, compared with 665 for JSON and 630 for plain NL. The compact payload is 18 bytes shorter than compact JSON, so payload savings alone are an incomplete and potentially misleading cost claim.
+- **Change:** shortened and froze card v0.3 before any model inference. Its role-instruction strings total 926 bytes per episode (sender 424; receiver 502) for all three included ontologies. This still exceeds JSON by 261 bytes and NL by 296 bytes. Updated the v0.4 plan and runner documentation to require separate input-token and output-wire reporting and to make no total-cost claim from serializer bytes.
+- **Interpretation:** UTF-8 instruction bytes are a deterministic proxy, not tokenizer counts or billing. The two instructions are included in separate model requests, while application output uses a separate communication channel. Do not subtract one from the other. Actual input-token usage, caching, model calls, receiver accuracy, and latency remain unknown without a gated model run.
+- **Verification:** current runner source was instantiated locally with the exact v0.3 card and built-in JSON/NL conditions; the above role byte counts reproduce (sender/receiver: 424/502 bytes for v0.3, 314/351 for JSON, 286/344 for NL). The card's SHA-256 is checked by the offline scorer. Twelve focused tests pass; Python compilation and scorer CLI help pass. Default, robotics, and music dry-runs all planned eight calls and reported `model_loaded=false` and `inference_started=false`. No model or endpoint was contacted.
+- **Limit / next gate:** a card-only system can only claim a system-level gain if complete input-token and output-wire trade-offs reach the Pareto frontier at equal task success. If the extra instructions dominate, this protocol may remain a wire-size comparator rather than an efficient deployment option. Run no inference until a fresh resource gate and independent receiver capability pass.
+
 ## 2026-09-30 - Generalize compact text control across ontology shifts
 
 - **Observation:** v0.1 hardcoded default fields and could only assess whether that one task-specific convention transferred. The fixture already includes robotics and music vocabularies, providing a direct, model-free check that a strong label-preserving text comparator can remain unchanged across lexical domains.

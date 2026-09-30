@@ -1,14 +1,14 @@
 # Ontology-general compact labeled-fields baseline v0.2
 
-**Status:** frozen prompt-card candidate for a future cross-ontology v0.4 comparison. No model result exists. v0.2 supersedes the default-ontology-only v0.1 card before its first model run. This remains a hand-authored structured-text baseline, not a discovered language or evidence of protocol superiority.
+**Status:** superseded before inference by [v0.3](COMPACT_LABELED_FIELDS_BASELINE_V0_3.md). This revision established the ontology-general grammar and serializer comparison but used verbose repeated prompt instructions. No model result exists for either v0.1 or v0.2.
 
 ## Research question
 
 Can explicit semantic labels keep a compact text representation decodable across domain vocabularies while approaching the payload size of an opaque code? This is a strong, interpretable baseline against which any LLM-specific protocol must be tested.
 
-## Frozen protocol
+## Historical protocol grammar
 
-The single frozen card is [`examples/compact_labeled_fields_v2.json`](../examples/compact_labeled_fields_v2.json), used through the existing `shared_protocol_card` condition. It does not name the ontology or hardcode fields. Both agents use this grammar:
+The v0.2 card was removed when the shorter v0.3 candidate superseded it. The grammar below records the v0.2 proposal; the active card and its repeated-instruction wording are in [v0.3](COMPACT_LABELED_FIELDS_BASELINE_V0_3.md). It does not name the ontology or hardcode fields. Both agents use this grammar:
 
 1. Emit one `attribute=value` pair per field.
 2. Sort exact attribute names in ascending Unicode code-point order.

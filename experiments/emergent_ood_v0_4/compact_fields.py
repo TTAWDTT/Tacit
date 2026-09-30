@@ -5,7 +5,7 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 
 
-PROTOCOL_ID = "compact-labeled-fields-generic-v2"
+PROTOCOL_ID = "compact-labeled-fields-generic-v3"
 RESERVED_DELIMITERS = (";", "=")
 
 

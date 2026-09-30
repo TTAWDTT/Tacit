@@ -1,0 +1,6 @@
+{
+  "schema": "tlu.shared_protocol_card.v1",
+  "protocol_id": "compact-labeled-fields-generic-v3",
+  "sender_instruction": "Send every exact field as key=value, sorted by key and joined with ';'. Add no spaces around separators, quotes, or prose.",
+  "receiver_instruction": "Parse sorted key=value fields joined by ';'. Match every exact field to a candidate; return its ID only."
+}

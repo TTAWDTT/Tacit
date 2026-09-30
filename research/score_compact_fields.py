@@ -20,9 +20,9 @@ from experiments.emergent_ood_v0_4.compact_fields import (  # noqa: E402
 from tacit.protocol import ProtocolCard  # noqa: E402
 
 
-SCHEMA = "tlu.compact-labeled-fields-audit.v2"
-DEFAULT_CARD = ROOT / "examples" / "compact_labeled_fields_v2.json"
-EXPECTED_CARD_SHA256 = "7bfac2608f45636edb1367feece9d0a16588ff5cd28e87c1fbfd4fd3bf7c2c50"
+SCHEMA = "tlu.compact-labeled-fields-audit.v3"
+DEFAULT_CARD = ROOT / "examples" / "compact_labeled_fields_v3.json"
+EXPECTED_CARD_SHA256 = "2646cd19c10aa5f4bec19d8e38fdb43eac6c15238630b86f79c794bff1a46aa2"
 
 
 def _inside_project(path: Path) -> Path:

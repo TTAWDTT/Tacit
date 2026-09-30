@@ -1,6 +1,0 @@
-{
-  "schema": "tlu.shared_protocol_card.v1",
-  "protocol_id": "compact-labeled-fields-generic-v2",
-  "sender_instruction": "Copy every exact attribute=value field from your private meaning. Sort the exact attribute names in ascending Unicode code-point order. Write each field as name=value and separate fields with semicolons; add no spaces around the separators, no quotes, and no prose. Preserve internal spaces that are part of an attribute name or value. This grammar supports only names and values without semicolons, equals signs, or leading or trailing whitespace.",
-  "receiver_instruction": "Parse the received semicolon-separated name=value fields. Attribute names must be in ascending Unicode code-point order, with no spaces around separators. Match each exact attribute name and value to the candidate tuples, independent of candidate order, and return the candidate_id whose complete mapping matches. This grammar supports only names and values without semicolons, equals signs, or leading or trailing whitespace."
-}
