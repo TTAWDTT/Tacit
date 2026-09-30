@@ -97,6 +97,20 @@ Repeat `--run` to combine more non-overlapping training candidate-set batches fo
 
 Before any model-executing proposal or candidate run, pass the existing local resource preflight and independent receiver-capability gates. The current maximum is two proposal rounds of four cards; freeze the candidate-evaluation episode block before the search and carry all run/proposal costs into the final baseline report. Use validation only for the final Pareto freeze and open test once. This loop is a budgeted OPRO-style baseline implementation, not a reproduction of MIPRO, and its current local model result is **none**.
 
+### Optional GEPA task adapter (offline verified; optimizer not yet run)
+
+`gepa_adapter.py` connects GEPA's `evaluate` / `make_reflective_dataset` adapter contract to the v0.4 shared-card runner. GEPA is optional and is not a core Tacit dependency. The implementation targets `gepa==0.1.4`, but that package has not been installed here; recheck its pinned API in an isolated environment before launching an experiment. First inspect the exact training-only input and zero-call cost envelope:
+
+```powershell
+python -m experiments.emergent_ood_v0_4.gepa_adapter `
+  --episodes-dir .cache/emergent_ood_v0_4/episodes `
+  --split-seed 17
+```
+
+The output reports complete train candidate-set clusters, episodes per cluster, the two task requests per episode, and explicitly states that no validation/test rows were loaded and no model requests were made. In Python, construct `TacitGEPAAdapter` with injected sender/receiver clients, an explicit finite `request_budget`, and the train episode directory. Pass only `adapter.clusters` as GEPA's `trainset` and use `valset=None` so Pareto tracking cannot inspect the held-out validation ledger. Every evaluation instance is a complete candidate set; the score is its mean exact candidate-ID success across its episodes. A fixed outer prompt asks for ordinary English while GEPA mutates only sender/receiver instructions; this is a prompt constraint, so inspect actual message form/fidelity in results rather than assuming compliance.
+
+Wrap any reflection-provider bridge with `adapter.wrap_reflection_model(...)` so its dispatched calls share the same actual-request ceiling as sender and receiver. Persist `get_adapter_state()` / restore with `set_adapter_state()` in optimizer checkpoints. GEPA's metric-call counter is not a provider-call cap. A direct optimizer invocation harness, release/API compatibility check, resource-preflight integration, result manifest, and model-backed GEPA run remain outstanding. Follow the normal independent receiver gate and fresh resource preflight before any inference; the current recorded resource gate fails, so the model path is not eligible yet. The focused local verification uses fake clients only.
+
 ### Usage-only protocol transfer
 
 The `usage_only_transfer` condition tests in-context receiver onboarding. The sender receives the sender half of a frozen protocol card. A new receiver gets its candidate table and train-only meaning/message exemplars, but receives neither the card nor its decoder instruction. It must infer the convention from use. This is a one-message transfer comparison, not online adaptation or evidence that the protocol is compositional.
