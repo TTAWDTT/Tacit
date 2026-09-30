@@ -1,15 +1,30 @@
 import json
 import unittest
 
-from examples.multiparty_private_sum import run_sum_episode
+from examples.multiparty_private_sum import MESSAGE_FORMATS, _decode_sender_message, run_sum_episode
 from tacit import ChatCompletion
 
 
+def encode_fake_value(message_format, value):
+    if message_format == "decimal":
+        return str(value)
+    if message_format == "json":
+        return json.dumps({"value": value}, separators=(",", ":"))
+    if message_format == "labeled":
+        return f"v={value}"
+    if message_format == "binary":
+        return f"{value:02b}"
+    if message_format == "sentence":
+        return f"My private integer is {value}."
+    raise AssertionError(message_format)
+
+
 class FakeSumAgent:
-    def __init__(self, name, private_value=None, raw_output=None):
+    def __init__(self, name, private_value=None, raw_output=None, message_format="decimal"):
         self.name = name
         self.private_value = private_value
         self.raw_output = raw_output
+        self.message_format = message_format
         self.calls = []
         self.system_instructions = []
 
@@ -18,11 +33,18 @@ class FakeSumAgent:
         self.system_instructions.append(messages[0]["content"])
         self.calls.append(payload)
         if self.private_value is not None:
-            output = str(self.private_value) if self.raw_output is None else self.raw_output
+            output = (
+                encode_fake_value(self.message_format, self.private_value)
+                if self.raw_output is None else self.raw_output
+            )
             return ChatCompletion(output, f"fake-{self.name}")
         transcript = payload["visible_transcript"]
         if transcript:
-            answer = sum(int(entry["message"]) for entry in transcript)
+            parsed_values = [
+                _decode_sender_message(self.message_format, entry["message"])
+                for entry in transcript
+            ]
+            answer = 0 if any(value is None for value in parsed_values) else sum(parsed_values)
         elif payload["private_context"].startswith("All private integers, in sender order: "):
             values = payload["private_context"].rsplit(": ", 1)[1]
             answer = sum(int(value) for value in values.split(", "))
@@ -32,14 +54,18 @@ class FakeSumAgent:
 
 
 class MultipartyPrivateSumExampleTests(unittest.TestCase):
-    def run_with_fakes(self, values, condition="communicate"):
-        senders = [FakeSumAgent(f"S{i + 1}", value) for i, value in enumerate(values)]
-        receiver = FakeSumAgent("R")
+    def run_with_fakes(self, values, condition="communicate", message_format="decimal"):
+        senders = [
+            FakeSumAgent(f"S{i + 1}", value, message_format=message_format)
+            for i, value in enumerate(values)
+        ]
+        receiver = FakeSumAgent("R", message_format=message_format)
         result = run_sum_episode(
             values,
             sender_clients=senders,
             receiver_client=receiver,
             condition=condition,
+            message_format=message_format,
         )
         return result, senders, receiver
 
@@ -81,6 +107,31 @@ class MultipartyPrivateSumExampleTests(unittest.TestCase):
             observed_tasks.extend(call["task"] for call in receiver.calls)
         self.assertEqual(len(set(observed_tasks)), 1)
         self.assertNotIn("S1, S2", observed_tasks[0])
+
+    def test_frozen_message_formats_decode_and_score_sender_fidelity(self):
+        protocol_ids = set()
+        for message_format in MESSAGE_FORMATS:
+            result, _senders, _receiver = self.run_with_fakes(
+                [0, 1, 2, 3], message_format=message_format,
+            )
+            self.assertTrue(result["exact_success"], message_format)
+            self.assertTrue(result["all_sender_messages_syntax_valid"], message_format)
+            self.assertTrue(result["all_sender_values_faithful"], message_format)
+            protocol_ids.add(result["protocol_id"])
+        self.assertEqual(len(protocol_ids), len(MESSAGE_FORMATS))
+
+    def test_duplicate_json_field_fails_syntax_and_cannot_hide_sender_error(self):
+        senders = [
+            FakeSumAgent("S1", 1, raw_output='{"value":1,"value":1}', message_format="json"),
+            FakeSumAgent("S2", 2, message_format="json"),
+        ]
+        receiver = FakeSumAgent("R", message_format="json")
+        result = run_sum_episode(
+            [1, 2], sender_clients=senders, receiver_client=receiver, message_format="json",
+        )
+        self.assertFalse(result["exact_success"])
+        self.assertEqual(result["sender_syntax_valid_count"], 1)
+        self.assertEqual(result["sender_value_faithful_count"], 1)
 
     def test_no_message_and_full_information_are_distinct_controls(self):
         no_message, senders, _receiver = self.run_with_fakes([1, 2], "no_message")

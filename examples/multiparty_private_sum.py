@@ -24,10 +24,79 @@ from experiments.emergent_ood_v0_3.runner import validate_resource_preflight
 RECEIVER = "R"
 MAX_REQUESTS_PER_EPISODE = 12
 MAX_WIRE_BUDGET_BYTES = 4096
+MESSAGE_FORMATS = ("decimal", "json", "labeled", "binary", "sentence")
 SUM_TASK = (
     "Team objective: find the sum of the sender-held private integers. "
     "Use only information visible to your role and follow your role instruction."
 )
+
+
+def _format_instructions(message_format: str) -> tuple[str, str]:
+    if message_format == "decimal":
+        return (
+            "Transmit exactly one base-10 digit from 0 through 3 for your private integer.",
+            "Each sender message is one base-10 digit from 0 through 3. Parse each delivered message and sum the values.",
+        )
+    if message_format == "json":
+        return (
+            'Transmit exactly one JSON object with one integer field, e.g. {"value": 2}.',
+            'Parse each message as a JSON object with exactly the integer field "value" and sum the field values.',
+        )
+    if message_format == "labeled":
+        return (
+            "Transmit exactly v=N, where N is your private integer from 0 through 3.",
+            "Parse each sender message using exactly v=N, where N is one digit from 0 through 3, then sum N.",
+        )
+    if message_format == "binary":
+        return (
+            "Use this shared two-bit code: 00 means 0, 01 means 1, 10 means 2, and 11 means 3. Transmit only the two bits.",
+            "Decode each exact two-bit sender message with 00→0, 01→1, 10→2, 11→3, then sum the decoded values.",
+        )
+    if message_format == "sentence":
+        return (
+            "Transmit exactly one sentence in this template: My private integer is N. Replace N with your digit from 0 through 3.",
+            "Parse each message using exactly the sentence template My private integer is N. where N is one digit from 0 through 3, then sum N.",
+        )
+    raise ValueError(f"unsupported message_format: {message_format}")
+
+
+def _decode_sender_message(message_format: str, message: str) -> int | None:
+    patterns = {
+        "decimal": r"[0-3]",
+        "labeled": r"v=([0-3])",
+        "sentence": r"My private integer is ([0-3])\.",
+    }
+    if message_format == "binary":
+        return {"00": 0, "01": 1, "10": 2, "11": 3}.get(message)
+    if message_format == "json":
+        def unique_pairs(pairs):
+            result = {}
+            for key, value in pairs:
+                if key in result:
+                    raise ValueError("duplicate JSON field")
+                result[key] = value
+            return result
+
+        try:
+            data = json.loads(message, object_pairs_hook=unique_pairs)
+        except (json.JSONDecodeError, ValueError):
+            return None
+        if (
+            isinstance(data, dict)
+            and set(data) == {"value"}
+            and isinstance(data["value"], int)
+            and not isinstance(data["value"], bool)
+            and data["value"] in range(4)
+        ):
+            return data["value"]
+        return None
+    pattern = patterns.get(message_format)
+    if pattern is None:
+        raise ValueError(f"unsupported message_format: {message_format}")
+    match = re.fullmatch(pattern, message)
+    if match is None:
+        return None
+    return int(match.group(1) if match.lastindex else match.group(0))
 
 
 def run_sum_episode(
@@ -36,6 +105,7 @@ def run_sum_episode(
     sender_clients: list[OpenAICompatibleClient],
     receiver_client: OpenAICompatibleClient,
     condition: str = "communicate",
+    message_format: str = "decimal",
     wire_budget_bytes: int = 4096,
     request_cap: int = 12,
 ) -> dict[str, object]:
@@ -48,6 +118,8 @@ def run_sum_episode(
         raise ValueError("sender_clients must contain one client per private value")
     if condition not in {"communicate", "no_message", "full_information"}:
         raise ValueError("condition must be communicate, no_message, or full_information")
+    if message_format not in MESSAGE_FORMATS:
+        raise ValueError(f"message_format must be one of {', '.join(MESSAGE_FORMATS)}")
     if isinstance(request_cap, bool) or not isinstance(request_cap, int) or request_cap < 1:
         raise ValueError("request_cap must be a positive integer")
     if request_cap > MAX_REQUESTS_PER_EPISODE:
@@ -66,15 +138,14 @@ def run_sum_episode(
     sender_names = [f"S{index + 1}" for index in range(len(values))]
     agents = {name: client for name, client in zip(sender_names, sender_clients)}
     agents[RECEIVER] = receiver_client
-    instructions = {
-        name: "When scheduled, send exactly your own private integer as a base-10 numeral. Do not add a label or explanation."
-        for name in sender_names
-    }
+    sender_instruction, receiver_format_instruction = _format_instructions(message_format)
+    instructions = {name: sender_instruction for name in sender_names}
     instructions[RECEIVER] = (
         "Use only information visible in your private context and received sender messages. "
-        "Add all available private integers and return only the exact sum as a base-10 integer."
+        f"{receiver_format_instruction} If a full list of private values is directly present in your private context, "
+        "sum those values instead. Return only the exact sum as a base-10 integer."
     )
-    protocol = DialogueProtocolCard("private-sum-decimal-v0", instructions)
+    protocol = DialogueProtocolCard(f"private-sum-{message_format}-v0", instructions)
     contexts = {name: f"Your private integer is {value}." for name, value in zip(sender_names, values)}
     contexts[RECEIVER] = ""
     if condition == "full_information":
@@ -97,13 +168,12 @@ def run_sum_episode(
     expected_by_sender = dict(zip(sender_names, values))
     sender_messages = []
     for turn in result.turns:
-        message_match = re.fullmatch(r"[0-3]", turn.completion.text)
-        parsed_value = None if message_match is None else int(turn.completion.text)
+        parsed_value = _decode_sender_message(message_format, turn.completion.text)
         expected_value = expected_by_sender[turn.speaker]
         sender_messages.append({
             "sender": turn.speaker,
             "raw_message": turn.completion.text,
-            "syntax_valid": message_match is not None,
+            "syntax_valid": parsed_value is not None,
             "parsed_value": parsed_value,
             "expected_value_for_scorer": expected_value,
             "value_faithful": parsed_value == expected_value,
@@ -114,6 +184,7 @@ def run_sum_episode(
     return {
         "protocol_id": result.protocol_id,
         "condition": condition,
+        "message_format": message_format,
         "sender_count": len(sender_names),
         "expected_sum": sum(values),
         "prediction": prediction,
@@ -153,6 +224,7 @@ def main() -> None:
         "--condition", choices=("communicate", "no_message", "full_information"),
         default="communicate",
     )
+    parser.add_argument("--message-format", choices=MESSAGE_FORMATS, default="decimal")
     parser.add_argument("--wire-budget-bytes", type=int, default=4096)
     parser.add_argument("--request-cap", type=int, default=12, help="hard planned-call ceiling for this episode")
     parser.add_argument(
@@ -187,6 +259,7 @@ def main() -> None:
         sender_clients=sender_clients,
         receiver_client=receiver_client,
         condition=args.condition,
+        message_format=args.message_format,
         wire_budget_bytes=args.wire_budget_bytes,
         request_cap=args.request_cap,
     )
