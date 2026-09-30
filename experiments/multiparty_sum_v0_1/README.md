@@ -55,3 +55,20 @@ python experiments/multiparty_sum_v0_1/runner.py `
 This command is an interface example, not an instruction to bypass the resource gate. The currently recorded report is rejected; do not run it until a fresh report passes all frozen limits. The runner has only been exercised with fake clients so far.
 
 The bundle is not yet a public benchmark result. Before any model comparison, preregister the protocol cards, episode count/power rationale, statistical analysis, transport accounting, and a passing fresh resource preflight; first pass an independent full-information capability screen under the frozen call cap.
+
+## Exhaustive codebook protocol card (model-free plumbing)
+
+`codebook_protocol.py` turns the exact finite lossy frontier in `research/data/MULTIPARTY_SUM_LOSSY_FRONTIER_V0_1.json` into a versioned `DialogueProtocolCard`. Each active sender receives its fixed partition encoder; the receiver receives the fixed-width ID mapping and complete MAP decoder. A sender whose optimal partition has one cell is omitted from the call schedule, while the receiver is told that this leaves its input unknown under the prior. Budgets whose optimum has no active sender use the separate `no_message` condition.
+
+The artifact hashes the serialized runtime card and reports its UTF-8 byte size, each role instruction's bytes, total per-episode system instruction bytes, and amortized card-file bytes over 1/10/100/1000 episodes. These quantities describe different boundaries and must not be added together: role instructions are sent on model calls each episode, while amortization is only the cost of retaining/distributing the serialized card. Token counts, provider compute, and latency still require actual model calls.
+
+`codebook_runner.py` applies the card to selected paired rows from the frozen bundle. It validates the full selected batch before dispatch, caps the total batch at 12 calls, measures SDK loopback transport, and requires a fresh passing resource preflight for loopback endpoints and ports 8000/8001/8002. The command interface is:
+
+```powershell
+python -m experiments.multiparty_sum_v0_1.codebook_runner `
+  --bundle .cache/multiparty_sum_v0_1/bundle_v0_1_1 `
+  --agent-count 2 --episode-indices 0 --payload-budget-bits 4 `
+  --resource-preflight .cache/emergent_ood_v0_3/resource_preflight.json
+```
+
+This is interface documentation only. A fresh report must pass the existing frozen resource gates before any endpoint is contacted. The offline fake-client tests check card serialization, every source value's cell assignment, role-context isolation, receiver MAP scoring, malformed-message diagnostics, bundle validation, and call-cap rejection; they are not model evidence. The narrow task and exact finite alphabet make this a systems/coding-theory control, not evidence of a general LLM language advantage. See [`research/MULTIPARTY_SUM_CODEBOOK_SDK_V0_1.md`](../../research/MULTIPARTY_SUM_CODEBOOK_SDK_V0_1.md).

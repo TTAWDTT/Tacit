@@ -1,5 +1,12 @@
 # Research log
 
+## 2026-09-30 - Execute finite sum-frontier codebooks through the SDK
+
+- **Question:** can the exact finite lossy private-sum frontier be turned into a versioned sender/referee protocol card and run through the actual multi-agent SDK while preserving privacy, transport accounting, and the model-free oracle boundary?
+- **Change:** add `codebook_protocol.py` with canonical partition encoders, a complete fixed MAP table, explicit handling of omitted constant-message senders, card serialization/hash, and separate UTF-8 measures for serialized setup and per-episode role instructions. Add `codebook_runner.py` for prevalidated paired bundle batches, endpoint/resource gating, and the frozen 12-call cap.
+- **Verification:** five offline fake-client tests pass, covering all enumerable card settings that have at least one active sender, every source value's cell coverage, SDK card round-trip, full-information role isolation, malformed output scoring, bundle integration, and pre-dispatch call-cap refusal. CLI help renders. No model, GPU, server, or endpoint was used.
+- **Observation/limit:** ideal frontier payload bits and prompt/card costs are distinct quantities. Model-facing codebook instructions can dominate the bit payload; setup amortization is only serialized-card distribution/storage and must not be added to repeated role instruction bytes. This milestone verifies protocol/runtime wiring, not LLM ability or comparative efficiency. The scalar-sum finite source remains a narrow coding-theory control, not a general communication benchmark. See [the experiment note](MULTIPARTY_SUM_CODEBOOK_SDK_V0_1.md) and [frozen bundle interface](../experiments/multiparty_sum_v0_1/README.md#exhaustive-codebook-protocol-card-model-free-plumbing).
+
 ## 2026-09-30 - Replicate Mistral tokenizer costs on real ontology ledgers
 
 - **Question:** did the synthetic-label Mistral cost result survive the exact default, robotics, and music attribute vocabularies already audited with Qwen?
