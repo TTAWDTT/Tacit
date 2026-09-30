@@ -6,16 +6,18 @@ from tacit import ChatCompletion
 
 
 class FakeSumAgent:
-    def __init__(self, name, private_value=None):
+    def __init__(self, name, private_value=None, raw_output=None):
         self.name = name
         self.private_value = private_value
+        self.raw_output = raw_output
         self.calls = []
 
     def complete(self, messages):
         payload = json.loads(messages[-1]["content"])
         self.calls.append(payload)
         if self.private_value is not None:
-            return ChatCompletion(str(self.private_value), f"fake-{self.name}")
+            output = str(self.private_value) if self.raw_output is None else self.raw_output
+            return ChatCompletion(output, f"fake-{self.name}")
         transcript = payload["visible_transcript"]
         if transcript:
             answer = sum(int(entry["message"]) for entry in transcript)
@@ -52,6 +54,20 @@ class MultipartyPrivateSumExampleTests(unittest.TestCase):
             [entry["message"] for entry in receiver.calls[0]["visible_transcript"]],
             ["1", "2", "3"],
         )
+        self.assertTrue(result["all_sender_messages_syntax_valid"])
+        self.assertTrue(result["all_sender_values_faithful"])
+
+    def test_final_sum_success_does_not_hide_sender_value_errors(self):
+        senders = [
+            FakeSumAgent("S1", 1, raw_output="0"),
+            FakeSumAgent("S2", 2, raw_output="3"),
+        ]
+        receiver = FakeSumAgent("R")
+        result = run_sum_episode([1, 2], sender_clients=senders, receiver_client=receiver)
+        self.assertTrue(result["exact_success"])  # errors cancel: 0 + 3 == 1 + 2
+        self.assertTrue(result["all_sender_messages_syntax_valid"])
+        self.assertFalse(result["all_sender_values_faithful"])
+        self.assertEqual(result["sender_value_faithful_count"], 0)
 
     def test_no_message_and_full_information_are_distinct_controls(self):
         no_message, senders, _receiver = self.run_with_fakes([1, 2], "no_message")
@@ -59,12 +75,15 @@ class MultipartyPrivateSumExampleTests(unittest.TestCase):
         self.assertEqual(no_message["message_transmissions"], [])
         self.assertEqual([len(sender.calls) for sender in senders], [0, 0])
         self.assertFalse(no_message["exact_success"])
+        self.assertIsNone(no_message["all_sender_messages_syntax_valid"])
+        self.assertIsNone(no_message["all_sender_values_faithful"])
 
         full_information, senders, receiver = self.run_with_fakes([1, 2], "full_information")
         self.assertTrue(full_information["exact_success"])
         self.assertEqual(full_information["model_calls"], 1)
         self.assertEqual([len(sender.calls) for sender in senders], [0, 0])
         self.assertIn("1, 2", receiver.calls[0]["private_context"])
+        self.assertIsNone(full_information["all_sender_values_faithful"])
 
     def test_rejects_invalid_inputs_before_any_client_call(self):
         senders = [FakeSumAgent("S1", 4), FakeSumAgent("S2", 0)]

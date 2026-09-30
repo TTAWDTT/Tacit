@@ -94,6 +94,23 @@ def run_sum_episode(
     output = "" if result.final_submission is None else result.final_submission.text.strip()
     match = re.fullmatch(r"(?:0|[1-9][0-9]*)", output)
     prediction = None if match is None else int(output)
+    expected_by_sender = dict(zip(sender_names, values))
+    sender_messages = []
+    for turn in result.turns:
+        message_match = re.fullmatch(r"[0-3]", turn.completion.text)
+        parsed_value = None if message_match is None else int(turn.completion.text)
+        expected_value = expected_by_sender[turn.speaker]
+        sender_messages.append({
+            "sender": turn.speaker,
+            "raw_message": turn.completion.text,
+            "syntax_valid": message_match is not None,
+            "parsed_value": parsed_value,
+            "expected_value_for_scorer": expected_value,
+            "value_faithful": parsed_value == expected_value,
+            "delivered": turn.transmission is not None,
+        })
+    syntax_valid_count = sum(row["syntax_valid"] is True for row in sender_messages)
+    faithful_count = sum(row["value_faithful"] is True for row in sender_messages)
     return {
         "protocol_id": result.protocol_id,
         "condition": condition,
@@ -101,6 +118,12 @@ def run_sum_episode(
         "expected_sum": sum(values),
         "prediction": prediction,
         "exact_success": prediction == sum(values),
+        "sender_message_count": len(sender_messages),
+        "sender_syntax_valid_count": syntax_valid_count,
+        "sender_value_faithful_count": faithful_count,
+        "all_sender_messages_syntax_valid": None if not sender_messages else syntax_valid_count == len(sender_messages),
+        "all_sender_values_faithful": None if not sender_messages else faithful_count == len(sender_messages),
+        "sender_messages": sender_messages,
         "model_calls": result.model_calls,
         "wire_bytes": result.wire_bytes,
         "wire_budget_bytes": result.wire_budget_bytes,

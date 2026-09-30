@@ -23,7 +23,7 @@ An LLM-designed communication protocol is also not novel by itself: LMAC uses an
 
 A new model-free [simultaneous-sum scaling reference](research/MULTIPARTY_SUM_SCALING_V0_1.md) gives an exact linear-in-agent-count zero-error payload floor for one narrow aggregation task and an exact no-message Bayes baseline. It guides future scaling experiments; it is not LLM performance evidence.
 
-The installable runtime now also has a runnable [private-sum exchange example](examples/multiparty_private_sum.py): independent sender prompts, a receiver that sees only routed messages, strict exact-answer scoring, no-message and full-information controls, and bounded request/wire budgets. It is an SDK example, not a benchmark result; model calls still require a fresh passing local resource preflight.
+The installable runtime now also has a runnable [private-sum exchange example](examples/multiparty_private_sum.py): independent sender prompts, a receiver that sees only routed messages, separate sender syntax/value-fidelity and final-answer scores, no-message and full-information controls, and bounded request/wire budgets. It is an SDK example, not a benchmark result; model calls still require a fresh passing local resource preflight.
 
 ## Current status
 
