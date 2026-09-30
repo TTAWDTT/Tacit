@@ -47,8 +47,16 @@ reference deliberately uses a fixed inventory with no adaptive proposal loop.
 `select` requires complete paired train and validation observation grids for one
 receiver, charges all candidates (including failed ones), and freezes the card,
 primitive mapping, inventory/feedback/support hashes, selection rule and costs.
-Ranking is validation strict-success count, lower validation cost on one declared
-axis, then stable name. Train scores are audited/charged, not counted as evaluation.
+Ranking is **unconstrained** validation strict-success count, lower validation cost
+on one declared axis, then stable name. The v2 freeze explicitly records
+`selection_scope=unconstrained_inventory_ranking`, `budget_feasibility=not_evaluated`
+and `deployment_authorized=false`. This is not a budget-constrained selector: a
+100-unit successful candidate still outranks a 1-unit failed candidate, even when
+a future deployment cap would be 10. The regression preserves this limitation
+rather than silently calling the output feasible. `max_candidates` caps inventory
+size only, not actual queries/tokens. Candidate-specific deployment/repeated-context
+costs, reuse horizon and complete-cost feasibility require a separately reviewed
+stage before M2; this PR does not supply or authorize that stage. Train scores are audited/charged, not counted as evaluation.
 A failure must be an explicit false row, not an omitted candidate. Deployment uses
 the frozen artifact unchanged; `verify_freeze` detects edits. Reuse does not mutate
 it. A hash proves integrity, not truthful provenance or semantic correctness.
@@ -108,9 +116,29 @@ python -m experiments.receiver_adaptation.demo
 
 `reference.py` supplies immutable primitive candidates, deterministic freezing,
 mapping derangement, full selected-axis costs and integer break-even intervals.
-`test_reference.py` includes 18 tests and 8,000 direct inequality checks.
+`test_reference.py` includes 21 tests and 8,000 direct inequality checks.
 `demo.py` prints the illustrative reuse table and counterexample, without writing
 artifacts or contacting any endpoint. `EXPERIMENT_SPEC.md` states the unresolved
 real-experiment freeze requirements. No existing scorer/runner/protocol is edited.
 The unit suite is explicitly invoked because it lives inside this isolated module,
 outside the repository's default tests directory. Cross-review awaits route A head.
+
+## Fixed-head cross-review response
+
+Agent A reviewed original head `c6e0e3e80b43523b78aa273e0a6c6f9005827042`
+in [PR comment](https://github.com/TTAWDTT/Tacit/pull/4#issuecomment-5912927099).
+Both findings reproduce. Red→a, blue→bbbb over [red,red,red,blue] costs 7 bytes;
+changing the sender mapping costs 13. Dictionary label preservation is not episode
+message preservation. `decoder_corruption_control` now constructs identical sender
+message sequences and changes only receiver reference associations. It guarantees
+payload identity, not equal receiver-card tokens, reasoning or complete cost.
+The second finding is an explicitly retained design limitation: inventory ranking
+is not constrained optimization. Versioned freeze metadata and a counterexample
+test prevent the current artifact being described as budget qualified. No external
+consumer of this experimental schema is registered in the repository.
+
+Independent review of route A at `b438b8d07aae5e148b223141203599ccd6eef54c`
+reproduced 8 new plus 38 existing tests and the stored falsification report. All
+768 tuples match compact fields, so the narrowed validator interpretation stands.
+No route A changes are included in this branch. Review comments pin exact heads;
+revised B needs affected-item re-review before M2.

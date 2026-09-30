@@ -24,7 +24,7 @@ family as a secondary curve; do not attribute a larger search budget to language
 
 Predictions: at matched effort the adapted card improves strict target success at
 fixed feasible complete cost over independent selection; correct mappings improve
-over shuffled associations at identical messages and meanings; transfer to an
+over corrupted receiver associations with frozen sender messages and meanings; transfer to an
 unseen receiver can attenuate this gain; costs may only recover at sufficiently
 large N. Failure of the first contrast narrows the claim to search rather than
 adaptation. Failure of the mapping contrast undermines association use. If equal
@@ -41,10 +41,18 @@ No synthetic receiver is allowed as supporting evidence for these predictions.
 | Re-adaptation | Target receiver train feedback, separate validation selection | New discovery and deployment costs; adaptation, not zero-shot |
 
 Freeze source protocol before naming held-out receiver outcomes. Hold source
-artifact and exemplar selection constant across receivers. Mapping control preserves
-meaning and label multisets, but shuffles their association with a frozen seed;
-charge control construction. Lexical relabeling and mapping corruption are distinct
-controls. No test feedback is permitted in any arm. Changing ontology requires a
+artifact and exemplar selection constant across receivers. The primary mapping control freezes the sender mapping and exact episode message
+sequence, then corrupts only the receiver decoder/card associations using a frozen
+permutation. `decoder_corruption_control` constructs this offline pair. Log both
+cards and actual full prompts: identical payloads do not imply equal native tokens,
+inference, or complete costs. An onboarding-pair control instead permutes existing
+message rows among fixed meaning rows, preserving both actual row multisets; audit
+whether duplicates leave any associations unchanged. This onboarding constructor
+is not implemented here. Charge construction and every prompt in either design.
+Changing the sender mapping alone may change message frequencies (the 7→13-byte
+regression); label that a coupled intervention, not a cost-matched control. Changing
+both endpoints consistently is lexical relabeling, not broken mapping. Dictionary
+label multiset equality alone establishes none of these episode cost properties. No test feedback is permitted in any arm. Changing ontology requires a
 separate task definition; new combinations within the same ontology are not that.
 
 ## Ledger schema required before model execution
@@ -109,3 +117,18 @@ approved scope is **zero model requests, zero large downloads, zero external GPU
 No real experiment is executable from this document until these blanks are filled,
 reviewed and new expenditure authorized. Existing PRs #1/#2/#3 remain optional future
 infrastructure dependencies, not dependencies of these offline tests.
+
+## Inventory ranking is not budget qualification
+
+The offline v2 selector remains a success-first inventory ranker, with explicit
+`budget_feasibility=not_evaluated` and `deployment_authorized=false`. It cannot
+implement the primary fixed-feasible-cost contrast above. Its shared deployment
+cost is a bookkeeping illustration, not candidate-specific feasibility evidence.
+Before M2, a separate reviewed feasibility stage must retain every candidate's
+search charges, bind candidate-specific setup and repeated costs plus N, and apply
+all declared per-request and cumulative budgets. It must retain infeasible points
+and failures rather than treat undelivered successes as valid or omit their costs.
+Unknown cost axes cannot qualify. Existing runner request/wire ceilings still apply;
+the future execution controller must enforce approved proposal/evaluation call and
+token ceilings before calls. `max_candidates` and post-hoc costs do not enforce them.
+No such controller or model integration is added in this first-round revision.

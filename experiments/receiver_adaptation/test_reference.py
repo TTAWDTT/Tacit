@@ -1,6 +1,6 @@
 import unittest
 from experiments.receiver_adaptation.reference import (
-    Candidate, Observation, Cost, break_even, select, verify_freeze, shuffled_mapping,
+    Candidate, Observation, Cost, break_even, select, verify_freeze, shuffled_mapping, decoder_corruption_control,
 )
 
 
@@ -31,6 +31,35 @@ class ReferenceTests(unittest.TestCase):
     def test_unequal_meaning_coverage(self):
         self.cards[1] = Candidate('code', 'codebook', 'wrong domain', (('green', 'a'), ('blue', 'b')))
         with self.assertRaises(ValueError): self.freeze()
+
+    def test_unbalanced_encoder_shuffle_changes_payload_cost(self):
+        c = Candidate('unequal', 'codebook', 'fixture', (('red', 'a'), ('blue', 'bbbb')))
+        meanings = ('red', 'red', 'red', 'blue')
+        original, shuffled = dict(c.mapping), dict(shuffled_mapping(c))
+        self.assertEqual(sum(len(original[m].encode()) for m in meanings), 7)
+        self.assertEqual(sum(len(shuffled[m].encode()) for m in meanings), 13)
+
+    def test_decoder_control_preserves_actual_messages(self):
+        c = Candidate('unequal', 'codebook', 'fixture', (('red', 'a'), ('blue', 'bbbb')))
+        meanings = ('red', 'red', 'red', 'blue')
+        control = decoder_corruption_control(c, meanings)
+        self.assertEqual(control['correct_messages'], control['corrupted_messages'])
+        self.assertEqual(sum(len(m.encode()) for m in control['corrupted_messages']), 7)
+        self.assertEqual(tuple(control['correct_decoder'][m] for m in control['correct_messages']), meanings)
+        self.assertTrue(all(control['corrupted_decoder'][m] != truth
+                            for m, truth in zip(control['corrupted_messages'], meanings)))
+
+    def test_ranking_does_not_claim_budget_feasibility(self):
+        rows = [Observation(r.candidate, r.receiver, r.stage, r.episode,
+                            r.candidate == 'code', 100 if r.candidate == 'code' else 1)
+                for r in self.rows]
+        f = self.freeze(rows)
+        self.assertEqual(f['candidate']['name'], 'code')
+        self.assertEqual(f['discovery_cost'], '205')
+        self.assertEqual(f['selection_scope'], 'unconstrained_inventory_ranking')
+        self.assertEqual(f['budget_feasibility'], 'not_evaluated')
+        self.assertFalse(f['deployment_authorized'])
+        verify_freeze(f)
 
     def test_freeze_tamper(self):
         f = self.freeze()

@@ -97,7 +97,9 @@ class Observation:
 
 def select(candidates, observations, *, receiver, train_ids, validation_ids,
            unit, proposal_cost, deployment_cost, max_candidates):
-    """Two-stage fixed-inventory selection: train audit, validation ranking.
+    """UNCONSTRAINED inventory ranking, not a deployable budget/frontier selector.
+
+    Two-stage fixed-inventory selection: train audit, validation ranking.
 
     No adaptive proposals from validation. Caller must supply trusted split IDs;
     declarations alone cannot prove provenance. All inventory candidates are charged.
@@ -139,7 +141,10 @@ def select(candidates, observations, *, receiver, train_ids, validation_ids,
     # No validation-driven mutation. Stable identity breaks exact ties.
     chosen = min(names, key=lambda name: (-scores[name], costs[name], name))
     candidate = next(c for c in candidates if c.name == chosen)
-    body = {'schema': 'tacit.receiver-adaptation.offline.v1',
+    body = {'schema': 'tacit.receiver-adaptation.offline.v2',
+            'selection_scope': 'unconstrained_inventory_ranking',
+            'budget_feasibility': 'not_evaluated',
+            'deployment_authorized': False,
             'receiver': receiver, 'candidate': asdict(candidate),
             'inventory_hash': digest([asdict(c) for c in sorted(candidates, key=lambda c: c.name)]),
             'feedback_hash': digest([dict(asdict(r), cost=str(nonnegative(r.cost))) for r in sorted(observations, key=lambda r: (r.candidate, r.stage, r.episode))]),
@@ -160,8 +165,27 @@ def verify_freeze(artifact):
 
 
 def shuffled_mapping(candidate):
-    """Deterministic cyclic derangement: preserves labels and their byte multiset."""
+    """Derange dictionary associations, preserving dictionary labels only.
+
+    Changing the sender mapping can change episode frequencies/bytes. Use
+    decoder_corruption_control for a fixed-message receiver-side intervention.
+    Neither helper guarantees equal full-prompt tokens or inference cost.
+    """
     if len(candidate.mapping) < 2:
         raise ValueError('cannot derange one label')
     labels = [p[1] for p in candidate.mapping]
     return tuple((p[0], labels[(i + 1) % len(labels)]) for i, p in enumerate(candidate.mapping))
+
+
+def decoder_corruption_control(candidate, meanings):
+    """Freeze sender messages and vary only the receiver's label associations.
+
+    Return paired messages and explicit reference decoders. This is an offline
+    control constructor, not a claim about LLM decoding or equal prompt cost.
+    """
+    sender = dict(candidate.mapping)
+    messages = tuple(sender[meaning] for meaning in meanings)
+    correct = {label: meaning for meaning, label in candidate.mapping}
+    corrupted = {label: meaning for meaning, label in shuffled_mapping(candidate)}
+    return {'correct_messages': messages, 'corrupted_messages': messages,
+            'correct_decoder': correct, 'corrupted_decoder': corrupted}
