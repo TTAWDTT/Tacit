@@ -1,0 +1,30 @@
+{
+  "all_baseline_blobs_unchanged": true,
+  "base": "5dd260c5824b280b5323a1707ab132524afa8e4c",
+  "budget_feasibility": "not_evaluated",
+  "evidence": "public offline fixtures; no LLM evidence",
+  "legal_false_values_and_untrusted_scope_not_detected": true,
+  "model_calls": 0,
+  "rejected_unicode_cc_controls": 65,
+  "reviewed_heads": {
+    "1": "6de34bfd821aa8656d9063378087afc362aa9252",
+    "2": "05d2921ead5ac8f555b7f776974f907de5bbc5a4",
+    "3": "ab06295aa5e0331c414f002b077dd71293c9c6f9",
+    "4_original": "c6e0e3e80b43523b78aa273e0a6c6f9005827042",
+    "4_revised": "04129b8dcefedbaf1738f0851f9cd940ba863eff",
+    "5_original": "b438b8d07aae5e148b223141203599ccd6eef54c",
+    "5_revised": "e0dc30806886caacdcd44dcbc33a151c17c8af92"
+  },
+  "revised_control_payload_identical": true,
+  "seed17_train_overlap_seed23_heldout": 52,
+  "sender_shuffle_bytes": [
+    7,
+    13
+  ],
+  "source_sha256": {
+    "experiments/compositional_protocol/codec.py": "950a0ba715e7c3eaf2a0ee352fb8607d873b6177524527ef5602f088d5cb5904",
+    "experiments/emergent_ood_v0_4/split.py": "45faf3a14d0bbe906f167b125b9869c86b3e92db50b280b0dc2fba78e1b7f098",
+    "experiments/receiver_adaptation/reference.py": "df219814eac51967086212353d74b984988e3701d9c8a891b5c0a1ee6aeba99c"
+  },
+  "unconstrained_winner": "costly"
+}
