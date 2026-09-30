@@ -74,6 +74,30 @@ class HeldOutRankCodecTests(unittest.TestCase):
                 {tuple(row["values"]) for row in held_out},
             )
 
+    def test_small_dimension_and_cardinality_grid_exhausts_support(self) -> None:
+        for dimensions in range(2, 5):
+            for value_count in range(2, 5):
+                attributes = tuple(f"axis_{axis}" for axis in range(dimensions))
+                values = tuple(
+                    tuple(f"axis_{axis}_value_{value}" for value in range(value_count))
+                    for axis in range(dimensions)
+                )
+                split = build_split(seed=dimensions * 10 + value_count,
+                                    attributes=attributes, values=values)
+                codec = HeldOutRankCodec(split)
+                meanings = [
+                    dict(zip(attributes, row["values"]))
+                    for row in split["meanings"]
+                    if row["split"] == "held_out"
+                ]
+                payloads = [codec.encode(meaning) for meaning in meanings]
+
+                with self.subTest(dimensions=dimensions, value_count=value_count):
+                    self.assertEqual(codec.support_size, value_count ** (dimensions - 1))
+                    self.assertEqual(codec.bit_width, (codec.support_size - 1).bit_length())
+                    self.assertEqual(len(set(payloads)), codec.support_size)
+                    self.assertEqual([codec.decode(payload) for payload in payloads], meanings)
+
 
 if __name__ == "__main__":
     unittest.main()
