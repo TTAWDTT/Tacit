@@ -1,5 +1,13 @@
 # Research log
 
+## 2026-09-30 - Test whether bit-optimal codebooks save LLM content tokens
+
+- **Preregistration/question:** before counting, froze P23 on the cached pinned Qwen3-4B tokenizer. Would explicit codebook instructions + payload cost less than existing decimal/JSON/binary text content on the same finite task vectors, and do ideal payload bits approximate prompt cost?
+- **Method:** exhaustive 4^m input vectors for each m=2,3,4 and all 17 frontier rows with at least one active sender. Reconstructed Tacit system and user contents, counted both sides' input content and ideal completion text, and kept serialized-card tokens as a separate distribution diagnostic. No weights or endpoints loaded.
+- **Result:** P23a is supported: role-instruction input alone exceeds ideal payload bits by 312–3,524 tokens across all rows. At the three zero-error points, codebook totals are 839, 1,558, and 4,068 tokens for m=2,3,4; decimal totals are 381, 508, and 635.0586. The codebook uses fewer total known content tokens than decimal at one of 17 points only: m=4, budget ≤1 bit, where exact-sum success is 18.75% against decimal's 100% and it also makes fewer calls. There is no matched-quality token saving in this audit. P23b is resolved descriptively per row; no aggregate language winner is claimed.
+- **Change:** publish the deterministic auditor, its hash-bound 17-row JSON, preregistration, and interpretation note. The observed cost makes the setup/prompt amortization issue concrete: a compact information-theoretic payload can require thousands of natural-language instruction tokens.
+- **Limit:** Qwen tokenizer content counts exclude chat templates, provider special tokens/caching, actual model errors, latency, compute, and price. The comparison mixes lossy frontier points with different success rates and active-call counts; no-message must be included explicitly in the next same-task empirical frontier. Nothing here establishes realized LLM communication ability or task superiority. See the [report](MULTIPARTY_SUM_CODEBOOK_TOKEN_AUDIT_V0_1.md), [frozen P23 design](MULTIPARTY_SUM_CODEBOOK_TOKEN_AUDIT_PREREG_V0_1.md), and [audit artifact](data/MULTIPARTY_SUM_CODEBOOK_TOKEN_AUDIT_V0_1.json).
+
 ## 2026-09-30 - Execute finite sum-frontier codebooks through the SDK
 
 - **Question:** can the exact finite lossy private-sum frontier be turned into a versioned sender/referee protocol card and run through the actual multi-agent SDK while preserving privacy, transport accounting, and the model-free oracle boundary?
