@@ -256,7 +256,7 @@ $env:TLU_SENDER_MODEL = "local-sender-model"
 $env:TLU_RECEIVER_MODEL = "local-receiver-model"
 $env:TLU_SENDER_TOKENIZER_ID = "sender-tokenizer-revision"
 $env:TLU_RECEIVER_TOKENIZER_ID = "receiver-tokenizer-revision"
-python experiments/emergent_ood_v0_3/resource_preflight.ps1 -Output .cache/emergent_ood_v0_4/resource_preflight.json -Ports 8000,8001
+./experiments/emergent_ood_v0_3/resource_preflight.ps1 -Output .cache/emergent_ood_v0_4/resource_preflight.json -Ports 8000,8001
 # Start the local model endpoint only after a passing report, then:
 python -m experiments.emergent_ood_v0_4.runner --input-dir .cache/emergent_ood_v0_4/episodes --stage validation --conditions no_message natural_language --sender-base-url http://127.0.0.1:8000/v1 --receiver-base-url http://127.0.0.1:8001/v1 --execute --resource-preflight .cache/emergent_ood_v0_4/resource_preflight.json
 ```
