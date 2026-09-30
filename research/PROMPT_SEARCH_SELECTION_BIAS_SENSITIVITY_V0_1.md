@@ -2,6 +2,8 @@
 
 **Status:** theoretical sensitivity only. This is not an empirical estimate of the v0.4 optimizer's bias, a power analysis, or evidence that any protocol wins.
 
+The independent-outcome model is only one sensitivity case. The companion [paired-cluster analysis](PROMPT_SEARCH_PAIRED_CLUSTER_SENSITIVITY_V0_1.md) models shared task-set difficulty and explains why the iid maximum can mischaracterize candidate ranking when all candidates share episode IDs.
+
 ## Question
 
 When several English prompt candidates are scored on the same training block and the highest-scoring candidate is retained, how much apparent accuracy improvement can selection alone create under a simple null model?

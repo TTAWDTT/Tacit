@@ -1,6 +1,10 @@
+import math
 import unittest
 
-from research.prompt_search_selection_bias import expected_selection_optimism
+from research.prompt_search_selection_bias import (
+    expected_selection_optimism,
+    paired_cluster_selection_sensitivity,
+)
 
 
 class PromptSearchSelectionBiasTests(unittest.TestCase):
@@ -27,6 +31,28 @@ class PromptSearchSelectionBiasTests(unittest.TestCase):
         ):
             with self.subTest(args=args), self.assertRaises(ValueError):
                 expected_selection_optimism(*args)
+
+    def test_cluster_sensitivity_is_reproducible_and_reports_mcse(self):
+        args = (4, 3, 0.5, 4, 0.2, 300, 91)
+        first = paired_cluster_selection_sensitivity(*args)
+        second = paired_cluster_selection_sensitivity(*args)
+        self.assertEqual(first, second)
+        self.assertGreaterEqual(first[0], 0.0)
+        self.assertGreater(first[1], 0.0)
+
+    def test_perfect_task_cluster_correlation_is_finite(self):
+        estimate, mcse = paired_cluster_selection_sensitivity(
+            16, 4, 0.5, 4, 1.0, 100, 19
+        )
+        self.assertGreaterEqual(estimate, 0.0)
+        self.assertTrue(math.isfinite(mcse))
+
+    def test_zero_icc_matches_iid_reference_within_simulation_error(self):
+        estimate, mcse = paired_cluster_selection_sensitivity(
+            16, 4, 0.5, 4, 0.0, 1000, 37
+        )
+        exact = expected_selection_optimism(64, 0.5, 4)
+        self.assertLess(abs(estimate - exact), 3.0 * mcse)
 
 
 if __name__ == "__main__":
