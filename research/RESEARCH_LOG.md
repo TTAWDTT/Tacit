@@ -1,5 +1,14 @@
 # Research log
 
+## 2026-09-30 - Replicate Mistral tokenizer costs on real ontology ledgers
+
+- **Question:** did the synthetic-label Mistral cost result survive the exact default, robotics, and music attribute vocabularies already audited with Qwen?
+- **Freeze/data:** committed P22a–P22b before running the cross-tokenizer count. Reused the exact same 64-episode test bundles per ontology; the auditor checks all three manifest hashes, split seeds, and episode counts against the Qwen JSON before producing any output.
+- **Result:** both preregistered directions hold in all three ontologies. Mistral compact-fields minus JSON means are +49.000, +49.000, and +48.000 tokens for default, robotics, and music. Fixed symbols are +180.156, +191.969, and +195.312. Relative to Qwen on the same episodes, the card deltas rise by only 0.469–2.062, whereas symbolic deltas rise by 17.500–23.374.
+- **Change:** publish a pinned runner-compatible Mistral ontology auditor, its complete aggregate, a result report, P22 in Theory §23, and a concise README status. One initial invocation used a nonexistent default bundle path and stopped at manifest loading before counting; exact bundle paths were recovered by matching the Qwen report's expected manifest hashes, and the successful run verifies those identities.
+- **Verification/resource:** preregistration, Qwen report, script, and Mistral tokenizer hashes match the report; all 192 test episodes were processed. Tokenizer-only work, with no model weights, GPU, endpoint, or inference request.
+- **Limit:** the ontologies reuse the same previous episode bundles, so this tests tokenizer/domain sensitivity, not a new task sample. The result excludes chat templates, model responses, provider usage, quality, and latency; it cannot identify the best success/cost protocol.
+
 ## 2026-09-30 - Verify the installable communication runtime artifact
 
 - **Question:** can the documented SDK be built as a distributable wheel, installed without runtime dependencies, and import its public protocol/runtime API outside the source package path?

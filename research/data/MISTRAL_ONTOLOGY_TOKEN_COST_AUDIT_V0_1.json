@@ -1,0 +1,355 @@
+{
+  "measurement": "Exact runner content prompt reconstruction over the frozen 192 default/robotics/music test episodes. Known total includes sender and receiver input content, the echoed message, and ideal sender output; it excludes chat templates, receiver output, provider usage, caching, inference compute, and task outcomes.",
+  "preregistration_sha256": "5b4db84881ad320106a5fc5f39a7481d3f2f5d18021af2cde7e3894ae22efe9f",
+  "python_version": "3.13.5",
+  "qwen_report_sha256": "faeebdde0e14290c5cba026d3e663dd407fa270000cf7e282d1813f461182fb6",
+  "results": [
+    {
+      "condition_minus_json_known_content_tokens_per_episode": {
+        "shared_protocol_card": {
+          "max": 49,
+          "mean": 49.0,
+          "min": 49
+        },
+        "symbolic": {
+          "max": 183,
+          "mean": 180.156,
+          "min": 177
+        }
+      },
+      "conditions": {
+        "json": {
+          "episodes": 64,
+          "ideal_sender_message_output_tokens": {
+            "max": 21,
+            "mean": 19.422,
+            "min": 18
+          },
+          "known_content_input_plus_message_output_tokens": {
+            "max": 541,
+            "mean": 533.953,
+            "min": 527
+          },
+          "known_content_input_tokens": {
+            "max": 520,
+            "mean": 514.531,
+            "min": 509
+          },
+          "receiver_input_content_tokens": {
+            "max": 369,
+            "mean": 365.109,
+            "min": 361
+          },
+          "sender_input_content_tokens": {
+            "max": 151,
+            "mean": 149.422,
+            "min": 148
+          }
+        },
+        "shared_protocol_card": {
+          "episodes": 64,
+          "ideal_sender_message_output_tokens": {
+            "max": 19,
+            "mean": 17.422,
+            "min": 16
+          },
+          "known_content_input_plus_message_output_tokens": {
+            "max": 590,
+            "mean": 582.953,
+            "min": 576
+          },
+          "known_content_input_tokens": {
+            "max": 571,
+            "mean": 565.531,
+            "min": 560
+          },
+          "receiver_input_content_tokens": {
+            "max": 391,
+            "mean": 387.109,
+            "min": 383
+          },
+          "sender_input_content_tokens": {
+            "max": 180,
+            "mean": 178.422,
+            "min": 177
+          }
+        },
+        "symbolic": {
+          "episodes": 64,
+          "ideal_sender_message_output_tokens": {
+            "max": 5,
+            "mean": 5.0,
+            "min": 5
+          },
+          "known_content_input_plus_message_output_tokens": {
+            "max": 718,
+            "mean": 714.109,
+            "min": 710
+          },
+          "known_content_input_tokens": {
+            "max": 713,
+            "mean": 709.109,
+            "min": 705
+          },
+          "receiver_input_content_tokens": {
+            "max": 446,
+            "mean": 443.688,
+            "min": 441
+          },
+          "sender_input_content_tokens": {
+            "max": 267,
+            "mean": 265.422,
+            "min": 264
+          }
+        }
+      },
+      "episode_count": 64,
+      "manifest_sha256": "2f479e41f669f4f6fd84b3f873b02b7ed14fa11eb59fc04b81bc594a26bdb2fe",
+      "mistral_minus_qwen_delta_shift": {
+        "shared_protocol_card": 1.406,
+        "symbolic": 17.5
+      },
+      "ontology": "default",
+      "split_seed": 23,
+      "task_seed": 0
+    },
+    {
+      "condition_minus_json_known_content_tokens_per_episode": {
+        "shared_protocol_card": {
+          "max": 49,
+          "mean": 49.0,
+          "min": 49
+        },
+        "symbolic": {
+          "max": 195,
+          "mean": 191.969,
+          "min": 185
+        }
+      },
+      "conditions": {
+        "json": {
+          "episodes": 64,
+          "ideal_sender_message_output_tokens": {
+            "max": 25,
+            "mean": 21.516,
+            "min": 20
+          },
+          "known_content_input_plus_message_output_tokens": {
+            "max": 565,
+            "mean": 548.609,
+            "min": 539
+          },
+          "known_content_input_tokens": {
+            "max": 540,
+            "mean": 527.094,
+            "min": 519
+          },
+          "receiver_input_content_tokens": {
+            "max": 385,
+            "mean": 375.578,
+            "min": 369
+          },
+          "sender_input_content_tokens": {
+            "max": 155,
+            "mean": 151.516,
+            "min": 150
+          }
+        },
+        "shared_protocol_card": {
+          "episodes": 64,
+          "ideal_sender_message_output_tokens": {
+            "max": 23,
+            "mean": 19.516,
+            "min": 18
+          },
+          "known_content_input_plus_message_output_tokens": {
+            "max": 614,
+            "mean": 597.609,
+            "min": 588
+          },
+          "known_content_input_tokens": {
+            "max": 591,
+            "mean": 578.094,
+            "min": 570
+          },
+          "receiver_input_content_tokens": {
+            "max": 407,
+            "mean": 397.578,
+            "min": 391
+          },
+          "sender_input_content_tokens": {
+            "max": 184,
+            "mean": 180.516,
+            "min": 179
+          }
+        },
+        "symbolic": {
+          "episodes": 64,
+          "ideal_sender_message_output_tokens": {
+            "max": 5,
+            "mean": 5.0,
+            "min": 5
+          },
+          "known_content_input_plus_message_output_tokens": {
+            "max": 750,
+            "mean": 740.578,
+            "min": 734
+          },
+          "known_content_input_tokens": {
+            "max": 745,
+            "mean": 735.578,
+            "min": 729
+          },
+          "receiver_input_content_tokens": {
+            "max": 466,
+            "mean": 460.062,
+            "min": 455
+          },
+          "sender_input_content_tokens": {
+            "max": 279,
+            "mean": 275.516,
+            "min": 274
+          }
+        }
+      },
+      "episode_count": 64,
+      "manifest_sha256": "475d50c9d4b6be5465c2d745d10c13b5846bf7686ecdd1ab912f31cd3547d9ce",
+      "mistral_minus_qwen_delta_shift": {
+        "shared_protocol_card": 2.062,
+        "symbolic": 20.407
+      },
+      "ontology": "robotics",
+      "split_seed": 31,
+      "task_seed": 0
+    },
+    {
+      "condition_minus_json_known_content_tokens_per_episode": {
+        "shared_protocol_card": {
+          "max": 48,
+          "mean": 48.0,
+          "min": 48
+        },
+        "symbolic": {
+          "max": 199,
+          "mean": 195.312,
+          "min": 191
+        }
+      },
+      "conditions": {
+        "json": {
+          "episodes": 64,
+          "ideal_sender_message_output_tokens": {
+            "max": 26,
+            "mean": 23.844,
+            "min": 22
+          },
+          "known_content_input_plus_message_output_tokens": {
+            "max": 576,
+            "mean": 564.906,
+            "min": 556
+          },
+          "known_content_input_tokens": {
+            "max": 550,
+            "mean": 541.062,
+            "min": 534
+          },
+          "receiver_input_content_tokens": {
+            "max": 394,
+            "mean": 387.219,
+            "min": 382
+          },
+          "sender_input_content_tokens": {
+            "max": 156,
+            "mean": 153.844,
+            "min": 152
+          }
+        },
+        "shared_protocol_card": {
+          "episodes": 64,
+          "ideal_sender_message_output_tokens": {
+            "max": 23,
+            "mean": 20.844,
+            "min": 19
+          },
+          "known_content_input_plus_message_output_tokens": {
+            "max": 624,
+            "mean": 612.906,
+            "min": 604
+          },
+          "known_content_input_tokens": {
+            "max": 601,
+            "mean": 592.062,
+            "min": 585
+          },
+          "receiver_input_content_tokens": {
+            "max": 416,
+            "mean": 409.219,
+            "min": 404
+          },
+          "sender_input_content_tokens": {
+            "max": 185,
+            "mean": 182.844,
+            "min": 181
+          }
+        },
+        "symbolic": {
+          "episodes": 64,
+          "ideal_sender_message_output_tokens": {
+            "max": 5,
+            "mean": 5.0,
+            "min": 5
+          },
+          "known_content_input_plus_message_output_tokens": {
+            "max": 767,
+            "mean": 760.219,
+            "min": 755
+          },
+          "known_content_input_tokens": {
+            "max": 762,
+            "mean": 755.219,
+            "min": 750
+          },
+          "receiver_input_content_tokens": {
+            "max": 478,
+            "mean": 473.375,
+            "min": 470
+          },
+          "sender_input_content_tokens": {
+            "max": 284,
+            "mean": 281.844,
+            "min": 280
+          }
+        }
+      },
+      "episode_count": 64,
+      "manifest_sha256": "37bb7efb9891ca43e5471358a64adddd40588da92816f8958697b28c0652e20a",
+      "mistral_minus_qwen_delta_shift": {
+        "shared_protocol_card": 0.469,
+        "symbolic": 23.374
+      },
+      "ontology": "music",
+      "split_seed": 31,
+      "task_seed": 0
+    }
+  ],
+  "schema": "tlu.mistral-ontology-token-cost-audit.v1",
+  "source_sha256": {
+    "compact_fields_py": "3ec6ada180f6ba353277e4035523867f78951d8e653573d1929c31edaedacb72",
+    "mistral_synthetic_audit_py": "c9e6d2ce2ef585657c2540d555424cc60c20aad815edeb599dd4b81260674491",
+    "protocol_card_json": "2646cd19c10aa5f4bec19d8e38fdb43eac6c15238630b86f79c794bff1a46aa2",
+    "qwen_audit_py": "84a34232d38d3352ed6f3e1cd5fafb267031d4da3c7af9c7449861cb4fd22efc",
+    "runner_py": "da07b64341f2e871544616788c3ea7ff5d293c6c580001886e1bf22be5caaa25",
+    "this_audit_py": "614d63fcc01fc990da059bd21bac435697daafd1c354b9ac17e3b0975718f9b3"
+  },
+  "status": "preregistered deterministic ontology cost replication",
+  "tokenizer": {
+    "file_size_bytes": 1961548,
+    "library": "tokenizers",
+    "library_version": "0.22.2",
+    "repo": "mistralai/Mistral-7B-Instruct-v0.3",
+    "revision": "adadfb3fbae87ecc77cd5bf2c3318434d5da04cf",
+    "sha256": "e553af6fff7d7ad76e830608b218c5c0b0822998d5a1a96099a74cd3c1cb1a49",
+    "special_tokens_added": false,
+    "vocabulary_size_with_added_tokens": 32768
+  }
+}
