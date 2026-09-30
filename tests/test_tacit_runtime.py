@@ -579,6 +579,61 @@ class TacitRuntimeTests(unittest.TestCase):
             "  wire text\n", "actual-model", 31, 4, 0.25, "request-1", "stop"
         ))
 
+    def test_openai_compatible_client_keeps_reasoning_metadata_separate_and_private(self) -> None:
+        response_data = {
+            "model": "local-qwen",
+            "choices": [{
+                "message": {
+                    "content": "candidate-7",
+                    "reasoning_content": "private model reasoning must not enter the wire message",
+                },
+                "finish_reason": "stop",
+            }],
+        }
+
+        class Response:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *args):
+                return False
+
+            def read(self):
+                return json.dumps(response_data).encode()
+
+        with patch("tacit.runtime.urlopen", return_value=Response()):
+            completion = OpenAICompatibleClient(
+                "http://localhost:8000/v1", "local-qwen"
+            ).complete([{"role": "user", "content": "return a candidate ID"}])
+
+        self.assertEqual(completion.text, "candidate-7")
+        self.assertTrue(completion.reasoning_content_present)
+        self.assertNotIn("private model reasoning", repr(completion))
+
+    def test_openai_compatible_client_rejects_malformed_reasoning_metadata(self) -> None:
+        response_data = {
+            "model": "local-qwen",
+            "choices": [{
+                "message": {"content": "candidate-7", "reasoning_content": {"text": "x"}}
+            }],
+        }
+
+        class Response:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *args):
+                return False
+
+            def read(self):
+                return json.dumps(response_data).encode()
+
+        with patch("tacit.runtime.urlopen", return_value=Response()):
+            with self.assertRaisesRegex(RuntimeError, "reasoning_content must be text or null"):
+                OpenAICompatibleClient(
+                    "http://localhost:8000/v1", "local-qwen"
+                ).complete([{"role": "user", "content": "return a candidate ID"}])
+
     def test_openai_compatible_client_sends_frozen_temperature_when_configured(self) -> None:
         class Response:
             def __enter__(self):

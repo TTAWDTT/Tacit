@@ -31,6 +31,7 @@ class ChatCompletion:
     service_seconds: float | None = None
     request_id: str | None = None
     finish_reason: str | None = None
+    reasoning_content_present: bool = False
 
 
 class ChatModel(Protocol):
@@ -280,12 +281,16 @@ class OpenAICompatibleClient:
 
         try:
             choice = payload["choices"][0]
-            text = choice["message"]["content"]
+            message = choice["message"]
+            text = message["content"]
+            reasoning_content = message.get("reasoning_content")
             model_name = payload.get("model") or self.model
-        except (KeyError, IndexError, TypeError) as exc:
+        except (KeyError, IndexError, TypeError, AttributeError) as exc:
             raise RuntimeError("chat endpoint returned an invalid completion response") from exc
         if not isinstance(text, str):
             raise RuntimeError("chat endpoint completion content must be text")
+        if reasoning_content is not None and not isinstance(reasoning_content, str):
+            raise RuntimeError("chat endpoint reasoning_content must be text or null")
         usage = payload.get("usage") or {}
         return ChatCompletion(
             text=text,
@@ -297,6 +302,7 @@ class OpenAICompatibleClient:
             ),
             request_id=payload.get("id"),
             finish_reason=choice.get("finish_reason") if isinstance(choice.get("finish_reason"), str) else None,
+            reasoning_content_present=isinstance(reasoning_content, str),
         )
 
 
