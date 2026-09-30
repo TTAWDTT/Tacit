@@ -5,12 +5,13 @@ A scope is supplied by the trusted channel, never inferred from message text.
 """
 from collections.abc import Mapping
 from types import MappingProxyType
+import unicodedata
 
 
 def _atom(value):
     if (not isinstance(value, str) or not value or value != value.strip()
             or any(c in value for c in ';=')
-            or any(ord(c) < 32 or 0xD800 <= ord(c) <= 0xDFFF for c in value)):
+            or any(unicodedata.category(c) == 'Cc' or 0xD800 <= ord(c) <= 0xDFFF for c in value)):
         raise ValueError('expected delimiter-free Unicode text without edge whitespace or controls')
     return value
 

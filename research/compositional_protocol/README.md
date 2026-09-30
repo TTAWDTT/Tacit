@@ -53,7 +53,7 @@ Let the public schema be finite domains D_k for field keys k in K. A meaning is 
 record m in the product of D_k. A sender with authorized scope S subset K sees
 only m restricted to S; its encoder E_S sorts keys and joins `k=v` fields by `;`.
 Keys and values must be nonempty Unicode scalar strings, contain neither `;` nor
-`=`, have no surrounding whitespace or control characters. The legal language
+`=`, have no surrounding whitespace or Unicode control characters (category Cc: C0, DEL and C1). The legal language
 L_S is exactly the canonical encodings of records with key set S and v in D_k.
 D_S is strict parsing followed by domain and scope validation. Semantics are the
 conjunction of field equalities, not an answer ID. A receiver matches those
@@ -124,7 +124,7 @@ python -m experiments.compositional_protocol.falsify
 python -m unittest tests.test_compact_labeled_fields tests.test_private_match_v03 tests.test_emergent_ood_v04_split -v
 ```
 
-The first suite has 8 test methods, exhausts 256 meanings for each seed 17/23/41
+The first suite has 9 test methods, exhausts 256 meanings for each seed 17/23/41
 (768 round trips and wire comparisons; 64 held-out per seed), checks train atom
 coverage and complete-tuple exclusion, and verifies all 16 q=4 Private Match
 coordinate pairs against the original strict scorer and compact_kv encoder.
@@ -142,8 +142,13 @@ isolation, sender authentication, prompt fairness or real transfer.
 The companion [experiment specification](EXPERIMENT_SPEC.md) describes the smallest
 remaining empirical question and the gates required before any model call.
 
-Validation at publication: 8 new tests and 38 existing focused regression tests
+Validation after the control-character correction: 9 new tests and 38 existing focused regression tests
 passed; `compileall` and `git diff --check` passed. The broader repository suite
 was not run. No real model inference was attempted. Remote head and PR CI status
 are recorded in the PR body and Space status after publication, not inferred from
 local test success.
+
+Fixed-head review correction: DEL and C1 controls were previously accepted despite
+the documented control-character exclusion. The codec now rejects Unicode category
+Cc, with exhaustive C0/DEL/C1 regression coverage and permitted Unicode boundary
+checks. The payload-equivalence result is unchanged; the report source hash is refreshed.

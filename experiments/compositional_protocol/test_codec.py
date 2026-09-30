@@ -90,6 +90,24 @@ class TypedFieldsTests(unittest.TestCase):
             with self.subTest(record=record), self.assertRaises(ValueError):
                 schema.encode(record, scope=['a'])
 
+    def test_all_c0_del_c1_controls_rejected(self):
+        schema = TypedFields({'a': ['red'], 'b': ['one']})
+        for codepoint in (*range(0x20), *range(0x7f, 0xa0)):
+            atom = 'x' + chr(codepoint) + 'y'
+            with self.subTest(codepoint=hex(codepoint)):
+                for domains in ({atom: ['red']}, {'a': [atom]}):
+                    with self.assertRaises(ValueError):
+                        TypedFields(domains)
+                with self.assertRaises(ValueError):
+                    schema.encode({'a': atom}, scope=['a'])
+                with self.assertRaises(ValueError):
+                    schema.decode('a=' + atom, scope=['a'])
+        # Non-control Unicode remains supported, including adjacent boundaries.
+        for atom in ('x~y', 'x\u00a0y', '颜色'):
+            allowed = TypedFields({'a': [atom]})
+            self.assertEqual(allowed.decode(allowed.encode({'a': atom}, scope=['a']),
+                                            scope=['a']), {'a': atom})
+
     def test_unicode_and_schema_snapshot(self):
         domains = {'颜色': ['红色'], 'shape': ['circle']}
         schema = TypedFields(domains)

@@ -6,7 +6,7 @@
   "scope": "Public fixture enumeration; no LLM success, tokens, latency or full-cost frontier measured",
   "source_sha256": {
     "examples/compact_labeled_fields_v3.json": "2646cd19c10aa5f4bec19d8e38fdb43eac6c15238630b86f79c794bff1a46aa2",
-    "experiments/compositional_protocol/codec.py": "c8154e96c2a73e1538977ffb6aa06d363b231a585bc8db204bd1a1c58f9b957a",
+    "experiments/compositional_protocol/codec.py": "950a0ba715e7c3eaf2a0ee352fb8607d873b6177524527ef5602f088d5cb5904",
     "experiments/emergent_ood_v0_4/compact_fields.py": "3ec6ada180f6ba353277e4035523867f78951d8e653573d1929c31edaedacb72",
     "experiments/emergent_ood_v0_4/split.py": "45faf3a14d0bbe906f167b125b9869c86b3e92db50b280b0dc2fba78e1b7f098",
     "experiments/private_match_v0_3/protocols.py": "ed571d2c98da2df258ea2f0d9b5ef92465e81b358c9bdc01aafc20e870f1555a"
