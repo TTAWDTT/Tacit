@@ -20,7 +20,7 @@
     "protocol-card/codebook distribution or setup",
     "final answer bytes (the SDK seals the answer outside the inter-agent channel)"
   ],
-  "format_source_sha256": "fa3b156975598d1ba70a8f53bb619193932bd2c563e61c9b374edf4e2048e3ce",
+  "format_source_sha256": "9ab162bad636869bf5194434ce2f05139d4ff0d8e3d9798b3775bd323549df30",
   "formats": [
     {
       "message_format": "decimal",

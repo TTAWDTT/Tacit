@@ -18,6 +18,8 @@ The no-message receiver's optimal exact-answer probability is
 
 This is the modal probability of the sum distribution. For fixed `M`, it is nonincreasing and tends to zero at order `m^−1/2` by the lattice local central limit theorem. These formulas are encoded in [`multiparty_sum_scaling.py`](multiparty_sum_scaling.py); all numerators and denominators remain exact integers.
 
+For the example's `M=4` prior, if `k` sender inputs remain unknown, one optimal modal subtotal is `floor(3k/2)`; for odd `k`, `ceil(3k/2)` is tied. This gives an exact Bayes action to a receiver that knows the public sender count and how many distinct sender values it recovered. It does not make a fixed, hand-selected CLI tuple a random sample; infer the no-message success rate only over episodes generated from the stated prior.
+
 ## Exact fixture calculation
 
 For `M=4` (`w=2`), the calculated no-message success and ideal exact payload are:

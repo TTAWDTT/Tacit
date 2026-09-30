@@ -26,7 +26,8 @@ MAX_REQUESTS_PER_EPISODE = 12
 MAX_WIRE_BUDGET_BYTES = 4096
 MESSAGE_FORMATS = ("decimal", "json", "labeled", "binary", "sentence")
 SUM_TASK = (
-    "Team objective: find the sum of the sender-held private integers. "
+    "Team objective: find the exact sum of the sender-held private integers. "
+    "Assume the private integers are drawn independently and uniformly from {0, 1, 2, 3}. "
     "Use only information visible to your role and follow your role instruction."
 )
 
@@ -141,15 +142,22 @@ def run_sum_episode(
     sender_instruction, receiver_format_instruction = _format_instructions(message_format)
     instructions = {name: sender_instruction for name in sender_names}
     instructions[RECEIVER] = (
-        "Use only information visible in your private context and received sender messages. "
+        "Use only information visible in your public/private context and received sender messages. "
         f"{receiver_format_instruction} If a full list of private values is directly present in your private context, "
-        "sum those values instead. Return only the exact sum as a base-10 integer."
+        "sum those values instead. The public context gives sender_count=m. If fewer than m distinct sender inputs "
+        "are known because communication is disabled, a message is missing, or a message is malformed, let k be the "
+        "number of unknown inputs. Under the task's independent uniform prior on {0, 1, 2, 3}, use floor(3k/2) "
+        "as one optimal exact-sum guess for those inputs, then add all known values. Return only the exact sum as a "
+        "base-10 integer."
     )
     protocol = DialogueProtocolCard(f"private-sum-{message_format}-v0", instructions)
-    contexts = {name: f"Your private integer is {value}." for name, value in zip(sender_names, values)}
-    contexts[RECEIVER] = ""
+    contexts = {
+        name: f"Public metadata: sender_count={len(sender_names)}. Your private integer is {value}."
+        for name, value in zip(sender_names, values)
+    }
+    contexts[RECEIVER] = f"Public metadata: sender_count={len(sender_names)}."
     if condition == "full_information":
-        contexts[RECEIVER] = "All private integers, in sender order: " + ", ".join(map(str, values))
+        contexts[RECEIVER] += " All private integers, in sender order: " + ", ".join(map(str, values))
     schedule = tuple((name, RECEIVER) for name in sender_names) if condition == "communicate" else ()
     result = exchange_dialogue(
         agents,
@@ -189,6 +197,7 @@ def run_sum_episode(
         "condition": condition,
         "message_format": message_format,
         "sender_count": len(sender_names),
+        "assumed_input_prior": "independent_uniform_integer_0_to_3",
         "expected_sum": sum(values),
         "prediction": prediction,
         "exact_success": prediction == sum(values),

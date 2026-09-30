@@ -1,4 +1,5 @@
 import json
+import re
 import unittest
 
 from examples.multiparty_private_sum import MESSAGE_FORMATS, _decode_sender_message, run_sum_episode
@@ -39,17 +40,19 @@ class FakeSumAgent:
             )
             return ChatCompletion(output, f"fake-{self.name}")
         transcript = payload["visible_transcript"]
-        if transcript:
+        if "All private integers, in sender order: " in payload["private_context"]:
+            values = payload["private_context"].rsplit(": ", 1)[1]
+            answer = sum(int(value) for value in values.split(", "))
+        else:
+            match = re.search(r"sender_count=(\d+)", payload["private_context"])
+            sender_count = 0 if match is None else int(match.group(1))
             parsed_values = [
                 _decode_sender_message(self.message_format, entry["message"])
                 for entry in transcript
             ]
-            answer = 0 if any(value is None for value in parsed_values) else sum(parsed_values)
-        elif payload["private_context"].startswith("All private integers, in sender order: "):
-            values = payload["private_context"].rsplit(": ", 1)[1]
-            answer = sum(int(value) for value in values.split(", "))
-        else:
-            answer = 0
+            known_values = [value for value in parsed_values if value is not None]
+            missing_count = max(0, sender_count - len(known_values))
+            answer = sum(known_values) + (3 * missing_count) // 2
         return ChatCompletion(str(answer), f"fake-{self.name}")
 
 
@@ -75,10 +78,13 @@ class MultipartyPrivateSumExampleTests(unittest.TestCase):
         self.assertEqual(result["model_calls"], 4)
         self.assertEqual(len(result["message_transmissions"]), 3)
         for value, sender in zip([1, 2, 3], senders):
-            self.assertEqual(sender.calls[0]["private_context"], f"Your private integer is {value}.")
+            self.assertEqual(
+                sender.calls[0]["private_context"],
+                f"Public metadata: sender_count=3. Your private integer is {value}.",
+            )
             self.assertEqual(sender.calls[0]["visible_transcript"], [])
-        self.assertEqual(receiver.calls[0]["private_context"], "")
-        self.assertIn("private context and received sender messages", receiver.system_instructions[0])
+        self.assertEqual(receiver.calls[0]["private_context"], "Public metadata: sender_count=3.")
+        self.assertIn("public/private context and received sender messages", receiver.system_instructions[0])
         self.assertEqual(
             [entry["message"] for entry in receiver.calls[0]["visible_transcript"]],
             ["1", "2", "3"],
@@ -120,7 +126,7 @@ class MultipartyPrivateSumExampleTests(unittest.TestCase):
             protocol_ids.add(result["protocol_id"])
         self.assertEqual(len(protocol_ids), len(MESSAGE_FORMATS))
 
-    def test_duplicate_json_field_fails_syntax_and_cannot_hide_sender_error(self):
+    def test_duplicate_json_field_fails_syntax_even_when_bayes_guess_saves_answer(self):
         senders = [
             FakeSumAgent("S1", 1, raw_output='{"value":1,"value":1}', message_format="json"),
             FakeSumAgent("S2", 2, message_format="json"),
@@ -129,7 +135,7 @@ class MultipartyPrivateSumExampleTests(unittest.TestCase):
         result = run_sum_episode(
             [1, 2], sender_clients=senders, receiver_client=receiver, message_format="json",
         )
-        self.assertFalse(result["exact_success"])
+        self.assertTrue(result["exact_success"])  # the optimal missing-value guess happens to match this input
         self.assertEqual(result["sender_syntax_valid_count"], 1)
         self.assertEqual(result["sender_value_faithful_count"], 1)
 
@@ -161,6 +167,7 @@ class MultipartyPrivateSumExampleTests(unittest.TestCase):
         self.assertEqual(result["sender_value_faithful_count"], 2)
         self.assertEqual(result["sender_delivered_value_faithful_count"], 1)
         self.assertEqual([row["delivered"] for row in result["sender_messages"]], [True, False])
+        self.assertEqual(result["prediction"], 4)  # delivered 1 plus the mode for two missing inputs
         self.assertEqual(
             [row["message"] for row in receiver.calls[0]["visible_transcript"]],
             ["1"],
@@ -169,11 +176,13 @@ class MultipartyPrivateSumExampleTests(unittest.TestCase):
         self.assertEqual(senders[2].calls, [])
 
     def test_no_message_and_full_information_are_distinct_controls(self):
-        no_message, senders, _receiver = self.run_with_fakes([1, 2], "no_message")
+        no_message, senders, receiver = self.run_with_fakes([0, 0], "no_message")
         self.assertEqual(no_message["model_calls"], 1)
         self.assertEqual(no_message["message_transmissions"], [])
         self.assertEqual([len(sender.calls) for sender in senders], [0, 0])
         self.assertFalse(no_message["exact_success"])
+        self.assertEqual(no_message["prediction"], 3)  # Bayes-optimal mode for two missing uniform inputs
+        self.assertEqual(receiver.calls[0]["private_context"], "Public metadata: sender_count=2.")
         self.assertIsNone(no_message["all_sender_messages_syntax_valid"])
         self.assertIsNone(no_message["all_sender_values_faithful"])
 
@@ -181,8 +190,9 @@ class MultipartyPrivateSumExampleTests(unittest.TestCase):
         self.assertTrue(full_information["exact_success"])
         self.assertEqual(full_information["model_calls"], 1)
         self.assertEqual([len(sender.calls) for sender in senders], [0, 0])
+        self.assertIn("sender_count=2", receiver.calls[0]["private_context"])
         self.assertIn("1, 2", receiver.calls[0]["private_context"])
-        self.assertIn("private context and received sender messages", receiver.system_instructions[0])
+        self.assertIn("public/private context and received sender messages", receiver.system_instructions[0])
         self.assertIsNone(full_information["all_sender_values_faithful"])
 
     def test_rejects_invalid_inputs_before_any_client_call(self):
