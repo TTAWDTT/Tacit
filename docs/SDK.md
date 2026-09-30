@@ -62,7 +62,7 @@ $env:TLU_RECEIVER_URL = "http://localhost:8001/v1"
 python examples/two_agent_exchange.py
 ```
 
-The adapter uses only Python's standard library and is compatible with OpenAI-style `/chat/completions` endpoints, including the repository's optional local server. Set `TLU_SENDER_URL`, `TLU_RECEIVER_URL`, model names, and API keys to configure the runnable example in [`examples/two_agent_exchange.py`](../examples/two_agent_exchange.py). The adapter does not load a model until a request is made; this SDK itself does not start a server or download weights.
+The adapter uses only Python's standard library and is compatible with OpenAI-style `/chat/completions` endpoints, including the repository's optional local server. Set `TLU_SENDER_URL`, `TLU_RECEIVER_URL`, model names, and API keys to configure the runnable example in [`examples/two_agent_exchange.py`](../examples/two_agent_exchange.py). The client omits the API key from its object representation and validates endpoint, timeout, and token-limit configuration before making a request. The adapter does not load a model until a request is made; this SDK itself does not start a server or download weights.
 
 ## Fixed-schedule multi-agent exchange
 

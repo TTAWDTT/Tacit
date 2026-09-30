@@ -6,7 +6,7 @@ silently normalize, compress, or repair a protocol message.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import json
 import math
 import time
@@ -230,17 +230,40 @@ class OpenAICompatibleClient:
 
     base_url: str
     model: str
-    api_key: str | None = None
+    api_key: str | None = field(default=None, repr=False)
     timeout_seconds: float = 120.0
     max_tokens: int = 512
     follow_redirects: bool = True
     temperature: float | None = None
 
     def complete(self, messages: Sequence[Mapping[str, str]]) -> ChatCompletion:
-        if self.timeout_seconds <= 0:
-            raise ValueError("timeout_seconds must be positive")
-        if self.max_tokens < 1:
-            raise ValueError("max_tokens must be positive")
+        if not isinstance(self.base_url, str) or not self.base_url.strip():
+            raise ValueError("base_url must be a non-empty string")
+        if not isinstance(self.model, str) or not self.model.strip():
+            raise ValueError("model must be a non-empty string")
+        if self.api_key is not None and (
+            not isinstance(self.api_key, str) or not self.api_key.strip()
+        ):
+            raise ValueError("api_key must be a non-empty string or None")
+        try:
+            finite_timeout = math.isfinite(self.timeout_seconds)
+        except (OverflowError, TypeError):
+            finite_timeout = False
+        if (
+            isinstance(self.timeout_seconds, bool)
+            or not isinstance(self.timeout_seconds, (int, float))
+            or not finite_timeout
+            or self.timeout_seconds <= 0
+        ):
+            raise ValueError("timeout_seconds must be a finite positive number")
+        if (
+            isinstance(self.max_tokens, bool)
+            or not isinstance(self.max_tokens, int)
+            or self.max_tokens < 1
+        ):
+            raise ValueError("max_tokens must be a positive integer")
+        if not isinstance(self.follow_redirects, bool):
+            raise ValueError("follow_redirects must be a boolean")
         if self.temperature is not None and (
             isinstance(self.temperature, bool)
             or not isinstance(self.temperature, (int, float))

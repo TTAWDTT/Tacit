@@ -567,9 +567,11 @@ class TacitRuntimeTests(unittest.TestCase):
                 return json.dumps(response_data).encode()
 
         with patch("tacit.runtime.urlopen", return_value=Response()) as open_url:
-            completion = OpenAICompatibleClient(
+            client = OpenAICompatibleClient(
                 "http://localhost:8000/v1/", "requested-model", api_key="secret"
-            ).complete([{"role": "user", "content": "hello"}])
+            )
+            self.assertNotIn("secret", repr(client))
+            completion = client.complete([{"role": "user", "content": "hello"}])
 
         request = open_url.call_args.args[0]
         self.assertIsInstance(request, Request)
@@ -653,6 +655,27 @@ class TacitRuntimeTests(unittest.TestCase):
         self.assertEqual(request_body["temperature"], 0.0)
         with self.assertRaisesRegex(ValueError, "temperature"):
             OpenAICompatibleClient("http://localhost:8000/v1", "m", temperature=float("nan")).complete([])
+
+    def test_openai_compatible_client_validates_request_configuration(self) -> None:
+        invalid_configs = (
+            ({"base_url": ""}, "base_url"),
+            ({"model": " "}, "model"),
+            ({"api_key": " "}, "api_key"),
+            ({"timeout_seconds": 0}, "timeout_seconds"),
+            ({"timeout_seconds": float("inf")}, "timeout_seconds"),
+            ({"timeout_seconds": True}, "timeout_seconds"),
+            ({"timeout_seconds": "30"}, "timeout_seconds"),
+            ({"timeout_seconds": 10**400}, "timeout_seconds"),
+            ({"max_tokens": 0}, "max_tokens"),
+            ({"max_tokens": 1.5}, "max_tokens"),
+            ({"max_tokens": True}, "max_tokens"),
+            ({"follow_redirects": 1}, "follow_redirects"),
+        )
+        for overrides, expected_error in invalid_configs:
+            with self.subTest(overrides=overrides), self.assertRaisesRegex(ValueError, expected_error):
+                config = {"base_url": "http://localhost:8000/v1", "model": "model"}
+                config.update(overrides)
+                OpenAICompatibleClient(**config).complete([])
 
     def test_loopback_client_can_reject_redirects(self) -> None:
         redirected_requests = []
