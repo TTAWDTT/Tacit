@@ -1,5 +1,21 @@
 # Research log
 
+## 2026-09-30 - Implement compact-field message audit
+
+- **Observation:** the existing v0.4 generic shared-card path retains the raw sender message and exact evaluator target but does not populate its syntax/fidelity audit fields. Without a separate scorer, format nonadherence and semantic transmission failure are conflated with the receiver's final selection.
+- **Change:** added `experiments/emergent_ood_v0_4/compact_fields.py` and `research/score_compact_fields.py`. The scorer pins the exact card SHA-256, verifies the runner sidecar binds the input bytes and single condition to that card, records syntax validity, ontology-valid parsing, sender-target fidelity, and exact candidate selection independently, and writes a separate hashed audit report. It refuses paths outside the project, duplicate episode IDs, card/source/manifest overwrite, and unpinned card edits.
+- **Prediction:** among outputs with syntax validity and exact sender fidelity, receiver exact selection should exceed its `1/k` no-message reference if the fixed shared convention is usable. Syntax-valid but unfaithful outputs must be excluded from the convention-use interpretation while remaining task outcomes in the intent-to-treat ledger.
+- **Verification:** ten focused tests pass. They cover the pinned card digest, canonical encoder, malformed/order/spacing cases, unknown values, syntax-versus-fidelity separation, per-row task-success separation, duplicate IDs, runner-manifest binding, and the CLI's real JSONL/sidecar read-write path including source-overwrite rejection. `py_compile` and CLI help succeed. No model endpoint is contacted.
+- **Limit / next gate:** the scorer consumes post-run evaluator trace fields and is an offline analysis artifact; it gives no information to either agent. The protocol card remains default-ontology-only, and there are no LLM outputs or baseline comparisons yet.
+
+## 2026-09-30 - Add compact labeled-text comparator candidate
+
+- **Observation:** the current natural-language arm asks for a sentence repeating each field name, while compact JSON has structural punctuation. The v0.4 shared protocol-card arm can carry a task-specific textual grammar, so a compact explicit-label baseline can be prepared without changing or relaunching the runner.
+- **Change:** froze a default-ontology `name=value;...` card and documented its exact grammar, scope, counterfactual, cost boundary, and required offline adherence scorer. It is stage-independent and does not reveal candidate or evaluator data. Generic `shared_protocol_card` does not fill exact format-audit fields, so this is not yet eligible for an interpretable model-format result.
+- **Model-free calculation:** for all 64 default held-out tuples at split seed 17, compact labeled payloads are 49–57 UTF-8 bytes (mean 53) versus 67–75 bytes (mean 71) for compact JSON of the same keys and values. The 18-byte difference comes from the serializer punctuation only. This does not imply fewer model tokens, smaller application envelopes by 18 bytes, or improved success.
+- **Prediction / next gate:** the fixed serializer must save exactly 18 payload bytes per identical ASCII tuple compared with compact JSON. A future model batch must freeze a raw-trace parser that marks malformed/reordered/incorrect fields as fidelity failures independently of strict receiver task success. Keep the card unchanged after validation/test data are observed.
+- **Limit:** no model call, parser implementation, or protocol comparison was performed in this step. Default ontology only; values containing `;` or `=` require an escape grammar and are outside this card's scope. Run only after the independent receiver gate and a fresh passing resource preflight.
+
 ## 2026-09-30 - Add byte-rounded held-out oracle accounting
 
 - **Observation:** a two-bit ideal payload advantage does not necessarily save an application byte. The default `(d,V)=(4,4)` held-out rank and full-universe rank both occupy one byte, while nearby scaling points can cross a byte boundary.

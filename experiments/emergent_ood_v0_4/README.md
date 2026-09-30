@@ -193,6 +193,15 @@ python -m experiments.emergent_ood_v0_4.runner --input-dir .cache/emergent_ood_v
 
 After a protocol has been developed on training episodes and frozen, evaluate it with `--conditions shared_protocol_card --protocol-card .cache/emergent_ood_v0_4/frozen-card.json`. Validation can select development choices; freeze the card before touching the test stage.
 
+The default-ontology [compact labeled-fields card](../../examples/compact_labeled_fields_default_v1.json) is one frozen text-baseline candidate. Run it as the sole condition so the pinned [offline scorer](../../research/score_compact_fields.py) can verify the raw result JSONL and matching manifest, then report syntax validity, value decoding, sender fidelity, and exact task success separately:
+
+```powershell
+python experiments/emergent_ood_v0_4/runner.py --execute --input-dir .cache/emergent_ood_v0_4/evaluation-23 --split-seed 23 --stage test --sets 1 --conditions shared_protocol_card --protocol-card examples/compact_labeled_fields_default_v1.json --sender-model SENDER_MODEL_ID --receiver-model RECEIVER_MODEL_ID --sender-tokenizer-id SENDER_TOKENIZER_ID --receiver-tokenizer-id RECEIVER_TOKENIZER_ID --capability-input-dir .cache/emergent_ood_v0_4/capability-17 --capability-split-seed 17 --capability-ledger .cache/emergent_ood_v0_4/capability.jsonl --resource-preflight .cache/emergent_ood_v0_4/resource_preflight.json --output .cache/emergent_ood_v0_4/compact-fields-raw.jsonl
+python research/score_compact_fields.py --input .cache/emergent_ood_v0_4/compact-fields-raw.jsonl --output .cache/emergent_ood_v0_4/compact-fields-audit.json
+```
+
+This command is an interface example, not authorization to run inference: keep the independent receiver gate and fresh resource preflight. The compact-fields card is default-ontology-only, and the runner's generic card audit fields stay null; use the offline scorer's separate artifact. No such model run has occurred.
+
 Execution requires a passing resource report no older than five minutes, obtained before starting the configured local endpoints. The runner only accepts loopback URLs and does not start the service:
 
 ```powershell
