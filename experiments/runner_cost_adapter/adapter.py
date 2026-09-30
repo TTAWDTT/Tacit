@@ -63,6 +63,13 @@ class Contract:
         return digest(self.__dict__)
 
 
+class PartialHTTPRead(GateError):
+    """Bounded response-body evidence only; never carries headers/credentials."""
+    def __init__(self, status, partial):
+        super().__init__('incomplete HTTP response body')
+        self.status, self.partial = status, partial
+
+
 class LoopbackHTTP:
     """One stateless HTTP POST, no proxy, redirects, retry or connection reuse.
 
@@ -77,7 +84,10 @@ class LoopbackHTTP:
             conn.request('POST', u.path, body=body, headers={'Content-Type': 'application/json'})
             response = conn.getresponse()
             # Preserve limited error/over-cap bytes for audit; caller halts the ledger.
-            return response.status, response.read(contract.max_response_bytes + 1)
+            try:
+                return response.status, response.read(contract.max_response_bytes + 1)
+            except http.client.IncompleteRead as exc:
+                raise PartialHTTPRead(response.status, exc.partial[:contract.max_response_bytes]) from exc
         finally:
             conn.close()
 
@@ -91,7 +101,7 @@ class GuardedChatModel:
     count_text uses that endpoint's native tokenizer for the returned text.
     """
     def __init__(self, *, ledger, contract, role, event_prefix, binding, phase,
-                 count_prompt, count_text, transport=None):
+                 count_prompt, count_text, transport=None, peer_contract=None):
         if role not in ('sender', 'receiver') or phase not in ('train', 'validation'):
             raise GateError('development-only named role/phase required')
         if not event_prefix or not binding:
@@ -102,9 +112,21 @@ class GuardedChatModel:
         self.count_prompt, self.count_text = count_prompt, count_text
         self.transport = LoopbackHTTP() if transport is None else transport
         self.index = 0
+        peer = contract if peer_contract is None else peer_contract
+        if not isinstance(peer, Contract):
+            raise GateError('peer token axes require an explicit verified endpoint Contract')
+        other_role = 'sender' if role == 'receiver' else 'receiver'
+        peer_prefix = other_role + ':' + peer.identity + ':'
+        self.supported_axes = frozenset((*self.axes(), peer_prefix + 'input_tokens', peer_prefix + 'output_tokens'))
         ledger.db.execute('CREATE TABLE IF NOT EXISTS model_receipts ('
             'event_id TEXT PRIMARY KEY, request BLOB NOT NULL, request_sha256 TEXT NOT NULL, '
-            'contract TEXT NOT NULL, response BLOB, receipt TEXT, error TEXT)')
+            'contract TEXT NOT NULL, response BLOB, receipt TEXT, error TEXT, '
+            'http_status INTEGER, response_truncated INTEGER)')
+        # Add observational fields to existing receipts without resetting ledger history.
+        columns = {r[1] for r in ledger.db.execute('PRAGMA table_info(model_receipts)')}
+        for name in ('http_status', 'response_truncated'):
+            if name not in columns:
+                ledger.db.execute('ALTER TABLE model_receipts ADD COLUMN ' + name + ' INTEGER')
 
     @property
     def token_axes(self):
@@ -129,6 +151,8 @@ class GuardedChatModel:
         event_id = self.prefix + '/' + self.role + '/' + str(self.index)
         self.index += 1
         axes = self.ledger.policy.axes
+        if set(axes) - self.supported_axes:
+            raise GateError('unsupported budget axis; unknown cost cannot be reserved/measured as zero')
         if not set(self.axes()) <= set(axes):
             raise GateError('ledger lacks exact endpoint/role/native token or serialization axes')
         work, context = {a: 0 for a in axes}, {a: 0 for a in axes}
@@ -149,7 +173,8 @@ class GuardedChatModel:
                 elapsed = time.perf_counter() - started
                 if not isinstance(raw, bytes):
                     raise GateError('transport must return raw response bytes')
-                self.ledger.db.execute('UPDATE model_receipts SET response=? WHERE event_id=?', (raw, event_id))
+                self.ledger.db.execute('UPDATE model_receipts SET response=?,http_status=?,response_truncated=? WHERE event_id=?',
+                                       (raw, status, int(len(raw) > self.contract.max_response_bytes), event_id))
                 if len(raw) > self.contract.max_response_bytes or status != 200:
                     raise GateError('HTTP error/redirect or response read cap exceeded')
                 payload = json.loads(raw)
@@ -188,6 +213,13 @@ class GuardedChatModel:
                     payload.get('id'), choice.get('finish_reason'), False)
                 # Task success is determined by unchanged run_condition and stored separately.
                 return Outcome(completion, actual, True)
+            except PartialHTTPRead as exc:
+                evidence = dict(http_status=exc.status, response_truncated=True,
+                    partial_body_bytes=len(exc.partial), actual_usage=None,
+                    transport_boundary='HTTP response body only; headers excluded', http_read_error='IncompleteRead')
+                self.ledger.db.execute('UPDATE model_receipts SET response=?,http_status=?,response_truncated=1,receipt=?,error=? WHERE event_id=?',
+                    (exc.partial, exc.status, json.dumps(evidence), type(exc).__name__, event_id))
+                raise
             except BaseException as exc:
                 self.ledger.db.execute('UPDATE model_receipts SET error=? WHERE event_id=?',
                                        (type(exc).__name__, event_id))
@@ -202,10 +234,11 @@ class GuardedChatModel:
 
 
 def receipts(ledger):
-    rows = ledger.db.execute('SELECT event_id,request,request_sha256,contract,response,receipt,error FROM model_receipts ORDER BY rowid').fetchall()
+    rows = ledger.db.execute('SELECT event_id,request,request_sha256,contract,response,receipt,error,http_status,response_truncated FROM model_receipts ORDER BY rowid').fetchall()
     return [dict(event_id=r[0], request=json.loads(r[1]), request_sha256=r[2], contract=json.loads(r[3]),
                  response_base64=base64.b64encode(r[4]).decode() if r[4] is not None else None,
-                 receipt=json.loads(r[5]) if r[5] else None, error=r[6]) for r in rows]
+                 receipt=json.loads(r[5]) if r[5] else None, error=r[6], http_status=r[7],
+                 response_truncated=bool(r[8]) if r[8] is not None else None) for r in rows]
 
 
 class NativeCounters:

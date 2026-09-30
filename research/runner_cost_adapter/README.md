@@ -49,9 +49,20 @@ bytes are sent to the transport. Input native tokens and the complete HTTP JSON
 request body are recurring context; output tokens, response JSON bytes and one
 model request are work. Native token axes include role + full endpoint contract
 hash; sender/receiver/model token counts are not converted into equivalent compute.
-All registered axes appear in every Charge. Ledger upper bounds remain conservative
+Every policy axis must be supported: current-role native input/output, shared
+request/response-body bytes and model_requests, plus only the opposite role's
+native axes from the same Contract or an explicit peer_contract. Undeclared peer
+contracts and any other axes (including provider_generation_seconds,
+local_compute_cost, fee or arbitrary token axes) reject before reservation/POST.
+The other role's zeros mean this single POST makes no call to that role, not that
+its endpoint is free. Observational timing and unknown compute costs cannot be
+promoted to enforced budget dimensions. All supported policy axes appear in each Charge. Ledger upper bounds remain conservative
 and non-refundable; actual usage is separate. Raw HTTP responses are stored as
-bytes, including malformed/error responses. There is no retry. Missing usage,
+bytes, including malformed/error responses. Incomplete chunked reads preserve bounded
+partial response-body bytes, HTTP status and an explicit truncation flag, while
+usage stays unknown and the ledger halts. Response headers/credentials are not
+stored. New observational columns migrate an existing receipt table without
+resetting reservations or old receipts; missing historical metadata stays null. There is no retry. Missing usage,
 model/template mismatch, hidden reasoning, redirects, response read overflow,
 transport errors or output overrun halt the ledger with its reservation intact.
 An observed token overrun retains observed actual values; invalid/untrusted usage
@@ -179,3 +190,29 @@ and verified server assumptions; it does not independently prove server weight
 revision, max input context, server cancellation, statelessness or free billing.
 No passing booleans or HTTP mock results count as that verification. Keep draft
 until independent adapter review; there is no model-execution release here.
+
+## Independent review corrections
+
+Original published head `79db169bce30f22707f7d42319b3f44d5e3c37a1` accepted arbitrary
+Policy axes and filled unhandled dimensions with zero. A zero cap on provider
+seconds accepted an observed five-second response; unknown compute cost likewise
+became a false ledger zero. The revision rejects these unsupported axes before
+POST rather than claiming to implement timing/compute hard bounds. Only declared
+peer-native token axes may be zero for a call exclusively to the current role.
+
+The original chunked-HTTP failure halted but lost IncompleteRead.partial. The
+revision retains bounded response-body evidence, status200 and truncation for
+`abc` without a final chunk, while actual usage remains unknown and no retry
+POST occurs. A mocked overlong partial is clipped to the response limit. Endpoint
+headers/credentials are excluded from partial evidence. Existing receipts migrate
+in place without a ledger reset.
+
+Both targeted tests failed at the original code before fixing it (all three
+unsupported-axis subcases entered the fake transport; incomplete response was
+null). Added five test methods cover these failures, explicit distinct peers,
+partial-byte bounds and legacy receipt migration. Revised author validation:
+23/23 adapter tests, 86/86 combined (23+37+26), compileall and whitespace checks.
+This is author evidence pending fixed-head independent re-review. The review also
+confirmed six related cumulative/failure/no-retry/template/receipt checks; existing
+tests continue to pass. No real model call or complete endpoint qualification is
+claimed. CI status is reported separately in the PR, not inferred from tests.

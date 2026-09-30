@@ -5,11 +5,14 @@ import json
 from pathlib import Path
 import tempfile
 import sqlite3
+import base64
+import http.client
+from unittest.mock import patch
 import threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import unittest
 
-from experiments.runner_cost_adapter.adapter import Contract, GuardedChatModel, LoopbackHTTP, raw_json, receipts, NativeCounters
+from experiments.runner_cost_adapter.adapter import Contract, GuardedChatModel, LoopbackHTTP, raw_json, receipts, NativeCounters, PartialHTTPRead
 from experiments.runner_cost_adapter.runner_bridge import run_development_episode, episode_prefix, export_evidence
 from experiments.m2_gates.budget import GateError, Ledger, Policy
 from experiments.m2_gates.isolation import Scope
@@ -87,6 +90,108 @@ class AdapterTests(unittest.TestCase):
         return run_development_episode(ledger=self.ledger,scope=self.scope,source=self.source,row_index=0,
             episode=self.episode,condition='shared_protocol_card',split=self.split,task_seed=9,sender=sender,receiver=receiver,
             protocol_card=card,wire_budget_bytes=wire_budget)
+
+    def test_unsupported_budget_axes_rejected_before_post(self):
+        for name in ('provider_generation_seconds','local_compute_cost','unknown_tokens'):
+            with self.subTest(axis=name):
+                axes=dict(self.ledger.policy.per_request)
+                axes[name]=0
+                ledger=Ledger(self.root/(name+'.sqlite'),Policy(per_request=axes,cumulative=axes,max_calls=1))
+                try:
+                    c=GuardedChatModel(ledger=ledger,contract=self.contract,role='receiver',
+                        event_prefix=name,binding=self.scope.binding,phase='validation',
+                        count_prompt=self.counter,count_text=self.text_counter,transport=self.transport)
+                    self.modify=lambda p:dict(p,usage=dict(p['usage'],generation_seconds=5))
+                    with self.assertRaisesRegex(GateError,'unsupported'):
+                        c.complete([dict(role='user',content='x')])
+                    self.assertEqual(ledger.snapshot(),[])
+                finally:ledger.close()
+        self.assertEqual(self.transport_calls,0)
+
+    def test_incomplete_chunked_response_retains_partial_status_and_truncation(self):
+        owner=self
+        class Handler(BaseHTTPRequestHandler):
+            def log_message(self,*args):pass
+            def do_POST(inner):
+                inner.rfile.read(int(inner.headers['Content-Length']))
+                owner.transport_calls += 1
+                inner.send_response(200)
+                inner.send_header('Transfer-Encoding','chunked')
+                inner.end_headers()
+                inner.wfile.write(b'3\r\nabc\r\n')
+                inner.wfile.flush()
+                inner.close_connection=True  # no terminal zero chunk
+        server=HTTPServer(('127.0.0.1',0),Handler)
+        t=threading.Thread(target=server.serve_forever,daemon=True);t.start()
+        try:
+            contract=replace(self.contract,endpoint=f'http://127.0.0.1:{server.server_port}/v1/chat/completions')
+            axes={a:100000 for a in ('request_body_utf8_bytes','response_body_utf8_bytes','model_requests')}
+            for a in ('input_tokens','output_tokens'):axes['receiver:'+contract.identity+':'+a]=100000
+            ledger=Ledger(self.root/'partial.sqlite',Policy(per_request=axes,cumulative=axes,max_calls=2))
+            try:
+                c=GuardedChatModel(ledger=ledger,contract=contract,role='receiver',event_prefix='partial',binding='fixture',phase='train',count_prompt=self.counter,count_text=self.text_counter)
+                with self.assertRaises(PartialHTTPRead):c.complete([dict(role='user',content='x')])
+                row=receipts(ledger)[0]
+                self.assertEqual(base64.b64decode(row['response_base64']),b'abc')
+                self.assertEqual(row['http_status'],200)
+                self.assertTrue(row['response_truncated'])
+                self.assertEqual(ledger.snapshot()[0]['status'],'halted')
+                self.assertIsNone(ledger.snapshot()[0]['actual'])
+                with self.assertRaises(GateError):c.complete([dict(role='user',content='x')])
+                self.assertEqual(owner.transport_calls,1)
+            finally:ledger.close()
+        finally:server.shutdown();server.server_close();t.join()
+
+    def test_explicit_peer_contract_axes_only(self):
+        peer=replace(self.contract,endpoint='http://127.0.0.1:9877/v1/chat/completions')
+        axes={a:100000 for a in ('request_body_utf8_bytes','response_body_utf8_bytes','model_requests')}
+        for role,contract in (('sender',peer),('receiver',self.contract)):
+            for a in ('input_tokens','output_tokens'):axes[role+':'+contract.identity+':'+a]=100000
+        ledger=Ledger(self.root/'peer.sqlite',Policy(per_request=axes,cumulative=axes,max_calls=1))
+        try:
+            kwargs=dict(ledger=ledger,contract=self.contract,role='receiver',event_prefix='peer',binding='fixture',phase='train',count_prompt=self.counter,count_text=self.text_counter,transport=self.transport)
+            with self.assertRaisesRegex(GateError,'unsupported'):
+                GuardedChatModel(**kwargs).complete([dict(role='user',content='x')])
+            self.assertEqual(self.transport_calls,0)
+            GuardedChatModel(**kwargs,peer_contract=peer).complete([dict(role='user',content='x')])
+            actual=ledger.snapshot()[0]['actual']
+            self.assertEqual(actual['sender:'+peer.identity+':input_tokens'],'0')
+            self.assertEqual(actual['sender:'+peer.identity+':output_tokens'],'0')
+            self.assertEqual(self.transport_calls,1)
+        finally:ledger.close()
+
+    def test_partial_evidence_is_bounded_and_has_no_headers(self):
+        class Response:
+            status=200
+            def read(inner,size):raise http.client.IncompleteRead(b'x'*10000)
+        class Connection:
+            def request(inner,*args,**kwargs):pass
+            def getresponse(inner):return Response()
+            def close(inner):pass
+        with patch('experiments.runner_cost_adapter.adapter.http.client.HTTPConnection',return_value=Connection()):
+            with self.assertRaises(PartialHTTPRead):
+                self.client(transport=LoopbackHTTP()).complete([dict(role='user',content='x')])
+        r=receipts(self.ledger)[0]
+        self.assertEqual(len(base64.b64decode(r['response_base64'])),self.contract.max_response_bytes)
+        self.assertEqual(r['http_status'],200)
+        self.assertTrue(r['response_truncated'])
+        self.assertEqual(r['receipt']['actual_usage'],None)
+        self.assertNotIn('headers',r['receipt'])
+
+    def test_legacy_receipt_columns_migrate_without_reset(self):
+        self.ledger.db.execute('CREATE TABLE model_receipts (event_id TEXT PRIMARY KEY, request BLOB NOT NULL, request_sha256 TEXT NOT NULL, contract TEXT NOT NULL, response BLOB, receipt TEXT, error TEXT)')
+        self.ledger.db.execute('INSERT INTO model_receipts VALUES (?,?,?,?,?,?,?)',
+            ('old',b'{}','old-hash','{}',b'old',None,'old-error'))
+        c=self.client()
+        old=receipts(self.ledger)[0]
+        self.assertEqual(old['response_base64'],base64.b64encode(b'old').decode())
+        self.assertEqual(old['error'],'old-error')
+        self.assertIsNone(old['http_status'])
+        self.assertIsNone(old['response_truncated'])
+        c.complete([dict(role='user',content='x')])
+        self.assertEqual(len(receipts(self.ledger)),2)
+        self.assertEqual(receipts(self.ledger)[1]['http_status'],200)
+        self.assertFalse(receipts(self.ledger)[1]['response_truncated'])
 
     def test_native_counter_uses_verified_template_options(self):
         class Tokenizer:
