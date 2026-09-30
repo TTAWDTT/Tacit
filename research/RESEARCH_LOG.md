@@ -1890,3 +1890,11 @@ ceil) worst-case bits: 9, 10, and 11 for the three lengths. This predicts a comp
 - **Sources checked:** [PACT paper](https://arxiv.org/abs/2606.05304), [PACT code](https://github.com/iNLP-Lab/PACT), [Proxifield paper](https://arxiv.org/abs/2609.20889).
 - **Thesis synchronization:** updated the public README and research thesis to name PACT-style action-state filtering and Proxifield-style routing as explicit prior baselines, and to state the representation/routing identification condition.
 - **Applicability correction:** clarified that PACT-style compression requires action/state handoff or repeated history, and Proxifield-style routing requires meaningful recipient choice. They are not forced into the current one-shot v0.4 fixture; empirical exclusions must be documented before test access. This prevents an invalid baseline from changing the estimand.
+
+# 2026-09-30 - Quantify v0.4 independent-cluster precision limits
+
+- **Question:** does the default v0.4 plumbing bundle contain enough independent support for confirmatory protocol comparisons?
+- **Inspection:** the fixture defaults to 16 candidate sets with 4 nested targets per set, and its documentation explicitly says this is not a sample-size recommendation. Existing inference planning identifies independently generated task/split clusters, rather than their repeated target episodes, as the population unit.
+- **Calculation:** from the already documented distribution-free split-mean bound `r=sqrt(2 ln(2/alpha)/n)`, compute the two-sided 95% Hoeffding radius at 25–1,000 independent clusters and the minimum `n` for `r≤δ` at hypothetical observed effects 0.30–0.05. The latter range is 82–2,952 independent clusters.
+- **Change / interpretation:** add the algebraic sensitivity table and explicitly label it precision-only, not 80%-power or a model-derived recommendation. This makes the resource/sample-size trade-off visible and prevents nested episode counts from being misreported as independent evidence.
+- **Limit:** the bound is conservative; no model outcomes or pilot variance were used. A confirmatory sample size remains unfrozen until independent pilot clusters, a practically meaningful effect, multiplicity family, and real model-call feasibility are justified. No GPU, model, endpoint, or benchmark call was used; the calculation was a tiny standard-library command.

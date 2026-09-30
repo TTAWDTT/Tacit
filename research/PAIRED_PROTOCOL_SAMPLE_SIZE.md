@@ -47,6 +47,27 @@ The analysis follows matched-pair power guidance emphasizing the discordance par
 
 This finite-sample interval does not require normally distributed split effects; its main cost is that it can be extremely wide. The tool estimates its operating power by Monte Carlo under user-editable discrete distributions over `D_s`. The defaults compare three hypothetical distributions with the same 0.10 mean but different heterogeneity, plus a zero-mean null scenario. They are sensitivity assumptions and contain no model-derived nuisance estimates. Report the Monte Carlo standard error; do not call the output a model-specific sample-size recommendation. The coverage argument follows Hoeffding's bounded-independent-summand inequality ([Hoeffding, 1963](https://doi.org/10.1080/01621459.1963.10500830)).
 
+The following algebraic sensitivity translates the interval radius into independent split counts at two-sided `α=.05`. The `n` in the formula is the number of independent task/split clusters, never the number of nested target episodes. The minimum-count column only says when the worst-case radius becomes no larger than a hypothetical **observed** absolute mean effect; it is not an 80%-power sample-size calculation and assumes nothing about the effect distribution.
+
+| Independent split clusters | Hoeffding radius |
+|---:|---:|
+| 25 | 0.5432 |
+| 50 | 0.3841 |
+| 100 | 0.2716 |
+| 250 | 0.1718 |
+| 500 | 0.1215 |
+| 1,000 | 0.0859 |
+
+| Hypothetical observed absolute effect `δ` | Clusters for radius ≤ `δ` |
+|---:|---:|
+| 0.30 | 82 |
+| 0.20 | 185 |
+| 0.15 | 328 |
+| 0.10 | 738 |
+| 0.05 | 2,952 |
+
+This conservative bound illustrates why increasing target rows inside one split cannot rescue weak independent-task support. Before confirmatory evaluation, choose the practically meaningful effect and uncertainty method using independent pilot clusters, report task-generation and model-call feasibility, and freeze the analysis. Do not silently replace the split-level unit with episodes to make the planned sample appear attainable.
+
 Example, using only a small local calculation:
 
 ```powershell
