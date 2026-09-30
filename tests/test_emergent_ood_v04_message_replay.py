@@ -5,6 +5,7 @@ import contextlib
 import copy
 import hashlib
 import io
+import random
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -24,6 +25,7 @@ from experiments.emergent_ood_v0_4.replay_usage_messages import (
     receiver_request,
     run_replay,
 )
+from research.derangement_batch_feasibility import compatibility_graph
 
 
 ATTRIBUTES = ("shape",)
@@ -143,6 +145,15 @@ class MessageReplayTests(unittest.TestCase):
         self.assertEqual(matching_count, 479001600)
         self.assertEqual(set(assignment), set(recipients))
         self.assertEqual(set(assignment.values()), set(donors))
+
+    def test_feasibility_graph_uses_only_sender_meaning_and_receiver_table(self):
+        graph = compatibility_graph(self.episodes, self.attributes)
+        self.assertEqual(set(graph), {f"episode-{i}" for i in range(4)})
+        assignment, count = _uniform_perfect_matching(
+            graph, list(graph), random.Random(5),
+        )
+        self.assertEqual(count, 2)
+        self.assertEqual(set(assignment.values()), set(graph))
 
     def test_receiver_prompt_contains_counterfactual_message_and_private_table_only(self):
         prompt = receiver_request(

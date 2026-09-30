@@ -140,7 +140,7 @@ def _uniform_perfect_matching(
         raise ValueError("matching graph must contain one edge list per unique receiver")
     donor_ids = sorted({donor for options in edges.values() for donor in options})
     if len(donor_ids) != n:
-        raise ValueError("matching graph must contain exactly one donor per receiver")
+        raise ValueError("no complete compatible message derangement exists for this batch")
     donor_index = {donor: i for i, donor in enumerate(donor_ids)}
     adjacency = {
         recipient: tuple(sorted({donor_index[d] for d in edges[recipient]}))
