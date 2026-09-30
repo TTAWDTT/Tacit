@@ -11,9 +11,11 @@ class FakeSumAgent:
         self.private_value = private_value
         self.raw_output = raw_output
         self.calls = []
+        self.system_instructions = []
 
     def complete(self, messages):
         payload = json.loads(messages[-1]["content"])
+        self.system_instructions.append(messages[0]["content"])
         self.calls.append(payload)
         if self.private_value is not None:
             output = str(self.private_value) if self.raw_output is None else self.raw_output
@@ -50,6 +52,7 @@ class MultipartyPrivateSumExampleTests(unittest.TestCase):
             self.assertEqual(sender.calls[0]["private_context"], f"Your private integer is {value}.")
             self.assertEqual(sender.calls[0]["visible_transcript"], [])
         self.assertEqual(receiver.calls[0]["private_context"], "")
+        self.assertIn("private context and received sender messages", receiver.system_instructions[0])
         self.assertEqual(
             [entry["message"] for entry in receiver.calls[0]["visible_transcript"]],
             ["1", "2", "3"],
@@ -93,6 +96,7 @@ class MultipartyPrivateSumExampleTests(unittest.TestCase):
         self.assertEqual(full_information["model_calls"], 1)
         self.assertEqual([len(sender.calls) for sender in senders], [0, 0])
         self.assertIn("1, 2", receiver.calls[0]["private_context"])
+        self.assertIn("private context and received sender messages", receiver.system_instructions[0])
         self.assertIsNone(full_information["all_sender_values_faithful"])
 
     def test_rejects_invalid_inputs_before_any_client_call(self):

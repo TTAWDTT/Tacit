@@ -71,8 +71,8 @@ def run_sum_episode(
         for name in sender_names
     }
     instructions[RECEIVER] = (
-        "Use only the private context and messages visible to you. Add the integer values "
-        "from all sender messages and return only the exact sum as a base-10 integer."
+        "Use only information visible in your private context and received sender messages. "
+        "Add all available private integers and return only the exact sum as a base-10 integer."
     )
     protocol = DialogueProtocolCard("private-sum-decimal-v0", instructions)
     contexts = {name: f"Your private integer is {value}." for name, value in zip(sender_names, values)}

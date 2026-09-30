@@ -1750,3 +1750,10 @@ ceil) worst-case bits: 9, 10, and 11 for the three lengths. This predicts a comp
 - **Change:** replace the roster-dependent prompt with a constant-size shared objective; each sender still gets only its own private integer and the receiver sees only its delivered transcript. Add a regression test requiring identical shared task wording at two and five senders.
 - **Verification:** focused fake-client tests, including privacy, no-message/full-information controls, error cancellation, and sender-count-invariant task text, pass; compilation, CLI help, and diff checks pass. No endpoint or model was used.
 - **Limit / decision:** fixing the prompt removes this avoidable quadratic term but does not prove total LLM cost is linear; message framing, role identifiers, tokenization, generation, and receiver context remain to be measured on real endpoints.
+
+## 2026-09-30 - Make the full-information sum control instruction-consistent
+
+- **Observation:** the full-information condition exposed all private values in the receiver's private context, but the receiver's system instruction only told it to sum sender messages. Since that condition intentionally sends no messages, the purported capability ceiling had contradictory inputs.
+- **Change:** update the shared receiver instruction to sum private integers available in either its visible private context or received messages. Preserve the same wording across communication, no-message, and full-information conditions.
+- **Verification:** fake-client tests assert the receiver gets that instruction in both communicating and full-information conditions; rerun focused tests, compilation, CLI help, and diff checks. No model or endpoint was queried.
+- **Limit / decision:** this fixes the task/control contract but does not verify real receiver capability. A fresh passing preflight and subsequent local capability screen would still be required before any protocol comparison.
