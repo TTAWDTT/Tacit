@@ -1,5 +1,13 @@
 # Research log
 
+## 2026-09-30 - Recheck local model gate before inference
+
+- **Question:** has the host become eligible for the still-pending private-sum full-information capability screen?
+- **Method:** ran the existing low-impact read-only resource preflight against all three required ports. A first command-argument form wrote a report for port 8000 only and is invalid for this gate; reran with an explicit PowerShell array and recorded that authoritative report separately.
+- **Result:** the valid three-port report at 08:19:04 UTC rejected work: CPU samples 10.98%, 35.22%, 17.23% (mean 21.14%), GPU 49%, memory 1,779 MiB used and 12,502 MiB free; ports 8000/8001/8002 were idle. CPU mean/peak and GPU utilization failed frozen limits.
+- **Safety/evidence:** report SHA-256 is `5ce17199359d40e601757246a01e75ca6177449ce156150b801d513a713c42e2`; model artifact was not hashed/read, model not loaded, service not started, and inference requests remained zero. No thresholds changed. The result is recorded in [the active experiment gate](../docs/EXPERIMENT_PLAN.md).
+- **Next:** do not launch local inference while this report rejects. Continue with model-free or prepare-only work and re-check only after machine load materially changes.
+
 ## 2026-09-30 - Complete the shipped private-sum format cost baseline
 
 - **Question:** what are the exact-runner tokenizer and application-byte costs of the two pre-existing sum encodings not included in the corrected P24 comparison: `v=N` and a fixed English sentence?

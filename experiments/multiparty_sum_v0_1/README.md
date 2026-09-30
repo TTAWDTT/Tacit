@@ -23,7 +23,7 @@ The central prediction from the exact coding reference is that zero-error commun
 
 ## Frozen limits
 
-The generated range is `m=2..11`, with `m+1 <= 12` planned calls for one call per sender plus one receiver call. The existing global local-resource preflight remains binding: CPU mean `<20%`, every sample `<30%`, GPU utilization `<25%`, GPU memory `<1800 MiB`, free RAM `>=6000 MiB`, and ports 8000/8001/8002 idle. A rejected or stale preflight means no inference; do not relax the thresholds. The latest recorded GPU sample was over the limit, so this artifact work does not authorize model execution.
+The generated range is `m=2..11`, with `m+1 <= 12` planned calls for one call per sender plus one receiver call. The existing global local-resource preflight remains binding: CPU mean `<20%`, every sample `<30%`, GPU utilization `<25%`, GPU memory `<1800 MiB`, free RAM `>=6000 MiB`, and ports 8000/8001/8002 idle. A rejected or stale preflight means no inference; do not relax the thresholds. The latest valid three-port report (2026-09-30 08:19 UTC) is rejected at 21.14% mean CPU, 35.22% peak CPU, and 49% GPU use; no model or service was accessed.
 
 ## Generate and validate
 
