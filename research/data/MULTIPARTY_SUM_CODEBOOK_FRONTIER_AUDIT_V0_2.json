@@ -1,0 +1,5817 @@
+{
+  "accounting_boundary": "Actual SDK system/user content strings and ideal completion content are tokenizer-counted. Delivered application bytes use LocalTCPMessageChannel.measure (JSON envelope, length prefix, ACK; network headers excluded). No-message has zero transmissions and one receiver call. Card JSON tokens are separate and excluded from episode costs. No actual model behavior is measured.",
+  "conditions": [
+    "no_message",
+    "decimal",
+    "json",
+    "binary",
+    "exhaustive_codebook"
+  ],
+  "design": {
+    "agent_counts": [
+      2,
+      3,
+      4
+    ],
+    "baselines_use_actual_run_sum_episode_receiver_scaffold": true,
+    "codebook_receiver": "frozen exhaustive MAP decoder",
+    "no_message_bayes_guess": "floor(3*m/2)",
+    "task_values": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "uniform_vectors_per_agent_count": {
+      "2": 16,
+      "3": 64,
+      "4": 256
+    }
+  },
+  "preregistration_sha256": "cb6f1bc6282c5c8a29dd34a06f00ee001b0592c8ba8208f7c938d79cc5aafdab",
+  "python_version": "3.13.5",
+  "records": [
+    {
+      "active_codebook_senders": [
+        "S1",
+        "S2"
+      ],
+      "actual_fixed_width_payload_bits": 2,
+      "agent_count": 2,
+      "budget_bits_at_most": 2,
+      "codebook_card_sha256": "9ae5b908e94ae99c71a7a6b62a66dbf31311632a6c23dff4a2495a7aafc54c42",
+      "codebook_card_tokens_if_distributed_as_json": 409,
+      "codebook_exact_sum_success": 0.5,
+      "codebook_protocol_id": "sum-code-dfd34da52cba",
+      "conditions": {
+        "binary": {
+          "completion_content_tokens": {
+            "max": 5,
+            "mean": 5.0,
+            "min": 5
+          },
+          "delivered_application_bytes": {
+            "max": 250,
+            "mean": 250.0,
+            "min": 250
+          },
+          "episodes": 16,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 575,
+            "mean": 575.0,
+            "min": 575
+          },
+          "planned_model_calls": {
+            "max": 3,
+            "mean": 3.0,
+            "min": 3
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 182,
+            "mean": 182.0,
+            "min": 182
+          },
+          "receiver_user_content_tokens": {
+            "max": 113,
+            "mean": 113.0,
+            "min": 113
+          },
+          "sender_completion_tokens": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "sender_role_instruction_tokens": {
+            "max": 94,
+            "mean": 94.0,
+            "min": 94
+          },
+          "sender_user_content_tokens": {
+            "max": 186,
+            "mean": 186.0,
+            "min": 186
+          },
+          "total_known_content_tokens": {
+            "max": 580,
+            "mean": 580.0,
+            "min": 580
+          }
+        },
+        "decimal": {
+          "completion_content_tokens": {
+            "max": 3,
+            "mean": 3.0,
+            "min": 3
+          },
+          "delivered_application_bytes": {
+            "max": 250,
+            "mean": 250.0,
+            "min": 250
+          },
+          "episodes": 16,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 507,
+            "mean": 507.0,
+            "min": 507
+          },
+          "planned_model_calls": {
+            "max": 3,
+            "mean": 3.0,
+            "min": 3
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 170,
+            "mean": 170.0,
+            "min": 170
+          },
+          "receiver_user_content_tokens": {
+            "max": 111,
+            "mean": 111.0,
+            "min": 111
+          },
+          "sender_completion_tokens": {
+            "max": 2,
+            "mean": 2.0,
+            "min": 2
+          },
+          "sender_role_instruction_tokens": {
+            "max": 40,
+            "mean": 40.0,
+            "min": 40
+          },
+          "sender_user_content_tokens": {
+            "max": 186,
+            "mean": 186.0,
+            "min": 186
+          },
+          "total_known_content_tokens": {
+            "max": 510,
+            "mean": 510.0,
+            "min": 510
+          }
+        },
+        "exhaustive_codebook": {
+          "completion_content_tokens": {
+            "max": 3,
+            "mean": 3.0,
+            "min": 3
+          },
+          "delivered_application_bytes": {
+            "max": 248,
+            "mean": 248.0,
+            "min": 248
+          },
+          "episodes": 16,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 0.5,
+            "min": 0
+          },
+          "model_input_content_tokens": {
+            "max": 692,
+            "mean": 692.0,
+            "min": 692
+          },
+          "planned_model_calls": {
+            "max": 3,
+            "mean": 3.0,
+            "min": 3
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 185,
+            "mean": 185.0,
+            "min": 185
+          },
+          "receiver_user_content_tokens": {
+            "max": 125,
+            "mean": 125.0,
+            "min": 125
+          },
+          "sender_completion_tokens": {
+            "max": 2,
+            "mean": 2.0,
+            "min": 2
+          },
+          "sender_role_instruction_tokens": {
+            "max": 196,
+            "mean": 196.0,
+            "min": 196
+          },
+          "sender_user_content_tokens": {
+            "max": 186,
+            "mean": 186.0,
+            "min": 186
+          },
+          "total_known_content_tokens": {
+            "max": 695,
+            "mean": 695.0,
+            "min": 695
+          }
+        },
+        "json": {
+          "completion_content_tokens": {
+            "max": 11,
+            "mean": 11.0,
+            "min": 11
+          },
+          "delivered_application_bytes": {
+            "max": 268,
+            "mean": 268.0,
+            "min": 268
+          },
+          "episodes": 16,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 506,
+            "mean": 506.0,
+            "min": 506
+          },
+          "planned_model_calls": {
+            "max": 3,
+            "mean": 3.0,
+            "min": 3
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 165,
+            "mean": 165.0,
+            "min": 165
+          },
+          "receiver_user_content_tokens": {
+            "max": 115,
+            "mean": 115.0,
+            "min": 115
+          },
+          "sender_completion_tokens": {
+            "max": 10,
+            "mean": 10.0,
+            "min": 10
+          },
+          "sender_role_instruction_tokens": {
+            "max": 40,
+            "mean": 40.0,
+            "min": 40
+          },
+          "sender_user_content_tokens": {
+            "max": 186,
+            "mean": 186.0,
+            "min": 186
+          },
+          "total_known_content_tokens": {
+            "max": 517,
+            "mean": 517.0,
+            "min": 517
+          }
+        },
+        "no_message": {
+          "completion_content_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "delivered_application_bytes": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "episodes": 16,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 0.25,
+            "min": 0
+          },
+          "model_input_content_tokens": {
+            "max": 256,
+            "mean": 256.0,
+            "min": 256
+          },
+          "planned_model_calls": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 170,
+            "mean": 170.0,
+            "min": 170
+          },
+          "receiver_user_content_tokens": {
+            "max": 86,
+            "mean": 86.0,
+            "min": 86
+          },
+          "sender_completion_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "sender_role_instruction_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "sender_user_content_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "total_known_content_tokens": {
+            "max": 257,
+            "mean": 257.0,
+            "min": 257
+          }
+        }
+      },
+      "no_message_exact_sum_success": 0.25,
+      "pareto_efficient_within_agent_count": {
+        "binary": false,
+        "decimal": true,
+        "exhaustive_codebook": true,
+        "json": false,
+        "no_message": true
+      }
+    },
+    {
+      "active_codebook_senders": [
+        "S1",
+        "S2"
+      ],
+      "actual_fixed_width_payload_bits": 2,
+      "agent_count": 2,
+      "budget_bits_at_most": 3,
+      "codebook_card_sha256": "9ae5b908e94ae99c71a7a6b62a66dbf31311632a6c23dff4a2495a7aafc54c42",
+      "codebook_card_tokens_if_distributed_as_json": 409,
+      "codebook_exact_sum_success": 0.5,
+      "codebook_protocol_id": "sum-code-dfd34da52cba",
+      "conditions": {
+        "binary": {
+          "completion_content_tokens": {
+            "max": 5,
+            "mean": 5.0,
+            "min": 5
+          },
+          "delivered_application_bytes": {
+            "max": 250,
+            "mean": 250.0,
+            "min": 250
+          },
+          "episodes": 16,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 575,
+            "mean": 575.0,
+            "min": 575
+          },
+          "planned_model_calls": {
+            "max": 3,
+            "mean": 3.0,
+            "min": 3
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 182,
+            "mean": 182.0,
+            "min": 182
+          },
+          "receiver_user_content_tokens": {
+            "max": 113,
+            "mean": 113.0,
+            "min": 113
+          },
+          "sender_completion_tokens": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "sender_role_instruction_tokens": {
+            "max": 94,
+            "mean": 94.0,
+            "min": 94
+          },
+          "sender_user_content_tokens": {
+            "max": 186,
+            "mean": 186.0,
+            "min": 186
+          },
+          "total_known_content_tokens": {
+            "max": 580,
+            "mean": 580.0,
+            "min": 580
+          }
+        },
+        "decimal": {
+          "completion_content_tokens": {
+            "max": 3,
+            "mean": 3.0,
+            "min": 3
+          },
+          "delivered_application_bytes": {
+            "max": 250,
+            "mean": 250.0,
+            "min": 250
+          },
+          "episodes": 16,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 507,
+            "mean": 507.0,
+            "min": 507
+          },
+          "planned_model_calls": {
+            "max": 3,
+            "mean": 3.0,
+            "min": 3
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 170,
+            "mean": 170.0,
+            "min": 170
+          },
+          "receiver_user_content_tokens": {
+            "max": 111,
+            "mean": 111.0,
+            "min": 111
+          },
+          "sender_completion_tokens": {
+            "max": 2,
+            "mean": 2.0,
+            "min": 2
+          },
+          "sender_role_instruction_tokens": {
+            "max": 40,
+            "mean": 40.0,
+            "min": 40
+          },
+          "sender_user_content_tokens": {
+            "max": 186,
+            "mean": 186.0,
+            "min": 186
+          },
+          "total_known_content_tokens": {
+            "max": 510,
+            "mean": 510.0,
+            "min": 510
+          }
+        },
+        "exhaustive_codebook": {
+          "completion_content_tokens": {
+            "max": 3,
+            "mean": 3.0,
+            "min": 3
+          },
+          "delivered_application_bytes": {
+            "max": 248,
+            "mean": 248.0,
+            "min": 248
+          },
+          "episodes": 16,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 0.5,
+            "min": 0
+          },
+          "model_input_content_tokens": {
+            "max": 692,
+            "mean": 692.0,
+            "min": 692
+          },
+          "planned_model_calls": {
+            "max": 3,
+            "mean": 3.0,
+            "min": 3
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 185,
+            "mean": 185.0,
+            "min": 185
+          },
+          "receiver_user_content_tokens": {
+            "max": 125,
+            "mean": 125.0,
+            "min": 125
+          },
+          "sender_completion_tokens": {
+            "max": 2,
+            "mean": 2.0,
+            "min": 2
+          },
+          "sender_role_instruction_tokens": {
+            "max": 196,
+            "mean": 196.0,
+            "min": 196
+          },
+          "sender_user_content_tokens": {
+            "max": 186,
+            "mean": 186.0,
+            "min": 186
+          },
+          "total_known_content_tokens": {
+            "max": 695,
+            "mean": 695.0,
+            "min": 695
+          }
+        },
+        "json": {
+          "completion_content_tokens": {
+            "max": 11,
+            "mean": 11.0,
+            "min": 11
+          },
+          "delivered_application_bytes": {
+            "max": 268,
+            "mean": 268.0,
+            "min": 268
+          },
+          "episodes": 16,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 506,
+            "mean": 506.0,
+            "min": 506
+          },
+          "planned_model_calls": {
+            "max": 3,
+            "mean": 3.0,
+            "min": 3
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 165,
+            "mean": 165.0,
+            "min": 165
+          },
+          "receiver_user_content_tokens": {
+            "max": 115,
+            "mean": 115.0,
+            "min": 115
+          },
+          "sender_completion_tokens": {
+            "max": 10,
+            "mean": 10.0,
+            "min": 10
+          },
+          "sender_role_instruction_tokens": {
+            "max": 40,
+            "mean": 40.0,
+            "min": 40
+          },
+          "sender_user_content_tokens": {
+            "max": 186,
+            "mean": 186.0,
+            "min": 186
+          },
+          "total_known_content_tokens": {
+            "max": 517,
+            "mean": 517.0,
+            "min": 517
+          }
+        },
+        "no_message": {
+          "completion_content_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "delivered_application_bytes": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "episodes": 16,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 0.25,
+            "min": 0
+          },
+          "model_input_content_tokens": {
+            "max": 256,
+            "mean": 256.0,
+            "min": 256
+          },
+          "planned_model_calls": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 170,
+            "mean": 170.0,
+            "min": 170
+          },
+          "receiver_user_content_tokens": {
+            "max": 86,
+            "mean": 86.0,
+            "min": 86
+          },
+          "sender_completion_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "sender_role_instruction_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "sender_user_content_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "total_known_content_tokens": {
+            "max": 257,
+            "mean": 257.0,
+            "min": 257
+          }
+        }
+      },
+      "no_message_exact_sum_success": 0.25,
+      "pareto_efficient_within_agent_count": {
+        "binary": false,
+        "decimal": true,
+        "exhaustive_codebook": true,
+        "json": false,
+        "no_message": true
+      }
+    },
+    {
+      "active_codebook_senders": [
+        "S1",
+        "S2"
+      ],
+      "actual_fixed_width_payload_bits": 4,
+      "agent_count": 2,
+      "budget_bits_at_most": 4,
+      "codebook_card_sha256": "6e44995266a2c0fa3b3c732bd8ebfa5beab1f6a74049fcc9cc4918858502f677",
+      "codebook_card_tokens_if_distributed_as_json": 552,
+      "codebook_exact_sum_success": 1.0,
+      "codebook_protocol_id": "sum-code-3f1e2df9af8d",
+      "conditions": {
+        "binary": {
+          "completion_content_tokens": {
+            "max": 5,
+            "mean": 5.0,
+            "min": 5
+          },
+          "delivered_application_bytes": {
+            "max": 250,
+            "mean": 250.0,
+            "min": 250
+          },
+          "episodes": 16,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 575,
+            "mean": 575.0,
+            "min": 575
+          },
+          "planned_model_calls": {
+            "max": 3,
+            "mean": 3.0,
+            "min": 3
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 182,
+            "mean": 182.0,
+            "min": 182
+          },
+          "receiver_user_content_tokens": {
+            "max": 113,
+            "mean": 113.0,
+            "min": 113
+          },
+          "sender_completion_tokens": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "sender_role_instruction_tokens": {
+            "max": 94,
+            "mean": 94.0,
+            "min": 94
+          },
+          "sender_user_content_tokens": {
+            "max": 186,
+            "mean": 186.0,
+            "min": 186
+          },
+          "total_known_content_tokens": {
+            "max": 580,
+            "mean": 580.0,
+            "min": 580
+          }
+        },
+        "decimal": {
+          "completion_content_tokens": {
+            "max": 3,
+            "mean": 3.0,
+            "min": 3
+          },
+          "delivered_application_bytes": {
+            "max": 250,
+            "mean": 250.0,
+            "min": 250
+          },
+          "episodes": 16,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 507,
+            "mean": 507.0,
+            "min": 507
+          },
+          "planned_model_calls": {
+            "max": 3,
+            "mean": 3.0,
+            "min": 3
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 170,
+            "mean": 170.0,
+            "min": 170
+          },
+          "receiver_user_content_tokens": {
+            "max": 111,
+            "mean": 111.0,
+            "min": 111
+          },
+          "sender_completion_tokens": {
+            "max": 2,
+            "mean": 2.0,
+            "min": 2
+          },
+          "sender_role_instruction_tokens": {
+            "max": 40,
+            "mean": 40.0,
+            "min": 40
+          },
+          "sender_user_content_tokens": {
+            "max": 186,
+            "mean": 186.0,
+            "min": 186
+          },
+          "total_known_content_tokens": {
+            "max": 510,
+            "mean": 510.0,
+            "min": 510
+          }
+        },
+        "exhaustive_codebook": {
+          "completion_content_tokens": {
+            "max": 5,
+            "mean": 5.0,
+            "min": 5
+          },
+          "delivered_application_bytes": {
+            "max": 250,
+            "mean": 250.0,
+            "min": 250
+          },
+          "episodes": 16,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 834,
+            "mean": 834.0,
+            "min": 834
+          },
+          "planned_model_calls": {
+            "max": 3,
+            "mean": 3.0,
+            "min": 3
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 305,
+            "mean": 305.0,
+            "min": 305
+          },
+          "receiver_user_content_tokens": {
+            "max": 127,
+            "mean": 127.0,
+            "min": 127
+          },
+          "sender_completion_tokens": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "sender_role_instruction_tokens": {
+            "max": 216,
+            "mean": 216.0,
+            "min": 216
+          },
+          "sender_user_content_tokens": {
+            "max": 186,
+            "mean": 186.0,
+            "min": 186
+          },
+          "total_known_content_tokens": {
+            "max": 839,
+            "mean": 839.0,
+            "min": 839
+          }
+        },
+        "json": {
+          "completion_content_tokens": {
+            "max": 11,
+            "mean": 11.0,
+            "min": 11
+          },
+          "delivered_application_bytes": {
+            "max": 268,
+            "mean": 268.0,
+            "min": 268
+          },
+          "episodes": 16,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 506,
+            "mean": 506.0,
+            "min": 506
+          },
+          "planned_model_calls": {
+            "max": 3,
+            "mean": 3.0,
+            "min": 3
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 165,
+            "mean": 165.0,
+            "min": 165
+          },
+          "receiver_user_content_tokens": {
+            "max": 115,
+            "mean": 115.0,
+            "min": 115
+          },
+          "sender_completion_tokens": {
+            "max": 10,
+            "mean": 10.0,
+            "min": 10
+          },
+          "sender_role_instruction_tokens": {
+            "max": 40,
+            "mean": 40.0,
+            "min": 40
+          },
+          "sender_user_content_tokens": {
+            "max": 186,
+            "mean": 186.0,
+            "min": 186
+          },
+          "total_known_content_tokens": {
+            "max": 517,
+            "mean": 517.0,
+            "min": 517
+          }
+        },
+        "no_message": {
+          "completion_content_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "delivered_application_bytes": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "episodes": 16,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 0.25,
+            "min": 0
+          },
+          "model_input_content_tokens": {
+            "max": 256,
+            "mean": 256.0,
+            "min": 256
+          },
+          "planned_model_calls": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 170,
+            "mean": 170.0,
+            "min": 170
+          },
+          "receiver_user_content_tokens": {
+            "max": 86,
+            "mean": 86.0,
+            "min": 86
+          },
+          "sender_completion_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "sender_role_instruction_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "sender_user_content_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "total_known_content_tokens": {
+            "max": 257,
+            "mean": 257.0,
+            "min": 257
+          }
+        }
+      },
+      "no_message_exact_sum_success": 0.25,
+      "pareto_efficient_within_agent_count": {
+        "binary": false,
+        "decimal": true,
+        "exhaustive_codebook": false,
+        "json": false,
+        "no_message": true
+      }
+    },
+    {
+      "active_codebook_senders": [
+        "S1"
+      ],
+      "actual_fixed_width_payload_bits": 1,
+      "agent_count": 3,
+      "budget_bits_at_most": 1,
+      "codebook_card_sha256": "4719d91bcc5e84a7313dd43a808e223ba9024f4d8a01c2c1a8890a49b8ae94a3",
+      "codebook_card_tokens_if_distributed_as_json": 341,
+      "codebook_exact_sum_success": 0.21875,
+      "codebook_protocol_id": "sum-code-f5b9eeb44c59",
+      "conditions": {
+        "binary": {
+          "completion_content_tokens": {
+            "max": 7,
+            "mean": 7.0,
+            "min": 7
+          },
+          "delivered_application_bytes": {
+            "max": 375,
+            "mean": 375.0,
+            "min": 375
+          },
+          "episodes": 64,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 729,
+            "mean": 729.0,
+            "min": 729
+          },
+          "planned_model_calls": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 182,
+            "mean": 182.0,
+            "min": 182
+          },
+          "receiver_user_content_tokens": {
+            "max": 127,
+            "mean": 127.0,
+            "min": 127
+          },
+          "sender_completion_tokens": {
+            "max": 6,
+            "mean": 6.0,
+            "min": 6
+          },
+          "sender_role_instruction_tokens": {
+            "max": 141,
+            "mean": 141.0,
+            "min": 141
+          },
+          "sender_user_content_tokens": {
+            "max": 279,
+            "mean": 279.0,
+            "min": 279
+          },
+          "total_known_content_tokens": {
+            "max": 736,
+            "mean": 736.0,
+            "min": 736
+          }
+        },
+        "decimal": {
+          "completion_content_tokens": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "delivered_application_bytes": {
+            "max": 375,
+            "mean": 375.0,
+            "min": 375
+          },
+          "episodes": 64,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 633,
+            "mean": 633.0,
+            "min": 633
+          },
+          "planned_model_calls": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 170,
+            "mean": 170.0,
+            "min": 170
+          },
+          "receiver_user_content_tokens": {
+            "max": 124,
+            "mean": 124.0,
+            "min": 124
+          },
+          "sender_completion_tokens": {
+            "max": 3,
+            "mean": 3.0,
+            "min": 3
+          },
+          "sender_role_instruction_tokens": {
+            "max": 60,
+            "mean": 60.0,
+            "min": 60
+          },
+          "sender_user_content_tokens": {
+            "max": 279,
+            "mean": 279.0,
+            "min": 279
+          },
+          "total_known_content_tokens": {
+            "max": 637,
+            "mean": 637.0,
+            "min": 637
+          }
+        },
+        "exhaustive_codebook": {
+          "completion_content_tokens": {
+            "max": 2,
+            "mean": 2.0,
+            "min": 2
+          },
+          "delivered_application_bytes": {
+            "max": 124,
+            "mean": 124.0,
+            "min": 124
+          },
+          "episodes": 64,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 0.21875,
+            "min": 0
+          },
+          "model_input_content_tokens": {
+            "max": 518,
+            "mean": 518.0,
+            "min": 518
+          },
+          "planned_model_calls": {
+            "max": 2,
+            "mean": 2.0,
+            "min": 2
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 215,
+            "mean": 215.0,
+            "min": 215
+          },
+          "receiver_user_content_tokens": {
+            "max": 112,
+            "mean": 112.0,
+            "min": 112
+          },
+          "sender_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "sender_role_instruction_tokens": {
+            "max": 98,
+            "mean": 98.0,
+            "min": 98
+          },
+          "sender_user_content_tokens": {
+            "max": 93,
+            "mean": 93.0,
+            "min": 93
+          },
+          "total_known_content_tokens": {
+            "max": 520,
+            "mean": 520.0,
+            "min": 520
+          }
+        },
+        "json": {
+          "completion_content_tokens": {
+            "max": 16,
+            "mean": 16.0,
+            "min": 16
+          },
+          "delivered_application_bytes": {
+            "max": 402,
+            "mean": 402.0,
+            "min": 402
+          },
+          "episodes": 64,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 634,
+            "mean": 634.0,
+            "min": 634
+          },
+          "planned_model_calls": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 165,
+            "mean": 165.0,
+            "min": 165
+          },
+          "receiver_user_content_tokens": {
+            "max": 130,
+            "mean": 130.0,
+            "min": 130
+          },
+          "sender_completion_tokens": {
+            "max": 15,
+            "mean": 15.0,
+            "min": 15
+          },
+          "sender_role_instruction_tokens": {
+            "max": 60,
+            "mean": 60.0,
+            "min": 60
+          },
+          "sender_user_content_tokens": {
+            "max": 279,
+            "mean": 279.0,
+            "min": 279
+          },
+          "total_known_content_tokens": {
+            "max": 650,
+            "mean": 650.0,
+            "min": 650
+          }
+        },
+        "no_message": {
+          "completion_content_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "delivered_application_bytes": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "episodes": 64,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 0.1875,
+            "min": 0
+          },
+          "model_input_content_tokens": {
+            "max": 256,
+            "mean": 256.0,
+            "min": 256
+          },
+          "planned_model_calls": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 170,
+            "mean": 170.0,
+            "min": 170
+          },
+          "receiver_user_content_tokens": {
+            "max": 86,
+            "mean": 86.0,
+            "min": 86
+          },
+          "sender_completion_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "sender_role_instruction_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "sender_user_content_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "total_known_content_tokens": {
+            "max": 257,
+            "mean": 257.0,
+            "min": 257
+          }
+        }
+      },
+      "no_message_exact_sum_success": 0.1875,
+      "pareto_efficient_within_agent_count": {
+        "binary": false,
+        "decimal": true,
+        "exhaustive_codebook": true,
+        "json": false,
+        "no_message": true
+      }
+    },
+    {
+      "active_codebook_senders": [
+        "S1"
+      ],
+      "actual_fixed_width_payload_bits": 2,
+      "agent_count": 3,
+      "budget_bits_at_most": 2,
+      "codebook_card_sha256": "087ed3554e2c8d10cfde8dc7ff46067f0140abd3d3a5fb4b0f12db0e116edd68",
+      "codebook_card_tokens_if_distributed_as_json": 388,
+      "codebook_exact_sum_success": 0.25,
+      "codebook_protocol_id": "sum-code-5a207d572ad8",
+      "conditions": {
+        "binary": {
+          "completion_content_tokens": {
+            "max": 7,
+            "mean": 7.0,
+            "min": 7
+          },
+          "delivered_application_bytes": {
+            "max": 375,
+            "mean": 375.0,
+            "min": 375
+          },
+          "episodes": 64,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 729,
+            "mean": 729.0,
+            "min": 729
+          },
+          "planned_model_calls": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 182,
+            "mean": 182.0,
+            "min": 182
+          },
+          "receiver_user_content_tokens": {
+            "max": 127,
+            "mean": 127.0,
+            "min": 127
+          },
+          "sender_completion_tokens": {
+            "max": 6,
+            "mean": 6.0,
+            "min": 6
+          },
+          "sender_role_instruction_tokens": {
+            "max": 141,
+            "mean": 141.0,
+            "min": 141
+          },
+          "sender_user_content_tokens": {
+            "max": 279,
+            "mean": 279.0,
+            "min": 279
+          },
+          "total_known_content_tokens": {
+            "max": 736,
+            "mean": 736.0,
+            "min": 736
+          }
+        },
+        "decimal": {
+          "completion_content_tokens": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "delivered_application_bytes": {
+            "max": 375,
+            "mean": 375.0,
+            "min": 375
+          },
+          "episodes": 64,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 633,
+            "mean": 633.0,
+            "min": 633
+          },
+          "planned_model_calls": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 170,
+            "mean": 170.0,
+            "min": 170
+          },
+          "receiver_user_content_tokens": {
+            "max": 124,
+            "mean": 124.0,
+            "min": 124
+          },
+          "sender_completion_tokens": {
+            "max": 3,
+            "mean": 3.0,
+            "min": 3
+          },
+          "sender_role_instruction_tokens": {
+            "max": 60,
+            "mean": 60.0,
+            "min": 60
+          },
+          "sender_user_content_tokens": {
+            "max": 279,
+            "mean": 279.0,
+            "min": 279
+          },
+          "total_known_content_tokens": {
+            "max": 637,
+            "mean": 637.0,
+            "min": 637
+          }
+        },
+        "exhaustive_codebook": {
+          "completion_content_tokens": {
+            "max": 3,
+            "mean": 3.0,
+            "min": 3
+          },
+          "delivered_application_bytes": {
+            "max": 125,
+            "mean": 125.0,
+            "min": 125
+          },
+          "episodes": 64,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 0.25,
+            "min": 0
+          },
+          "model_input_content_tokens": {
+            "max": 565,
+            "mean": 565.0,
+            "min": 565
+          },
+          "planned_model_calls": {
+            "max": 2,
+            "mean": 2.0,
+            "min": 2
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 251,
+            "mean": 251.0,
+            "min": 251
+          },
+          "receiver_user_content_tokens": {
+            "max": 113,
+            "mean": 113.0,
+            "min": 113
+          },
+          "sender_completion_tokens": {
+            "max": 2,
+            "mean": 2.0,
+            "min": 2
+          },
+          "sender_role_instruction_tokens": {
+            "max": 108,
+            "mean": 108.0,
+            "min": 108
+          },
+          "sender_user_content_tokens": {
+            "max": 93,
+            "mean": 93.0,
+            "min": 93
+          },
+          "total_known_content_tokens": {
+            "max": 568,
+            "mean": 568.0,
+            "min": 568
+          }
+        },
+        "json": {
+          "completion_content_tokens": {
+            "max": 16,
+            "mean": 16.0,
+            "min": 16
+          },
+          "delivered_application_bytes": {
+            "max": 402,
+            "mean": 402.0,
+            "min": 402
+          },
+          "episodes": 64,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 634,
+            "mean": 634.0,
+            "min": 634
+          },
+          "planned_model_calls": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 165,
+            "mean": 165.0,
+            "min": 165
+          },
+          "receiver_user_content_tokens": {
+            "max": 130,
+            "mean": 130.0,
+            "min": 130
+          },
+          "sender_completion_tokens": {
+            "max": 15,
+            "mean": 15.0,
+            "min": 15
+          },
+          "sender_role_instruction_tokens": {
+            "max": 60,
+            "mean": 60.0,
+            "min": 60
+          },
+          "sender_user_content_tokens": {
+            "max": 279,
+            "mean": 279.0,
+            "min": 279
+          },
+          "total_known_content_tokens": {
+            "max": 650,
+            "mean": 650.0,
+            "min": 650
+          }
+        },
+        "no_message": {
+          "completion_content_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "delivered_application_bytes": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "episodes": 64,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 0.1875,
+            "min": 0
+          },
+          "model_input_content_tokens": {
+            "max": 256,
+            "mean": 256.0,
+            "min": 256
+          },
+          "planned_model_calls": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 170,
+            "mean": 170.0,
+            "min": 170
+          },
+          "receiver_user_content_tokens": {
+            "max": 86,
+            "mean": 86.0,
+            "min": 86
+          },
+          "sender_completion_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "sender_role_instruction_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "sender_user_content_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "total_known_content_tokens": {
+            "max": 257,
+            "mean": 257.0,
+            "min": 257
+          }
+        }
+      },
+      "no_message_exact_sum_success": 0.1875,
+      "pareto_efficient_within_agent_count": {
+        "binary": false,
+        "decimal": true,
+        "exhaustive_codebook": true,
+        "json": false,
+        "no_message": true
+      }
+    },
+    {
+      "active_codebook_senders": [
+        "S1",
+        "S2",
+        "S3"
+      ],
+      "actual_fixed_width_payload_bits": 3,
+      "agent_count": 3,
+      "budget_bits_at_most": 3,
+      "codebook_card_sha256": "f4993798d2932931132dbfb67c3a601d176bec4bdd7db889a05138d670c9192f",
+      "codebook_card_tokens_if_distributed_as_json": 576,
+      "codebook_exact_sum_success": 0.375,
+      "codebook_protocol_id": "sum-code-fa49ca035abe",
+      "conditions": {
+        "binary": {
+          "completion_content_tokens": {
+            "max": 7,
+            "mean": 7.0,
+            "min": 7
+          },
+          "delivered_application_bytes": {
+            "max": 375,
+            "mean": 375.0,
+            "min": 375
+          },
+          "episodes": 64,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 729,
+            "mean": 729.0,
+            "min": 729
+          },
+          "planned_model_calls": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 182,
+            "mean": 182.0,
+            "min": 182
+          },
+          "receiver_user_content_tokens": {
+            "max": 127,
+            "mean": 127.0,
+            "min": 127
+          },
+          "sender_completion_tokens": {
+            "max": 6,
+            "mean": 6.0,
+            "min": 6
+          },
+          "sender_role_instruction_tokens": {
+            "max": 141,
+            "mean": 141.0,
+            "min": 141
+          },
+          "sender_user_content_tokens": {
+            "max": 279,
+            "mean": 279.0,
+            "min": 279
+          },
+          "total_known_content_tokens": {
+            "max": 736,
+            "mean": 736.0,
+            "min": 736
+          }
+        },
+        "decimal": {
+          "completion_content_tokens": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "delivered_application_bytes": {
+            "max": 375,
+            "mean": 375.0,
+            "min": 375
+          },
+          "episodes": 64,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 633,
+            "mean": 633.0,
+            "min": 633
+          },
+          "planned_model_calls": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 170,
+            "mean": 170.0,
+            "min": 170
+          },
+          "receiver_user_content_tokens": {
+            "max": 124,
+            "mean": 124.0,
+            "min": 124
+          },
+          "sender_completion_tokens": {
+            "max": 3,
+            "mean": 3.0,
+            "min": 3
+          },
+          "sender_role_instruction_tokens": {
+            "max": 60,
+            "mean": 60.0,
+            "min": 60
+          },
+          "sender_user_content_tokens": {
+            "max": 279,
+            "mean": 279.0,
+            "min": 279
+          },
+          "total_known_content_tokens": {
+            "max": 637,
+            "mean": 637.0,
+            "min": 637
+          }
+        },
+        "exhaustive_codebook": {
+          "completion_content_tokens": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "delivered_application_bytes": {
+            "max": 372,
+            "mean": 372.0,
+            "min": 372
+          },
+          "episodes": 64,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 0.375,
+            "min": 0
+          },
+          "model_input_content_tokens": {
+            "max": 960,
+            "mean": 960.0,
+            "min": 960
+          },
+          "planned_model_calls": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 249,
+            "mean": 249.0,
+            "min": 249
+          },
+          "receiver_user_content_tokens": {
+            "max": 138,
+            "mean": 138.0,
+            "min": 138
+          },
+          "sender_completion_tokens": {
+            "max": 3,
+            "mean": 3.0,
+            "min": 3
+          },
+          "sender_role_instruction_tokens": {
+            "max": 294,
+            "mean": 294.0,
+            "min": 294
+          },
+          "sender_user_content_tokens": {
+            "max": 279,
+            "mean": 279.0,
+            "min": 279
+          },
+          "total_known_content_tokens": {
+            "max": 964,
+            "mean": 964.0,
+            "min": 964
+          }
+        },
+        "json": {
+          "completion_content_tokens": {
+            "max": 16,
+            "mean": 16.0,
+            "min": 16
+          },
+          "delivered_application_bytes": {
+            "max": 402,
+            "mean": 402.0,
+            "min": 402
+          },
+          "episodes": 64,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 634,
+            "mean": 634.0,
+            "min": 634
+          },
+          "planned_model_calls": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 165,
+            "mean": 165.0,
+            "min": 165
+          },
+          "receiver_user_content_tokens": {
+            "max": 130,
+            "mean": 130.0,
+            "min": 130
+          },
+          "sender_completion_tokens": {
+            "max": 15,
+            "mean": 15.0,
+            "min": 15
+          },
+          "sender_role_instruction_tokens": {
+            "max": 60,
+            "mean": 60.0,
+            "min": 60
+          },
+          "sender_user_content_tokens": {
+            "max": 279,
+            "mean": 279.0,
+            "min": 279
+          },
+          "total_known_content_tokens": {
+            "max": 650,
+            "mean": 650.0,
+            "min": 650
+          }
+        },
+        "no_message": {
+          "completion_content_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "delivered_application_bytes": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "episodes": 64,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 0.1875,
+            "min": 0
+          },
+          "model_input_content_tokens": {
+            "max": 256,
+            "mean": 256.0,
+            "min": 256
+          },
+          "planned_model_calls": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 170,
+            "mean": 170.0,
+            "min": 170
+          },
+          "receiver_user_content_tokens": {
+            "max": 86,
+            "mean": 86.0,
+            "min": 86
+          },
+          "sender_completion_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "sender_role_instruction_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "sender_user_content_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "total_known_content_tokens": {
+            "max": 257,
+            "mean": 257.0,
+            "min": 257
+          }
+        }
+      },
+      "no_message_exact_sum_success": 0.1875,
+      "pareto_efficient_within_agent_count": {
+        "binary": false,
+        "decimal": true,
+        "exhaustive_codebook": true,
+        "json": false,
+        "no_message": true
+      }
+    },
+    {
+      "active_codebook_senders": [
+        "S1",
+        "S2",
+        "S3"
+      ],
+      "actual_fixed_width_payload_bits": 4,
+      "agent_count": 3,
+      "budget_bits_at_most": 4,
+      "codebook_card_sha256": "b394ffc196c7ad1f9af0f31e3b9a813f3d8cb57351f4bcd0e0cc2dad44e1b9b6",
+      "codebook_card_tokens_if_distributed_as_json": 679,
+      "codebook_exact_sum_success": 0.5,
+      "codebook_protocol_id": "sum-code-f87631360718",
+      "conditions": {
+        "binary": {
+          "completion_content_tokens": {
+            "max": 7,
+            "mean": 7.0,
+            "min": 7
+          },
+          "delivered_application_bytes": {
+            "max": 375,
+            "mean": 375.0,
+            "min": 375
+          },
+          "episodes": 64,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 729,
+            "mean": 729.0,
+            "min": 729
+          },
+          "planned_model_calls": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 182,
+            "mean": 182.0,
+            "min": 182
+          },
+          "receiver_user_content_tokens": {
+            "max": 127,
+            "mean": 127.0,
+            "min": 127
+          },
+          "sender_completion_tokens": {
+            "max": 6,
+            "mean": 6.0,
+            "min": 6
+          },
+          "sender_role_instruction_tokens": {
+            "max": 141,
+            "mean": 141.0,
+            "min": 141
+          },
+          "sender_user_content_tokens": {
+            "max": 279,
+            "mean": 279.0,
+            "min": 279
+          },
+          "total_known_content_tokens": {
+            "max": 736,
+            "mean": 736.0,
+            "min": 736
+          }
+        },
+        "decimal": {
+          "completion_content_tokens": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "delivered_application_bytes": {
+            "max": 375,
+            "mean": 375.0,
+            "min": 375
+          },
+          "episodes": 64,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 633,
+            "mean": 633.0,
+            "min": 633
+          },
+          "planned_model_calls": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 170,
+            "mean": 170.0,
+            "min": 170
+          },
+          "receiver_user_content_tokens": {
+            "max": 124,
+            "mean": 124.0,
+            "min": 124
+          },
+          "sender_completion_tokens": {
+            "max": 3,
+            "mean": 3.0,
+            "min": 3
+          },
+          "sender_role_instruction_tokens": {
+            "max": 60,
+            "mean": 60.0,
+            "min": 60
+          },
+          "sender_user_content_tokens": {
+            "max": 279,
+            "mean": 279.0,
+            "min": 279
+          },
+          "total_known_content_tokens": {
+            "max": 637,
+            "mean": 637.0,
+            "min": 637
+          }
+        },
+        "exhaustive_codebook": {
+          "completion_content_tokens": {
+            "max": 5,
+            "mean": 5.0,
+            "min": 5
+          },
+          "delivered_application_bytes": {
+            "max": 373,
+            "mean": 373.0,
+            "min": 373
+          },
+          "episodes": 64,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 0.5,
+            "min": 0
+          },
+          "model_input_content_tokens": {
+            "max": 1061,
+            "mean": 1061.0,
+            "min": 1061
+          },
+          "planned_model_calls": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 339,
+            "mean": 339.0,
+            "min": 339
+          },
+          "receiver_user_content_tokens": {
+            "max": 139,
+            "mean": 139.0,
+            "min": 139
+          },
+          "sender_completion_tokens": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "sender_role_instruction_tokens": {
+            "max": 304,
+            "mean": 304.0,
+            "min": 304
+          },
+          "sender_user_content_tokens": {
+            "max": 279,
+            "mean": 279.0,
+            "min": 279
+          },
+          "total_known_content_tokens": {
+            "max": 1066,
+            "mean": 1066.0,
+            "min": 1066
+          }
+        },
+        "json": {
+          "completion_content_tokens": {
+            "max": 16,
+            "mean": 16.0,
+            "min": 16
+          },
+          "delivered_application_bytes": {
+            "max": 402,
+            "mean": 402.0,
+            "min": 402
+          },
+          "episodes": 64,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 634,
+            "mean": 634.0,
+            "min": 634
+          },
+          "planned_model_calls": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 165,
+            "mean": 165.0,
+            "min": 165
+          },
+          "receiver_user_content_tokens": {
+            "max": 130,
+            "mean": 130.0,
+            "min": 130
+          },
+          "sender_completion_tokens": {
+            "max": 15,
+            "mean": 15.0,
+            "min": 15
+          },
+          "sender_role_instruction_tokens": {
+            "max": 60,
+            "mean": 60.0,
+            "min": 60
+          },
+          "sender_user_content_tokens": {
+            "max": 279,
+            "mean": 279.0,
+            "min": 279
+          },
+          "total_known_content_tokens": {
+            "max": 650,
+            "mean": 650.0,
+            "min": 650
+          }
+        },
+        "no_message": {
+          "completion_content_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "delivered_application_bytes": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "episodes": 64,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 0.1875,
+            "min": 0
+          },
+          "model_input_content_tokens": {
+            "max": 256,
+            "mean": 256.0,
+            "min": 256
+          },
+          "planned_model_calls": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 170,
+            "mean": 170.0,
+            "min": 170
+          },
+          "receiver_user_content_tokens": {
+            "max": 86,
+            "mean": 86.0,
+            "min": 86
+          },
+          "sender_completion_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "sender_role_instruction_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "sender_user_content_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "total_known_content_tokens": {
+            "max": 257,
+            "mean": 257.0,
+            "min": 257
+          }
+        }
+      },
+      "no_message_exact_sum_success": 0.1875,
+      "pareto_efficient_within_agent_count": {
+        "binary": false,
+        "decimal": true,
+        "exhaustive_codebook": true,
+        "json": false,
+        "no_message": true
+      }
+    },
+    {
+      "active_codebook_senders": [
+        "S1",
+        "S2",
+        "S3"
+      ],
+      "actual_fixed_width_payload_bits": 4,
+      "agent_count": 3,
+      "budget_bits_at_most": 5,
+      "codebook_card_sha256": "b394ffc196c7ad1f9af0f31e3b9a813f3d8cb57351f4bcd0e0cc2dad44e1b9b6",
+      "codebook_card_tokens_if_distributed_as_json": 679,
+      "codebook_exact_sum_success": 0.5,
+      "codebook_protocol_id": "sum-code-f87631360718",
+      "conditions": {
+        "binary": {
+          "completion_content_tokens": {
+            "max": 7,
+            "mean": 7.0,
+            "min": 7
+          },
+          "delivered_application_bytes": {
+            "max": 375,
+            "mean": 375.0,
+            "min": 375
+          },
+          "episodes": 64,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 729,
+            "mean": 729.0,
+            "min": 729
+          },
+          "planned_model_calls": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 182,
+            "mean": 182.0,
+            "min": 182
+          },
+          "receiver_user_content_tokens": {
+            "max": 127,
+            "mean": 127.0,
+            "min": 127
+          },
+          "sender_completion_tokens": {
+            "max": 6,
+            "mean": 6.0,
+            "min": 6
+          },
+          "sender_role_instruction_tokens": {
+            "max": 141,
+            "mean": 141.0,
+            "min": 141
+          },
+          "sender_user_content_tokens": {
+            "max": 279,
+            "mean": 279.0,
+            "min": 279
+          },
+          "total_known_content_tokens": {
+            "max": 736,
+            "mean": 736.0,
+            "min": 736
+          }
+        },
+        "decimal": {
+          "completion_content_tokens": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "delivered_application_bytes": {
+            "max": 375,
+            "mean": 375.0,
+            "min": 375
+          },
+          "episodes": 64,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 633,
+            "mean": 633.0,
+            "min": 633
+          },
+          "planned_model_calls": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 170,
+            "mean": 170.0,
+            "min": 170
+          },
+          "receiver_user_content_tokens": {
+            "max": 124,
+            "mean": 124.0,
+            "min": 124
+          },
+          "sender_completion_tokens": {
+            "max": 3,
+            "mean": 3.0,
+            "min": 3
+          },
+          "sender_role_instruction_tokens": {
+            "max": 60,
+            "mean": 60.0,
+            "min": 60
+          },
+          "sender_user_content_tokens": {
+            "max": 279,
+            "mean": 279.0,
+            "min": 279
+          },
+          "total_known_content_tokens": {
+            "max": 637,
+            "mean": 637.0,
+            "min": 637
+          }
+        },
+        "exhaustive_codebook": {
+          "completion_content_tokens": {
+            "max": 5,
+            "mean": 5.0,
+            "min": 5
+          },
+          "delivered_application_bytes": {
+            "max": 373,
+            "mean": 373.0,
+            "min": 373
+          },
+          "episodes": 64,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 0.5,
+            "min": 0
+          },
+          "model_input_content_tokens": {
+            "max": 1061,
+            "mean": 1061.0,
+            "min": 1061
+          },
+          "planned_model_calls": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 339,
+            "mean": 339.0,
+            "min": 339
+          },
+          "receiver_user_content_tokens": {
+            "max": 139,
+            "mean": 139.0,
+            "min": 139
+          },
+          "sender_completion_tokens": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "sender_role_instruction_tokens": {
+            "max": 304,
+            "mean": 304.0,
+            "min": 304
+          },
+          "sender_user_content_tokens": {
+            "max": 279,
+            "mean": 279.0,
+            "min": 279
+          },
+          "total_known_content_tokens": {
+            "max": 1066,
+            "mean": 1066.0,
+            "min": 1066
+          }
+        },
+        "json": {
+          "completion_content_tokens": {
+            "max": 16,
+            "mean": 16.0,
+            "min": 16
+          },
+          "delivered_application_bytes": {
+            "max": 402,
+            "mean": 402.0,
+            "min": 402
+          },
+          "episodes": 64,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 634,
+            "mean": 634.0,
+            "min": 634
+          },
+          "planned_model_calls": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 165,
+            "mean": 165.0,
+            "min": 165
+          },
+          "receiver_user_content_tokens": {
+            "max": 130,
+            "mean": 130.0,
+            "min": 130
+          },
+          "sender_completion_tokens": {
+            "max": 15,
+            "mean": 15.0,
+            "min": 15
+          },
+          "sender_role_instruction_tokens": {
+            "max": 60,
+            "mean": 60.0,
+            "min": 60
+          },
+          "sender_user_content_tokens": {
+            "max": 279,
+            "mean": 279.0,
+            "min": 279
+          },
+          "total_known_content_tokens": {
+            "max": 650,
+            "mean": 650.0,
+            "min": 650
+          }
+        },
+        "no_message": {
+          "completion_content_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "delivered_application_bytes": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "episodes": 64,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 0.1875,
+            "min": 0
+          },
+          "model_input_content_tokens": {
+            "max": 256,
+            "mean": 256.0,
+            "min": 256
+          },
+          "planned_model_calls": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 170,
+            "mean": 170.0,
+            "min": 170
+          },
+          "receiver_user_content_tokens": {
+            "max": 86,
+            "mean": 86.0,
+            "min": 86
+          },
+          "sender_completion_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "sender_role_instruction_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "sender_user_content_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "total_known_content_tokens": {
+            "max": 257,
+            "mean": 257.0,
+            "min": 257
+          }
+        }
+      },
+      "no_message_exact_sum_success": 0.1875,
+      "pareto_efficient_within_agent_count": {
+        "binary": false,
+        "decimal": true,
+        "exhaustive_codebook": true,
+        "json": false,
+        "no_message": true
+      }
+    },
+    {
+      "active_codebook_senders": [
+        "S1",
+        "S2",
+        "S3"
+      ],
+      "actual_fixed_width_payload_bits": 6,
+      "agent_count": 3,
+      "budget_bits_at_most": 6,
+      "codebook_card_sha256": "06c388c5608a7c8826a3ab096069530195e9f60c5d30a148ddf8ade5d98c95ee",
+      "codebook_card_tokens_if_distributed_as_json": 1167,
+      "codebook_exact_sum_success": 1.0,
+      "codebook_protocol_id": "sum-code-244ff5a789e9",
+      "conditions": {
+        "binary": {
+          "completion_content_tokens": {
+            "max": 7,
+            "mean": 7.0,
+            "min": 7
+          },
+          "delivered_application_bytes": {
+            "max": 375,
+            "mean": 375.0,
+            "min": 375
+          },
+          "episodes": 64,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 729,
+            "mean": 729.0,
+            "min": 729
+          },
+          "planned_model_calls": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 182,
+            "mean": 182.0,
+            "min": 182
+          },
+          "receiver_user_content_tokens": {
+            "max": 127,
+            "mean": 127.0,
+            "min": 127
+          },
+          "sender_completion_tokens": {
+            "max": 6,
+            "mean": 6.0,
+            "min": 6
+          },
+          "sender_role_instruction_tokens": {
+            "max": 141,
+            "mean": 141.0,
+            "min": 141
+          },
+          "sender_user_content_tokens": {
+            "max": 279,
+            "mean": 279.0,
+            "min": 279
+          },
+          "total_known_content_tokens": {
+            "max": 736,
+            "mean": 736.0,
+            "min": 736
+          }
+        },
+        "decimal": {
+          "completion_content_tokens": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "delivered_application_bytes": {
+            "max": 375,
+            "mean": 375.0,
+            "min": 375
+          },
+          "episodes": 64,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 633,
+            "mean": 633.0,
+            "min": 633
+          },
+          "planned_model_calls": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 170,
+            "mean": 170.0,
+            "min": 170
+          },
+          "receiver_user_content_tokens": {
+            "max": 124,
+            "mean": 124.0,
+            "min": 124
+          },
+          "sender_completion_tokens": {
+            "max": 3,
+            "mean": 3.0,
+            "min": 3
+          },
+          "sender_role_instruction_tokens": {
+            "max": 60,
+            "mean": 60.0,
+            "min": 60
+          },
+          "sender_user_content_tokens": {
+            "max": 279,
+            "mean": 279.0,
+            "min": 279
+          },
+          "total_known_content_tokens": {
+            "max": 637,
+            "mean": 637.0,
+            "min": 637
+          }
+        },
+        "exhaustive_codebook": {
+          "completion_content_tokens": {
+            "max": 7,
+            "mean": 7.0,
+            "min": 7
+          },
+          "delivered_application_bytes": {
+            "max": 375,
+            "mean": 375.0,
+            "min": 375
+          },
+          "episodes": 64,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 1551,
+            "mean": 1551.0,
+            "min": 1551
+          },
+          "planned_model_calls": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 807,
+            "mean": 807.0,
+            "min": 807
+          },
+          "receiver_user_content_tokens": {
+            "max": 141,
+            "mean": 141.0,
+            "min": 141
+          },
+          "sender_completion_tokens": {
+            "max": 6,
+            "mean": 6.0,
+            "min": 6
+          },
+          "sender_role_instruction_tokens": {
+            "max": 324,
+            "mean": 324.0,
+            "min": 324
+          },
+          "sender_user_content_tokens": {
+            "max": 279,
+            "mean": 279.0,
+            "min": 279
+          },
+          "total_known_content_tokens": {
+            "max": 1558,
+            "mean": 1558.0,
+            "min": 1558
+          }
+        },
+        "json": {
+          "completion_content_tokens": {
+            "max": 16,
+            "mean": 16.0,
+            "min": 16
+          },
+          "delivered_application_bytes": {
+            "max": 402,
+            "mean": 402.0,
+            "min": 402
+          },
+          "episodes": 64,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 634,
+            "mean": 634.0,
+            "min": 634
+          },
+          "planned_model_calls": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 165,
+            "mean": 165.0,
+            "min": 165
+          },
+          "receiver_user_content_tokens": {
+            "max": 130,
+            "mean": 130.0,
+            "min": 130
+          },
+          "sender_completion_tokens": {
+            "max": 15,
+            "mean": 15.0,
+            "min": 15
+          },
+          "sender_role_instruction_tokens": {
+            "max": 60,
+            "mean": 60.0,
+            "min": 60
+          },
+          "sender_user_content_tokens": {
+            "max": 279,
+            "mean": 279.0,
+            "min": 279
+          },
+          "total_known_content_tokens": {
+            "max": 650,
+            "mean": 650.0,
+            "min": 650
+          }
+        },
+        "no_message": {
+          "completion_content_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "delivered_application_bytes": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "episodes": 64,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 0.1875,
+            "min": 0
+          },
+          "model_input_content_tokens": {
+            "max": 256,
+            "mean": 256.0,
+            "min": 256
+          },
+          "planned_model_calls": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 170,
+            "mean": 170.0,
+            "min": 170
+          },
+          "receiver_user_content_tokens": {
+            "max": 86,
+            "mean": 86.0,
+            "min": 86
+          },
+          "sender_completion_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "sender_role_instruction_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "sender_user_content_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "total_known_content_tokens": {
+            "max": 257,
+            "mean": 257.0,
+            "min": 257
+          }
+        }
+      },
+      "no_message_exact_sum_success": 0.1875,
+      "pareto_efficient_within_agent_count": {
+        "binary": false,
+        "decimal": true,
+        "exhaustive_codebook": false,
+        "json": false,
+        "no_message": true
+      }
+    },
+    {
+      "active_codebook_senders": [
+        "S1"
+      ],
+      "actual_fixed_width_payload_bits": 1,
+      "agent_count": 4,
+      "budget_bits_at_most": 1,
+      "codebook_card_sha256": "015980a39428684a702e7e433a549f98f1f55c0b4cfb9568c657ad4804c5a25e",
+      "codebook_card_tokens_if_distributed_as_json": 360,
+      "codebook_exact_sum_success": 0.1875,
+      "codebook_protocol_id": "sum-code-d52304b57e71",
+      "conditions": {
+        "binary": {
+          "completion_content_tokens": {
+            "max": 10,
+            "mean": 9.058594,
+            "min": 9
+          },
+          "delivered_application_bytes": {
+            "max": 500,
+            "mean": 500.0,
+            "min": 500
+          },
+          "episodes": 256,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 883,
+            "mean": 883.0,
+            "min": 883
+          },
+          "planned_model_calls": {
+            "max": 5,
+            "mean": 5.0,
+            "min": 5
+          },
+          "receiver_completion_tokens": {
+            "max": 2,
+            "mean": 1.058594,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 182,
+            "mean": 182.0,
+            "min": 182
+          },
+          "receiver_user_content_tokens": {
+            "max": 141,
+            "mean": 141.0,
+            "min": 141
+          },
+          "sender_completion_tokens": {
+            "max": 8,
+            "mean": 8.0,
+            "min": 8
+          },
+          "sender_role_instruction_tokens": {
+            "max": 188,
+            "mean": 188.0,
+            "min": 188
+          },
+          "sender_user_content_tokens": {
+            "max": 372,
+            "mean": 372.0,
+            "min": 372
+          },
+          "total_known_content_tokens": {
+            "max": 893,
+            "mean": 892.058594,
+            "min": 892
+          }
+        },
+        "decimal": {
+          "completion_content_tokens": {
+            "max": 6,
+            "mean": 5.058594,
+            "min": 5
+          },
+          "delivered_application_bytes": {
+            "max": 500,
+            "mean": 500.0,
+            "min": 500
+          },
+          "episodes": 256,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 759,
+            "mean": 759.0,
+            "min": 759
+          },
+          "planned_model_calls": {
+            "max": 5,
+            "mean": 5.0,
+            "min": 5
+          },
+          "receiver_completion_tokens": {
+            "max": 2,
+            "mean": 1.058594,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 170,
+            "mean": 170.0,
+            "min": 170
+          },
+          "receiver_user_content_tokens": {
+            "max": 137,
+            "mean": 137.0,
+            "min": 137
+          },
+          "sender_completion_tokens": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "sender_role_instruction_tokens": {
+            "max": 80,
+            "mean": 80.0,
+            "min": 80
+          },
+          "sender_user_content_tokens": {
+            "max": 372,
+            "mean": 372.0,
+            "min": 372
+          },
+          "total_known_content_tokens": {
+            "max": 765,
+            "mean": 764.058594,
+            "min": 764
+          }
+        },
+        "exhaustive_codebook": {
+          "completion_content_tokens": {
+            "max": 2,
+            "mean": 2.0,
+            "min": 2
+          },
+          "delivered_application_bytes": {
+            "max": 124,
+            "mean": 124.0,
+            "min": 124
+          },
+          "episodes": 256,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 0.1875,
+            "min": 0
+          },
+          "model_input_content_tokens": {
+            "max": 536,
+            "mean": 536.0,
+            "min": 536
+          },
+          "planned_model_calls": {
+            "max": 2,
+            "mean": 2.0,
+            "min": 2
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 233,
+            "mean": 233.0,
+            "min": 233
+          },
+          "receiver_user_content_tokens": {
+            "max": 112,
+            "mean": 112.0,
+            "min": 112
+          },
+          "sender_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "sender_role_instruction_tokens": {
+            "max": 98,
+            "mean": 98.0,
+            "min": 98
+          },
+          "sender_user_content_tokens": {
+            "max": 93,
+            "mean": 93.0,
+            "min": 93
+          },
+          "total_known_content_tokens": {
+            "max": 538,
+            "mean": 538.0,
+            "min": 538
+          }
+        },
+        "json": {
+          "completion_content_tokens": {
+            "max": 22,
+            "mean": 21.058594,
+            "min": 21
+          },
+          "delivered_application_bytes": {
+            "max": 536,
+            "mean": 536.0,
+            "min": 536
+          },
+          "episodes": 256,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 762,
+            "mean": 762.0,
+            "min": 762
+          },
+          "planned_model_calls": {
+            "max": 5,
+            "mean": 5.0,
+            "min": 5
+          },
+          "receiver_completion_tokens": {
+            "max": 2,
+            "mean": 1.058594,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 165,
+            "mean": 165.0,
+            "min": 165
+          },
+          "receiver_user_content_tokens": {
+            "max": 145,
+            "mean": 145.0,
+            "min": 145
+          },
+          "sender_completion_tokens": {
+            "max": 20,
+            "mean": 20.0,
+            "min": 20
+          },
+          "sender_role_instruction_tokens": {
+            "max": 80,
+            "mean": 80.0,
+            "min": 80
+          },
+          "sender_user_content_tokens": {
+            "max": 372,
+            "mean": 372.0,
+            "min": 372
+          },
+          "total_known_content_tokens": {
+            "max": 784,
+            "mean": 783.058594,
+            "min": 783
+          }
+        },
+        "no_message": {
+          "completion_content_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "delivered_application_bytes": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "episodes": 256,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 0.171875,
+            "min": 0
+          },
+          "model_input_content_tokens": {
+            "max": 256,
+            "mean": 256.0,
+            "min": 256
+          },
+          "planned_model_calls": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 170,
+            "mean": 170.0,
+            "min": 170
+          },
+          "receiver_user_content_tokens": {
+            "max": 86,
+            "mean": 86.0,
+            "min": 86
+          },
+          "sender_completion_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "sender_role_instruction_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "sender_user_content_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "total_known_content_tokens": {
+            "max": 257,
+            "mean": 257.0,
+            "min": 257
+          }
+        }
+      },
+      "no_message_exact_sum_success": 0.171875,
+      "pareto_efficient_within_agent_count": {
+        "binary": false,
+        "decimal": true,
+        "exhaustive_codebook": true,
+        "json": false,
+        "no_message": true
+      }
+    },
+    {
+      "active_codebook_senders": [
+        "S1",
+        "S2"
+      ],
+      "actual_fixed_width_payload_bits": 2,
+      "agent_count": 4,
+      "budget_bits_at_most": 2,
+      "codebook_card_sha256": "65be9c891298c8f0065475841bbdaa0a6e606510f538d2e679cca6afd5b3d1ee",
+      "codebook_card_tokens_if_distributed_as_json": 489,
+      "codebook_exact_sum_success": 0.21875,
+      "codebook_protocol_id": "sum-code-cab9f6214588",
+      "conditions": {
+        "binary": {
+          "completion_content_tokens": {
+            "max": 10,
+            "mean": 9.058594,
+            "min": 9
+          },
+          "delivered_application_bytes": {
+            "max": 500,
+            "mean": 500.0,
+            "min": 500
+          },
+          "episodes": 256,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 883,
+            "mean": 883.0,
+            "min": 883
+          },
+          "planned_model_calls": {
+            "max": 5,
+            "mean": 5.0,
+            "min": 5
+          },
+          "receiver_completion_tokens": {
+            "max": 2,
+            "mean": 1.058594,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 182,
+            "mean": 182.0,
+            "min": 182
+          },
+          "receiver_user_content_tokens": {
+            "max": 141,
+            "mean": 141.0,
+            "min": 141
+          },
+          "sender_completion_tokens": {
+            "max": 8,
+            "mean": 8.0,
+            "min": 8
+          },
+          "sender_role_instruction_tokens": {
+            "max": 188,
+            "mean": 188.0,
+            "min": 188
+          },
+          "sender_user_content_tokens": {
+            "max": 372,
+            "mean": 372.0,
+            "min": 372
+          },
+          "total_known_content_tokens": {
+            "max": 893,
+            "mean": 892.058594,
+            "min": 892
+          }
+        },
+        "decimal": {
+          "completion_content_tokens": {
+            "max": 6,
+            "mean": 5.058594,
+            "min": 5
+          },
+          "delivered_application_bytes": {
+            "max": 500,
+            "mean": 500.0,
+            "min": 500
+          },
+          "episodes": 256,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 759,
+            "mean": 759.0,
+            "min": 759
+          },
+          "planned_model_calls": {
+            "max": 5,
+            "mean": 5.0,
+            "min": 5
+          },
+          "receiver_completion_tokens": {
+            "max": 2,
+            "mean": 1.058594,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 170,
+            "mean": 170.0,
+            "min": 170
+          },
+          "receiver_user_content_tokens": {
+            "max": 137,
+            "mean": 137.0,
+            "min": 137
+          },
+          "sender_completion_tokens": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "sender_role_instruction_tokens": {
+            "max": 80,
+            "mean": 80.0,
+            "min": 80
+          },
+          "sender_user_content_tokens": {
+            "max": 372,
+            "mean": 372.0,
+            "min": 372
+          },
+          "total_known_content_tokens": {
+            "max": 765,
+            "mean": 764.058594,
+            "min": 764
+          }
+        },
+        "exhaustive_codebook": {
+          "completion_content_tokens": {
+            "max": 3,
+            "mean": 3.0,
+            "min": 3
+          },
+          "delivered_application_bytes": {
+            "max": 248,
+            "mean": 248.0,
+            "min": 248
+          },
+          "episodes": 256,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 0.21875,
+            "min": 0
+          },
+          "model_input_content_tokens": {
+            "max": 768,
+            "mean": 768.0,
+            "min": 768
+          },
+          "planned_model_calls": {
+            "max": 3,
+            "mean": 3.0,
+            "min": 3
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 261,
+            "mean": 261.0,
+            "min": 261
+          },
+          "receiver_user_content_tokens": {
+            "max": 125,
+            "mean": 125.0,
+            "min": 125
+          },
+          "sender_completion_tokens": {
+            "max": 2,
+            "mean": 2.0,
+            "min": 2
+          },
+          "sender_role_instruction_tokens": {
+            "max": 196,
+            "mean": 196.0,
+            "min": 196
+          },
+          "sender_user_content_tokens": {
+            "max": 186,
+            "mean": 186.0,
+            "min": 186
+          },
+          "total_known_content_tokens": {
+            "max": 771,
+            "mean": 771.0,
+            "min": 771
+          }
+        },
+        "json": {
+          "completion_content_tokens": {
+            "max": 22,
+            "mean": 21.058594,
+            "min": 21
+          },
+          "delivered_application_bytes": {
+            "max": 536,
+            "mean": 536.0,
+            "min": 536
+          },
+          "episodes": 256,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 762,
+            "mean": 762.0,
+            "min": 762
+          },
+          "planned_model_calls": {
+            "max": 5,
+            "mean": 5.0,
+            "min": 5
+          },
+          "receiver_completion_tokens": {
+            "max": 2,
+            "mean": 1.058594,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 165,
+            "mean": 165.0,
+            "min": 165
+          },
+          "receiver_user_content_tokens": {
+            "max": 145,
+            "mean": 145.0,
+            "min": 145
+          },
+          "sender_completion_tokens": {
+            "max": 20,
+            "mean": 20.0,
+            "min": 20
+          },
+          "sender_role_instruction_tokens": {
+            "max": 80,
+            "mean": 80.0,
+            "min": 80
+          },
+          "sender_user_content_tokens": {
+            "max": 372,
+            "mean": 372.0,
+            "min": 372
+          },
+          "total_known_content_tokens": {
+            "max": 784,
+            "mean": 783.058594,
+            "min": 783
+          }
+        },
+        "no_message": {
+          "completion_content_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "delivered_application_bytes": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "episodes": 256,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 0.171875,
+            "min": 0
+          },
+          "model_input_content_tokens": {
+            "max": 256,
+            "mean": 256.0,
+            "min": 256
+          },
+          "planned_model_calls": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 170,
+            "mean": 170.0,
+            "min": 170
+          },
+          "receiver_user_content_tokens": {
+            "max": 86,
+            "mean": 86.0,
+            "min": 86
+          },
+          "sender_completion_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "sender_role_instruction_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "sender_user_content_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "total_known_content_tokens": {
+            "max": 257,
+            "mean": 257.0,
+            "min": 257
+          }
+        }
+      },
+      "no_message_exact_sum_success": 0.171875,
+      "pareto_efficient_within_agent_count": {
+        "binary": false,
+        "decimal": true,
+        "exhaustive_codebook": true,
+        "json": false,
+        "no_message": true
+      }
+    },
+    {
+      "active_codebook_senders": [
+        "S1",
+        "S2",
+        "S3"
+      ],
+      "actual_fixed_width_payload_bits": 3,
+      "agent_count": 4,
+      "budget_bits_at_most": 3,
+      "codebook_card_sha256": "92eda626c88a2ba19e56fb9210ec99e172f749e624ec4e72f79d9f81c7ad28da",
+      "codebook_card_tokens_if_distributed_as_json": 642,
+      "codebook_exact_sum_success": 0.25,
+      "codebook_protocol_id": "sum-code-5416cd43e75b",
+      "conditions": {
+        "binary": {
+          "completion_content_tokens": {
+            "max": 10,
+            "mean": 9.058594,
+            "min": 9
+          },
+          "delivered_application_bytes": {
+            "max": 500,
+            "mean": 500.0,
+            "min": 500
+          },
+          "episodes": 256,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 883,
+            "mean": 883.0,
+            "min": 883
+          },
+          "planned_model_calls": {
+            "max": 5,
+            "mean": 5.0,
+            "min": 5
+          },
+          "receiver_completion_tokens": {
+            "max": 2,
+            "mean": 1.058594,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 182,
+            "mean": 182.0,
+            "min": 182
+          },
+          "receiver_user_content_tokens": {
+            "max": 141,
+            "mean": 141.0,
+            "min": 141
+          },
+          "sender_completion_tokens": {
+            "max": 8,
+            "mean": 8.0,
+            "min": 8
+          },
+          "sender_role_instruction_tokens": {
+            "max": 188,
+            "mean": 188.0,
+            "min": 188
+          },
+          "sender_user_content_tokens": {
+            "max": 372,
+            "mean": 372.0,
+            "min": 372
+          },
+          "total_known_content_tokens": {
+            "max": 893,
+            "mean": 892.058594,
+            "min": 892
+          }
+        },
+        "decimal": {
+          "completion_content_tokens": {
+            "max": 6,
+            "mean": 5.058594,
+            "min": 5
+          },
+          "delivered_application_bytes": {
+            "max": 500,
+            "mean": 500.0,
+            "min": 500
+          },
+          "episodes": 256,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 759,
+            "mean": 759.0,
+            "min": 759
+          },
+          "planned_model_calls": {
+            "max": 5,
+            "mean": 5.0,
+            "min": 5
+          },
+          "receiver_completion_tokens": {
+            "max": 2,
+            "mean": 1.058594,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 170,
+            "mean": 170.0,
+            "min": 170
+          },
+          "receiver_user_content_tokens": {
+            "max": 137,
+            "mean": 137.0,
+            "min": 137
+          },
+          "sender_completion_tokens": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "sender_role_instruction_tokens": {
+            "max": 80,
+            "mean": 80.0,
+            "min": 80
+          },
+          "sender_user_content_tokens": {
+            "max": 372,
+            "mean": 372.0,
+            "min": 372
+          },
+          "total_known_content_tokens": {
+            "max": 765,
+            "mean": 764.058594,
+            "min": 764
+          }
+        },
+        "exhaustive_codebook": {
+          "completion_content_tokens": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "delivered_application_bytes": {
+            "max": 372,
+            "mean": 372.0,
+            "min": 372
+          },
+          "episodes": 256,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 0.25,
+            "min": 0
+          },
+          "model_input_content_tokens": {
+            "max": 1022,
+            "mean": 1022.0,
+            "min": 1022
+          },
+          "planned_model_calls": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 311,
+            "mean": 311.0,
+            "min": 311
+          },
+          "receiver_user_content_tokens": {
+            "max": 138,
+            "mean": 138.0,
+            "min": 138
+          },
+          "sender_completion_tokens": {
+            "max": 3,
+            "mean": 3.0,
+            "min": 3
+          },
+          "sender_role_instruction_tokens": {
+            "max": 294,
+            "mean": 294.0,
+            "min": 294
+          },
+          "sender_user_content_tokens": {
+            "max": 279,
+            "mean": 279.0,
+            "min": 279
+          },
+          "total_known_content_tokens": {
+            "max": 1026,
+            "mean": 1026.0,
+            "min": 1026
+          }
+        },
+        "json": {
+          "completion_content_tokens": {
+            "max": 22,
+            "mean": 21.058594,
+            "min": 21
+          },
+          "delivered_application_bytes": {
+            "max": 536,
+            "mean": 536.0,
+            "min": 536
+          },
+          "episodes": 256,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 762,
+            "mean": 762.0,
+            "min": 762
+          },
+          "planned_model_calls": {
+            "max": 5,
+            "mean": 5.0,
+            "min": 5
+          },
+          "receiver_completion_tokens": {
+            "max": 2,
+            "mean": 1.058594,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 165,
+            "mean": 165.0,
+            "min": 165
+          },
+          "receiver_user_content_tokens": {
+            "max": 145,
+            "mean": 145.0,
+            "min": 145
+          },
+          "sender_completion_tokens": {
+            "max": 20,
+            "mean": 20.0,
+            "min": 20
+          },
+          "sender_role_instruction_tokens": {
+            "max": 80,
+            "mean": 80.0,
+            "min": 80
+          },
+          "sender_user_content_tokens": {
+            "max": 372,
+            "mean": 372.0,
+            "min": 372
+          },
+          "total_known_content_tokens": {
+            "max": 784,
+            "mean": 783.058594,
+            "min": 783
+          }
+        },
+        "no_message": {
+          "completion_content_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "delivered_application_bytes": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "episodes": 256,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 0.171875,
+            "min": 0
+          },
+          "model_input_content_tokens": {
+            "max": 256,
+            "mean": 256.0,
+            "min": 256
+          },
+          "planned_model_calls": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 170,
+            "mean": 170.0,
+            "min": 170
+          },
+          "receiver_user_content_tokens": {
+            "max": 86,
+            "mean": 86.0,
+            "min": 86
+          },
+          "sender_completion_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "sender_role_instruction_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "sender_user_content_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "total_known_content_tokens": {
+            "max": 257,
+            "mean": 257.0,
+            "min": 257
+          }
+        }
+      },
+      "no_message_exact_sum_success": 0.171875,
+      "pareto_efficient_within_agent_count": {
+        "binary": false,
+        "decimal": true,
+        "exhaustive_codebook": true,
+        "json": false,
+        "no_message": true
+      }
+    },
+    {
+      "active_codebook_senders": [
+        "S1",
+        "S2",
+        "S3",
+        "S4"
+      ],
+      "actual_fixed_width_payload_bits": 4,
+      "agent_count": 4,
+      "budget_bits_at_most": 4,
+      "codebook_card_sha256": "813aaaf5443f7bae0e2f7c23201b27d2df8cea93ae9517f2a9fd02690d9a7b30",
+      "codebook_card_tokens_if_distributed_as_json": 807,
+      "codebook_exact_sum_success": 0.375,
+      "codebook_protocol_id": "sum-code-040e1c79e9b3",
+      "conditions": {
+        "binary": {
+          "completion_content_tokens": {
+            "max": 10,
+            "mean": 9.058594,
+            "min": 9
+          },
+          "delivered_application_bytes": {
+            "max": 500,
+            "mean": 500.0,
+            "min": 500
+          },
+          "episodes": 256,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 883,
+            "mean": 883.0,
+            "min": 883
+          },
+          "planned_model_calls": {
+            "max": 5,
+            "mean": 5.0,
+            "min": 5
+          },
+          "receiver_completion_tokens": {
+            "max": 2,
+            "mean": 1.058594,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 182,
+            "mean": 182.0,
+            "min": 182
+          },
+          "receiver_user_content_tokens": {
+            "max": 141,
+            "mean": 141.0,
+            "min": 141
+          },
+          "sender_completion_tokens": {
+            "max": 8,
+            "mean": 8.0,
+            "min": 8
+          },
+          "sender_role_instruction_tokens": {
+            "max": 188,
+            "mean": 188.0,
+            "min": 188
+          },
+          "sender_user_content_tokens": {
+            "max": 372,
+            "mean": 372.0,
+            "min": 372
+          },
+          "total_known_content_tokens": {
+            "max": 893,
+            "mean": 892.058594,
+            "min": 892
+          }
+        },
+        "decimal": {
+          "completion_content_tokens": {
+            "max": 6,
+            "mean": 5.058594,
+            "min": 5
+          },
+          "delivered_application_bytes": {
+            "max": 500,
+            "mean": 500.0,
+            "min": 500
+          },
+          "episodes": 256,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 759,
+            "mean": 759.0,
+            "min": 759
+          },
+          "planned_model_calls": {
+            "max": 5,
+            "mean": 5.0,
+            "min": 5
+          },
+          "receiver_completion_tokens": {
+            "max": 2,
+            "mean": 1.058594,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 170,
+            "mean": 170.0,
+            "min": 170
+          },
+          "receiver_user_content_tokens": {
+            "max": 137,
+            "mean": 137.0,
+            "min": 137
+          },
+          "sender_completion_tokens": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "sender_role_instruction_tokens": {
+            "max": 80,
+            "mean": 80.0,
+            "min": 80
+          },
+          "sender_user_content_tokens": {
+            "max": 372,
+            "mean": 372.0,
+            "min": 372
+          },
+          "total_known_content_tokens": {
+            "max": 765,
+            "mean": 764.058594,
+            "min": 764
+          }
+        },
+        "exhaustive_codebook": {
+          "completion_content_tokens": {
+            "max": 6,
+            "mean": 5.0625,
+            "min": 5
+          },
+          "delivered_application_bytes": {
+            "max": 496,
+            "mean": 496.0,
+            "min": 496
+          },
+          "episodes": 256,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 0.375,
+            "min": 0
+          },
+          "model_input_content_tokens": {
+            "max": 1289,
+            "mean": 1289.0,
+            "min": 1289
+          },
+          "planned_model_calls": {
+            "max": 5,
+            "mean": 5.0,
+            "min": 5
+          },
+          "receiver_completion_tokens": {
+            "max": 2,
+            "mean": 1.0625,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 374,
+            "mean": 374.0,
+            "min": 374
+          },
+          "receiver_user_content_tokens": {
+            "max": 151,
+            "mean": 151.0,
+            "min": 151
+          },
+          "sender_completion_tokens": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "sender_role_instruction_tokens": {
+            "max": 392,
+            "mean": 392.0,
+            "min": 392
+          },
+          "sender_user_content_tokens": {
+            "max": 372,
+            "mean": 372.0,
+            "min": 372
+          },
+          "total_known_content_tokens": {
+            "max": 1295,
+            "mean": 1294.0625,
+            "min": 1294
+          }
+        },
+        "json": {
+          "completion_content_tokens": {
+            "max": 22,
+            "mean": 21.058594,
+            "min": 21
+          },
+          "delivered_application_bytes": {
+            "max": 536,
+            "mean": 536.0,
+            "min": 536
+          },
+          "episodes": 256,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 762,
+            "mean": 762.0,
+            "min": 762
+          },
+          "planned_model_calls": {
+            "max": 5,
+            "mean": 5.0,
+            "min": 5
+          },
+          "receiver_completion_tokens": {
+            "max": 2,
+            "mean": 1.058594,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 165,
+            "mean": 165.0,
+            "min": 165
+          },
+          "receiver_user_content_tokens": {
+            "max": 145,
+            "mean": 145.0,
+            "min": 145
+          },
+          "sender_completion_tokens": {
+            "max": 20,
+            "mean": 20.0,
+            "min": 20
+          },
+          "sender_role_instruction_tokens": {
+            "max": 80,
+            "mean": 80.0,
+            "min": 80
+          },
+          "sender_user_content_tokens": {
+            "max": 372,
+            "mean": 372.0,
+            "min": 372
+          },
+          "total_known_content_tokens": {
+            "max": 784,
+            "mean": 783.058594,
+            "min": 783
+          }
+        },
+        "no_message": {
+          "completion_content_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "delivered_application_bytes": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "episodes": 256,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 0.171875,
+            "min": 0
+          },
+          "model_input_content_tokens": {
+            "max": 256,
+            "mean": 256.0,
+            "min": 256
+          },
+          "planned_model_calls": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 170,
+            "mean": 170.0,
+            "min": 170
+          },
+          "receiver_user_content_tokens": {
+            "max": 86,
+            "mean": 86.0,
+            "min": 86
+          },
+          "sender_completion_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "sender_role_instruction_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "sender_user_content_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "total_known_content_tokens": {
+            "max": 257,
+            "mean": 257.0,
+            "min": 257
+          }
+        }
+      },
+      "no_message_exact_sum_success": 0.171875,
+      "pareto_efficient_within_agent_count": {
+        "binary": false,
+        "decimal": true,
+        "exhaustive_codebook": true,
+        "json": false,
+        "no_message": true
+      }
+    },
+    {
+      "active_codebook_senders": [
+        "S1",
+        "S2",
+        "S3",
+        "S4"
+      ],
+      "actual_fixed_width_payload_bits": 4,
+      "agent_count": 4,
+      "budget_bits_at_most": 5,
+      "codebook_card_sha256": "813aaaf5443f7bae0e2f7c23201b27d2df8cea93ae9517f2a9fd02690d9a7b30",
+      "codebook_card_tokens_if_distributed_as_json": 807,
+      "codebook_exact_sum_success": 0.375,
+      "codebook_protocol_id": "sum-code-040e1c79e9b3",
+      "conditions": {
+        "binary": {
+          "completion_content_tokens": {
+            "max": 10,
+            "mean": 9.058594,
+            "min": 9
+          },
+          "delivered_application_bytes": {
+            "max": 500,
+            "mean": 500.0,
+            "min": 500
+          },
+          "episodes": 256,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 883,
+            "mean": 883.0,
+            "min": 883
+          },
+          "planned_model_calls": {
+            "max": 5,
+            "mean": 5.0,
+            "min": 5
+          },
+          "receiver_completion_tokens": {
+            "max": 2,
+            "mean": 1.058594,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 182,
+            "mean": 182.0,
+            "min": 182
+          },
+          "receiver_user_content_tokens": {
+            "max": 141,
+            "mean": 141.0,
+            "min": 141
+          },
+          "sender_completion_tokens": {
+            "max": 8,
+            "mean": 8.0,
+            "min": 8
+          },
+          "sender_role_instruction_tokens": {
+            "max": 188,
+            "mean": 188.0,
+            "min": 188
+          },
+          "sender_user_content_tokens": {
+            "max": 372,
+            "mean": 372.0,
+            "min": 372
+          },
+          "total_known_content_tokens": {
+            "max": 893,
+            "mean": 892.058594,
+            "min": 892
+          }
+        },
+        "decimal": {
+          "completion_content_tokens": {
+            "max": 6,
+            "mean": 5.058594,
+            "min": 5
+          },
+          "delivered_application_bytes": {
+            "max": 500,
+            "mean": 500.0,
+            "min": 500
+          },
+          "episodes": 256,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 759,
+            "mean": 759.0,
+            "min": 759
+          },
+          "planned_model_calls": {
+            "max": 5,
+            "mean": 5.0,
+            "min": 5
+          },
+          "receiver_completion_tokens": {
+            "max": 2,
+            "mean": 1.058594,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 170,
+            "mean": 170.0,
+            "min": 170
+          },
+          "receiver_user_content_tokens": {
+            "max": 137,
+            "mean": 137.0,
+            "min": 137
+          },
+          "sender_completion_tokens": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "sender_role_instruction_tokens": {
+            "max": 80,
+            "mean": 80.0,
+            "min": 80
+          },
+          "sender_user_content_tokens": {
+            "max": 372,
+            "mean": 372.0,
+            "min": 372
+          },
+          "total_known_content_tokens": {
+            "max": 765,
+            "mean": 764.058594,
+            "min": 764
+          }
+        },
+        "exhaustive_codebook": {
+          "completion_content_tokens": {
+            "max": 6,
+            "mean": 5.0625,
+            "min": 5
+          },
+          "delivered_application_bytes": {
+            "max": 496,
+            "mean": 496.0,
+            "min": 496
+          },
+          "episodes": 256,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 0.375,
+            "min": 0
+          },
+          "model_input_content_tokens": {
+            "max": 1289,
+            "mean": 1289.0,
+            "min": 1289
+          },
+          "planned_model_calls": {
+            "max": 5,
+            "mean": 5.0,
+            "min": 5
+          },
+          "receiver_completion_tokens": {
+            "max": 2,
+            "mean": 1.0625,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 374,
+            "mean": 374.0,
+            "min": 374
+          },
+          "receiver_user_content_tokens": {
+            "max": 151,
+            "mean": 151.0,
+            "min": 151
+          },
+          "sender_completion_tokens": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "sender_role_instruction_tokens": {
+            "max": 392,
+            "mean": 392.0,
+            "min": 392
+          },
+          "sender_user_content_tokens": {
+            "max": 372,
+            "mean": 372.0,
+            "min": 372
+          },
+          "total_known_content_tokens": {
+            "max": 1295,
+            "mean": 1294.0625,
+            "min": 1294
+          }
+        },
+        "json": {
+          "completion_content_tokens": {
+            "max": 22,
+            "mean": 21.058594,
+            "min": 21
+          },
+          "delivered_application_bytes": {
+            "max": 536,
+            "mean": 536.0,
+            "min": 536
+          },
+          "episodes": 256,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 762,
+            "mean": 762.0,
+            "min": 762
+          },
+          "planned_model_calls": {
+            "max": 5,
+            "mean": 5.0,
+            "min": 5
+          },
+          "receiver_completion_tokens": {
+            "max": 2,
+            "mean": 1.058594,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 165,
+            "mean": 165.0,
+            "min": 165
+          },
+          "receiver_user_content_tokens": {
+            "max": 145,
+            "mean": 145.0,
+            "min": 145
+          },
+          "sender_completion_tokens": {
+            "max": 20,
+            "mean": 20.0,
+            "min": 20
+          },
+          "sender_role_instruction_tokens": {
+            "max": 80,
+            "mean": 80.0,
+            "min": 80
+          },
+          "sender_user_content_tokens": {
+            "max": 372,
+            "mean": 372.0,
+            "min": 372
+          },
+          "total_known_content_tokens": {
+            "max": 784,
+            "mean": 783.058594,
+            "min": 783
+          }
+        },
+        "no_message": {
+          "completion_content_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "delivered_application_bytes": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "episodes": 256,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 0.171875,
+            "min": 0
+          },
+          "model_input_content_tokens": {
+            "max": 256,
+            "mean": 256.0,
+            "min": 256
+          },
+          "planned_model_calls": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 170,
+            "mean": 170.0,
+            "min": 170
+          },
+          "receiver_user_content_tokens": {
+            "max": 86,
+            "mean": 86.0,
+            "min": 86
+          },
+          "sender_completion_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "sender_role_instruction_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "sender_user_content_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "total_known_content_tokens": {
+            "max": 257,
+            "mean": 257.0,
+            "min": 257
+          }
+        }
+      },
+      "no_message_exact_sum_success": 0.171875,
+      "pareto_efficient_within_agent_count": {
+        "binary": false,
+        "decimal": true,
+        "exhaustive_codebook": true,
+        "json": false,
+        "no_message": true
+      }
+    },
+    {
+      "active_codebook_senders": [
+        "S1",
+        "S2",
+        "S3",
+        "S4"
+      ],
+      "actual_fixed_width_payload_bits": 6,
+      "agent_count": 4,
+      "budget_bits_at_most": 6,
+      "codebook_card_sha256": "be9d451751901194f7e17f0333ba3f31f4e52c154b8e72f684fa798b36348ca0",
+      "codebook_card_tokens_if_distributed_as_json": 1393,
+      "codebook_exact_sum_success": 0.5,
+      "codebook_protocol_id": "sum-code-338d82158f49",
+      "conditions": {
+        "binary": {
+          "completion_content_tokens": {
+            "max": 10,
+            "mean": 9.058594,
+            "min": 9
+          },
+          "delivered_application_bytes": {
+            "max": 500,
+            "mean": 500.0,
+            "min": 500
+          },
+          "episodes": 256,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 883,
+            "mean": 883.0,
+            "min": 883
+          },
+          "planned_model_calls": {
+            "max": 5,
+            "mean": 5.0,
+            "min": 5
+          },
+          "receiver_completion_tokens": {
+            "max": 2,
+            "mean": 1.058594,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 182,
+            "mean": 182.0,
+            "min": 182
+          },
+          "receiver_user_content_tokens": {
+            "max": 141,
+            "mean": 141.0,
+            "min": 141
+          },
+          "sender_completion_tokens": {
+            "max": 8,
+            "mean": 8.0,
+            "min": 8
+          },
+          "sender_role_instruction_tokens": {
+            "max": 188,
+            "mean": 188.0,
+            "min": 188
+          },
+          "sender_user_content_tokens": {
+            "max": 372,
+            "mean": 372.0,
+            "min": 372
+          },
+          "total_known_content_tokens": {
+            "max": 893,
+            "mean": 892.058594,
+            "min": 892
+          }
+        },
+        "decimal": {
+          "completion_content_tokens": {
+            "max": 6,
+            "mean": 5.058594,
+            "min": 5
+          },
+          "delivered_application_bytes": {
+            "max": 500,
+            "mean": 500.0,
+            "min": 500
+          },
+          "episodes": 256,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 759,
+            "mean": 759.0,
+            "min": 759
+          },
+          "planned_model_calls": {
+            "max": 5,
+            "mean": 5.0,
+            "min": 5
+          },
+          "receiver_completion_tokens": {
+            "max": 2,
+            "mean": 1.058594,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 170,
+            "mean": 170.0,
+            "min": 170
+          },
+          "receiver_user_content_tokens": {
+            "max": 137,
+            "mean": 137.0,
+            "min": 137
+          },
+          "sender_completion_tokens": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "sender_role_instruction_tokens": {
+            "max": 80,
+            "mean": 80.0,
+            "min": 80
+          },
+          "sender_user_content_tokens": {
+            "max": 372,
+            "mean": 372.0,
+            "min": 372
+          },
+          "total_known_content_tokens": {
+            "max": 765,
+            "mean": 764.058594,
+            "min": 764
+          }
+        },
+        "exhaustive_codebook": {
+          "completion_content_tokens": {
+            "max": 8,
+            "mean": 7.046875,
+            "min": 7
+          },
+          "delivered_application_bytes": {
+            "max": 498,
+            "mean": 498.0,
+            "min": 498
+          },
+          "episodes": 256,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 0.5,
+            "min": 0
+          },
+          "model_input_content_tokens": {
+            "max": 1877,
+            "mean": 1877.0,
+            "min": 1877
+          },
+          "planned_model_calls": {
+            "max": 5,
+            "mean": 5.0,
+            "min": 5
+          },
+          "receiver_completion_tokens": {
+            "max": 2,
+            "mean": 1.046875,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 940,
+            "mean": 940.0,
+            "min": 940
+          },
+          "receiver_user_content_tokens": {
+            "max": 153,
+            "mean": 153.0,
+            "min": 153
+          },
+          "sender_completion_tokens": {
+            "max": 6,
+            "mean": 6.0,
+            "min": 6
+          },
+          "sender_role_instruction_tokens": {
+            "max": 412,
+            "mean": 412.0,
+            "min": 412
+          },
+          "sender_user_content_tokens": {
+            "max": 372,
+            "mean": 372.0,
+            "min": 372
+          },
+          "total_known_content_tokens": {
+            "max": 1885,
+            "mean": 1884.046875,
+            "min": 1884
+          }
+        },
+        "json": {
+          "completion_content_tokens": {
+            "max": 22,
+            "mean": 21.058594,
+            "min": 21
+          },
+          "delivered_application_bytes": {
+            "max": 536,
+            "mean": 536.0,
+            "min": 536
+          },
+          "episodes": 256,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 762,
+            "mean": 762.0,
+            "min": 762
+          },
+          "planned_model_calls": {
+            "max": 5,
+            "mean": 5.0,
+            "min": 5
+          },
+          "receiver_completion_tokens": {
+            "max": 2,
+            "mean": 1.058594,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 165,
+            "mean": 165.0,
+            "min": 165
+          },
+          "receiver_user_content_tokens": {
+            "max": 145,
+            "mean": 145.0,
+            "min": 145
+          },
+          "sender_completion_tokens": {
+            "max": 20,
+            "mean": 20.0,
+            "min": 20
+          },
+          "sender_role_instruction_tokens": {
+            "max": 80,
+            "mean": 80.0,
+            "min": 80
+          },
+          "sender_user_content_tokens": {
+            "max": 372,
+            "mean": 372.0,
+            "min": 372
+          },
+          "total_known_content_tokens": {
+            "max": 784,
+            "mean": 783.058594,
+            "min": 783
+          }
+        },
+        "no_message": {
+          "completion_content_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "delivered_application_bytes": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "episodes": 256,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 0.171875,
+            "min": 0
+          },
+          "model_input_content_tokens": {
+            "max": 256,
+            "mean": 256.0,
+            "min": 256
+          },
+          "planned_model_calls": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 170,
+            "mean": 170.0,
+            "min": 170
+          },
+          "receiver_user_content_tokens": {
+            "max": 86,
+            "mean": 86.0,
+            "min": 86
+          },
+          "sender_completion_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "sender_role_instruction_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "sender_user_content_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "total_known_content_tokens": {
+            "max": 257,
+            "mean": 257.0,
+            "min": 257
+          }
+        }
+      },
+      "no_message_exact_sum_success": 0.171875,
+      "pareto_efficient_within_agent_count": {
+        "binary": false,
+        "decimal": true,
+        "exhaustive_codebook": true,
+        "json": false,
+        "no_message": true
+      }
+    },
+    {
+      "active_codebook_senders": [
+        "S1",
+        "S2",
+        "S3",
+        "S4"
+      ],
+      "actual_fixed_width_payload_bits": 6,
+      "agent_count": 4,
+      "budget_bits_at_most": 7,
+      "codebook_card_sha256": "be9d451751901194f7e17f0333ba3f31f4e52c154b8e72f684fa798b36348ca0",
+      "codebook_card_tokens_if_distributed_as_json": 1393,
+      "codebook_exact_sum_success": 0.5,
+      "codebook_protocol_id": "sum-code-338d82158f49",
+      "conditions": {
+        "binary": {
+          "completion_content_tokens": {
+            "max": 10,
+            "mean": 9.058594,
+            "min": 9
+          },
+          "delivered_application_bytes": {
+            "max": 500,
+            "mean": 500.0,
+            "min": 500
+          },
+          "episodes": 256,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 883,
+            "mean": 883.0,
+            "min": 883
+          },
+          "planned_model_calls": {
+            "max": 5,
+            "mean": 5.0,
+            "min": 5
+          },
+          "receiver_completion_tokens": {
+            "max": 2,
+            "mean": 1.058594,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 182,
+            "mean": 182.0,
+            "min": 182
+          },
+          "receiver_user_content_tokens": {
+            "max": 141,
+            "mean": 141.0,
+            "min": 141
+          },
+          "sender_completion_tokens": {
+            "max": 8,
+            "mean": 8.0,
+            "min": 8
+          },
+          "sender_role_instruction_tokens": {
+            "max": 188,
+            "mean": 188.0,
+            "min": 188
+          },
+          "sender_user_content_tokens": {
+            "max": 372,
+            "mean": 372.0,
+            "min": 372
+          },
+          "total_known_content_tokens": {
+            "max": 893,
+            "mean": 892.058594,
+            "min": 892
+          }
+        },
+        "decimal": {
+          "completion_content_tokens": {
+            "max": 6,
+            "mean": 5.058594,
+            "min": 5
+          },
+          "delivered_application_bytes": {
+            "max": 500,
+            "mean": 500.0,
+            "min": 500
+          },
+          "episodes": 256,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 759,
+            "mean": 759.0,
+            "min": 759
+          },
+          "planned_model_calls": {
+            "max": 5,
+            "mean": 5.0,
+            "min": 5
+          },
+          "receiver_completion_tokens": {
+            "max": 2,
+            "mean": 1.058594,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 170,
+            "mean": 170.0,
+            "min": 170
+          },
+          "receiver_user_content_tokens": {
+            "max": 137,
+            "mean": 137.0,
+            "min": 137
+          },
+          "sender_completion_tokens": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "sender_role_instruction_tokens": {
+            "max": 80,
+            "mean": 80.0,
+            "min": 80
+          },
+          "sender_user_content_tokens": {
+            "max": 372,
+            "mean": 372.0,
+            "min": 372
+          },
+          "total_known_content_tokens": {
+            "max": 765,
+            "mean": 764.058594,
+            "min": 764
+          }
+        },
+        "exhaustive_codebook": {
+          "completion_content_tokens": {
+            "max": 8,
+            "mean": 7.046875,
+            "min": 7
+          },
+          "delivered_application_bytes": {
+            "max": 498,
+            "mean": 498.0,
+            "min": 498
+          },
+          "episodes": 256,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 0.5,
+            "min": 0
+          },
+          "model_input_content_tokens": {
+            "max": 1877,
+            "mean": 1877.0,
+            "min": 1877
+          },
+          "planned_model_calls": {
+            "max": 5,
+            "mean": 5.0,
+            "min": 5
+          },
+          "receiver_completion_tokens": {
+            "max": 2,
+            "mean": 1.046875,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 940,
+            "mean": 940.0,
+            "min": 940
+          },
+          "receiver_user_content_tokens": {
+            "max": 153,
+            "mean": 153.0,
+            "min": 153
+          },
+          "sender_completion_tokens": {
+            "max": 6,
+            "mean": 6.0,
+            "min": 6
+          },
+          "sender_role_instruction_tokens": {
+            "max": 412,
+            "mean": 412.0,
+            "min": 412
+          },
+          "sender_user_content_tokens": {
+            "max": 372,
+            "mean": 372.0,
+            "min": 372
+          },
+          "total_known_content_tokens": {
+            "max": 1885,
+            "mean": 1884.046875,
+            "min": 1884
+          }
+        },
+        "json": {
+          "completion_content_tokens": {
+            "max": 22,
+            "mean": 21.058594,
+            "min": 21
+          },
+          "delivered_application_bytes": {
+            "max": 536,
+            "mean": 536.0,
+            "min": 536
+          },
+          "episodes": 256,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 762,
+            "mean": 762.0,
+            "min": 762
+          },
+          "planned_model_calls": {
+            "max": 5,
+            "mean": 5.0,
+            "min": 5
+          },
+          "receiver_completion_tokens": {
+            "max": 2,
+            "mean": 1.058594,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 165,
+            "mean": 165.0,
+            "min": 165
+          },
+          "receiver_user_content_tokens": {
+            "max": 145,
+            "mean": 145.0,
+            "min": 145
+          },
+          "sender_completion_tokens": {
+            "max": 20,
+            "mean": 20.0,
+            "min": 20
+          },
+          "sender_role_instruction_tokens": {
+            "max": 80,
+            "mean": 80.0,
+            "min": 80
+          },
+          "sender_user_content_tokens": {
+            "max": 372,
+            "mean": 372.0,
+            "min": 372
+          },
+          "total_known_content_tokens": {
+            "max": 784,
+            "mean": 783.058594,
+            "min": 783
+          }
+        },
+        "no_message": {
+          "completion_content_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "delivered_application_bytes": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "episodes": 256,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 0.171875,
+            "min": 0
+          },
+          "model_input_content_tokens": {
+            "max": 256,
+            "mean": 256.0,
+            "min": 256
+          },
+          "planned_model_calls": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 170,
+            "mean": 170.0,
+            "min": 170
+          },
+          "receiver_user_content_tokens": {
+            "max": 86,
+            "mean": 86.0,
+            "min": 86
+          },
+          "sender_completion_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "sender_role_instruction_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "sender_user_content_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "total_known_content_tokens": {
+            "max": 257,
+            "mean": 257.0,
+            "min": 257
+          }
+        }
+      },
+      "no_message_exact_sum_success": 0.171875,
+      "pareto_efficient_within_agent_count": {
+        "binary": false,
+        "decimal": true,
+        "exhaustive_codebook": true,
+        "json": false,
+        "no_message": true
+      }
+    },
+    {
+      "active_codebook_senders": [
+        "S1",
+        "S2",
+        "S3",
+        "S4"
+      ],
+      "actual_fixed_width_payload_bits": 8,
+      "agent_count": 4,
+      "budget_bits_at_most": 8,
+      "codebook_card_sha256": "1df7b9fe41418d249917382d81549ca4f0f32107ef2c215777075a1648278e09",
+      "codebook_card_tokens_if_distributed_as_json": 3571,
+      "codebook_exact_sum_success": 1.0,
+      "codebook_protocol_id": "sum-code-519731cb0ba3",
+      "conditions": {
+        "binary": {
+          "completion_content_tokens": {
+            "max": 10,
+            "mean": 9.058594,
+            "min": 9
+          },
+          "delivered_application_bytes": {
+            "max": 500,
+            "mean": 500.0,
+            "min": 500
+          },
+          "episodes": 256,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 883,
+            "mean": 883.0,
+            "min": 883
+          },
+          "planned_model_calls": {
+            "max": 5,
+            "mean": 5.0,
+            "min": 5
+          },
+          "receiver_completion_tokens": {
+            "max": 2,
+            "mean": 1.058594,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 182,
+            "mean": 182.0,
+            "min": 182
+          },
+          "receiver_user_content_tokens": {
+            "max": 141,
+            "mean": 141.0,
+            "min": 141
+          },
+          "sender_completion_tokens": {
+            "max": 8,
+            "mean": 8.0,
+            "min": 8
+          },
+          "sender_role_instruction_tokens": {
+            "max": 188,
+            "mean": 188.0,
+            "min": 188
+          },
+          "sender_user_content_tokens": {
+            "max": 372,
+            "mean": 372.0,
+            "min": 372
+          },
+          "total_known_content_tokens": {
+            "max": 893,
+            "mean": 892.058594,
+            "min": 892
+          }
+        },
+        "decimal": {
+          "completion_content_tokens": {
+            "max": 6,
+            "mean": 5.058594,
+            "min": 5
+          },
+          "delivered_application_bytes": {
+            "max": 500,
+            "mean": 500.0,
+            "min": 500
+          },
+          "episodes": 256,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 759,
+            "mean": 759.0,
+            "min": 759
+          },
+          "planned_model_calls": {
+            "max": 5,
+            "mean": 5.0,
+            "min": 5
+          },
+          "receiver_completion_tokens": {
+            "max": 2,
+            "mean": 1.058594,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 170,
+            "mean": 170.0,
+            "min": 170
+          },
+          "receiver_user_content_tokens": {
+            "max": 137,
+            "mean": 137.0,
+            "min": 137
+          },
+          "sender_completion_tokens": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "sender_role_instruction_tokens": {
+            "max": 80,
+            "mean": 80.0,
+            "min": 80
+          },
+          "sender_user_content_tokens": {
+            "max": 372,
+            "mean": 372.0,
+            "min": 372
+          },
+          "total_known_content_tokens": {
+            "max": 765,
+            "mean": 764.058594,
+            "min": 764
+          }
+        },
+        "exhaustive_codebook": {
+          "completion_content_tokens": {
+            "max": 10,
+            "mean": 9.058594,
+            "min": 9
+          },
+          "delivered_application_bytes": {
+            "max": 500,
+            "mean": 500.0,
+            "min": 500
+          },
+          "episodes": 256,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 4059,
+            "mean": 4059.0,
+            "min": 4059
+          },
+          "planned_model_calls": {
+            "max": 5,
+            "mean": 5.0,
+            "min": 5
+          },
+          "receiver_completion_tokens": {
+            "max": 2,
+            "mean": 1.058594,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 3100,
+            "mean": 3100.0,
+            "min": 3100
+          },
+          "receiver_user_content_tokens": {
+            "max": 155,
+            "mean": 155.0,
+            "min": 155
+          },
+          "sender_completion_tokens": {
+            "max": 8,
+            "mean": 8.0,
+            "min": 8
+          },
+          "sender_role_instruction_tokens": {
+            "max": 432,
+            "mean": 432.0,
+            "min": 432
+          },
+          "sender_user_content_tokens": {
+            "max": 372,
+            "mean": 372.0,
+            "min": 372
+          },
+          "total_known_content_tokens": {
+            "max": 4069,
+            "mean": 4068.058594,
+            "min": 4068
+          }
+        },
+        "json": {
+          "completion_content_tokens": {
+            "max": 22,
+            "mean": 21.058594,
+            "min": 21
+          },
+          "delivered_application_bytes": {
+            "max": 536,
+            "mean": 536.0,
+            "min": 536
+          },
+          "episodes": 256,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "model_input_content_tokens": {
+            "max": 762,
+            "mean": 762.0,
+            "min": 762
+          },
+          "planned_model_calls": {
+            "max": 5,
+            "mean": 5.0,
+            "min": 5
+          },
+          "receiver_completion_tokens": {
+            "max": 2,
+            "mean": 1.058594,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 165,
+            "mean": 165.0,
+            "min": 165
+          },
+          "receiver_user_content_tokens": {
+            "max": 145,
+            "mean": 145.0,
+            "min": 145
+          },
+          "sender_completion_tokens": {
+            "max": 20,
+            "mean": 20.0,
+            "min": 20
+          },
+          "sender_role_instruction_tokens": {
+            "max": 80,
+            "mean": 80.0,
+            "min": 80
+          },
+          "sender_user_content_tokens": {
+            "max": 372,
+            "mean": 372.0,
+            "min": 372
+          },
+          "total_known_content_tokens": {
+            "max": 784,
+            "mean": 783.058594,
+            "min": 783
+          }
+        },
+        "no_message": {
+          "completion_content_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "delivered_application_bytes": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "episodes": 256,
+          "exact_sum_success": {
+            "max": 1,
+            "mean": 0.171875,
+            "min": 0
+          },
+          "model_input_content_tokens": {
+            "max": 256,
+            "mean": 256.0,
+            "min": 256
+          },
+          "planned_model_calls": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_completion_tokens": {
+            "max": 1,
+            "mean": 1.0,
+            "min": 1
+          },
+          "receiver_role_instruction_tokens": {
+            "max": 170,
+            "mean": 170.0,
+            "min": 170
+          },
+          "receiver_user_content_tokens": {
+            "max": 86,
+            "mean": 86.0,
+            "min": 86
+          },
+          "sender_completion_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "sender_role_instruction_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "sender_user_content_tokens": {
+            "max": 0,
+            "mean": 0.0,
+            "min": 0
+          },
+          "total_known_content_tokens": {
+            "max": 257,
+            "mean": 257.0,
+            "min": 257
+          }
+        }
+      },
+      "no_message_exact_sum_success": 0.171875,
+      "pareto_efficient_within_agent_count": {
+        "binary": false,
+        "decimal": true,
+        "exhaustive_codebook": false,
+        "json": false,
+        "no_message": true
+      }
+    }
+  ],
+  "schema": "tlu.multiparty-sum-codebook-frontier-audit.v0.2.0",
+  "source_sha256": {
+    "audit_script_py": "0b0f4caa146cbb909a47230aa36859720591032fbb5ad1482271599b014fb6b1",
+    "codebook_protocol_py": "1fcccc26093825152b57aa3fde7ac21522b25da1eef25f6c54b5a6bbece4aa6e",
+    "frontier_artifact_json": "155a70aa7e60b266dd72d3fe1d4ec45e187c5b49056537e63b0feb1d9dd559bd",
+    "frontier_calculator_py": "761162d1815ef47952d495eaaaa117da1573244a786541deb134b8e3cfae1f1e",
+    "preregistration_md": "cb6f1bc6282c5c8a29dd34a06f00ee001b0592c8ba8208f7c938d79cc5aafdab",
+    "previous_audit_json": "6c2b5c22cdc3139f17c6f74122abee110ff72d144a2daace6d6140bc00256fcd",
+    "sdk_channel_py": "f85577c132e5e79b176e6223c9837e1aa822305a1aecc6b6d5b6991e5a6cd4a5",
+    "sdk_runtime_py": "259548ef82e5b51b8a575654ab85e283303937781afed487e3b7f03c2adaf345",
+    "sum_example_py": "a7de3795f9abe9ad3d913a74389c2a5cabea2a055f61dd6b6cd3c69d9e12dee1"
+  },
+  "status": "preregistered exact-runner tokenizer and application-byte accounting audit",
+  "supersedes": "cross-protocol comparison boundary in tlu.multiparty-sum-codebook-token-audit.v0.1.0",
+  "tokenizer": {
+    "chat_template_included": false,
+    "file_size_bytes": 11422654,
+    "library": "tokenizers",
+    "library_version": "0.22.2",
+    "provider_special_tokens_included": false,
+    "repo": "Qwen/Qwen3-4B",
+    "revision": "eb971e9fb1f41c13b5e5a56e56886305c5ad94a0",
+    "sha256": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4"
+  }
+}

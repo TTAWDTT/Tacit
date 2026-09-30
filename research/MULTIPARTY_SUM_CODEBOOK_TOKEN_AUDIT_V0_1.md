@@ -1,5 +1,7 @@
 # Qwen3-4B tokenizer audit of finite private-sum codebooks (v0.1)
 
+> **Superseded for baseline cost rankings:** a source review found that v0.1 omitted the common receiver scaffold used by the actual decimal/JSON/binary runner. Its baseline content costs are undercounted. Preserve this result as the original diagnostic, but use the corrected [v0.2 preregistration](MULTIPARTY_SUM_CODEBOOK_FRONTIER_AUDIT_PREREG_V0_2.md) and [report](MULTIPARTY_SUM_CODEBOOK_FRONTIER_AUDIT_V0_2.md) for operational comparisons.
+
 ## Result
 
 The frozen explicit codebook is not token-efficient on its exact zero-error operating points. Across all 17 nonempty codebook points in the exhaustive `m=2..4` frontier, the mean role-instruction input alone is 312 to 3,524 tokens larger than the protocol's ideal payload-bit count. Across exhaustive IID source vectors, total known content tokens range from 520 to 4,068 per episode for codebooks, against 381–635 for the existing decimal sender condition. At zero-error success, codebook totals are 839 tokens (`m=2`), 1,558 (`m=3`), and 4,068 (`m=4`); decimal costs are 381, 508, and 635 respectively.

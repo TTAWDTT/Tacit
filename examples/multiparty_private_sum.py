@@ -61,6 +61,22 @@ def _format_instructions(message_format: str) -> tuple[str, str]:
     raise ValueError(f"unsupported message_format: {message_format}")
 
 
+def _role_instructions(message_format: str, sender_names: list[str]) -> dict[str, str]:
+    """Build the exact system instructions used by every private-sum episode."""
+    sender_instruction, receiver_format_instruction = _format_instructions(message_format)
+    instructions = {name: sender_instruction for name in sender_names}
+    instructions[RECEIVER] = (
+        "Use only information visible in your public/private context and received sender messages. "
+        f"{receiver_format_instruction} If a full list of private values is directly present in your private context, "
+        "sum those values instead. The public context gives sender_count=m. If fewer than m distinct sender inputs "
+        "are known because communication is disabled, a message is missing, or a message is malformed, let k be the "
+        "number of unknown inputs. Under the task's independent uniform prior on {0, 1, 2, 3}, use floor(3k/2) "
+        "as one optimal exact-sum guess for those inputs, then add all known values. Return only the exact sum as a "
+        "base-10 integer."
+    )
+    return instructions
+
+
 def _decode_sender_message(message_format: str, message: str) -> int | None:
     patterns = {
         "decimal": r"[0-3]",
@@ -139,17 +155,7 @@ def run_sum_episode(
     sender_names = [f"S{index + 1}" for index in range(len(values))]
     agents = {name: client for name, client in zip(sender_names, sender_clients)}
     agents[RECEIVER] = receiver_client
-    sender_instruction, receiver_format_instruction = _format_instructions(message_format)
-    instructions = {name: sender_instruction for name in sender_names}
-    instructions[RECEIVER] = (
-        "Use only information visible in your public/private context and received sender messages. "
-        f"{receiver_format_instruction} If a full list of private values is directly present in your private context, "
-        "sum those values instead. The public context gives sender_count=m. If fewer than m distinct sender inputs "
-        "are known because communication is disabled, a message is missing, or a message is malformed, let k be the "
-        "number of unknown inputs. Under the task's independent uniform prior on {0, 1, 2, 3}, use floor(3k/2) "
-        "as one optimal exact-sum guess for those inputs, then add all known values. Return only the exact sum as a "
-        "base-10 integer."
-    )
+    instructions = _role_instructions(message_format, sender_names)
     protocol = DialogueProtocolCard(f"private-sum-{message_format}-v0", instructions)
     contexts = {
         name: f"Public metadata: sender_count={len(sender_names)}. Your private integer is {value}."

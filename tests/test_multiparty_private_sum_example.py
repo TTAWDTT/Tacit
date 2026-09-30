@@ -2,7 +2,12 @@ import json
 import re
 import unittest
 
-from examples.multiparty_private_sum import MESSAGE_FORMATS, _decode_sender_message, run_sum_episode
+from examples.multiparty_private_sum import (
+    MESSAGE_FORMATS,
+    _decode_sender_message,
+    _role_instructions,
+    run_sum_episode,
+)
 from tacit import ChatCompletion, LocalTCPMessageChannel
 
 
@@ -113,6 +118,21 @@ class MultipartyPrivateSumExampleTests(unittest.TestCase):
             observed_tasks.extend(call["task"] for call in receiver.calls)
         self.assertEqual(len(set(observed_tasks)), 1)
         self.assertNotIn("S1, S2", observed_tasks[0])
+
+    def test_shared_role_instruction_constructor_matches_runtime_prompts(self):
+        for message_format in MESSAGE_FORMATS:
+            with self.subTest(message_format=message_format):
+                sender, receiver = FakeSumAgent("S1", 1, message_format=message_format), FakeSumAgent("R")
+                run_sum_episode(
+                    [1, 2], sender_clients=[sender, FakeSumAgent("S2", 2, message_format=message_format)],
+                    receiver_client=receiver, message_format=message_format,
+                )
+                expected = _role_instructions(message_format, ["S1", "S2"])
+                self.assertEqual(sender.system_instructions[0], expected["S1"])
+                self.assertEqual(
+                    receiver.system_instructions[0],
+                    expected["R"] + "\n\nReturn only one non-negative base-10 integer.",
+                )
 
     def test_frozen_message_formats_decode_and_score_sender_fidelity(self):
         protocol_ids = set()
