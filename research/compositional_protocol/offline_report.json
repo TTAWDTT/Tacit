@@ -1,0 +1,46 @@
+{
+  "conclusion": "No additional product expressivity or payload saving over compact fields",
+  "kind": "offline-mechanism-falsification",
+  "model_calls": 0,
+  "private_match_distinct_messages_equal": 8,
+  "scope": "Public fixture enumeration; no LLM success, tokens, latency or full-cost frontier measured",
+  "source_sha256": {
+    "examples/compact_labeled_fields_v3.json": "2646cd19c10aa5f4bec19d8e38fdb43eac6c15238630b86f79c794bff1a46aa2",
+    "experiments/compositional_protocol/codec.py": "c8154e96c2a73e1538977ffb6aa06d363b231a585bc8db204bd1a1c58f9b957a",
+    "experiments/emergent_ood_v0_4/compact_fields.py": "3ec6ada180f6ba353277e4035523867f78951d8e653573d1929c31edaedacb72",
+    "experiments/emergent_ood_v0_4/split.py": "45faf3a14d0bbe906f167b125b9869c86b3e92db50b280b0dc2fba78e1b7f098",
+    "experiments/private_match_v0_3/protocols.py": "ed571d2c98da2df258ea2f0d9b5ef92465e81b358c9bdc01aafc20e870f1555a"
+  },
+  "splits": [
+    {
+      "candidate_payload_bytes": 13568,
+      "compact_payload_bytes": 13568,
+      "exact_wire_matches": 256,
+      "heldout_meanings": 64,
+      "meanings": 256,
+      "roundtrips": 256,
+      "seed": 17,
+      "split_sha256": "65851af89ae9e682fb6de015f769abdd4801b259e7b2abd917ea3bfdf84a091b"
+    },
+    {
+      "candidate_payload_bytes": 13568,
+      "compact_payload_bytes": 13568,
+      "exact_wire_matches": 256,
+      "heldout_meanings": 64,
+      "meanings": 256,
+      "roundtrips": 256,
+      "seed": 23,
+      "split_sha256": "4a1211075ce60664f7e83df4a6a1cfcf2ce82f3f4663518dd89f0aa0329b83a1"
+    },
+    {
+      "candidate_payload_bytes": 13568,
+      "compact_payload_bytes": 13568,
+      "exact_wire_matches": 256,
+      "heldout_meanings": 64,
+      "meanings": 256,
+      "roundtrips": 256,
+      "seed": 41,
+      "split_sha256": "3b68deb8d29b776fd519baf1c704c43294f6b8565aa0b205b4f534a9277894a5"
+    }
+  ]
+}
