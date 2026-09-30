@@ -1,0 +1,16 @@
+{
+  "configuration": {
+    "model_id": "synthetic-model",
+    "model_artifact_id": "synthetic-artifact-v1",
+    "template_id": "synthetic-template-v1",
+    "service_build_id": "synthetic-service-v1",
+    "service_config_id": "synthetic-reasoning-off-deepseek-v1",
+    "reasoning_mode": "off",
+    "reasoning_format": "deepseek"
+  },
+  "candidate_ids": ["C0", "C1", "C2", "C3"],
+  "response": {
+    "model": "synthetic-model",
+    "choices": [{"message": {"content": "C2", "reasoning_content": ""}, "finish_reason": "stop"}]
+  }
+}
