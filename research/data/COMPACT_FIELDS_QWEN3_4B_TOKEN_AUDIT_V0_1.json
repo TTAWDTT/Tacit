@@ -3,6 +3,18 @@
   "python_version": "3.13.5",
   "results": [
     {
+      "condition_minus_json_known_content_tokens_per_episode": {
+        "shared_protocol_card": {
+          "max": 48,
+          "mean": 47.594,
+          "min": 46
+        },
+        "symbolic": {
+          "max": 164,
+          "mean": 162.656,
+          "min": 160
+        }
+      },
       "conditions": {
         "json": {
           "episodes": 64,
@@ -59,20 +71,55 @@
             "mean": 150.672,
             "min": 150
           }
+        },
+        "symbolic": {
+          "episodes": 64,
+          "ideal_sender_message_output_tokens": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "known_content_input_plus_message_output_tokens": {
+            "max": 591,
+            "mean": 585.359,
+            "min": 582
+          },
+          "known_content_input_tokens": {
+            "max": 587,
+            "mean": 581.359,
+            "min": 578
+          },
+          "receiver_input_content_tokens": {
+            "max": 358,
+            "mean": 353.688,
+            "min": 351
+          },
+          "sender_input_content_tokens": {
+            "max": 229,
+            "mean": 227.672,
+            "min": 227
+          }
         }
       },
       "episode_count": 64,
       "manifest_sha256": "2f479e41f669f4f6fd84b3f873b02b7ed14fa11eb59fc04b81bc594a26bdb2fe",
       "ontology": "default",
-      "shared_card_minus_json_known_content_tokens_per_episode": {
-        "max": 48,
-        "mean": 47.594,
-        "min": 46
-      },
       "split_seed": 23,
       "task_seed": 0
     },
     {
+      "condition_minus_json_known_content_tokens_per_episode": {
+        "shared_protocol_card": {
+          "max": 48,
+          "mean": 46.938,
+          "min": 44
+        },
+        "symbolic": {
+          "max": 174,
+          "mean": 171.562,
+          "min": 168
+        }
+      },
       "conditions": {
         "json": {
           "episodes": 64,
@@ -129,20 +176,55 @@
             "mean": 152.219,
             "min": 151
           }
+        },
+        "symbolic": {
+          "episodes": 64,
+          "ideal_sender_message_output_tokens": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "known_content_input_plus_message_output_tokens": {
+            "max": 610,
+            "mean": 605.094,
+            "min": 601
+          },
+          "known_content_input_tokens": {
+            "max": 606,
+            "mean": 601.094,
+            "min": 597
+          },
+          "receiver_input_content_tokens": {
+            "max": 369,
+            "mean": 365.875,
+            "min": 363
+          },
+          "sender_input_content_tokens": {
+            "max": 237,
+            "mean": 235.219,
+            "min": 234
+          }
         }
       },
       "episode_count": 64,
       "manifest_sha256": "475d50c9d4b6be5465c2d745d10c13b5846bf7686ecdd1ab912f31cd3547d9ce",
       "ontology": "robotics",
-      "shared_card_minus_json_known_content_tokens_per_episode": {
-        "max": 48,
-        "mean": 46.938,
-        "min": 44
-      },
       "split_seed": 31,
       "task_seed": 0
     },
     {
+      "condition_minus_json_known_content_tokens_per_episode": {
+        "shared_protocol_card": {
+          "max": 48,
+          "mean": 47.531,
+          "min": 46
+        },
+        "symbolic": {
+          "max": 174,
+          "mean": 171.938,
+          "min": 168
+        }
+      },
       "conditions": {
         "json": {
           "episodes": 64,
@@ -199,16 +281,39 @@
             "mean": 154.031,
             "min": 153
           }
+        },
+        "symbolic": {
+          "episodes": 64,
+          "ideal_sender_message_output_tokens": {
+            "max": 4,
+            "mean": 4.0,
+            "min": 4
+          },
+          "known_content_input_plus_message_output_tokens": {
+            "max": 625,
+            "mean": 618.156,
+            "min": 614
+          },
+          "known_content_input_tokens": {
+            "max": 621,
+            "mean": 614.156,
+            "min": 610
+          },
+          "receiver_input_content_tokens": {
+            "max": 380,
+            "mean": 375.125,
+            "min": 372
+          },
+          "sender_input_content_tokens": {
+            "max": 241,
+            "mean": 239.031,
+            "min": 238
+          }
         }
       },
       "episode_count": 64,
       "manifest_sha256": "37bb7efb9891ca43e5471358a64adddd40588da92816f8958697b28c0652e20a",
       "ontology": "music",
-      "shared_card_minus_json_known_content_tokens_per_episode": {
-        "max": 48,
-        "mean": 47.531,
-        "min": 46
-      },
       "split_seed": 31,
       "task_seed": 0
     }

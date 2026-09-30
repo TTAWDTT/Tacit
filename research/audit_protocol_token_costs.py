@@ -29,7 +29,7 @@ PROTOCOL_CARD_SHA256 = "2646cd19c10aa5f4bec19d8e38fdb43eac6c15238630b86f79c794bf
 TOKENIZER_SCHEMA = "tlu.protocol-token-cost-audit.v1"
 TASK = "Select the candidate ID whose full tuple is the sender's private meaning."
 FINAL_ANSWER_INSTRUCTION = "Return only the exact candidate_id of your selected candidate for external scoring."
-CONDITIONS = ("json", "shared_protocol_card")
+CONDITIONS = ("json", "shared_protocol_card", "symbolic")
 
 
 def _project_path(path: Path) -> Path:
@@ -80,7 +80,7 @@ def audit_bundle(
     bundle_path = _project_path(bundle_path)
     bundle, split = load_episode_bundle(bundle_path, split_seed=split_seed)
     attrs = split["attributes"]
-    values: dict[str, list[str]] = {attribute: [] for attribute in attrs}
+    values: dict[str, list[str]] = split["values_by_attribute"]
     protocols = {
         condition: _Protocol(
             condition,
@@ -118,6 +118,9 @@ def audit_bundle(
         messages = {
             "json": json.dumps(canonical_target, ensure_ascii=False, separators=(",", ":")),
             "shared_protocol_card": encode_compact_fields(target),
+            "symbolic": "".join(
+                str(values[attribute].index(target[attribute])) for attribute in attrs
+            ),
         }
         for condition, protocol in protocols.items():
             sender_user = _user_json({
@@ -156,12 +159,14 @@ def audit_bundle(
     manifest_path = bundle_path / "manifest.json"
     manifest_bytes = manifest_path.read_bytes()
     summaries = {condition: _summary(rows) for condition, rows in by_condition.items()}
-    deltas = []
-    for json_row, card_row in zip(by_condition["json"], by_condition["shared_protocol_card"]):
-        deltas.append(
-            card_row["known_content_input_plus_message_output_tokens"]
-            - json_row["known_content_input_plus_message_output_tokens"]
-        )
+    deltas = {}
+    for condition in ("shared_protocol_card", "symbolic"):
+        deltas[condition] = []
+        for json_row, alternative_row in zip(by_condition["json"], by_condition[condition]):
+            deltas[condition].append(
+                alternative_row["known_content_input_plus_message_output_tokens"]
+                - json_row["known_content_input_plus_message_output_tokens"]
+            )
     return {
         "ontology": ontology,
         "split_seed": split_seed,
@@ -169,10 +174,13 @@ def audit_bundle(
         "manifest_sha256": hashlib.sha256(manifest_bytes).hexdigest(),
         "episode_count": len(senders),
         "conditions": summaries,
-        "shared_card_minus_json_known_content_tokens_per_episode": {
-            "mean": round(sum(deltas) / len(deltas), 3),
-            "min": min(deltas),
-            "max": max(deltas),
+        "condition_minus_json_known_content_tokens_per_episode": {
+            condition: {
+                "mean": round(sum(values) / len(values), 3),
+                "min": min(values),
+                "max": max(values),
+            }
+            for condition, values in deltas.items()
         },
     }
 

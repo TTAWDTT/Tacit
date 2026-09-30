@@ -1,15 +1,16 @@
-# Compact labeled-fields Qwen3 token audit v0.1
+# Explicit-field and symbolic Qwen3 token audit v0.1
 
 **Status:** tokenizer-only, model-free cost audit. It measures one pinned Qwen3 tokenizer on frozen v0.4 task bundles. It is not a model run, task-success result, or cross-model claim.
 
 ## Question
 
-Does the v0.3 compact labeled-fields card's 18-byte payload reduction translate into fewer complete communication tokens than the built-in JSON arm, once sender/receiver instructions and the repeated receiver message are included?
+Do the v0.3 compact labeled-fields card's 18-byte payload reduction or the runner's four-digit symbolic message translate into fewer complete communication tokens than the built-in JSON arm, once sender/receiver instructions and the repeated receiver message are included?
 
 ## Frozen inputs and method
 
 - Tokenizer: `Qwen/Qwen3-4B`, revision `eb971e9fb1f41c13b5e5a56e56886305c5ad94a0`, file SHA-256 `aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4`.
 - Protocol card: v0.3, SHA-256 `2646cd19c10aa5f4bec19d8e38fdb43eac6c15238630b86f79c794bff1a46aa2`.
+- The runner's fixed `symbolic` arm uses one digit per attribute and includes the full value-to-digit map in both endpoint instructions.
 - Task bundles: 64 test episodes each for default (split seed 23), robotics (31), and music (31). The audit loads each through the runner's verified bundle loader and records each manifest hash in the machine-readable report.
 - For each episode and arm, the analysis reconstructs the runner's exact sender system/user content, ideal canonical sender message, and receiver system/user content with that message inside the visible transcript. It tokenizes each content string with `add_special_tokens=False`, then sums both requests' input-content tokens and the sender's ideal message-output tokens. The receiver's output is omitted because its actual text is unknown; chat-template and server-added special tokens are excluded.
 
@@ -21,14 +22,14 @@ To reproduce, install the optional `tokenizers` and `huggingface_hub` packages, 
 
 Mean exact content-token counts per episode; sender-output tokens assume perfect canonical serialization.
 
-| Ontology | JSON input | JSON sender output | JSON known total | v0.3 input | v0.3 sender output | v0.3 known total | v0.3 minus JSON |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| Default | 405.031 | 17.672 | 422.703 | 454.828 | 15.469 | 470.297 | +47.594 |
-| Robotics | 414.312 | 19.219 | 433.531 | 463.781 | 16.688 | 480.469 | +46.938 |
-| Music | 425.188 | 21.031 | 446.219 | 474.953 | 18.797 | 493.750 | +47.531 |
-| Equal-weight mean | 414.844 | 19.307 | 434.151 | 464.521 | 16.985 | 481.505 | **+47.354** |
+| Ontology | JSON known total | v0.3 known total | v0.3 minus JSON | Symbolic known total | Symbolic minus JSON |
+|---|---:|---:|---:|---:|---:|
+| Default | 422.703 | 470.297 | +47.594 | 585.359 | +162.656 |
+| Robotics | 433.531 | 480.469 | +46.938 | 605.094 | +171.562 |
+| Music | 446.219 | 493.750 | +47.531 | 618.156 | +171.938 |
+| Equal-weight mean | 434.151 | 481.505 | **+47.354** | 602.870 | **+168.719** |
 
-The v0.3 card saves an average 2.323 sender-output tokens, but its repeated prompt and receiver-input content costs add 49.677 tokens per episode. Therefore it does not reduce the known token budget against JSON under this tokenizer and exact runner setup. Unknown receiver-answer tokens, chat-template tokens, service time, task success, and accuracy may change the quality/cost frontier; no complete superiority conclusion follows.
+For v0.3, input content increases by 49.677 tokens while ideal sender output saves 2.323. For the symbolic arm, input content increases by 184.026 tokens while the four-digit output saves 15.307. Thus neither representation lowers known token use against JSON under this tokenizer and exact runner setup; the symbolic prompt's two explicit codebooks dominate its short message. Unknown receiver-answer tokens, chat-template tokens, service time, task success, and accuracy may change the quality/cost frontier; no complete superiority conclusion follows.
 
 ## Limits and decision
 
