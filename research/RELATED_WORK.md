@@ -6,6 +6,18 @@ The layer distinction used in this project is documented in [Protocol layers and
 
 ## Directly relevant: representations and formats
 
+### Huang et al. (2026), *What Should Agents Say? Action-state Communication for Efficient Multi-Agent Systems* (PACT)
+
+[arXiv paper](https://arxiv.org/abs/2606.05304) · [official code](https://github.com/iNLP-Lab/PACT) · [representation/routing confound audit](PACT_PROXIFIELD_FACTORIAL_AUDIT_V0_1.md)
+
+PACT compares five content policies (full output, concise generation, conclusion only, brief summary, artifact only) on complementary-evidence interaction and sequential pipelines, then proposes compact action-state records. It is a direct baseline for what content should cross the agent boundary; its reported coding-harness results also make repeated-history cost a practical target. It does not show that an arbitrary shorthand or reusable compositional language beats a tuned natural-language action-state message. Tacit must include PACT-style content filtering and preserve separate measures for evidence fidelity, task utility, full input/output cost, and setup.
+
+### Tambwekar et al. (2026), *Proxifield: Decentralized Multi-Agent Communication through Semantic Proximity*
+
+[arXiv paper](https://arxiv.org/abs/2609.20889) · [full text](https://arxiv.org/html/2609.20889) · [representation/routing confound audit](PACT_PROXIFIELD_FACTORIAL_AUDIT_V0_1.md)
+
+Proxifield dynamically routes messages using direct address, information needs, plan alignment, and information complementarity. HiddenBench distributes a shared misleading evidence set plus one private fact per agent, so the evaluation requires surfacing and integrating private evidence. Its reported contribution is adaptive communication topology and robustness/scaling, not an isolated message representation. Because its routing signals include embeddings of message/rationale/observation/memory, changing content can also change the graph. Tacit should estimate representation and routing effects separately and report their interaction only under an explicit control of what the router sees. Its API-cost estimates and calls/embedding overhead must be included in complete-cost comparisons; the paper's results are not locally reproduced here.
+
 ### Chen et al. (2024), *Beyond Natural Language: LLMs Leveraging Alternative Formats for Enhanced Reasoning and Communication*, Findings of EMNLP
 
 [ACL Anthology](https://aclanthology.org/2024.findings-emnlp.623/) · [paper](https://aclanthology.org/2024.findings-emnlp.623.pdf) · [official code (AutoForm)](https://github.com/thunlp/AutoForm)

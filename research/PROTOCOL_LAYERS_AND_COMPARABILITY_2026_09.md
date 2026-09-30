@@ -31,6 +31,7 @@ Prompt Choreography sharpens the distinction between *transmitting* a representa
 - Compare under a task budget and total system costs. Also show the measured application boundary; do not infer physical-network bytes from application payloads.
 - A message format selected by an LLM is a policy over a format inventory. Its choice cost, inventory/setup cost, and receiver compatibility belong on its frontier.
 - When evaluating end-to-end inference efficiency on repeated-context workflows, include prefix-cache and (where the runtime and task permit it) shared-KV reuse as systems baselines. Preserve identical task visibility and score semantic fidelity, accuracy, privacy, cache memory, and serialized bytes separately.
+- A nominal separation between routing and content does not guarantee causal separation: if a router embeds the message payload, a representation change can alter recipients. Estimate content effects at fixed routing and routing effects at fixed content first. Treat the crossed contrast as an interaction only if the router receives an invariant metadata view; otherwise label it as a coupled system intervention. See the [PACT/Proxifield audit](PACT_PROXIFIELD_FACTORIAL_AUDIT_V0_1.md).
 
 ## Scope boundary for v0.2
 
