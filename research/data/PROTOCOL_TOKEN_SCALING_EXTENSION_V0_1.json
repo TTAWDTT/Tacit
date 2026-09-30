@@ -1,0 +1,2282 @@
+{
+  "exploratory_range": {
+    "cardinalities": [
+      2,
+      4,
+      8,
+      10
+    ],
+    "dimensions": [
+      20,
+      40,
+      80
+    ],
+    "episodes_per_setting": 16,
+    "prediction": "P19c"
+  },
+  "measurement": "Deterministic synthetic prompt-cost sweep using exact v0.4 system/user content serialization. Known total includes both agents' input content and ideal sender message output; receiver output, chat-template tokens, model outcomes, and inference compute are excluded.",
+  "preregistration_sha256": "72d81dd8bea2060bc02523f666c30ef068bb82d46392ec71853cbfda24889abe",
+  "prior_frozen_sweep_sha256": "c759fde51f76bc440e819476791901d65a7a17eb88aeac7ef30403bcaa06d66f",
+  "python_version": "3.13.5",
+  "schema": "tlu.protocol-token-scaling-extension.v1",
+  "source_sha256": {
+    "compact_fields_py": "3ec6ada180f6ba353277e4035523867f78951d8e653573d1929c31edaedacb72",
+    "protocol_card_json": "2646cd19c10aa5f4bec19d8e38fdb43eac6c15238630b86f79c794bff1a46aa2",
+    "runner_py": "da07b64341f2e871544616788c3ea7ff5d293c6c580001886e1bf22be5caaa25"
+  },
+  "status": "post-sweep exploratory extension",
+  "sweep": [
+    {
+      "candidate_count": 4,
+      "conditions": {
+        "json": {
+          "episodes": 16,
+          "ideal_sender_message_bytes": {
+            "max": 361,
+            "mean": 361.0,
+            "min": 361
+          },
+          "ideal_sender_message_output_tokens": {
+            "max": 221,
+            "mean": 221.0,
+            "min": 221
+          },
+          "known_total_content_tokens": {
+            "max": 1847,
+            "mean": 1847.0,
+            "min": 1847
+          },
+          "receiver_context_tokens": {
+            "max": 1213,
+            "mean": 1213.0,
+            "min": 1213
+          },
+          "receiver_instruction_bytes": {
+            "max": 436,
+            "mean": 436.0,
+            "min": 436
+          },
+          "receiver_instruction_tokens": {
+            "max": 80,
+            "mean": 80.0,
+            "min": 80
+          },
+          "sender_context_tokens": {
+            "max": 269,
+            "mean": 269.0,
+            "min": 269
+          },
+          "sender_instruction_bytes": {
+            "max": 315,
+            "mean": 315.0,
+            "min": 315
+          },
+          "sender_instruction_tokens": {
+            "max": 64,
+            "mean": 64.0,
+            "min": 64
+          },
+          "total_input_content_tokens": {
+            "max": 1626,
+            "mean": 1626.0,
+            "min": 1626
+          },
+          "total_instruction_tokens": {
+            "max": 144,
+            "mean": 144.0,
+            "min": 144
+          }
+        },
+        "shared_protocol_card": {
+          "episodes": 16,
+          "ideal_sender_message_bytes": {
+            "max": 279,
+            "mean": 279.0,
+            "min": 279
+          },
+          "ideal_sender_message_output_tokens": {
+            "max": 199,
+            "mean": 199.0,
+            "min": 199
+          },
+          "known_total_content_tokens": {
+            "max": 1854,
+            "mean": 1854.0,
+            "min": 1854
+          },
+          "receiver_context_tokens": {
+            "max": 1192,
+            "mean": 1192.0,
+            "min": 1192
+          },
+          "receiver_instruction_bytes": {
+            "max": 587,
+            "mean": 587.0,
+            "min": 587
+          },
+          "receiver_instruction_tokens": {
+            "max": 109,
+            "mean": 109.0,
+            "min": 109
+          },
+          "sender_context_tokens": {
+            "max": 269,
+            "mean": 269.0,
+            "min": 269
+          },
+          "sender_instruction_bytes": {
+            "max": 424,
+            "mean": 424.0,
+            "min": 424
+          },
+          "sender_instruction_tokens": {
+            "max": 85,
+            "mean": 85.0,
+            "min": 85
+          },
+          "total_input_content_tokens": {
+            "max": 1655,
+            "mean": 1655.0,
+            "min": 1655
+          },
+          "total_instruction_tokens": {
+            "max": 194,
+            "mean": 194.0,
+            "min": 194
+          }
+        },
+        "symbolic": {
+          "episodes": 16,
+          "ideal_sender_message_bytes": {
+            "max": 20,
+            "mean": 20.0,
+            "min": 20
+          },
+          "ideal_sender_message_output_tokens": {
+            "max": 20,
+            "mean": 20.0,
+            "min": 20
+          },
+          "known_total_content_tokens": {
+            "max": 2510,
+            "mean": 2510.0,
+            "min": 2510
+          },
+          "receiver_context_tokens": {
+            "max": 1013,
+            "mean": 1013.0,
+            "min": 1013
+          },
+          "receiver_instruction_bytes": {
+            "max": 1351,
+            "mean": 1351.0,
+            "min": 1351
+          },
+          "receiver_instruction_tokens": {
+            "max": 608,
+            "mean": 608.0,
+            "min": 608
+          },
+          "sender_context_tokens": {
+            "max": 269,
+            "mean": 269.0,
+            "min": 269
+          },
+          "sender_instruction_bytes": {
+            "max": 1280,
+            "mean": 1280.0,
+            "min": 1280
+          },
+          "sender_instruction_tokens": {
+            "max": 600,
+            "mean": 600.0,
+            "min": 600
+          },
+          "total_input_content_tokens": {
+            "max": 2490,
+            "mean": 2490.0,
+            "min": 2490
+          },
+          "total_instruction_tokens": {
+            "max": 1208,
+            "mean": 1208.0,
+            "min": 1208
+          }
+        }
+      },
+      "dimensions": 20,
+      "episode_count": 16,
+      "heldout_support_size": 524288,
+      "known_total_token_delta_vs_json": {
+        "shared_protocol_card": 7.0,
+        "symbolic": 663.0
+      },
+      "values_per_dimension": 2
+    },
+    {
+      "candidate_count": 4,
+      "conditions": {
+        "json": {
+          "episodes": 16,
+          "ideal_sender_message_bytes": {
+            "max": 361,
+            "mean": 361.0,
+            "min": 361
+          },
+          "ideal_sender_message_output_tokens": {
+            "max": 221,
+            "mean": 221.0,
+            "min": 221
+          },
+          "known_total_content_tokens": {
+            "max": 1847,
+            "mean": 1847.0,
+            "min": 1847
+          },
+          "receiver_context_tokens": {
+            "max": 1213,
+            "mean": 1213.0,
+            "min": 1213
+          },
+          "receiver_instruction_bytes": {
+            "max": 436,
+            "mean": 436.0,
+            "min": 436
+          },
+          "receiver_instruction_tokens": {
+            "max": 80,
+            "mean": 80.0,
+            "min": 80
+          },
+          "sender_context_tokens": {
+            "max": 269,
+            "mean": 269.0,
+            "min": 269
+          },
+          "sender_instruction_bytes": {
+            "max": 315,
+            "mean": 315.0,
+            "min": 315
+          },
+          "sender_instruction_tokens": {
+            "max": 64,
+            "mean": 64.0,
+            "min": 64
+          },
+          "total_input_content_tokens": {
+            "max": 1626,
+            "mean": 1626.0,
+            "min": 1626
+          },
+          "total_instruction_tokens": {
+            "max": 144,
+            "mean": 144.0,
+            "min": 144
+          }
+        },
+        "shared_protocol_card": {
+          "episodes": 16,
+          "ideal_sender_message_bytes": {
+            "max": 279,
+            "mean": 279.0,
+            "min": 279
+          },
+          "ideal_sender_message_output_tokens": {
+            "max": 199,
+            "mean": 199.0,
+            "min": 199
+          },
+          "known_total_content_tokens": {
+            "max": 1854,
+            "mean": 1854.0,
+            "min": 1854
+          },
+          "receiver_context_tokens": {
+            "max": 1192,
+            "mean": 1192.0,
+            "min": 1192
+          },
+          "receiver_instruction_bytes": {
+            "max": 587,
+            "mean": 587.0,
+            "min": 587
+          },
+          "receiver_instruction_tokens": {
+            "max": 109,
+            "mean": 109.0,
+            "min": 109
+          },
+          "sender_context_tokens": {
+            "max": 269,
+            "mean": 269.0,
+            "min": 269
+          },
+          "sender_instruction_bytes": {
+            "max": 424,
+            "mean": 424.0,
+            "min": 424
+          },
+          "sender_instruction_tokens": {
+            "max": 85,
+            "mean": 85.0,
+            "min": 85
+          },
+          "total_input_content_tokens": {
+            "max": 1655,
+            "mean": 1655.0,
+            "min": 1655
+          },
+          "total_instruction_tokens": {
+            "max": 194,
+            "mean": 194.0,
+            "min": 194
+          }
+        },
+        "symbolic": {
+          "episodes": 16,
+          "ideal_sender_message_bytes": {
+            "max": 20,
+            "mean": 20.0,
+            "min": 20
+          },
+          "ideal_sender_message_output_tokens": {
+            "max": 20,
+            "mean": 20.0,
+            "min": 20
+          },
+          "known_total_content_tokens": {
+            "max": 3230,
+            "mean": 3230.0,
+            "min": 3230
+          },
+          "receiver_context_tokens": {
+            "max": 1013,
+            "mean": 1013.0,
+            "min": 1013
+          },
+          "receiver_instruction_bytes": {
+            "max": 1871,
+            "mean": 1871.0,
+            "min": 1871
+          },
+          "receiver_instruction_tokens": {
+            "max": 968,
+            "mean": 968.0,
+            "min": 968
+          },
+          "sender_context_tokens": {
+            "max": 269,
+            "mean": 269.0,
+            "min": 269
+          },
+          "sender_instruction_bytes": {
+            "max": 1800,
+            "mean": 1800.0,
+            "min": 1800
+          },
+          "sender_instruction_tokens": {
+            "max": 960,
+            "mean": 960.0,
+            "min": 960
+          },
+          "total_input_content_tokens": {
+            "max": 3210,
+            "mean": 3210.0,
+            "min": 3210
+          },
+          "total_instruction_tokens": {
+            "max": 1928,
+            "mean": 1928.0,
+            "min": 1928
+          }
+        }
+      },
+      "dimensions": 20,
+      "episode_count": 16,
+      "heldout_support_size": 274877906944,
+      "known_total_token_delta_vs_json": {
+        "shared_protocol_card": 7.0,
+        "symbolic": 1383.0
+      },
+      "values_per_dimension": 4
+    },
+    {
+      "candidate_count": 4,
+      "conditions": {
+        "json": {
+          "episodes": 16,
+          "ideal_sender_message_bytes": {
+            "max": 361,
+            "mean": 361.0,
+            "min": 361
+          },
+          "ideal_sender_message_output_tokens": {
+            "max": 221,
+            "mean": 221.0,
+            "min": 221
+          },
+          "known_total_content_tokens": {
+            "max": 1847,
+            "mean": 1847.0,
+            "min": 1847
+          },
+          "receiver_context_tokens": {
+            "max": 1213,
+            "mean": 1213.0,
+            "min": 1213
+          },
+          "receiver_instruction_bytes": {
+            "max": 436,
+            "mean": 436.0,
+            "min": 436
+          },
+          "receiver_instruction_tokens": {
+            "max": 80,
+            "mean": 80.0,
+            "min": 80
+          },
+          "sender_context_tokens": {
+            "max": 269,
+            "mean": 269.0,
+            "min": 269
+          },
+          "sender_instruction_bytes": {
+            "max": 315,
+            "mean": 315.0,
+            "min": 315
+          },
+          "sender_instruction_tokens": {
+            "max": 64,
+            "mean": 64.0,
+            "min": 64
+          },
+          "total_input_content_tokens": {
+            "max": 1626,
+            "mean": 1626.0,
+            "min": 1626
+          },
+          "total_instruction_tokens": {
+            "max": 144,
+            "mean": 144.0,
+            "min": 144
+          }
+        },
+        "shared_protocol_card": {
+          "episodes": 16,
+          "ideal_sender_message_bytes": {
+            "max": 279,
+            "mean": 279.0,
+            "min": 279
+          },
+          "ideal_sender_message_output_tokens": {
+            "max": 199,
+            "mean": 199.0,
+            "min": 199
+          },
+          "known_total_content_tokens": {
+            "max": 1854,
+            "mean": 1854.0,
+            "min": 1854
+          },
+          "receiver_context_tokens": {
+            "max": 1192,
+            "mean": 1192.0,
+            "min": 1192
+          },
+          "receiver_instruction_bytes": {
+            "max": 587,
+            "mean": 587.0,
+            "min": 587
+          },
+          "receiver_instruction_tokens": {
+            "max": 109,
+            "mean": 109.0,
+            "min": 109
+          },
+          "sender_context_tokens": {
+            "max": 269,
+            "mean": 269.0,
+            "min": 269
+          },
+          "sender_instruction_bytes": {
+            "max": 424,
+            "mean": 424.0,
+            "min": 424
+          },
+          "sender_instruction_tokens": {
+            "max": 85,
+            "mean": 85.0,
+            "min": 85
+          },
+          "total_input_content_tokens": {
+            "max": 1655,
+            "mean": 1655.0,
+            "min": 1655
+          },
+          "total_instruction_tokens": {
+            "max": 194,
+            "mean": 194.0,
+            "min": 194
+          }
+        },
+        "symbolic": {
+          "episodes": 16,
+          "ideal_sender_message_bytes": {
+            "max": 20,
+            "mean": 20.0,
+            "min": 20
+          },
+          "ideal_sender_message_output_tokens": {
+            "max": 20,
+            "mean": 20.0,
+            "min": 20
+          },
+          "known_total_content_tokens": {
+            "max": 4670,
+            "mean": 4670.0,
+            "min": 4670
+          },
+          "receiver_context_tokens": {
+            "max": 1013,
+            "mean": 1013.0,
+            "min": 1013
+          },
+          "receiver_instruction_bytes": {
+            "max": 2911,
+            "mean": 2911.0,
+            "min": 2911
+          },
+          "receiver_instruction_tokens": {
+            "max": 1688,
+            "mean": 1688.0,
+            "min": 1688
+          },
+          "sender_context_tokens": {
+            "max": 269,
+            "mean": 269.0,
+            "min": 269
+          },
+          "sender_instruction_bytes": {
+            "max": 2840,
+            "mean": 2840.0,
+            "min": 2840
+          },
+          "sender_instruction_tokens": {
+            "max": 1680,
+            "mean": 1680.0,
+            "min": 1680
+          },
+          "total_input_content_tokens": {
+            "max": 4650,
+            "mean": 4650.0,
+            "min": 4650
+          },
+          "total_instruction_tokens": {
+            "max": 3368,
+            "mean": 3368.0,
+            "min": 3368
+          }
+        }
+      },
+      "dimensions": 20,
+      "episode_count": 16,
+      "heldout_support_size": 144115188075855872,
+      "known_total_token_delta_vs_json": {
+        "shared_protocol_card": 7.0,
+        "symbolic": 2823.0
+      },
+      "values_per_dimension": 8
+    },
+    {
+      "candidate_count": 4,
+      "conditions": {
+        "json": {
+          "episodes": 16,
+          "ideal_sender_message_bytes": {
+            "max": 361,
+            "mean": 361.0,
+            "min": 361
+          },
+          "ideal_sender_message_output_tokens": {
+            "max": 221,
+            "mean": 221.0,
+            "min": 221
+          },
+          "known_total_content_tokens": {
+            "max": 1847,
+            "mean": 1847.0,
+            "min": 1847
+          },
+          "receiver_context_tokens": {
+            "max": 1213,
+            "mean": 1213.0,
+            "min": 1213
+          },
+          "receiver_instruction_bytes": {
+            "max": 436,
+            "mean": 436.0,
+            "min": 436
+          },
+          "receiver_instruction_tokens": {
+            "max": 80,
+            "mean": 80.0,
+            "min": 80
+          },
+          "sender_context_tokens": {
+            "max": 269,
+            "mean": 269.0,
+            "min": 269
+          },
+          "sender_instruction_bytes": {
+            "max": 315,
+            "mean": 315.0,
+            "min": 315
+          },
+          "sender_instruction_tokens": {
+            "max": 64,
+            "mean": 64.0,
+            "min": 64
+          },
+          "total_input_content_tokens": {
+            "max": 1626,
+            "mean": 1626.0,
+            "min": 1626
+          },
+          "total_instruction_tokens": {
+            "max": 144,
+            "mean": 144.0,
+            "min": 144
+          }
+        },
+        "shared_protocol_card": {
+          "episodes": 16,
+          "ideal_sender_message_bytes": {
+            "max": 279,
+            "mean": 279.0,
+            "min": 279
+          },
+          "ideal_sender_message_output_tokens": {
+            "max": 199,
+            "mean": 199.0,
+            "min": 199
+          },
+          "known_total_content_tokens": {
+            "max": 1854,
+            "mean": 1854.0,
+            "min": 1854
+          },
+          "receiver_context_tokens": {
+            "max": 1192,
+            "mean": 1192.0,
+            "min": 1192
+          },
+          "receiver_instruction_bytes": {
+            "max": 587,
+            "mean": 587.0,
+            "min": 587
+          },
+          "receiver_instruction_tokens": {
+            "max": 109,
+            "mean": 109.0,
+            "min": 109
+          },
+          "sender_context_tokens": {
+            "max": 269,
+            "mean": 269.0,
+            "min": 269
+          },
+          "sender_instruction_bytes": {
+            "max": 424,
+            "mean": 424.0,
+            "min": 424
+          },
+          "sender_instruction_tokens": {
+            "max": 85,
+            "mean": 85.0,
+            "min": 85
+          },
+          "total_input_content_tokens": {
+            "max": 1655,
+            "mean": 1655.0,
+            "min": 1655
+          },
+          "total_instruction_tokens": {
+            "max": 194,
+            "mean": 194.0,
+            "min": 194
+          }
+        },
+        "symbolic": {
+          "episodes": 16,
+          "ideal_sender_message_bytes": {
+            "max": 20,
+            "mean": 20.0,
+            "min": 20
+          },
+          "ideal_sender_message_output_tokens": {
+            "max": 20,
+            "mean": 20.0,
+            "min": 20
+          },
+          "known_total_content_tokens": {
+            "max": 5390,
+            "mean": 5390.0,
+            "min": 5390
+          },
+          "receiver_context_tokens": {
+            "max": 1013,
+            "mean": 1013.0,
+            "min": 1013
+          },
+          "receiver_instruction_bytes": {
+            "max": 3431,
+            "mean": 3431.0,
+            "min": 3431
+          },
+          "receiver_instruction_tokens": {
+            "max": 2048,
+            "mean": 2048.0,
+            "min": 2048
+          },
+          "sender_context_tokens": {
+            "max": 269,
+            "mean": 269.0,
+            "min": 269
+          },
+          "sender_instruction_bytes": {
+            "max": 3360,
+            "mean": 3360.0,
+            "min": 3360
+          },
+          "sender_instruction_tokens": {
+            "max": 2040,
+            "mean": 2040.0,
+            "min": 2040
+          },
+          "total_input_content_tokens": {
+            "max": 5370,
+            "mean": 5370.0,
+            "min": 5370
+          },
+          "total_instruction_tokens": {
+            "max": 4088,
+            "mean": 4088.0,
+            "min": 4088
+          }
+        }
+      },
+      "dimensions": 20,
+      "episode_count": 16,
+      "heldout_support_size": 10000000000000000000,
+      "known_total_token_delta_vs_json": {
+        "shared_protocol_card": 7.0,
+        "symbolic": 3543.0
+      },
+      "values_per_dimension": 10
+    },
+    {
+      "candidate_count": 4,
+      "conditions": {
+        "json": {
+          "episodes": 16,
+          "ideal_sender_message_bytes": {
+            "max": 721,
+            "mean": 721.0,
+            "min": 721
+          },
+          "ideal_sender_message_output_tokens": {
+            "max": 441,
+            "mean": 441.0,
+            "min": 441
+          },
+          "known_total_content_tokens": {
+            "max": 3387,
+            "mean": 3387.0,
+            "min": 3387
+          },
+          "receiver_context_tokens": {
+            "max": 2313,
+            "mean": 2313.0,
+            "min": 2313
+          },
+          "receiver_instruction_bytes": {
+            "max": 436,
+            "mean": 436.0,
+            "min": 436
+          },
+          "receiver_instruction_tokens": {
+            "max": 80,
+            "mean": 80.0,
+            "min": 80
+          },
+          "sender_context_tokens": {
+            "max": 489,
+            "mean": 489.0,
+            "min": 489
+          },
+          "sender_instruction_bytes": {
+            "max": 315,
+            "mean": 315.0,
+            "min": 315
+          },
+          "sender_instruction_tokens": {
+            "max": 64,
+            "mean": 64.0,
+            "min": 64
+          },
+          "total_input_content_tokens": {
+            "max": 2946,
+            "mean": 2946.0,
+            "min": 2946
+          },
+          "total_instruction_tokens": {
+            "max": 144,
+            "mean": 144.0,
+            "min": 144
+          }
+        },
+        "shared_protocol_card": {
+          "episodes": 16,
+          "ideal_sender_message_bytes": {
+            "max": 559,
+            "mean": 559.0,
+            "min": 559
+          },
+          "ideal_sender_message_output_tokens": {
+            "max": 399,
+            "mean": 399.0,
+            "min": 399
+          },
+          "known_total_content_tokens": {
+            "max": 3354,
+            "mean": 3354.0,
+            "min": 3354
+          },
+          "receiver_context_tokens": {
+            "max": 2272,
+            "mean": 2272.0,
+            "min": 2272
+          },
+          "receiver_instruction_bytes": {
+            "max": 587,
+            "mean": 587.0,
+            "min": 587
+          },
+          "receiver_instruction_tokens": {
+            "max": 109,
+            "mean": 109.0,
+            "min": 109
+          },
+          "sender_context_tokens": {
+            "max": 489,
+            "mean": 489.0,
+            "min": 489
+          },
+          "sender_instruction_bytes": {
+            "max": 424,
+            "mean": 424.0,
+            "min": 424
+          },
+          "sender_instruction_tokens": {
+            "max": 85,
+            "mean": 85.0,
+            "min": 85
+          },
+          "total_input_content_tokens": {
+            "max": 2955,
+            "mean": 2955.0,
+            "min": 2955
+          },
+          "total_instruction_tokens": {
+            "max": 194,
+            "mean": 194.0,
+            "min": 194
+          }
+        },
+        "symbolic": {
+          "episodes": 16,
+          "ideal_sender_message_bytes": {
+            "max": 40,
+            "mean": 40.0,
+            "min": 40
+          },
+          "ideal_sender_message_output_tokens": {
+            "max": 40,
+            "mean": 40.0,
+            "min": 40
+          },
+          "known_total_content_tokens": {
+            "max": 4690,
+            "mean": 4690.0,
+            "min": 4690
+          },
+          "receiver_context_tokens": {
+            "max": 1913,
+            "mean": 1913.0,
+            "min": 1913
+          },
+          "receiver_instruction_bytes": {
+            "max": 2251,
+            "mean": 2251.0,
+            "min": 2251
+          },
+          "receiver_instruction_tokens": {
+            "max": 1128,
+            "mean": 1128.0,
+            "min": 1128
+          },
+          "sender_context_tokens": {
+            "max": 489,
+            "mean": 489.0,
+            "min": 489
+          },
+          "sender_instruction_bytes": {
+            "max": 2180,
+            "mean": 2180.0,
+            "min": 2180
+          },
+          "sender_instruction_tokens": {
+            "max": 1120,
+            "mean": 1120.0,
+            "min": 1120
+          },
+          "total_input_content_tokens": {
+            "max": 4650,
+            "mean": 4650.0,
+            "min": 4650
+          },
+          "total_instruction_tokens": {
+            "max": 2248,
+            "mean": 2248.0,
+            "min": 2248
+          }
+        }
+      },
+      "dimensions": 40,
+      "episode_count": 16,
+      "heldout_support_size": 549755813888,
+      "known_total_token_delta_vs_json": {
+        "shared_protocol_card": -33.0,
+        "symbolic": 1303.0
+      },
+      "values_per_dimension": 2
+    },
+    {
+      "candidate_count": 4,
+      "conditions": {
+        "json": {
+          "episodes": 16,
+          "ideal_sender_message_bytes": {
+            "max": 721,
+            "mean": 721.0,
+            "min": 721
+          },
+          "ideal_sender_message_output_tokens": {
+            "max": 441,
+            "mean": 441.0,
+            "min": 441
+          },
+          "known_total_content_tokens": {
+            "max": 3387,
+            "mean": 3387.0,
+            "min": 3387
+          },
+          "receiver_context_tokens": {
+            "max": 2313,
+            "mean": 2313.0,
+            "min": 2313
+          },
+          "receiver_instruction_bytes": {
+            "max": 436,
+            "mean": 436.0,
+            "min": 436
+          },
+          "receiver_instruction_tokens": {
+            "max": 80,
+            "mean": 80.0,
+            "min": 80
+          },
+          "sender_context_tokens": {
+            "max": 489,
+            "mean": 489.0,
+            "min": 489
+          },
+          "sender_instruction_bytes": {
+            "max": 315,
+            "mean": 315.0,
+            "min": 315
+          },
+          "sender_instruction_tokens": {
+            "max": 64,
+            "mean": 64.0,
+            "min": 64
+          },
+          "total_input_content_tokens": {
+            "max": 2946,
+            "mean": 2946.0,
+            "min": 2946
+          },
+          "total_instruction_tokens": {
+            "max": 144,
+            "mean": 144.0,
+            "min": 144
+          }
+        },
+        "shared_protocol_card": {
+          "episodes": 16,
+          "ideal_sender_message_bytes": {
+            "max": 559,
+            "mean": 559.0,
+            "min": 559
+          },
+          "ideal_sender_message_output_tokens": {
+            "max": 399,
+            "mean": 399.0,
+            "min": 399
+          },
+          "known_total_content_tokens": {
+            "max": 3354,
+            "mean": 3354.0,
+            "min": 3354
+          },
+          "receiver_context_tokens": {
+            "max": 2272,
+            "mean": 2272.0,
+            "min": 2272
+          },
+          "receiver_instruction_bytes": {
+            "max": 587,
+            "mean": 587.0,
+            "min": 587
+          },
+          "receiver_instruction_tokens": {
+            "max": 109,
+            "mean": 109.0,
+            "min": 109
+          },
+          "sender_context_tokens": {
+            "max": 489,
+            "mean": 489.0,
+            "min": 489
+          },
+          "sender_instruction_bytes": {
+            "max": 424,
+            "mean": 424.0,
+            "min": 424
+          },
+          "sender_instruction_tokens": {
+            "max": 85,
+            "mean": 85.0,
+            "min": 85
+          },
+          "total_input_content_tokens": {
+            "max": 2955,
+            "mean": 2955.0,
+            "min": 2955
+          },
+          "total_instruction_tokens": {
+            "max": 194,
+            "mean": 194.0,
+            "min": 194
+          }
+        },
+        "symbolic": {
+          "episodes": 16,
+          "ideal_sender_message_bytes": {
+            "max": 40,
+            "mean": 40.0,
+            "min": 40
+          },
+          "ideal_sender_message_output_tokens": {
+            "max": 40,
+            "mean": 40.0,
+            "min": 40
+          },
+          "known_total_content_tokens": {
+            "max": 6130,
+            "mean": 6130.0,
+            "min": 6130
+          },
+          "receiver_context_tokens": {
+            "max": 1913,
+            "mean": 1913.0,
+            "min": 1913
+          },
+          "receiver_instruction_bytes": {
+            "max": 3291,
+            "mean": 3291.0,
+            "min": 3291
+          },
+          "receiver_instruction_tokens": {
+            "max": 1848,
+            "mean": 1848.0,
+            "min": 1848
+          },
+          "sender_context_tokens": {
+            "max": 489,
+            "mean": 489.0,
+            "min": 489
+          },
+          "sender_instruction_bytes": {
+            "max": 3220,
+            "mean": 3220.0,
+            "min": 3220
+          },
+          "sender_instruction_tokens": {
+            "max": 1840,
+            "mean": 1840.0,
+            "min": 1840
+          },
+          "total_input_content_tokens": {
+            "max": 6090,
+            "mean": 6090.0,
+            "min": 6090
+          },
+          "total_instruction_tokens": {
+            "max": 3688,
+            "mean": 3688.0,
+            "min": 3688
+          }
+        }
+      },
+      "dimensions": 40,
+      "episode_count": 16,
+      "heldout_support_size": 302231454903657293676544,
+      "known_total_token_delta_vs_json": {
+        "shared_protocol_card": -33.0,
+        "symbolic": 2743.0
+      },
+      "values_per_dimension": 4
+    },
+    {
+      "candidate_count": 4,
+      "conditions": {
+        "json": {
+          "episodes": 16,
+          "ideal_sender_message_bytes": {
+            "max": 721,
+            "mean": 721.0,
+            "min": 721
+          },
+          "ideal_sender_message_output_tokens": {
+            "max": 441,
+            "mean": 441.0,
+            "min": 441
+          },
+          "known_total_content_tokens": {
+            "max": 3387,
+            "mean": 3387.0,
+            "min": 3387
+          },
+          "receiver_context_tokens": {
+            "max": 2313,
+            "mean": 2313.0,
+            "min": 2313
+          },
+          "receiver_instruction_bytes": {
+            "max": 436,
+            "mean": 436.0,
+            "min": 436
+          },
+          "receiver_instruction_tokens": {
+            "max": 80,
+            "mean": 80.0,
+            "min": 80
+          },
+          "sender_context_tokens": {
+            "max": 489,
+            "mean": 489.0,
+            "min": 489
+          },
+          "sender_instruction_bytes": {
+            "max": 315,
+            "mean": 315.0,
+            "min": 315
+          },
+          "sender_instruction_tokens": {
+            "max": 64,
+            "mean": 64.0,
+            "min": 64
+          },
+          "total_input_content_tokens": {
+            "max": 2946,
+            "mean": 2946.0,
+            "min": 2946
+          },
+          "total_instruction_tokens": {
+            "max": 144,
+            "mean": 144.0,
+            "min": 144
+          }
+        },
+        "shared_protocol_card": {
+          "episodes": 16,
+          "ideal_sender_message_bytes": {
+            "max": 559,
+            "mean": 559.0,
+            "min": 559
+          },
+          "ideal_sender_message_output_tokens": {
+            "max": 399,
+            "mean": 399.0,
+            "min": 399
+          },
+          "known_total_content_tokens": {
+            "max": 3354,
+            "mean": 3354.0,
+            "min": 3354
+          },
+          "receiver_context_tokens": {
+            "max": 2272,
+            "mean": 2272.0,
+            "min": 2272
+          },
+          "receiver_instruction_bytes": {
+            "max": 587,
+            "mean": 587.0,
+            "min": 587
+          },
+          "receiver_instruction_tokens": {
+            "max": 109,
+            "mean": 109.0,
+            "min": 109
+          },
+          "sender_context_tokens": {
+            "max": 489,
+            "mean": 489.0,
+            "min": 489
+          },
+          "sender_instruction_bytes": {
+            "max": 424,
+            "mean": 424.0,
+            "min": 424
+          },
+          "sender_instruction_tokens": {
+            "max": 85,
+            "mean": 85.0,
+            "min": 85
+          },
+          "total_input_content_tokens": {
+            "max": 2955,
+            "mean": 2955.0,
+            "min": 2955
+          },
+          "total_instruction_tokens": {
+            "max": 194,
+            "mean": 194.0,
+            "min": 194
+          }
+        },
+        "symbolic": {
+          "episodes": 16,
+          "ideal_sender_message_bytes": {
+            "max": 40,
+            "mean": 40.0,
+            "min": 40
+          },
+          "ideal_sender_message_output_tokens": {
+            "max": 40,
+            "mean": 40.0,
+            "min": 40
+          },
+          "known_total_content_tokens": {
+            "max": 9010,
+            "mean": 9010.0,
+            "min": 9010
+          },
+          "receiver_context_tokens": {
+            "max": 1913,
+            "mean": 1913.0,
+            "min": 1913
+          },
+          "receiver_instruction_bytes": {
+            "max": 5371,
+            "mean": 5371.0,
+            "min": 5371
+          },
+          "receiver_instruction_tokens": {
+            "max": 3288,
+            "mean": 3288.0,
+            "min": 3288
+          },
+          "sender_context_tokens": {
+            "max": 489,
+            "mean": 489.0,
+            "min": 489
+          },
+          "sender_instruction_bytes": {
+            "max": 5300,
+            "mean": 5300.0,
+            "min": 5300
+          },
+          "sender_instruction_tokens": {
+            "max": 3280,
+            "mean": 3280.0,
+            "min": 3280
+          },
+          "total_input_content_tokens": {
+            "max": 8970,
+            "mean": 8970.0,
+            "min": 8970
+          },
+          "total_instruction_tokens": {
+            "max": 6568,
+            "mean": 6568.0,
+            "min": 6568
+          }
+        }
+      },
+      "dimensions": 40,
+      "episode_count": 16,
+      "heldout_support_size": 166153499473114484112975882535043072,
+      "known_total_token_delta_vs_json": {
+        "shared_protocol_card": -33.0,
+        "symbolic": 5623.0
+      },
+      "values_per_dimension": 8
+    },
+    {
+      "candidate_count": 4,
+      "conditions": {
+        "json": {
+          "episodes": 16,
+          "ideal_sender_message_bytes": {
+            "max": 721,
+            "mean": 721.0,
+            "min": 721
+          },
+          "ideal_sender_message_output_tokens": {
+            "max": 441,
+            "mean": 441.0,
+            "min": 441
+          },
+          "known_total_content_tokens": {
+            "max": 3387,
+            "mean": 3387.0,
+            "min": 3387
+          },
+          "receiver_context_tokens": {
+            "max": 2313,
+            "mean": 2313.0,
+            "min": 2313
+          },
+          "receiver_instruction_bytes": {
+            "max": 436,
+            "mean": 436.0,
+            "min": 436
+          },
+          "receiver_instruction_tokens": {
+            "max": 80,
+            "mean": 80.0,
+            "min": 80
+          },
+          "sender_context_tokens": {
+            "max": 489,
+            "mean": 489.0,
+            "min": 489
+          },
+          "sender_instruction_bytes": {
+            "max": 315,
+            "mean": 315.0,
+            "min": 315
+          },
+          "sender_instruction_tokens": {
+            "max": 64,
+            "mean": 64.0,
+            "min": 64
+          },
+          "total_input_content_tokens": {
+            "max": 2946,
+            "mean": 2946.0,
+            "min": 2946
+          },
+          "total_instruction_tokens": {
+            "max": 144,
+            "mean": 144.0,
+            "min": 144
+          }
+        },
+        "shared_protocol_card": {
+          "episodes": 16,
+          "ideal_sender_message_bytes": {
+            "max": 559,
+            "mean": 559.0,
+            "min": 559
+          },
+          "ideal_sender_message_output_tokens": {
+            "max": 399,
+            "mean": 399.0,
+            "min": 399
+          },
+          "known_total_content_tokens": {
+            "max": 3354,
+            "mean": 3354.0,
+            "min": 3354
+          },
+          "receiver_context_tokens": {
+            "max": 2272,
+            "mean": 2272.0,
+            "min": 2272
+          },
+          "receiver_instruction_bytes": {
+            "max": 587,
+            "mean": 587.0,
+            "min": 587
+          },
+          "receiver_instruction_tokens": {
+            "max": 109,
+            "mean": 109.0,
+            "min": 109
+          },
+          "sender_context_tokens": {
+            "max": 489,
+            "mean": 489.0,
+            "min": 489
+          },
+          "sender_instruction_bytes": {
+            "max": 424,
+            "mean": 424.0,
+            "min": 424
+          },
+          "sender_instruction_tokens": {
+            "max": 85,
+            "mean": 85.0,
+            "min": 85
+          },
+          "total_input_content_tokens": {
+            "max": 2955,
+            "mean": 2955.0,
+            "min": 2955
+          },
+          "total_instruction_tokens": {
+            "max": 194,
+            "mean": 194.0,
+            "min": 194
+          }
+        },
+        "symbolic": {
+          "episodes": 16,
+          "ideal_sender_message_bytes": {
+            "max": 40,
+            "mean": 40.0,
+            "min": 40
+          },
+          "ideal_sender_message_output_tokens": {
+            "max": 40,
+            "mean": 40.0,
+            "min": 40
+          },
+          "known_total_content_tokens": {
+            "max": 10450,
+            "mean": 10450.0,
+            "min": 10450
+          },
+          "receiver_context_tokens": {
+            "max": 1913,
+            "mean": 1913.0,
+            "min": 1913
+          },
+          "receiver_instruction_bytes": {
+            "max": 6411,
+            "mean": 6411.0,
+            "min": 6411
+          },
+          "receiver_instruction_tokens": {
+            "max": 4008,
+            "mean": 4008.0,
+            "min": 4008
+          },
+          "sender_context_tokens": {
+            "max": 489,
+            "mean": 489.0,
+            "min": 489
+          },
+          "sender_instruction_bytes": {
+            "max": 6340,
+            "mean": 6340.0,
+            "min": 6340
+          },
+          "sender_instruction_tokens": {
+            "max": 4000,
+            "mean": 4000.0,
+            "min": 4000
+          },
+          "total_input_content_tokens": {
+            "max": 10410,
+            "mean": 10410.0,
+            "min": 10410
+          },
+          "total_instruction_tokens": {
+            "max": 8008,
+            "mean": 8008.0,
+            "min": 8008
+          }
+        }
+      },
+      "dimensions": 40,
+      "episode_count": 16,
+      "heldout_support_size": 1000000000000000000000000000000000000000,
+      "known_total_token_delta_vs_json": {
+        "shared_protocol_card": -33.0,
+        "symbolic": 7063.0
+      },
+      "values_per_dimension": 10
+    },
+    {
+      "candidate_count": 4,
+      "conditions": {
+        "json": {
+          "episodes": 16,
+          "ideal_sender_message_bytes": {
+            "max": 1441,
+            "mean": 1441.0,
+            "min": 1441
+          },
+          "ideal_sender_message_output_tokens": {
+            "max": 881,
+            "mean": 881.0,
+            "min": 881
+          },
+          "known_total_content_tokens": {
+            "max": 6467,
+            "mean": 6467.0,
+            "min": 6467
+          },
+          "receiver_context_tokens": {
+            "max": 4513,
+            "mean": 4513.0,
+            "min": 4513
+          },
+          "receiver_instruction_bytes": {
+            "max": 436,
+            "mean": 436.0,
+            "min": 436
+          },
+          "receiver_instruction_tokens": {
+            "max": 80,
+            "mean": 80.0,
+            "min": 80
+          },
+          "sender_context_tokens": {
+            "max": 929,
+            "mean": 929.0,
+            "min": 929
+          },
+          "sender_instruction_bytes": {
+            "max": 315,
+            "mean": 315.0,
+            "min": 315
+          },
+          "sender_instruction_tokens": {
+            "max": 64,
+            "mean": 64.0,
+            "min": 64
+          },
+          "total_input_content_tokens": {
+            "max": 5586,
+            "mean": 5586.0,
+            "min": 5586
+          },
+          "total_instruction_tokens": {
+            "max": 144,
+            "mean": 144.0,
+            "min": 144
+          }
+        },
+        "shared_protocol_card": {
+          "episodes": 16,
+          "ideal_sender_message_bytes": {
+            "max": 1119,
+            "mean": 1119.0,
+            "min": 1119
+          },
+          "ideal_sender_message_output_tokens": {
+            "max": 799,
+            "mean": 799.0,
+            "min": 799
+          },
+          "known_total_content_tokens": {
+            "max": 6354,
+            "mean": 6354.0,
+            "min": 6354
+          },
+          "receiver_context_tokens": {
+            "max": 4432,
+            "mean": 4432.0,
+            "min": 4432
+          },
+          "receiver_instruction_bytes": {
+            "max": 587,
+            "mean": 587.0,
+            "min": 587
+          },
+          "receiver_instruction_tokens": {
+            "max": 109,
+            "mean": 109.0,
+            "min": 109
+          },
+          "sender_context_tokens": {
+            "max": 929,
+            "mean": 929.0,
+            "min": 929
+          },
+          "sender_instruction_bytes": {
+            "max": 424,
+            "mean": 424.0,
+            "min": 424
+          },
+          "sender_instruction_tokens": {
+            "max": 85,
+            "mean": 85.0,
+            "min": 85
+          },
+          "total_input_content_tokens": {
+            "max": 5555,
+            "mean": 5555.0,
+            "min": 5555
+          },
+          "total_instruction_tokens": {
+            "max": 194,
+            "mean": 194.0,
+            "min": 194
+          }
+        },
+        "symbolic": {
+          "episodes": 16,
+          "ideal_sender_message_bytes": {
+            "max": 80,
+            "mean": 80.0,
+            "min": 80
+          },
+          "ideal_sender_message_output_tokens": {
+            "max": 80,
+            "mean": 80.0,
+            "min": 80
+          },
+          "known_total_content_tokens": {
+            "max": 9050,
+            "mean": 9050.0,
+            "min": 9050
+          },
+          "receiver_context_tokens": {
+            "max": 3713,
+            "mean": 3713.0,
+            "min": 3713
+          },
+          "receiver_instruction_bytes": {
+            "max": 4051,
+            "mean": 4051.0,
+            "min": 4051
+          },
+          "receiver_instruction_tokens": {
+            "max": 2168,
+            "mean": 2168.0,
+            "min": 2168
+          },
+          "sender_context_tokens": {
+            "max": 929,
+            "mean": 929.0,
+            "min": 929
+          },
+          "sender_instruction_bytes": {
+            "max": 3980,
+            "mean": 3980.0,
+            "min": 3980
+          },
+          "sender_instruction_tokens": {
+            "max": 2160,
+            "mean": 2160.0,
+            "min": 2160
+          },
+          "total_input_content_tokens": {
+            "max": 8970,
+            "mean": 8970.0,
+            "min": 8970
+          },
+          "total_instruction_tokens": {
+            "max": 4328,
+            "mean": 4328.0,
+            "min": 4328
+          }
+        }
+      },
+      "dimensions": 80,
+      "episode_count": 16,
+      "heldout_support_size": 604462909807314587353088,
+      "known_total_token_delta_vs_json": {
+        "shared_protocol_card": -113.0,
+        "symbolic": 2583.0
+      },
+      "values_per_dimension": 2
+    },
+    {
+      "candidate_count": 4,
+      "conditions": {
+        "json": {
+          "episodes": 16,
+          "ideal_sender_message_bytes": {
+            "max": 1441,
+            "mean": 1441.0,
+            "min": 1441
+          },
+          "ideal_sender_message_output_tokens": {
+            "max": 881,
+            "mean": 881.0,
+            "min": 881
+          },
+          "known_total_content_tokens": {
+            "max": 6467,
+            "mean": 6467.0,
+            "min": 6467
+          },
+          "receiver_context_tokens": {
+            "max": 4513,
+            "mean": 4513.0,
+            "min": 4513
+          },
+          "receiver_instruction_bytes": {
+            "max": 436,
+            "mean": 436.0,
+            "min": 436
+          },
+          "receiver_instruction_tokens": {
+            "max": 80,
+            "mean": 80.0,
+            "min": 80
+          },
+          "sender_context_tokens": {
+            "max": 929,
+            "mean": 929.0,
+            "min": 929
+          },
+          "sender_instruction_bytes": {
+            "max": 315,
+            "mean": 315.0,
+            "min": 315
+          },
+          "sender_instruction_tokens": {
+            "max": 64,
+            "mean": 64.0,
+            "min": 64
+          },
+          "total_input_content_tokens": {
+            "max": 5586,
+            "mean": 5586.0,
+            "min": 5586
+          },
+          "total_instruction_tokens": {
+            "max": 144,
+            "mean": 144.0,
+            "min": 144
+          }
+        },
+        "shared_protocol_card": {
+          "episodes": 16,
+          "ideal_sender_message_bytes": {
+            "max": 1119,
+            "mean": 1119.0,
+            "min": 1119
+          },
+          "ideal_sender_message_output_tokens": {
+            "max": 799,
+            "mean": 799.0,
+            "min": 799
+          },
+          "known_total_content_tokens": {
+            "max": 6354,
+            "mean": 6354.0,
+            "min": 6354
+          },
+          "receiver_context_tokens": {
+            "max": 4432,
+            "mean": 4432.0,
+            "min": 4432
+          },
+          "receiver_instruction_bytes": {
+            "max": 587,
+            "mean": 587.0,
+            "min": 587
+          },
+          "receiver_instruction_tokens": {
+            "max": 109,
+            "mean": 109.0,
+            "min": 109
+          },
+          "sender_context_tokens": {
+            "max": 929,
+            "mean": 929.0,
+            "min": 929
+          },
+          "sender_instruction_bytes": {
+            "max": 424,
+            "mean": 424.0,
+            "min": 424
+          },
+          "sender_instruction_tokens": {
+            "max": 85,
+            "mean": 85.0,
+            "min": 85
+          },
+          "total_input_content_tokens": {
+            "max": 5555,
+            "mean": 5555.0,
+            "min": 5555
+          },
+          "total_instruction_tokens": {
+            "max": 194,
+            "mean": 194.0,
+            "min": 194
+          }
+        },
+        "symbolic": {
+          "episodes": 16,
+          "ideal_sender_message_bytes": {
+            "max": 80,
+            "mean": 80.0,
+            "min": 80
+          },
+          "ideal_sender_message_output_tokens": {
+            "max": 80,
+            "mean": 80.0,
+            "min": 80
+          },
+          "known_total_content_tokens": {
+            "max": 11930,
+            "mean": 11930.0,
+            "min": 11930
+          },
+          "receiver_context_tokens": {
+            "max": 3713,
+            "mean": 3713.0,
+            "min": 3713
+          },
+          "receiver_instruction_bytes": {
+            "max": 6131,
+            "mean": 6131.0,
+            "min": 6131
+          },
+          "receiver_instruction_tokens": {
+            "max": 3608,
+            "mean": 3608.0,
+            "min": 3608
+          },
+          "sender_context_tokens": {
+            "max": 929,
+            "mean": 929.0,
+            "min": 929
+          },
+          "sender_instruction_bytes": {
+            "max": 6060,
+            "mean": 6060.0,
+            "min": 6060
+          },
+          "sender_instruction_tokens": {
+            "max": 3600,
+            "mean": 3600.0,
+            "min": 3600
+          },
+          "total_input_content_tokens": {
+            "max": 11850,
+            "mean": 11850.0,
+            "min": 11850
+          },
+          "total_instruction_tokens": {
+            "max": 7208,
+            "mean": 7208.0,
+            "min": 7208
+          }
+        }
+      },
+      "dimensions": 80,
+      "episode_count": 16,
+      "heldout_support_size": 365375409332725729550921208179070754913983135744,
+      "known_total_token_delta_vs_json": {
+        "shared_protocol_card": -113.0,
+        "symbolic": 5463.0
+      },
+      "values_per_dimension": 4
+    },
+    {
+      "candidate_count": 4,
+      "conditions": {
+        "json": {
+          "episodes": 16,
+          "ideal_sender_message_bytes": {
+            "max": 1441,
+            "mean": 1441.0,
+            "min": 1441
+          },
+          "ideal_sender_message_output_tokens": {
+            "max": 881,
+            "mean": 881.0,
+            "min": 881
+          },
+          "known_total_content_tokens": {
+            "max": 6467,
+            "mean": 6467.0,
+            "min": 6467
+          },
+          "receiver_context_tokens": {
+            "max": 4513,
+            "mean": 4513.0,
+            "min": 4513
+          },
+          "receiver_instruction_bytes": {
+            "max": 436,
+            "mean": 436.0,
+            "min": 436
+          },
+          "receiver_instruction_tokens": {
+            "max": 80,
+            "mean": 80.0,
+            "min": 80
+          },
+          "sender_context_tokens": {
+            "max": 929,
+            "mean": 929.0,
+            "min": 929
+          },
+          "sender_instruction_bytes": {
+            "max": 315,
+            "mean": 315.0,
+            "min": 315
+          },
+          "sender_instruction_tokens": {
+            "max": 64,
+            "mean": 64.0,
+            "min": 64
+          },
+          "total_input_content_tokens": {
+            "max": 5586,
+            "mean": 5586.0,
+            "min": 5586
+          },
+          "total_instruction_tokens": {
+            "max": 144,
+            "mean": 144.0,
+            "min": 144
+          }
+        },
+        "shared_protocol_card": {
+          "episodes": 16,
+          "ideal_sender_message_bytes": {
+            "max": 1119,
+            "mean": 1119.0,
+            "min": 1119
+          },
+          "ideal_sender_message_output_tokens": {
+            "max": 799,
+            "mean": 799.0,
+            "min": 799
+          },
+          "known_total_content_tokens": {
+            "max": 6354,
+            "mean": 6354.0,
+            "min": 6354
+          },
+          "receiver_context_tokens": {
+            "max": 4432,
+            "mean": 4432.0,
+            "min": 4432
+          },
+          "receiver_instruction_bytes": {
+            "max": 587,
+            "mean": 587.0,
+            "min": 587
+          },
+          "receiver_instruction_tokens": {
+            "max": 109,
+            "mean": 109.0,
+            "min": 109
+          },
+          "sender_context_tokens": {
+            "max": 929,
+            "mean": 929.0,
+            "min": 929
+          },
+          "sender_instruction_bytes": {
+            "max": 424,
+            "mean": 424.0,
+            "min": 424
+          },
+          "sender_instruction_tokens": {
+            "max": 85,
+            "mean": 85.0,
+            "min": 85
+          },
+          "total_input_content_tokens": {
+            "max": 5555,
+            "mean": 5555.0,
+            "min": 5555
+          },
+          "total_instruction_tokens": {
+            "max": 194,
+            "mean": 194.0,
+            "min": 194
+          }
+        },
+        "symbolic": {
+          "episodes": 16,
+          "ideal_sender_message_bytes": {
+            "max": 80,
+            "mean": 80.0,
+            "min": 80
+          },
+          "ideal_sender_message_output_tokens": {
+            "max": 80,
+            "mean": 80.0,
+            "min": 80
+          },
+          "known_total_content_tokens": {
+            "max": 17690,
+            "mean": 17690.0,
+            "min": 17690
+          },
+          "receiver_context_tokens": {
+            "max": 3713,
+            "mean": 3713.0,
+            "min": 3713
+          },
+          "receiver_instruction_bytes": {
+            "max": 10291,
+            "mean": 10291.0,
+            "min": 10291
+          },
+          "receiver_instruction_tokens": {
+            "max": 6488,
+            "mean": 6488.0,
+            "min": 6488
+          },
+          "sender_context_tokens": {
+            "max": 929,
+            "mean": 929.0,
+            "min": 929
+          },
+          "sender_instruction_bytes": {
+            "max": 10220,
+            "mean": 10220.0,
+            "min": 10220
+          },
+          "sender_instruction_tokens": {
+            "max": 6480,
+            "mean": 6480.0,
+            "min": 6480
+          },
+          "total_input_content_tokens": {
+            "max": 17610,
+            "mean": 17610.0,
+            "min": 17610
+          },
+          "total_instruction_tokens": {
+            "max": 12968,
+            "mean": 12968.0,
+            "min": 12968
+          }
+        }
+      },
+      "dimensions": 80,
+      "episode_count": 16,
+      "heldout_support_size": 220855883097298041197912187592864814478435487109452369765200775161577472,
+      "known_total_token_delta_vs_json": {
+        "shared_protocol_card": -113.0,
+        "symbolic": 11223.0
+      },
+      "values_per_dimension": 8
+    },
+    {
+      "candidate_count": 4,
+      "conditions": {
+        "json": {
+          "episodes": 16,
+          "ideal_sender_message_bytes": {
+            "max": 1441,
+            "mean": 1441.0,
+            "min": 1441
+          },
+          "ideal_sender_message_output_tokens": {
+            "max": 881,
+            "mean": 881.0,
+            "min": 881
+          },
+          "known_total_content_tokens": {
+            "max": 6467,
+            "mean": 6467.0,
+            "min": 6467
+          },
+          "receiver_context_tokens": {
+            "max": 4513,
+            "mean": 4513.0,
+            "min": 4513
+          },
+          "receiver_instruction_bytes": {
+            "max": 436,
+            "mean": 436.0,
+            "min": 436
+          },
+          "receiver_instruction_tokens": {
+            "max": 80,
+            "mean": 80.0,
+            "min": 80
+          },
+          "sender_context_tokens": {
+            "max": 929,
+            "mean": 929.0,
+            "min": 929
+          },
+          "sender_instruction_bytes": {
+            "max": 315,
+            "mean": 315.0,
+            "min": 315
+          },
+          "sender_instruction_tokens": {
+            "max": 64,
+            "mean": 64.0,
+            "min": 64
+          },
+          "total_input_content_tokens": {
+            "max": 5586,
+            "mean": 5586.0,
+            "min": 5586
+          },
+          "total_instruction_tokens": {
+            "max": 144,
+            "mean": 144.0,
+            "min": 144
+          }
+        },
+        "shared_protocol_card": {
+          "episodes": 16,
+          "ideal_sender_message_bytes": {
+            "max": 1119,
+            "mean": 1119.0,
+            "min": 1119
+          },
+          "ideal_sender_message_output_tokens": {
+            "max": 799,
+            "mean": 799.0,
+            "min": 799
+          },
+          "known_total_content_tokens": {
+            "max": 6354,
+            "mean": 6354.0,
+            "min": 6354
+          },
+          "receiver_context_tokens": {
+            "max": 4432,
+            "mean": 4432.0,
+            "min": 4432
+          },
+          "receiver_instruction_bytes": {
+            "max": 587,
+            "mean": 587.0,
+            "min": 587
+          },
+          "receiver_instruction_tokens": {
+            "max": 109,
+            "mean": 109.0,
+            "min": 109
+          },
+          "sender_context_tokens": {
+            "max": 929,
+            "mean": 929.0,
+            "min": 929
+          },
+          "sender_instruction_bytes": {
+            "max": 424,
+            "mean": 424.0,
+            "min": 424
+          },
+          "sender_instruction_tokens": {
+            "max": 85,
+            "mean": 85.0,
+            "min": 85
+          },
+          "total_input_content_tokens": {
+            "max": 5555,
+            "mean": 5555.0,
+            "min": 5555
+          },
+          "total_instruction_tokens": {
+            "max": 194,
+            "mean": 194.0,
+            "min": 194
+          }
+        },
+        "symbolic": {
+          "episodes": 16,
+          "ideal_sender_message_bytes": {
+            "max": 80,
+            "mean": 80.0,
+            "min": 80
+          },
+          "ideal_sender_message_output_tokens": {
+            "max": 80,
+            "mean": 80.0,
+            "min": 80
+          },
+          "known_total_content_tokens": {
+            "max": 20570,
+            "mean": 20570.0,
+            "min": 20570
+          },
+          "receiver_context_tokens": {
+            "max": 3713,
+            "mean": 3713.0,
+            "min": 3713
+          },
+          "receiver_instruction_bytes": {
+            "max": 12371,
+            "mean": 12371.0,
+            "min": 12371
+          },
+          "receiver_instruction_tokens": {
+            "max": 7928,
+            "mean": 7928.0,
+            "min": 7928
+          },
+          "sender_context_tokens": {
+            "max": 929,
+            "mean": 929.0,
+            "min": 929
+          },
+          "sender_instruction_bytes": {
+            "max": 12300,
+            "mean": 12300.0,
+            "min": 12300
+          },
+          "sender_instruction_tokens": {
+            "max": 7920,
+            "mean": 7920.0,
+            "min": 7920
+          },
+          "total_input_content_tokens": {
+            "max": 20490,
+            "mean": 20490.0,
+            "min": 20490
+          },
+          "total_instruction_tokens": {
+            "max": 15848,
+            "mean": 15848.0,
+            "min": 15848
+          }
+        }
+      },
+      "dimensions": 80,
+      "episode_count": 16,
+      "heldout_support_size": 10000000000000000000000000000000000000000000000000000000000000000000000000000000,
+      "known_total_token_delta_vs_json": {
+        "shared_protocol_card": -113.0,
+        "symbolic": 14103.0
+      },
+      "values_per_dimension": 10
+    }
+  ],
+  "tokenizer": {
+    "library": "tokenizers",
+    "library_version": "0.22.2",
+    "repo": "Qwen/Qwen3-4B",
+    "revision": "eb971e9fb1f41c13b5e5a56e56886305c5ad94a0",
+    "sha256": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
+    "special_tokens_added": false
+  }
+}

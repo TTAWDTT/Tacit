@@ -1,5 +1,15 @@
 # Research log
 
+## 2026-09-30 - Extend tokenizer cost scaling to a high-dimensional crossover
+
+- **Question:** does v0.3's recurring instruction premium over JSON persist as field count grows, or can repeated per-field output/context savings eventually repay it? The fixed digit-code arm also needs to be charged for explicitly listing every axis/value mapping.
+- **Preregistration:** after the frozen `d≤10` sweep, froze a separate exploratory extension at `d∈{20,40,80}`, `V∈{2,4,8,10}`, and 16 deterministic prompt fixtures per setting. The original sweep and its data remain unchanged; this range is explicitly post-sweep and exploratory.
+- **Method/change:** extended `audit_protocol_token_scaling.py` with an opt-in extension mode and saved independent JSON/report artifacts. Every condition uses the same synthetic modular-holdout task fixtures and exact v0.4 prompt construction. The ledger counts both request inputs, receiver-side message echo, and ideal sender output with pinned Qwen3-4B content tokenization; no model is loaded.
+- **Observation:** compact-fields minus JSON mean known-token cost is +7 at `d=20`, −33 at `d=40`, and −113 at `d=80`, identically across all four tested `V` values. This brackets a tokenizer/prompt-specific sign change between 20 and 40 dimensions. The fixed-symbol arm stays above JSON, with a differential from +663 to +14,103 tokens over the grid as `V` and `d` grow. Compact message UTF-8 savings are 82, 162, and 322 bytes at `d=20,40,80`, but those output-only bytes are not the total-token result.
+- **Theory update:** add §21/P19c as an explicitly exploratory and falsifiable bridge to the recurring-cost crossover in §4. A new frozen intermediate sweep must confirm or falsify the 20–40 bracket. Even confirmation would establish only this content-token cost shape, not task success, equal-quality efficiency, deployment billing, or cross-model superiority.
+- **Verification / resource use:** the extension reproduced 12 settings in about nine seconds, and its JSON's extension-preregistration and prior-sweep hashes both match their source files. Only the project-local tokenizer file was read; no weights, model, server, GPU inference, endpoint, or network was used.
+- **Limit / next gate:** the fixtures are synthetic, four-candidate prompts and dimensions up to 80 may be near practical context limits. Counts omit actual endpoint templates/usage, receiver outputs, caching, latency, compute, and all task outcomes. The extension range was selected after seeing the original sweep; publish it as a hypothesis-generating cost result and confirm the crossover independently before connecting it to model utility.
+
 ## 2026-09-30 - Measure explicit and symbolic baseline tokens with the pinned Qwen tokenizer
 
 - **Question:** do the v0.3 payload's fewer UTF-8 bytes or the runner's four-digit symbolic message lower known end-to-end token use against JSON after sender/receiver instructions and message echo are counted?
