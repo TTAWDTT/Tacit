@@ -243,7 +243,7 @@ def run_induction(
             feedback = json.loads(feedback_bytes)
         except json.JSONDecodeError as exc:
             raise ValueError("feedback artifact is not valid JSON") from exc
-        if not isinstance(feedback, dict) or feedback.get("schema") != "tlu.emergent-ood-nl-feedback.v0.1":
+        if not isinstance(feedback, dict) or feedback.get("schema") != "tlu.emergent-ood-nl-feedback.v0.2":
             raise ValueError("feedback artifact has an unsupported schema")
         if (
             feedback.get("split") != "train"
@@ -302,28 +302,16 @@ def run_induction(
             )
         ):
             raise ValueError("feedback does not match its source induction round/card")
-        source_results_path = _inside_project(ROOT / feedback.get("source_results", ""))
-        source_results_bytes = source_results_path.read_bytes()
-        if hashlib.sha256(source_results_bytes).hexdigest() != feedback.get("source_results_sha256"):
-            raise ValueError("feedback source result hash mismatch")
-        source_run_manifest_path = _inside_project(ROOT / feedback.get("source_run_manifest", ""))
-        source_run_manifest_bytes = source_run_manifest_path.read_bytes()
-        if hashlib.sha256(source_run_manifest_bytes).hexdigest() != feedback.get("source_run_manifest_sha256"):
-            raise ValueError("feedback source run manifest hash mismatch")
-        source_run_manifest = json.loads(source_run_manifest_bytes)
-        if (
-            source_run_manifest.get("schema") != "tlu.emergent-ood-run-manifest.v0.4"
-            or source_run_manifest.get("stage") != "train"
-            or source_run_manifest.get("conditions") != ["shared_protocol_card"]
-            or source_run_manifest.get("results_sha256") != feedback.get("source_results_sha256")
-            or source_run_manifest.get("protocol_card_sha256") != feedback.get("protocol_card_sha256")
+        source_runs = feedback.get("source_runs")
+        if not isinstance(source_runs, list) or not source_runs or any(
+            not isinstance(item, dict) or not isinstance(item.get("results"), str) for item in source_runs
         ):
-            raise ValueError("feedback source run manifest is not a matching train-only card run")
+            raise ValueError("feedback must identify one or more source training-run batches")
         from experiments.emergent_ood_v0_4.nl_feedback import build_feedback
 
         rebuilt_feedback = build_feedback(
             episode_dir=episode_dir,
-            run_path=ROOT / feedback["source_results"],
+            run_paths=[ROOT / item["results"] for item in source_runs],
             card_path=ROOT / feedback["source_card"],
             induction_manifest_path=ROOT / feedback["source_induction_manifest"],
             split_seed=split_seed,
@@ -356,7 +344,7 @@ def run_induction(
         "feedback_sha256": feedback_sha256,
         "feedback_source_episode_manifest_sha256": input_episode_manifest_sha256,
         "feedback_source_induction_manifest": feedback.get("source_induction_manifest") if feedback is not None else None,
-        "feedback_source_results": feedback.get("source_results") if feedback is not None else None,
+        "feedback_source_runs": feedback.get("source_runs") if feedback is not None else None,
         "feedback_episodes": feedback.get("episodes") if feedback is not None else 0,
         "feedback_exact_success_rate": feedback.get("exact_success_rate") if feedback is not None else None,
         "prompt_sha256": hashlib.sha256(prompt_bytes).hexdigest(),

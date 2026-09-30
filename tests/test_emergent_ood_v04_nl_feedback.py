@@ -12,7 +12,7 @@ from experiments.emergent_ood_v0_4.induce_protocol_cards import run_induction
 from experiments.emergent_ood_v0_4.nl_feedback import FEEDBACK_SCHEMA, build_feedback
 from experiments.emergent_ood_v0_4.select_nl_search_parent import freeze_training_frontier
 from experiments.emergent_ood_v0_4.runner import EXPERIMENT_ID, SCORER_ID
-from experiments.emergent_ood_v0_4.split import build_split
+from experiments.emergent_ood_v0_4.split import build_split, split_task_id
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -36,6 +36,7 @@ class NlFeedbackTests(unittest.TestCase):
         split = build_split(seed=self.split_seed)
         self.bundle_dir = self.directory / "episodes"
         bundle = episodes.generate_ledgers(split=split, task_key=self.key, task_seed=9, k=4, sets_per_stage=2)
+        self.bundle = bundle
         self.bundle_manifest = episodes.write_ledgers(bundle, self.bundle_dir)
         self.card = {
             "schema": "tlu.shared_protocol_card.v1",
@@ -47,16 +48,27 @@ class NlFeedbackTests(unittest.TestCase):
         self.card_bytes = (json.dumps(self.card, ensure_ascii=False, indent=2, sort_keys=True) + "\n").encode("utf-8")
         self.card_path.write_bytes(self.card_bytes)
         self.card_sha = hashlib.sha256(self.card_bytes).hexdigest()
+        self.second_card = {**self.card, "protocol_id": "nl-test-card-b"}
+        self.second_card_path = self.directory / "card-b.json"
+        self.second_card_bytes = (
+            json.dumps(self.second_card, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+        ).encode("utf-8")
+        self.second_card_path.write_bytes(self.second_card_bytes)
+        self.second_card_sha = hashlib.sha256(self.second_card_bytes).hexdigest()
         self.induction_manifest = {
             "schema": "tlu.emergent-ood-induced-card-set.v1",
             "split_seed": self.split_seed,
             "split_sha256": split["split_sha256"],
+            "task_id": split_task_id(split),
             "protocol_family": "plain_english",
             "optimization_round": 1,
             "max_optimization_rounds": 2,
-            "candidate_count": 4,
+            "candidate_count": 2,
             "feedback_sha256": None,
-            "candidate_cards": [{"protocol_id": self.card["protocol_id"], "sha256": self.card_sha}],
+            "candidate_cards": [
+                {"protocol_id": self.card["protocol_id"], "sha256": self.card_sha},
+                {"protocol_id": self.second_card["protocol_id"], "sha256": self.second_card_sha},
+            ],
         }
         self.induction_path = self.directory / "induction-manifest.json"
         self.induction_path.write_text(json.dumps(self.induction_manifest), encoding="utf-8")
@@ -99,7 +111,7 @@ class NlFeedbackTests(unittest.TestCase):
                 },
                 "stratum": {
                     "scorer_id": SCORER_ID,
-                    "task_id": "four-attribute-higher-order-meaning-matching-v1",
+                    "task_id": split_task_id(split),
                     "model_population_id": "test-population",
                     "agent_models": {"sender": "test-model", "receiver": "test-model"},
                 },
@@ -126,6 +138,7 @@ class NlFeedbackTests(unittest.TestCase):
             "conditions": ["shared_protocol_card"],
             "split_seed": self.split_seed,
             "split_sha256": split["split_sha256"],
+            "task_id": split_task_id(split),
             "input_episode_manifest_sha256": hashlib.sha256(
                 (self.bundle_dir / "manifest.json").read_bytes()
             ).hexdigest(),
@@ -171,7 +184,7 @@ class NlFeedbackTests(unittest.TestCase):
                 split_seed=self.split_seed,
                 task_key_path=key_path,
                 example_count=2,
-                candidate_count=4,
+                candidate_count=2,
                 output_dir=self.directory / "dry-run-output",
                 execute=False,
                 protocol_family="plain_english",
@@ -193,17 +206,6 @@ class NlFeedbackTests(unittest.TestCase):
 
     def test_paired_train_frontier_retains_quality_cost_tradeoff(self) -> None:
         first_feedback_path = self.directory / "feedback-first.json"
-        second_card = {**self.card, "protocol_id": "nl-test-card-b"}
-        second_card_path = self.directory / "card-b.json"
-        second_card_bytes = (json.dumps(second_card, ensure_ascii=False, indent=2, sort_keys=True) + "\n").encode("utf-8")
-        second_card_path.write_bytes(second_card_bytes)
-        induction = json.loads(self.induction_path.read_text(encoding="utf-8"))
-        induction["candidate_cards"].append({
-            "protocol_id": second_card["protocol_id"],
-            "sha256": hashlib.sha256(second_card_bytes).hexdigest(),
-        })
-        self.induction_path.write_text(json.dumps(induction), encoding="utf-8")
-
         first = build_feedback(
             episode_dir=self.bundle_dir,
             run_path=self.run_path,
@@ -215,7 +217,7 @@ class NlFeedbackTests(unittest.TestCase):
 
         second_rows = [json.loads(line) for line in self.run_path.read_text(encoding="utf-8").splitlines()]
         for row in second_rows:
-            row["protocol_id"] = second_card["protocol_id"]
+            row["protocol_id"] = self.second_card["protocol_id"]
             row["outcome"]["answer_candidate_id"] = row["outcome"]["target_candidate_id"]
             row["outcome"]["exact_selection"] = True
             row["outcome"]["joint_success"] = True
@@ -229,13 +231,13 @@ class NlFeedbackTests(unittest.TestCase):
             "results_file": second_run_path.name,
             "results_sha256": hashlib.sha256(second_run_bytes).hexdigest(),
             "result_records": len(second_rows),
-            "protocol_card_sha256": hashlib.sha256(second_card_bytes).hexdigest(),
+            "protocol_card_sha256": self.second_card_sha,
         })
         second_manifest_path.write_text(json.dumps(second_manifest), encoding="utf-8")
         second = build_feedback(
             episode_dir=self.bundle_dir,
             run_path=second_run_path,
-            card_path=second_card_path,
+            card_path=self.second_card_path,
             induction_manifest_path=self.induction_path,
             split_seed=self.split_seed,
         )
@@ -243,10 +245,64 @@ class NlFeedbackTests(unittest.TestCase):
         second_feedback_path.write_text(json.dumps(second, sort_keys=True), encoding="utf-8")
 
         frontier = freeze_training_frontier([first_feedback_path, second_feedback_path])
-        self.assertEqual(frontier["pareto_protocol_ids"], [second_card["protocol_id"]])
-        self.assertEqual(frontier["next_round_parent_protocol_id"], second_card["protocol_id"])
+        self.assertEqual(frontier["pareto_protocol_ids"], [self.second_card["protocol_id"]])
+        self.assertEqual(frontier["next_round_parent_protocol_id"], self.second_card["protocol_id"])
         self.assertFalse(frontier["validation_data_used"])
         self.assertFalse(frontier["test_data_used"])
+        with self.assertRaisesRegex(ValueError, "every card"):
+            freeze_training_frontier([first_feedback_path])
+
+    def test_feedback_combines_nonoverlapping_call_capped_training_batches(self) -> None:
+        template = json.loads(self.run_path.read_text(encoding="utf-8").splitlines()[0])
+        train_sets = list(dict.fromkeys(row["candidate_set_id"] for row in self.bundle["gold"]["train"]))
+        second_set = train_sets[1]
+        batch_rows = []
+        for sender, receiver, gold in zip(
+            self.bundle["sender"]["train"],
+            self.bundle["receiver"]["train"],
+            self.bundle["gold"]["train"],
+        ):
+            if gold["candidate_set_id"] != second_set:
+                continue
+            row = json.loads(json.dumps(template))
+            row["episode_id"] = gold["episode_id"]
+            row["candidate_set_id"] = gold["candidate_set_id"]
+            row["meaning_id"] = gold["meaning_id"]
+            row["outcome"].update({
+                "answer_candidate_id": gold["candidate_id"],
+                "target_candidate_id": gold["candidate_id"],
+                "exact_selection": True,
+                "joint_success": True,
+                "answer_score": 1.0,
+            })
+            row["trace"]["target_tuple_for_evaluator"] = sender["private_meaning"]
+            row["trace"]["candidate_ids_in_receiver_order"] = [c["candidate_id"] for c in receiver["candidates"]]
+            batch_rows.append(row)
+        second_path = self.directory / "run-set-01.jsonl"
+        second_bytes = _write_jsonl(second_path, batch_rows)
+        manifest_path = second_path.with_suffix(".jsonl.manifest.json")
+        manifest = json.loads(self.run_path.with_suffix(".jsonl.manifest.json").read_text(encoding="utf-8"))
+        manifest.update({
+            "results_file": second_path.name,
+            "results_sha256": hashlib.sha256(second_bytes).hexdigest(),
+            "result_records": len(batch_rows),
+            "candidate_set_offset": 1,
+            "candidate_sets": 1,
+        })
+        manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+        feedback = build_feedback(
+            episode_dir=self.bundle_dir,
+            run_paths=[self.run_path, second_path],
+            card_path=self.card_path,
+            induction_manifest_path=self.induction_path,
+            split_seed=self.split_seed,
+        )
+        self.assertEqual(feedback["candidate_sets"], 2)
+        self.assertEqual(feedback["episodes"], 8)
+        self.assertEqual(feedback["model_calls"], 16)
+        self.assertEqual(feedback["source_runs"][1]["candidate_set_offset"], 1)
+        self.assertEqual(feedback["exact_successes"], 7)
 
     def test_validation_run_is_rejected(self) -> None:
         manifest_path = self.run_path.with_suffix(".jsonl.manifest.json")
@@ -254,6 +310,20 @@ class NlFeedbackTests(unittest.TestCase):
         manifest["stage"] = "validation"
         manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
         with self.assertRaisesRegex(ValueError, "stage"):
+            build_feedback(
+                episode_dir=self.bundle_dir,
+                run_path=self.run_path,
+                card_path=self.card_path,
+                induction_manifest_path=self.induction_path,
+                split_seed=self.split_seed,
+            )
+
+    def test_feedback_rejects_a_source_batch_above_the_runner_call_cap(self) -> None:
+        manifest_path = self.run_path.with_suffix(".jsonl.manifest.json")
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        manifest["candidate_sets"] = 2
+        manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "12-call limit"):
             build_feedback(
                 episode_dir=self.bundle_dir,
                 run_path=self.run_path,

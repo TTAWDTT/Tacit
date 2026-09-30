@@ -34,7 +34,7 @@ def _read_feedback(path: Path) -> tuple[dict[str, Any], bytes]:
         raise ValueError(f"unsupported feedback artifact: {path}")
     expected = build_feedback(
         episode_dir=PROJECT_ROOT / value["input_episode_dir"],
-        run_path=PROJECT_ROOT / value["source_results"],
+        run_paths=[PROJECT_ROOT / item["results"] for item in value["source_runs"]],
         card_path=PROJECT_ROOT / value["source_card"],
         induction_manifest_path=PROJECT_ROOT / value["source_induction_manifest"],
         split_seed=value["split_seed"],
@@ -62,8 +62,6 @@ def _dominates(left: dict[str, Any], right: dict[str, Any], dimensions: list[str
 
 
 def freeze_training_frontier(feedback_paths: list[Path]) -> dict[str, Any]:
-    if len(feedback_paths) < 2:
-        raise ValueError("at least two candidate feedback artifacts are required")
     candidates = []
     payloads = []
     for path in feedback_paths:
@@ -100,6 +98,29 @@ def freeze_training_frontier(feedback_paths: list[Path]) -> dict[str, Any]:
     ids = [row["protocol_id"] for row in candidates]
     if len(ids) != len(set(ids)):
         raise ValueError("candidate feedback artifacts contain duplicate protocol IDs")
+    proposal_manifests = {feedback["source_induction_manifest_sha256"] for feedback in payloads}
+    if len(proposal_manifests) != 1:
+        raise ValueError("one search round must use candidates from exactly one induction manifest")
+    source_manifest_path = _project_path(PROJECT_ROOT / payloads[0]["source_induction_manifest"])
+    source_manifest = json.loads(source_manifest_path.read_bytes())
+    declared_candidate_count = source_manifest.get("candidate_count")
+    source_cards = source_manifest.get("candidate_cards")
+    if (
+        isinstance(declared_candidate_count, bool)
+        or not isinstance(declared_candidate_count, int)
+        or not isinstance(source_cards, list)
+        or len(source_cards) != declared_candidate_count
+        or len(candidates) != declared_candidate_count
+    ):
+        raise ValueError("search frontier requires feedback for every card in the frozen induction candidate set")
+    expected_card_hashes = {
+        item.get("protocol_id"): item.get("sha256") for item in source_cards if isinstance(item, dict)
+    }
+    observed_card_hashes = {
+        feedback["protocol_id"]: feedback["protocol_card_sha256"] for feedback in payloads
+    }
+    if len(expected_card_hashes) != len(source_cards) or observed_card_hashes != expected_card_hashes:
+        raise ValueError("feedback card identities/hashes do not cover the complete induction candidate set")
     pairing_keys = (
         "split_seed", "split_sha256", "input_episode_manifest_sha256", "training_episode_ids_sha256",
         "task_key_id", "task_seed", "model_population_id", "sender_model", "receiver_model",

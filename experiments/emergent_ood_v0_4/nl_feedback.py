@@ -14,11 +14,16 @@ from typing import Any
 
 from experiments.emergent_ood_v0_4.episodes import PROJECT_ROOT, SCHEMA as EPISODE_SCHEMA
 from experiments.emergent_ood_v0_4.episodes import verify_ledgers
-from experiments.emergent_ood_v0_4.runner import EXPERIMENT_ID, SCORER_ID
-from experiments.emergent_ood_v0_4.split import build_split_from_spec
+from experiments.emergent_ood_v0_4.runner import (
+    CALLS_PER_EPISODE,
+    EXPERIMENT_ID,
+    MAX_MODEL_CALLS_PER_BATCH,
+    SCORER_ID,
+)
+from experiments.emergent_ood_v0_4.split import build_split_from_spec, split_task_id
 
 
-FEEDBACK_SCHEMA = "tlu.emergent-ood-nl-feedback.v0.1"
+FEEDBACK_SCHEMA = "tlu.emergent-ood-nl-feedback.v0.2"
 RUN_SCHEMA = "tlu.emergent-ood-run-manifest.v0.4"
 RUN_RESULT_SCHEMA = "tlu.emergent-ood-run.v0.4"
 MAX_FAILURES = 24
@@ -127,9 +132,15 @@ def _load_train_bundle(directory: Path, *, split_seed: int) -> tuple[dict[str, A
 
 
 def build_feedback(
-    *, episode_dir: Path, run_path: Path, card_path: Path, induction_manifest_path: Path, split_seed: int,
+    *, episode_dir: Path, card_path: Path, induction_manifest_path: Path, split_seed: int,
+    run_path: Path | None = None, run_paths: list[Path] | None = None,
 ) -> dict[str, Any]:
-    """Validate one training-only shared-card run and summarize exact errors."""
+    """Validate paired training-only batches for one card and summarize exact errors."""
+    if run_paths is not None and run_path is not None:
+        raise ValueError("supply run_path or run_paths, not both")
+    paths = list(run_paths) if run_paths is not None else ([run_path] if run_path is not None else [])
+    if not paths or any(path is None for path in paths):
+        raise ValueError("at least one source training run is required")
     bundle, split, bundle_manifest_sha256 = _load_train_bundle(episode_dir, split_seed=split_seed)
     card, card_bytes = _json(card_path, "protocol card")
     required_card_fields = {"schema", "protocol_id", "sender_instruction", "receiver_instruction"}
@@ -145,64 +156,123 @@ def build_feedback(
     ):
         raise ValueError("induction manifest is not for this plain-English training split")
     produced_cards = induction_manifest.get("candidate_cards")
-    if not isinstance(produced_cards, list) or not any(
+    declared_candidate_count = induction_manifest.get("candidate_count")
+    if (
+        isinstance(declared_candidate_count, bool)
+        or not isinstance(declared_candidate_count, int)
+        or not 2 <= declared_candidate_count <= 8
+        or not isinstance(produced_cards, list)
+        or len(produced_cards) != declared_candidate_count
+    ):
+        raise ValueError("induction manifest does not contain its complete declared candidate set")
+    produced_ids = [item.get("protocol_id") for item in produced_cards if isinstance(item, dict)]
+    produced_hashes = [item.get("sha256") for item in produced_cards if isinstance(item, dict)]
+    if len(produced_ids) != len(produced_cards) or len(set(produced_ids)) != len(produced_ids) or len(set(produced_hashes)) != len(produced_hashes):
+        raise ValueError("induction manifest candidate IDs and hashes must be unique")
+    if not any(
         item.get("protocol_id") == card.get("protocol_id") and item.get("sha256") == card_sha256
         for item in produced_cards if isinstance(item, dict)
     ):
         raise ValueError("the supplied card is not hash-bound to the induction manifest")
 
-    result_path = _project_path(run_path)
-    result_bytes = result_path.read_bytes()
-    results = _jsonl_bytes(result_bytes, "run result")
-    run_manifest, _ = _json(result_path.with_suffix(result_path.suffix + ".manifest.json"), "run manifest")
-    if (
-        run_manifest.get("schema") != RUN_SCHEMA
-        or run_manifest.get("results_file") != result_path.name
-        or run_manifest.get("results_sha256") != hashlib.sha256(result_bytes).hexdigest()
-        or run_manifest.get("result_records") != len(results)
-    ):
-        raise ValueError("run result manifest or content hash is invalid")
     expected_manifest = {
         "experiment_id": EXPERIMENT_ID,
         "stage": "train",
         "conditions": ["shared_protocol_card"],
         "split_seed": split_seed,
         "split_sha256": split["split_sha256"],
+        "task_id": split_task_id(split),
         "input_episode_manifest_sha256": bundle_manifest_sha256,
         "protocol_card_sha256": card_sha256,
         "task_key_id": bundle["manifest"].get("task_key_id"),
         "task_seed": bundle["manifest"].get("task_seed"),
         "candidate_count": bundle["manifest"].get("k"),
     }
-    for key, expected in expected_manifest.items():
-        if run_manifest.get(key) != expected:
-            raise ValueError(f"run manifest {key} does not match the training bundle/card")
-    for key in ("model_population_id", "sender_model", "receiver_model", "sender_tokenizer_id", "receiver_tokenizer_id"):
-        if not isinstance(run_manifest.get(key), str) or not run_manifest[key].strip():
-            raise ValueError(f"run manifest {key} is missing")
-    wire_budget = run_manifest.get("communication_budget_bytes")
-    if isinstance(wire_budget, bool) or not isinstance(wire_budget, int) or wire_budget < 0:
-        raise ValueError("run manifest has an invalid communication budget")
-
     ordered_sets = list(dict.fromkeys(row["candidate_set_id"] for row in bundle["gold"]))
-    set_offset = run_manifest.get("candidate_set_offset")
-    set_count = run_manifest.get("candidate_sets")
-    if (
-        isinstance(set_offset, bool) or not isinstance(set_offset, int) or set_offset < 0
-        or isinstance(set_count, bool) or not isinstance(set_count, int) or set_count < 1
-    ):
-        raise ValueError("run manifest has an invalid candidate-set range")
-    selected = set(ordered_sets[set_offset:set_offset + set_count])
-    if len(selected) != set_count:
-        raise ValueError("run candidate-set range exceeds the training partition")
+    run_manifest: dict[str, Any] | None = None
+    source_runs: list[dict[str, Any]] = []
+    selected: set[str] = set()
+    all_results: dict[str, dict[str, Any]] = {}
+    occupied_offsets: set[int] = set()
+    run_settings = (
+        "model_population_id", "sender_model", "receiver_model", "sender_tokenizer_id",
+        "receiver_tokenizer_id", "communication_budget_bytes",
+    )
+    for source_path in paths:
+        result_path = _project_path(source_path)
+        result_bytes = result_path.read_bytes()
+        results = _jsonl_bytes(result_bytes, "run result")
+        manifest_path = _project_path(result_path.with_suffix(result_path.suffix + ".manifest.json"))
+        current_manifest, current_manifest_bytes = _json(manifest_path, "run manifest")
+        if (
+            current_manifest.get("schema") != RUN_SCHEMA
+            or current_manifest.get("results_file") != result_path.name
+            or current_manifest.get("results_sha256") != hashlib.sha256(result_bytes).hexdigest()
+            or current_manifest.get("result_records") != len(results)
+        ):
+            raise ValueError("run result manifest or content hash is invalid")
+        for key, expected in expected_manifest.items():
+            if current_manifest.get(key) != expected:
+                raise ValueError(f"run manifest {key} does not match the training bundle/card")
+        for key in ("model_population_id", "sender_model", "receiver_model", "sender_tokenizer_id", "receiver_tokenizer_id"):
+            if not isinstance(current_manifest.get(key), str) or not current_manifest[key].strip():
+                raise ValueError(f"run manifest {key} is missing")
+        wire_budget = current_manifest.get("communication_budget_bytes")
+        if isinstance(wire_budget, bool) or not isinstance(wire_budget, int) or wire_budget < 0:
+            raise ValueError("run manifest has an invalid communication budget")
+        if run_manifest is None:
+            run_manifest = current_manifest
+        elif any(current_manifest.get(key) != run_manifest.get(key) for key in run_settings):
+            raise ValueError("source training batches use different model populations or communication budgets")
+
+        set_offset = current_manifest.get("candidate_set_offset")
+        set_count = current_manifest.get("candidate_sets")
+        if (
+            isinstance(set_offset, bool) or not isinstance(set_offset, int) or set_offset < 0
+            or isinstance(set_count, bool) or not isinstance(set_count, int) or set_count < 1
+        ):
+            raise ValueError("run manifest has an invalid candidate-set range")
+        offsets = set(range(set_offset, set_offset + set_count))
+        if offsets & occupied_offsets or set_offset + set_count > len(ordered_sets):
+            raise ValueError("training batches overlap or exceed the available train candidate sets")
+        occupied_offsets.update(offsets)
+        batch_selected = set(ordered_sets[set_offset:set_offset + set_count])
+        if len(batch_selected) != set_count:
+            raise ValueError("run candidate-set range exceeds the training partition")
+        selected.update(batch_selected)
+        batch_expected = {
+            gold["episode_id"]: (sender, receiver, gold)
+            for sender, receiver, gold in zip(bundle["sender"], bundle["receiver"], bundle["gold"])
+            if gold["candidate_set_id"] in batch_selected
+        }
+        if len(batch_expected) * CALLS_PER_EPISODE["shared_protocol_card"] > MAX_MODEL_CALLS_PER_BATCH:
+            raise ValueError("source run candidate-set batch exceeds the frozen 12-call limit")
+        batch_indexed = {row.get("episode_id"): row for row in results}
+        if len(batch_indexed) != len(results) or set(batch_indexed) != set(batch_expected):
+            raise ValueError("run result episode coverage does not match its declared train candidate sets")
+        if set(all_results) & set(batch_indexed):
+            raise ValueError("training runs contain duplicate episode results")
+        all_results.update(batch_indexed)
+        source_runs.append({
+            "results": result_path.relative_to(PROJECT_ROOT).as_posix(),
+            "results_sha256": hashlib.sha256(result_bytes).hexdigest(),
+            "run_manifest": manifest_path.relative_to(PROJECT_ROOT).as_posix(),
+            "run_manifest_sha256": hashlib.sha256(current_manifest_bytes).hexdigest(),
+            "candidate_set_offset": set_offset,
+            "candidate_sets": set_count,
+        })
+
+    if run_manifest is None:
+        raise ValueError("no valid training run was supplied")
+    source_runs.sort(key=lambda row: row["candidate_set_offset"])
     expected_rows = {
         gold["episode_id"]: (sender, receiver, gold)
         for sender, receiver, gold in zip(bundle["sender"], bundle["receiver"], bundle["gold"])
         if gold["candidate_set_id"] in selected
     }
-    indexed = {row.get("episode_id"): row for row in results}
-    if len(indexed) != len(results) or set(indexed) != set(expected_rows):
-        raise ValueError("run result episode coverage does not match its declared train candidate sets")
+    indexed = all_results
+    if set(indexed) != set(expected_rows):
+        raise ValueError("combined training batches do not cover the exact selected episodes")
 
     failures: list[dict[str, Any]] = []
     successes = 0
@@ -233,7 +303,7 @@ def build_feedback(
             or result.get("split_seed") != split_seed
             or result.get("task_seed") != bundle["manifest"].get("task_seed")
             or result.get("stratum", {}).get("scorer_id") != SCORER_ID
-            or result.get("stratum", {}).get("task_id") is None
+            or result.get("stratum", {}).get("task_id") != split_task_id(split)
             or result.get("stratum", {}).get("model_population_id") != run_manifest["model_population_id"]
             or result.get("stratum", {}).get("agent_models", {}).get("sender") != run_manifest["sender_model"]
             or result.get("stratum", {}).get("agent_models", {}).get("receiver") != run_manifest["receiver_model"]
@@ -260,8 +330,8 @@ def build_feedback(
             raise ValueError("training result has invalid complete application wire-byte cost")
         application_wire_bytes += wire_bytes
         call_count = costs.get("model_call_count")
-        if isinstance(call_count, bool) or not isinstance(call_count, int) or call_count < 1:
-            raise ValueError("training result has invalid model-call count")
+        if isinstance(call_count, bool) or not isinstance(call_count, int) or call_count != CALLS_PER_EPISODE["shared_protocol_card"]:
+            raise ValueError("training result does not report the expected two model calls per shared-card episode")
         model_calls += call_count
         for field, total_name in (
             ("complete_input_tokens", "input"), ("complete_output_tokens", "output"),
@@ -340,13 +410,8 @@ def build_feedback(
         "source_card": _project_path(card_path).relative_to(PROJECT_ROOT).as_posix(),
         "sender_instruction": card["sender_instruction"],
         "receiver_instruction": card["receiver_instruction"],
-        "source_results_sha256": hashlib.sha256(result_bytes).hexdigest(),
-        "source_results": result_path.relative_to(PROJECT_ROOT).as_posix(),
-        "source_run_manifest_sha256": hashlib.sha256(
-            _project_path(result_path.with_suffix(result_path.suffix + ".manifest.json")).read_bytes()
-        ).hexdigest(),
-        "source_run_manifest": _project_path(result_path.with_suffix(result_path.suffix + ".manifest.json")).relative_to(PROJECT_ROOT).as_posix(),
-        "candidate_sets": set_count,
+        "source_runs": source_runs,
+        "candidate_sets": len(selected),
         "episodes": total,
         "training_episode_ids_sha256": hashlib.sha256("\n".join(ordered_episode_ids).encode("ascii")).hexdigest(),
         "exact_successes": successes,
@@ -375,7 +440,7 @@ def build_feedback(
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--episode-dir", type=Path, required=True)
-    parser.add_argument("--run", type=Path, required=True)
+    parser.add_argument("--run", type=Path, action="append", required=True, help="training run; repeat for 12-call batches")
     parser.add_argument("--card", type=Path, required=True)
     parser.add_argument("--induction-manifest", type=Path, required=True)
     parser.add_argument("--split-seed", type=int, default=17)
@@ -386,7 +451,7 @@ def main() -> int:
         if output.exists():
             raise ValueError(f"refusing to overwrite existing feedback artifact: {output}")
         feedback = build_feedback(
-            episode_dir=args.episode_dir, run_path=args.run, card_path=args.card,
+            episode_dir=args.episode_dir, run_paths=args.run, card_path=args.card,
             induction_manifest_path=args.induction_manifest,
             split_seed=args.split_seed,
         )

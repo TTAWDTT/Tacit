@@ -66,7 +66,7 @@ Available conditions are `no_message`, `full_information`, `natural_language`, `
 
 ### Iterative exact-score natural-language search
 
-The plain-English inducer can now take train-only exact task feedback from a previous search round. To use it, first induce several plain-English cards. Evaluate every card on the same training candidate-set block with `shared_protocol_card`, the same model/settings, and the exact candidate-ID scorer. For each candidate, create a feedback artifact and then freeze the paired training frontier:
+The plain-English inducer can now take train-only exact task feedback from a previous search round. To use it, first induce several plain-English cards. Evaluate every card on the same training candidate-set block with `shared_protocol_card`, the same model/settings, and the exact candidate-ID scorer. For each candidate, create a feedback artifact and then freeze the paired training frontier. Replace the example preflight path below with a fresh passing report; the latest recorded host preflight failed, so do not run its model-execution commands until a new one passes:
 
 ```powershell
 python -m experiments.emergent_ood_v0_4.induce_protocol_cards `
@@ -74,12 +74,13 @@ python -m experiments.emergent_ood_v0_4.induce_protocol_cards `
   --candidates 4 `
   --max-optimization-rounds 2 `
   --execute `
-  --resource-preflight .cache/emergent_ood_v0_3/resource_preflight.json `
+  --resource-preflight .cache/emergent_ood_v0_3/resource_preflight-PASS.json `
   --output-dir .cache/emergent_ood_v0_4/induced-cards/round-01
 
 python -m experiments.emergent_ood_v0_4.nl_feedback `
   --episode-dir .cache/emergent_ood_v0_4/episodes `
   --run .cache/emergent_ood_v0_4/runs/train-card-01.jsonl `
+  --run .cache/emergent_ood_v0_4/runs/train-card-01-set-01.jsonl `
   --card .cache/emergent_ood_v0_4/induced-cards/round-01/candidate-01-{protocol_id}.json `
   --induction-manifest .cache/emergent_ood_v0_4/induced-cards/round-01/induction-manifest.json `
   --output .cache/emergent_ood_v0_4/search/round-01-card-01.feedback.json
@@ -90,7 +91,9 @@ python -m experiments.emergent_ood_v0_4.select_nl_search_parent `
   --output .cache/emergent_ood_v0_4/search/round-01.frontier.json
 ```
 
-`nl_feedback.py` reads and hash-checks only `manifest.json` and the three `*_train.jsonl` role ledgers; it never opens validation/test role files. It verifies the run, candidate range, model population, exact outcomes, card, and induction-manifest hashes, then records training-only failures and complete measured costs. The parent selector rebuilds every feedback artifact from its source files, requires identical training episode IDs and model settings, emits the nondominated exact-success/application-byte/token frontier, and picks the next proposal parent by highest exact training success followed by lower complete cost. Pass that parent's feedback artifact to a fresh `induce_protocol_cards.py --protocol-family plain_english --candidates 4 --max-optimization-rounds 2 --feedback ... --episode-dir ...` call. The frozen default allows at most two proposal rounds and four candidates per round; the parent selector rejects mismatched budgets and marks search exhausted after round two. Each separate candidate run remains under the 12-call batch cap; use the same complete train candidate-set block for every card, and count every proposal/evaluation batch. Record each round's proposal, candidate runs, frontier, and cumulative cost. Search feedback is optimization data, never confirmatory evidence.
+Repeat `--run` to combine more non-overlapping training candidate-set batches for each card. `nl_feedback.py` checks every batch independently against the 12-call runner limit, rejects overlapping offsets or mismatched model settings, and aggregates their exact outcomes/costs while still reading no held-out role files. Give every candidate the identical set of offsets; the parent selector verifies the paired episode-ID hash. This allows a larger training search block without raising the runner's per-batch request ceiling.
+
+`nl_feedback.py` reads and hash-checks only `manifest.json` and the three `*_train.jsonl` role ledgers; it never opens validation/test role files. It verifies the run, candidate range, model population, exact outcomes, card, and induction-manifest hashes, then records training-only failures and complete measured costs. The parent selector rebuilds every feedback artifact from its source files, requires all cards from exactly one induction manifest (with no omitted candidates), identical training episode IDs, and identical model settings. It emits the nondominated exact-success/application-byte/token/service-time frontier and picks the next proposal parent by highest exact training success followed by lower complete cost. Pass that parent's feedback artifact to a fresh `induce_protocol_cards.py --protocol-family plain_english --candidates 4 --max-optimization-rounds 2 --feedback ... --episode-dir ...` call. The frozen default allows at most two proposal rounds and four candidates per round; the parent selector rejects incomplete/mixed candidate sets or mismatched budgets and marks search exhausted after round two. Each separate candidate run remains under the 12-call batch cap; use the same complete train candidate-set block for every card, and count every proposal/evaluation batch. Record each round's proposal, candidate runs, frontier, and cumulative cost. Search feedback is optimization data, never confirmatory evidence.
 
 Before any model-executing proposal or candidate run, pass the existing local resource preflight and independent receiver-capability gates. The current maximum is two proposal rounds of four cards; freeze the candidate-evaluation episode block before the search and carry all run/proposal costs into the final baseline report. Use validation only for the final Pareto freeze and open test once. This loop is a budgeted OPRO-style baseline implementation, not a reproduction of MIPRO, and its current local model result is **none**.
 
