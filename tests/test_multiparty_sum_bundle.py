@@ -67,6 +67,21 @@ def test_seed_and_key_domain_separate_tuples() -> None:
         shutil.rmtree(root)
 
 
+def test_episode_prefix_is_stable_when_sample_size_changes() -> None:
+    root = _test_dir()
+    try:
+        short, long = root / "short", root / "long"
+        generate_dataset(short, task_key=KEY, task_seed=19, agent_counts=(2, 5), episodes_per_count=4)
+        generate_dataset(long, task_key=KEY, task_seed=19, agent_counts=(2, 5), episodes_per_count=9)
+        for m in (2, 5):
+            for filename in [f"gold_m{m:02d}.jsonl", *[f"sender_m{m:02d}_s{i:02d}.jsonl" for i in range(1, m + 1)]]:
+                prefix = (short / filename).read_text(encoding="utf-8").splitlines()
+                expanded = (long / filename).read_text(encoding="utf-8").splitlines()
+                assert expanded[:4] == prefix
+    finally:
+        shutil.rmtree(root)
+
+
 def test_overwrite_tamper_and_call_limit_are_rejected() -> None:
     root = _test_dir()
     try:

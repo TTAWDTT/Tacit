@@ -1,6 +1,6 @@
 # Multi-party private sum, frozen IID task bundle (v0.1)
 
-This bundle freezes a narrow calibration task for the existing private-sum SDK example. Each of `m` senders independently receives an integer uniformly sampled from `{0,1,2,3}`; the receiver must return the exact sum. No single role sees the complete input vector. The generator creates keyed, fixed tuples and separate sender, receiver, and evaluator ledgers. It makes no model calls.
+This bundle freezes a narrow calibration task for the existing private-sum SDK example. Each of `m` senders independently receives an integer uniformly sampled from `{0,1,2,3}`; the receiver must return the exact sum. No single role sees the complete input vector. The generator creates keyed, fixed tuples and separate sender, receiver, and evaluator ledgers. It makes no model calls. Generator v0.1.1 addresses each episode by `(key, task_seed, m, episode_index)`, so increasing `episodes_per_count` preserves the existing episode prefix.
 
 ## Research question
 
@@ -34,7 +34,7 @@ python experiments/multiparty_sum_v0_1/generate_tasks.py `
   --task-key-file .cache/multiparty_sum_v0_1/evaluator.key --create-task-key
 python experiments/multiparty_sum_v0_1/generate_tasks.py `
   --task-key-file .cache/multiparty_sum_v0_1/evaluator.key `
-  --output .cache/multiparty_sum_v0_1/bundle --task-seed 0 --episodes-per-count 32
+  --output .cache/multiparty_sum_v0_1/bundle_v0_1_1 --task-seed 0 --episodes-per-count 32
 ```
 
 Every sender file contains only that sender's private value; the receiver file contains only the episode ID, sender count, role, and prior; `gold_mNN.jsonl` is evaluator-only. Strip `episode_id` before constructing a model prompt. The manifest binds all role files by SHA-256 and documents the task seed and key ID, but not the secret key. HMAC-SHA256 streams are domain-separated and use rejection sampling for unbiased values; the public seed alone is insufficient to reconstruct the tuple. Generation refuses overwrite by default. Keep the key and bundle under `.cache/` during development.

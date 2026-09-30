@@ -15,7 +15,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[2]
-VERSION = "0.1.0"
+VERSION = "0.1.1"
 SCHEMA = f"tlu.multiparty-private-sum.v{VERSION}"
 DOMAIN = 4
 MAX_CALLS = 12
@@ -135,8 +135,7 @@ def generate_dataset(
         gold_rows: list[str] = []
         for episode_index in range(episodes_per_count):
             # Independent stream per (m, episode): public task_seed alone cannot reveal values.
-            stream_seed = task_seed * 1_000_000 + m * episodes_per_count + episode_index
-            rng = _Stream(task_key, domain=f"inputs-m{m:02d}-ep{episode_index:06d}", seed=stream_seed)
+            rng = _Stream(task_key, domain=f"inputs-m{m:02d}-ep{episode_index:06d}", seed=task_seed)
             values = [rng.randbelow(DOMAIN) for _ in range(m)]
             episode_id = f"sum-m{m:02d}-s{task_seed:08d}-e{episode_index:06d}"
             for i, value in enumerate(values):
