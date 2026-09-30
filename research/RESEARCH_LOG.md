@@ -1,5 +1,14 @@
 # Research log
 
+## 2026-09-30 - Measure v0.3 prompt and message tokens with the pinned Qwen tokenizer
+
+- **Question:** does the v0.3 payload's fewer UTF-8 bytes lower its known end-to-end token use against the runner's JSON arm?
+- **Research basis:** Qwen's official tokenizer file is available from the [Qwen3-4B model repository](https://huggingface.co/Qwen/Qwen3-4B/blob/eb971e9fb1f41c13b5e5a56e56886305c5ad94a0/tokenizer.json). Pin its immutable revision and file hash; do not load model weights or infer from character counts.
+- **Change:** added `research/audit_protocol_token_costs.py`, which loads role ledgers through the v0.4 hash/split validator and reconstructs the runner's exact sender and receiver content messages for each test episode. The audit includes both requests' input content and an ideal canonical sender output; it excludes receiver output, server templates/special tokens, and model usage. It binds each bundle manifest and source-code/card hashes in the report.
+- **Result:** across 192 episodes (64 per ontology), the v0.3 card costs a mean 47.354 more known Qwen3 content tokens than JSON per episode. Input content increases by 49.677 tokens while ideal sender output saves 2.323. Per-ontology net deltas are +47.594 default, +46.938 robotics, and +47.531 music. This tokenizer/setup therefore contradicts a token-efficiency claim for v0.3 before any task-success difference is known.
+- **Verification:** tokenizer file SHA-256 is `aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4` (official revision `eb971e9fb1f41c13b5e5a56e56886305c5ad94a0`); Python 3.13.5, `tokenizers` 0.22.2. The tool validates all three 64-row test bundles, and the machine-readable summary records exact source and manifest hashes. Only the 11.4 MB tokenizer file was downloaded to ignored project-local `.cache`; no weights, model, server, or inference were used.
+- **Limit / next gate:** these are tokenizer counts over reconstructed content, not endpoint-reported usage or task results. Chat template tokens, actual model completion, answer length, service latency, and accuracy remain unobserved. This is one tokenizer and one instruction design; any useful language still needs gated paired model tests and other receiver families.
+
 ## 2026-09-30 - Bound compact labeled-text savings under general strings
 
 - **Question:** v0.3 saves 18 UTF-8 payload bytes against compact JSON on the current three fixtures but rejects `;` and `=` inside keys and values. Does a standard, delimiter-safe version keep a meaningful structural saving?
