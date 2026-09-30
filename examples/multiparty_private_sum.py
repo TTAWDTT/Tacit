@@ -24,6 +24,10 @@ from experiments.emergent_ood_v0_3.runner import validate_resource_preflight
 RECEIVER = "R"
 MAX_REQUESTS_PER_EPISODE = 12
 MAX_WIRE_BUDGET_BYTES = 4096
+SUM_TASK = (
+    "Team objective: find the sum of the sender-held private integers. "
+    "Use only information visible to your role and follow your role instruction."
+)
 
 
 def run_sum_episode(
@@ -71,10 +75,6 @@ def run_sum_episode(
         "from all sender messages and return only the exact sum as a base-10 integer."
     )
     protocol = DialogueProtocolCard("private-sum-decimal-v0", instructions)
-    task = (
-        f"Compute the exact sum of the private integers held by senders {', '.join(sender_names)}. "
-        "Use only information visible to you and return one base-10 integer."
-    )
     contexts = {name: f"Your private integer is {value}." for name, value in zip(sender_names, values)}
     contexts[RECEIVER] = ""
     if condition == "full_information":
@@ -85,7 +85,7 @@ def run_sum_episode(
         protocol=protocol,
         private_contexts=contexts,
         schedule=schedule,
-        task=task,
+        task=SUM_TASK,
         max_turns=len(sender_names),
         wire_budget_bytes=wire_budget_bytes,
         final_answer_agent=RECEIVER,

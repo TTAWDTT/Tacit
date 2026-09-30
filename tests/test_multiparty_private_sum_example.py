@@ -69,6 +69,16 @@ class MultipartyPrivateSumExampleTests(unittest.TestCase):
         self.assertFalse(result["all_sender_values_faithful"])
         self.assertEqual(result["sender_value_faithful_count"], 0)
 
+    def test_task_prompt_is_constant_as_sender_count_grows(self):
+        observed_tasks = []
+        for values in ([0, 1], [0, 1, 2, 3, 0]):
+            result, senders, receiver = self.run_with_fakes(list(values))
+            self.assertTrue(result["exact_success"])
+            observed_tasks.extend(call["task"] for sender in senders for call in sender.calls)
+            observed_tasks.extend(call["task"] for call in receiver.calls)
+        self.assertEqual(len(set(observed_tasks)), 1)
+        self.assertNotIn("S1, S2", observed_tasks[0])
+
     def test_no_message_and_full_information_are_distinct_controls(self):
         no_message, senders, _receiver = self.run_with_fakes([1, 2], "no_message")
         self.assertEqual(no_message["model_calls"], 1)

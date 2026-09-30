@@ -1743,3 +1743,10 @@ ceil) worst-case bits: 9, 10, and 11 for the three lengths. This predicts a comp
 - **Change:** the private-sum example now records each raw message, strict decimal syntax validity, parsed value, sender-value fidelity, and delivery status separately from final exact-sum success. No-message/full-information controls represent sender-fidelity metrics as unavailable rather than implicitly perfect. Update SDK/README wording accordingly.
 - **Verification:** add a fake-client counterexample where two incorrect values (`0` and `3`) accidentally sum to the correct total (`3`); the answer score passes while sender fidelity fails. Focused example/calculator tests, CLI help, compilation, and diff checks are rerun before commit. No model call is involved.
 - **Limit / decision:** this improves diagnostics for the demo task but does not establish a usable multi-agent scaling benchmark or compare languages. Preserve the stage-separated scoring contract in any future pilot.
+
+## 2026-09-30 - Remove quadratic roster repetition from multi-agent prompts
+
+- **Observation:** the example's shared task prompt interpolated every sender name, then resent that growing roster in each sender call. With `m` senders, this introduced Θ(m²) roster text into sender inputs and would confound a study of communication/inference scaling with avoidable prompt-construction cost.
+- **Change:** replace the roster-dependent prompt with a constant-size shared objective; each sender still gets only its own private integer and the receiver sees only its delivered transcript. Add a regression test requiring identical shared task wording at two and five senders.
+- **Verification:** focused fake-client tests, including privacy, no-message/full-information controls, error cancellation, and sender-count-invariant task text, pass; compilation, CLI help, and diff checks pass. No endpoint or model was used.
+- **Limit / decision:** fixing the prompt removes this avoidable quadratic term but does not prove total LLM cost is linear; message framing, role identifiers, tokenization, generation, and receiver context remain to be measured on real endpoints.
