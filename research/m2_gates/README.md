@@ -81,3 +81,7 @@ Inventory 必须在验证前持久化封存，不能验证后添加新候选；�
 ## 剩余决策
 
 本包完成的是**可执行离线门槛**，不是整体M2放行。还需确定：使用哪个已有主机/模型；可信adapter的完整序列化、token计量/最大值、provider硬上限与实际收据；role manifest来源与stateless session隔离；独立资格和有效紧预算梯度；主假设/成本轴/N/split样本量/区间与多重比较；资源和费用授权。缺任何必要成本或资格，继续fail closed。无需再扩新平台或运行所有基线来掩盖这些空白。
+
+## 本次验证证据
+
+Python 3.12.14。最终新门槛27/27测试通过；相关split/episode/induction/NL-feedback回归20/20，组合命令47/47通过。另在**只本地**的隔离树整合六个固定PR与本包，最终114/114（新27、A9、B21、diagnostics7、冻结OOD runner26、runtime24）通过；没有发布该merge分支。#6独立审计JSON和本包demo JSON均逐字节复现，全部base既有blob不变。compileall及diff检查通过。测试重叠，不累计作科学样本；完整仓库suite未运行，没有模型端到端测试。六个既有PR heads 的PR workflow runs和commit statuses本次再查均为空；这是无报告CI，不是CI通过。新PR发布后的CI查询见其描述/评论。
