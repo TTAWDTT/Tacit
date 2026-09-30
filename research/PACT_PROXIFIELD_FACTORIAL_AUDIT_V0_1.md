@@ -50,6 +50,14 @@ Cross the representation and routing conditions on the same frozen episodes only
 
 Use paired episode-level contrasts, held-out task templates, and heterogeneous receivers as transfer tests. Report empirical intervals and cost-success frontiers, including setup amortized over declared reuse horizons. Count an unoptimized or hand-written English sentence only as a weak control: PACT and task-specific natural-language optimization are stronger controls already required by the experiment plan.
 
+## Baseline applicability gate
+
+These papers are important prior art, but they are not plug-in baselines for every Tacit fixture. PACT targets systems where agent outputs and tool results accumulate in shared history or where a downstream role needs an action/state handoff. Tacit's v0.4 controlled task is a single sender message for a held-out candidate-selection meaning, with no evolving public state or repeated-history replay. On that fixture, a generic PACT filter would change the task or remove irrelevant fields rather than compare equivalent representations. Use an explicitly defined action-state natural-language condition only when the task semantics contain an action/state update; otherwise compare task-appropriate natural-language, structured, and compositional encodings under the fixed payload slot.
+
+Likewise, Proxifield is relevant when there are multiple eligible recipients, meaningful information needs, and repeated decisions about who should receive a message. A two-role one-shot task with an exogenously fixed receiver cannot identify a routing advantage. Do not expand the first benchmark merely to host an inapplicable baseline. For a later multi-round, multi-agent validation, reuse or adapt a public routing benchmark/platform and compare topology only after its task and cost contract have been audited.
+
+Thus the design gate is two-part: (i) cite strong adjacent methods in the project thesis, and (ii) include them empirically only when their intervention is semantically valid for the task. Document exclusions before data access, with the mismatch stated explicitly. This avoids both ignoring prior work and creating a strawman comparison.
+
 ## Scope and feasibility
 
 PACT covers action-state content selection and existing harness integration. Proxifield covers adaptive sparse routing and sequential coordination. Tacit should neither claim those ideas as novel nor use their system gains as evidence for a message language. A defensible remaining question is whether a reusable, compositional representation improves held-out receiver utility and complete cost **conditional on a fixed information-access/scheduling policy**, and whether any gain survives cross-model transfer and protocol onboarding.
