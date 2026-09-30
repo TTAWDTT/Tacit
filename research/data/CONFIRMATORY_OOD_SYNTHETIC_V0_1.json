@@ -1,0 +1,530 @@
+{
+  "alpha_each": 0.025,
+  "dependence": "D_t=X, D_l=-X, J=2X; contrasts perfectly dependent; iid splits",
+  "family_alpha": 0.05,
+  "method": "exact binomial enumeration, floating-point arithmetic, no Monte Carlo",
+  "practical_margin": 0.05,
+  "precision_only_not_power": {
+    "D_required_splits": 3506,
+    "J_required_splits": 14023,
+    "target_unclipped_radius": 0.05,
+    "warning": "Radius is not rejection probability; these are not chosen sample sizes"
+  },
+  "scenarios": {
+    "H1_margin_boundary": {
+      "probability_high": 0.525,
+      "results": [
+        {
+          "any_true_null_rejection": 0.0,
+          "assumed_mean_D": 0.05,
+          "assumed_mean_J": 0.1,
+          "independent_splits": 4,
+          "noncoverage_D": 0.0,
+          "noncoverage_J": 0.0,
+          "practical_rejection_D": 0.0,
+          "practical_rejection_J": 0.0,
+          "simultaneous_noncoverage": 0.0
+        },
+        {
+          "any_true_null_rejection": 0.00043844148584524747,
+          "assumed_mean_D": 0.05,
+          "assumed_mean_J": 0.1,
+          "independent_splits": 12,
+          "noncoverage_D": 0.0023200921817305084,
+          "noncoverage_J": 0.0023200921817305084,
+          "practical_rejection_D": 0.00043844148584524747,
+          "practical_rejection_J": 0.00043844148584524747,
+          "simultaneous_noncoverage": 0.0023200921817305084
+        },
+        {
+          "any_true_null_rejection": 0.0004418758244652367,
+          "assumed_mean_D": 0.05,
+          "assumed_mean_J": 0.1,
+          "independent_splits": 20,
+          "noncoverage_D": 0.001055355106292131,
+          "noncoverage_J": 0.001055355106292131,
+          "practical_rejection_D": 0.0004418758244652367,
+          "practical_rejection_J": 0.0025783312592225697,
+          "simultaneous_noncoverage": 0.001055355106292131
+        },
+        {
+          "any_true_null_rejection": 0.0011876204726365956,
+          "assumed_mean_D": 0.05,
+          "assumed_mean_J": 0.1,
+          "independent_splits": 100,
+          "noncoverage_D": 0.0024911805189415577,
+          "noncoverage_J": 0.0024911805189415577,
+          "practical_rejection_D": 0.0011876204726365956,
+          "practical_rejection_J": 0.002312047876316526,
+          "simultaneous_noncoverage": 0.0024911805189415577
+        },
+        {
+          "any_true_null_rejection": 0.001585922578280427,
+          "assumed_mean_D": 0.05,
+          "assumed_mean_J": 0.1,
+          "independent_splits": 1000,
+          "noncoverage_D": 0.0032141104422575115,
+          "noncoverage_J": 0.0032141104422575115,
+          "practical_rejection_D": 0.001585922578280427,
+          "practical_rejection_J": 0.014356845940154484,
+          "simultaneous_noncoverage": 0.0032141104422575115
+        }
+      ],
+      "support_X": [
+        -1.0,
+        1.0
+      ]
+    },
+    "H2_margin_boundary": {
+      "probability_high": 0.5125,
+      "results": [
+        {
+          "any_true_null_rejection": 0.0,
+          "assumed_mean_D": 0.025,
+          "assumed_mean_J": 0.05,
+          "independent_splits": 4,
+          "noncoverage_D": 0.0,
+          "noncoverage_J": 0.0,
+          "practical_rejection_D": 0.0,
+          "practical_rejection_J": 0.0,
+          "simultaneous_noncoverage": 0.0
+        },
+        {
+          "any_true_null_rejection": 0.000328341998107007,
+          "assumed_mean_D": 0.025,
+          "assumed_mean_J": 0.05,
+          "independent_splits": 12,
+          "noncoverage_D": 0.002781499059617623,
+          "noncoverage_J": 0.002781499059617623,
+          "practical_rejection_D": 0.000328341998107007,
+          "practical_rejection_J": 0.000328341998107007,
+          "simultaneous_noncoverage": 0.002781499059617623
+        },
+        {
+          "any_true_null_rejection": 0.0018332364222511382,
+          "assumed_mean_D": 0.025,
+          "assumed_mean_J": 0.05,
+          "independent_splits": 20,
+          "noncoverage_D": 0.0027278882701280744,
+          "noncoverage_J": 0.0027278882701280744,
+          "practical_rejection_D": 0.0002999457388679507,
+          "practical_rejection_J": 0.0018332364222511382,
+          "simultaneous_noncoverage": 0.0027278882701280744
+        },
+        {
+          "any_true_null_rejection": 0.001034449113438171,
+          "assumed_mean_D": 0.025,
+          "assumed_mean_J": 0.05,
+          "independent_splits": 100,
+          "noncoverage_D": 0.002553849833436624,
+          "noncoverage_J": 0.002553849833436624,
+          "practical_rejection_D": 0.0005071941115455638,
+          "practical_rejection_J": 0.001034449113438171,
+          "simultaneous_noncoverage": 0.002553849833436624
+        },
+        {
+          "any_true_null_rejection": 0.0014530437004976681,
+          "assumed_mean_D": 0.025,
+          "assumed_mean_J": 0.05,
+          "independent_splits": 1000,
+          "noncoverage_D": 0.0029259004863193103,
+          "noncoverage_J": 0.0029259004863193103,
+          "practical_rejection_D": 9.195851317868118e-05,
+          "practical_rejection_J": 0.0014530437004976681,
+          "simultaneous_noncoverage": 0.0029259004863193103
+        }
+      ],
+      "support_X": [
+        -1.0,
+        1.0
+      ]
+    },
+    "assumed_positive_effect": {
+      "probability_high": 0.6,
+      "results": [
+        {
+          "any_true_null_rejection": 0.0,
+          "assumed_mean_D": 0.2,
+          "assumed_mean_J": 0.4,
+          "independent_splits": 4,
+          "noncoverage_D": 0.0,
+          "noncoverage_J": 0.0,
+          "practical_rejection_D": 0.0,
+          "practical_rejection_J": 0.0,
+          "simultaneous_noncoverage": 0.0
+        },
+        {
+          "any_true_null_rejection": 0.0,
+          "assumed_mean_D": 0.2,
+          "assumed_mean_J": 0.4,
+          "independent_splits": 12,
+          "noncoverage_D": 0.002810183680000011,
+          "noncoverage_J": 0.002810183680000011,
+          "practical_rejection_D": 0.002176782336000002,
+          "practical_rejection_J": 0.002176782336000002,
+          "simultaneous_noncoverage": 0.002810183680000011
+        },
+        {
+          "any_true_null_rejection": 0.0,
+          "assumed_mean_D": 0.2,
+          "assumed_mean_J": 0.4,
+          "independent_splits": 20,
+          "noncoverage_D": 0.002135574019865315,
+          "noncoverage_J": 0.002135574019865315,
+          "practical_rejection_D": 0.00361147205912887,
+          "practical_rejection_J": 0.015961162790008206,
+          "simultaneous_noncoverage": 0.002135574019865315
+        },
+        {
+          "any_true_null_rejection": 0.0,
+          "assumed_mean_D": 0.2,
+          "assumed_mean_J": 0.4,
+          "independent_splits": 100,
+          "noncoverage_D": 0.002899927689329925,
+          "noncoverage_J": 0.002899927689329925,
+          "practical_rejection_D": 0.06150390959247414,
+          "practical_rejection_J": 0.0912536009928558,
+          "simultaneous_noncoverage": 0.002899927689329925
+        },
+        {
+          "any_true_null_rejection": 0.0,
+          "assumed_mean_D": 0.2,
+          "assumed_mean_J": 0.4,
+          "independent_splits": 1000,
+          "noncoverage_D": 0.0026696051415990647,
+          "noncoverage_J": 0.0026696051415990647,
+          "practical_rejection_D": 0.9667438705932769,
+          "practical_rejection_J": 0.9953811480323262,
+          "simultaneous_noncoverage": 0.0026696051415990647
+        }
+      ],
+      "support_X": [
+        -1.0,
+        1.0
+      ]
+    },
+    "constant_upper_boundary": {
+      "probability_high": 1.0,
+      "results": [
+        {
+          "any_true_null_rejection": 0.0,
+          "assumed_mean_D": 1.0,
+          "assumed_mean_J": 2.0,
+          "independent_splits": 4,
+          "noncoverage_D": 0.0,
+          "noncoverage_J": 0.0,
+          "practical_rejection_D": 0.0,
+          "practical_rejection_J": 0.0,
+          "simultaneous_noncoverage": 0.0
+        },
+        {
+          "any_true_null_rejection": 0.0,
+          "assumed_mean_D": 1.0,
+          "assumed_mean_J": 2.0,
+          "independent_splits": 12,
+          "noncoverage_D": 0.0,
+          "noncoverage_J": 0.0,
+          "practical_rejection_D": 1.0,
+          "practical_rejection_J": 1.0,
+          "simultaneous_noncoverage": 0.0
+        },
+        {
+          "any_true_null_rejection": 0.0,
+          "assumed_mean_D": 1.0,
+          "assumed_mean_J": 2.0,
+          "independent_splits": 20,
+          "noncoverage_D": 0.0,
+          "noncoverage_J": 0.0,
+          "practical_rejection_D": 1.0,
+          "practical_rejection_J": 1.0,
+          "simultaneous_noncoverage": 0.0
+        },
+        {
+          "any_true_null_rejection": 0.0,
+          "assumed_mean_D": 1.0,
+          "assumed_mean_J": 2.0,
+          "independent_splits": 100,
+          "noncoverage_D": 0.0,
+          "noncoverage_J": 0.0,
+          "practical_rejection_D": 1.0,
+          "practical_rejection_J": 1.0,
+          "simultaneous_noncoverage": 0.0
+        },
+        {
+          "any_true_null_rejection": 0.0,
+          "assumed_mean_D": 1.0,
+          "assumed_mean_J": 2.0,
+          "independent_splits": 1000,
+          "noncoverage_D": 0.0,
+          "noncoverage_J": 0.0,
+          "practical_rejection_D": 1.0,
+          "practical_rejection_J": 1.0,
+          "simultaneous_noncoverage": 0.0
+        }
+      ],
+      "support_X": [
+        1.0,
+        1.0
+      ]
+    },
+    "constant_zero": {
+      "probability_high": 0.0,
+      "results": [
+        {
+          "any_true_null_rejection": 0.0,
+          "assumed_mean_D": 0.0,
+          "assumed_mean_J": 0.0,
+          "independent_splits": 4,
+          "noncoverage_D": 0.0,
+          "noncoverage_J": 0.0,
+          "practical_rejection_D": 0.0,
+          "practical_rejection_J": 0.0,
+          "simultaneous_noncoverage": 0.0
+        },
+        {
+          "any_true_null_rejection": 0.0,
+          "assumed_mean_D": 0.0,
+          "assumed_mean_J": 0.0,
+          "independent_splits": 12,
+          "noncoverage_D": 0.0,
+          "noncoverage_J": 0.0,
+          "practical_rejection_D": 0.0,
+          "practical_rejection_J": 0.0,
+          "simultaneous_noncoverage": 0.0
+        },
+        {
+          "any_true_null_rejection": 0.0,
+          "assumed_mean_D": 0.0,
+          "assumed_mean_J": 0.0,
+          "independent_splits": 20,
+          "noncoverage_D": 0.0,
+          "noncoverage_J": 0.0,
+          "practical_rejection_D": 0.0,
+          "practical_rejection_J": 0.0,
+          "simultaneous_noncoverage": 0.0
+        },
+        {
+          "any_true_null_rejection": 0.0,
+          "assumed_mean_D": 0.0,
+          "assumed_mean_J": 0.0,
+          "independent_splits": 100,
+          "noncoverage_D": 0.0,
+          "noncoverage_J": 0.0,
+          "practical_rejection_D": 0.0,
+          "practical_rejection_J": 0.0,
+          "simultaneous_noncoverage": 0.0
+        },
+        {
+          "any_true_null_rejection": 0.0,
+          "assumed_mean_D": 0.0,
+          "assumed_mean_J": 0.0,
+          "independent_splits": 1000,
+          "noncoverage_D": 0.0,
+          "noncoverage_J": 0.0,
+          "practical_rejection_D": 0.0,
+          "practical_rejection_J": 0.0,
+          "simultaneous_noncoverage": 0.0
+        }
+      ],
+      "support_X": [
+        0.0,
+        0.0
+      ]
+    },
+    "low_variance_positive": {
+      "probability_high": 0.5,
+      "results": [
+        {
+          "any_true_null_rejection": 0.0,
+          "assumed_mean_D": 0.1875,
+          "assumed_mean_J": 0.375,
+          "independent_splits": 4,
+          "noncoverage_D": 0.0,
+          "noncoverage_J": 0.0,
+          "practical_rejection_D": 0.0,
+          "practical_rejection_J": 0.0,
+          "simultaneous_noncoverage": 0.0
+        },
+        {
+          "any_true_null_rejection": 0.0,
+          "assumed_mean_D": 0.1875,
+          "assumed_mean_J": 0.375,
+          "independent_splits": 12,
+          "noncoverage_D": 0.0,
+          "noncoverage_J": 0.0,
+          "practical_rejection_D": 0.0,
+          "practical_rejection_J": 0.0,
+          "simultaneous_noncoverage": 0.0
+        },
+        {
+          "any_true_null_rejection": 0.0,
+          "assumed_mean_D": 0.1875,
+          "assumed_mean_J": 0.375,
+          "independent_splits": 20,
+          "noncoverage_D": 0.0,
+          "noncoverage_J": 0.0,
+          "practical_rejection_D": 0.0,
+          "practical_rejection_J": 0.0,
+          "simultaneous_noncoverage": 0.0
+        },
+        {
+          "any_true_null_rejection": 0.0,
+          "assumed_mean_D": 0.1875,
+          "assumed_mean_J": 0.375,
+          "independent_splits": 100,
+          "noncoverage_D": 0.0,
+          "noncoverage_J": 0.0,
+          "practical_rejection_D": 0.0,
+          "practical_rejection_J": 0.0,
+          "simultaneous_noncoverage": 0.0
+        },
+        {
+          "any_true_null_rejection": 0.0,
+          "assumed_mean_D": 0.1875,
+          "assumed_mean_J": 0.375,
+          "independent_splits": 1000,
+          "noncoverage_D": 0.0,
+          "noncoverage_J": 0.0,
+          "practical_rejection_D": 1.0,
+          "practical_rejection_J": 1.0,
+          "simultaneous_noncoverage": 0.0
+        }
+      ],
+      "support_X": [
+        0.125,
+        0.25
+      ]
+    },
+    "skewed_zero_mean": {
+      "probability_high": 0.2,
+      "results": [
+        {
+          "any_true_null_rejection": 0.0,
+          "assumed_mean_D": 0.0,
+          "assumed_mean_J": 0.0,
+          "independent_splits": 4,
+          "noncoverage_D": 0.0,
+          "noncoverage_J": 0.0,
+          "practical_rejection_D": 0.0,
+          "practical_rejection_J": 0.0,
+          "simultaneous_noncoverage": 0.0
+        },
+        {
+          "any_true_null_rejection": 2.007039999999996e-07,
+          "assumed_mean_D": 0.0,
+          "assumed_mean_J": 0.0,
+          "independent_splits": 12,
+          "noncoverage_D": 2.007039999999996e-07,
+          "noncoverage_J": 2.007039999999996e-07,
+          "practical_rejection_D": 4.096000000000007e-09,
+          "practical_rejection_J": 2.007039999999996e-07,
+          "simultaneous_noncoverage": 2.007039999999996e-07
+        },
+        {
+          "any_true_null_rejection": 1.802763973427199e-07,
+          "assumed_mean_D": 0.0,
+          "assumed_mean_J": 0.0,
+          "independent_splits": 20,
+          "noncoverage_D": 1.802763973427199e-07,
+          "noncoverage_J": 1.802763973427199e-07,
+          "practical_rejection_D": 1.380346494976002e-08,
+          "practical_rejection_J": 1.802763973427199e-07,
+          "simultaneous_noncoverage": 1.802763973427199e-07
+        },
+        {
+          "any_true_null_rejection": 4.215178771198456e-09,
+          "assumed_mean_D": 0.0,
+          "assumed_mean_J": 0.0,
+          "independent_splits": 100,
+          "noncoverage_D": 4.6827397528152846e-08,
+          "noncoverage_J": 4.6827397528152846e-08,
+          "practical_rejection_D": 3.2461484970239424e-10,
+          "practical_rejection_J": 4.215178771198456e-09,
+          "simultaneous_noncoverage": 4.6827397528152846e-08
+        },
+        {
+          "any_true_null_rejection": 5.520243168717795e-13,
+          "assumed_mean_D": 0.0,
+          "assumed_mean_J": 0.0,
+          "independent_splits": 1000,
+          "noncoverage_D": 7.663410554570413e-09,
+          "noncoverage_J": 7.663410554570413e-09,
+          "practical_rejection_D": 6.242506334594708e-18,
+          "practical_rejection_J": 5.520243168717795e-13,
+          "simultaneous_noncoverage": 7.663410554570413e-09
+        }
+      ],
+      "support_X": [
+        -0.25,
+        1.0
+      ]
+    },
+    "zero_null_max_variance": {
+      "probability_high": 0.5,
+      "results": [
+        {
+          "any_true_null_rejection": 0.0,
+          "assumed_mean_D": 0.0,
+          "assumed_mean_J": 0.0,
+          "independent_splits": 4,
+          "noncoverage_D": 0.0,
+          "noncoverage_J": 0.0,
+          "practical_rejection_D": 0.0,
+          "practical_rejection_J": 0.0,
+          "simultaneous_noncoverage": 0.0
+        },
+        {
+          "any_true_null_rejection": 0.00024414062500000054,
+          "assumed_mean_D": 0.0,
+          "assumed_mean_J": 0.0,
+          "independent_splits": 12,
+          "noncoverage_D": 0.0004882812500000011,
+          "noncoverage_J": 0.0004882812500000011,
+          "practical_rejection_D": 0.00024414062500000054,
+          "practical_rejection_J": 0.00024414062500000054,
+          "simultaneous_noncoverage": 0.0004882812500000011
+        },
+        {
+          "any_true_null_rejection": 0.0012884140014648396,
+          "assumed_mean_D": 0.0,
+          "assumed_mean_J": 0.0,
+          "independent_splits": 20,
+          "noncoverage_D": 0.002576828002929679,
+          "noncoverage_J": 0.002576828002929679,
+          "practical_rejection_D": 0.00020122528076171845,
+          "practical_rejection_J": 0.0012884140014648396,
+          "simultaneous_noncoverage": 0.002576828002929679
+        },
+        {
+          "any_true_null_rejection": 0.0004368599184561911,
+          "assumed_mean_D": 0.0,
+          "assumed_mean_J": 0.0,
+          "independent_splits": 100,
+          "noncoverage_D": 0.0035176417229701488,
+          "noncoverage_J": 0.0035176417229701488,
+          "practical_rejection_D": 0.00020438858371340447,
+          "practical_rejection_J": 0.0004368599184561911,
+          "simultaneous_noncoverage": 0.0035176417229701488
+        },
+        {
+          "any_true_null_rejection": 8.252493527525636e-05,
+          "assumed_mean_D": 0.0,
+          "assumed_mean_J": 0.0,
+          "independent_splits": 1000,
+          "noncoverage_D": 0.0032525998131642964,
+          "noncoverage_J": 0.0032525998131642964,
+          "practical_rejection_D": 2.956998937554655e-06,
+          "practical_rejection_J": 8.252493527525636e-05,
+          "simultaneous_noncoverage": 0.0032525998131642964
+        }
+      ],
+      "support_X": [
+        -1.0,
+        1.0
+      ]
+    }
+  },
+  "schema": "tacit.confirmatory-ood-synthetic.v0.1",
+  "scope": "Synthetic assumed distributions only; no model data or sample-size adequacy claim",
+  "source_sha256": "2a3e414e30a218b7ee25d0d2df9a047a58f83f5f0f3ee2b2f47783a4837b2d8f"
+}
