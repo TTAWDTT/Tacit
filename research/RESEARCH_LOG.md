@@ -1,5 +1,16 @@
 # Research log
 
+## 2026-09-30 - Test crossover transfer with a Mistral tokenizer
+
+- **Question:** does the Qwen3 compact-fields/JSON crossover at `d=24` persist under an independent tokenizer family, and does the exact location transfer?
+- **Research/source:** inspected the official Mistral-7B-Instruct-v0.3 tokenizer artifact at immutable Hugging Face revision `adadfb3fbae87ecc77cd5bf2c3318434d5da04cf`; froze P21a–P21c and dimensions `d∈{4,10}∪{20,…,40}` across `V∈{2,4,8,10}` before cost counting. Downloaded only its 1,961,548-byte tokenizer file into project `.cache`; SHA-256 `e553af6fff7d7ad76e830608b218c5c0b0822998d5a1a96099a74cd3c1cb1a49`.
+- **Method:** tokenize 92×16 exact synthetic runner fixtures per three conditions with the same `tokenizers` library and Qwen content boundary. Hash-chain the Mistral artifact, preregistration, previous Qwen confirmation, runner, codec, card, and audit script.
+- **Results:** P21a and P21c supported; P21b falsified. Mistral's first non-positive card-minus-JSON difference is `d=28`, versus Qwen's `d=24`. At each `V`, Mistral is +16 at `d=20`, +8 at `d=24`, zero at `d=28`, and −24 at `d=40`. On every shared setting, Mistral's difference is exactly 9 tokens above Qwen's. In the dense region Mistral follows `56−2d` versus Qwen `47−2d`; both are invariant to `V` on these fixtures. The fixed-symbol arm remains more expensive than JSON in all Mistral cells and rises with `V`.
+- **Mechanistic accounting:** at `d=24,V=2`, Mistral card-vs-JSON deltas are +60 instruction, −50 receiver-input context, and −2 ideal sender-output tokens (net +8). Qwen deltas are +50, −25, and −26 (net −1). Thus standalone output savings obscure a different receiver-context cost allocation; the receiver echo materially affects the total.
+- **Change:** add the reproducible tokenizer-transfer auditor and data, report the preregistration failure without moving the threshold, and extend Theory §23.
+- **Verification/resources:** tokenizer size/hash and preregistration/prior-sweep hash links match; all 92 settings were emitted. The tokenizer-only count took about 15 seconds. No model weights, inference endpoint, server, or GPU were used.
+- **Limit / interpretation:** one additional tokenizer supports the direction of a dimensional crossover but falsifies the precise Qwen location. This is content-token arithmetic under synthetic prompts, not Mistral model execution, cross-model decoding, task success, provider billing, or a general scaling law. Chat templates are excluded; other model families remain untested.
+
 ## 2026-09-30 - Densely confirm the tokenizer-specific cost crossover
 
 - **Question:** where does the previously exploratory compact-fields/JSON cost sign change occur, and is it stable over the four tested cardinalities?
