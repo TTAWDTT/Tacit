@@ -2,7 +2,7 @@
 
 The layer distinction used in this project is documented in [Protocol layers and comparability](PROTOCOL_LAYERS_AND_COMPARABILITY_2026_09.md): interaction policy, content representation, and transport/system protocol are separate experimental factors. In particular, Agora/ProtocolBench/DALA are important adjacent system baselines but do not by themselves test which semantic message representation an LLM should use.
 
-**Research date:** 2026-09-29. This evolving map is not a systematic review. Claims that set experiment boundaries are linked to source-level audits; reported empirical values remain attributed until independently reproduced.
+**Research date:** 2026-09-30. This evolving map is not a systematic review. Claims that set experiment boundaries are linked to source-level audits; reported empirical values remain attributed until independently reproduced.
 
 ## Directly relevant: representations and formats
 
@@ -39,6 +39,8 @@ This directly challenges any claim that Tacit is the first to learn adaptive mes
 OPRO iteratively generates candidate solutions from prior candidates and their measured scores; its prompt-optimization experiments report gains over human-written instructions on several benchmarks. A later study focused on smaller optimizers reports limited effectiveness when model capability is weak and recommends direct, explicit instructions as a robust low-cost baseline. This establishes iterative prompt search as prior art, while warning that a small local model may be a poor optimizer and that search calls must be measured. It also shows why merely asking one model to invent instructions is not the same as optimizing them.
 
 For v0.4, the training-only inducer can now propose either compact symbolic candidates or ordinary-English prompt candidates. The latter must communicate the complete tuple in natural prose and cannot use abbreviations, codewords, JSON, or tables. A complete validation set may retain a Pareto shortlist, but this is one-shot hypothesis generation followed by held-out model selection—not OPRO's iterative score-feedback loop. Do not call the English family "optimized" until a preregistered search procedure is executed and its cumulative generator, validation, and selection costs are charged. AutoForm remains a separate prompt-selected-format baseline, and the fixed English instruction remains unoptimized.
+
+MIPRO/MIPROv2 is a particularly relevant prompt-optimization baseline for that gap: it uses task/program-aware instruction proposals, can optionally bootstrap demonstrations, and searches candidate prompt combinations against a downstream metric. The official implementation allows instruction-only optimization by disabling both demonstration types. PDO (Findings ACL 2026) adds a bounded dueling-bandit prompt-selection method, but its reported preference signal comes from an LLM judge; on Tacit's exact-scored fixture, the exact task evaluator is the better-grounded primary objective. Neither method is a message language by itself. Before a representation-superiority claim, compare against a train-only iterative NL prompt search whose output is frozen on validation and scored once on untouched test clusters, with optimization and deployment costs included. Keep few-shot optimization as a separately charged adaptive-system arm. See the detailed [optimized-NL baseline audit](PROMPT_OPTIMIZATION_NL_BASELINE_AUDIT_V0_1.md).
 
 ### Pei et al. (2026), *When LLMs Develop Languages: Symbolic Communication for Efficient Multi-Agent Reasoning* (CLSR), ICML 2026
 
