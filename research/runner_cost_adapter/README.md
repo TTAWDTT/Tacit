@@ -57,8 +57,8 @@ local_compute_cost, fee or arbitrary token axes) reject before reservation/POST.
 The other role's zeros mean this single POST makes no call to that role, not that
 its endpoint is free. Observational timing and unknown compute costs cannot be
 promoted to enforced budget dimensions. All supported policy axes appear in each Charge. Ledger upper bounds remain conservative
-and non-refundable; actual usage is separate. Raw HTTP responses are stored as
-bytes, including malformed/error responses. Incomplete chunked reads preserve bounded
+and non-refundable; actual usage is separate. HTTP response-body bytes before JSON parsing (transfer framing excluded) are
+stored, including malformed/error responses. Incomplete chunked reads preserve bounded
 partial response-body bytes, HTTP status and an explicit truncation flag, while
 usage stays unknown and the ledger halts. Response headers/credentials are not
 stored. New observational columns migrate an existing receipt table without
@@ -210,9 +210,46 @@ in place without a ledger reset.
 Both targeted tests failed at the original code before fixing it (all three
 unsupported-axis subcases entered the fake transport; incomplete response was
 null). Added five test methods cover these failures, explicit distinct peers,
-partial-byte bounds and legacy receipt migration. Revised author validation:
+partial-byte bounds and legacy receipt migration. First correction author validation:
 23/23 adapter tests, 86/86 combined (23+37+26), compileall and whitespace checks.
 This is author evidence pending fixed-head independent re-review. The review also
 confirmed six related cumulative/failure/no-retry/template/receipt checks; existing
 tests continue to pass. No real model call or complete endpoint qualification is
 claimed. CI status is reported separately in the PR, not inferred from tests.
+
+## Incremental HTTP framing boundary correction
+
+Review of head `323d00ad805424396b73745b8d4e74a634a25d2a` closed unsupported-axis P1,
+but found three residual P2 cases. Bulk HTTPResponse.read(amount) discarded short
+chunk payloads and did not require Content-Length exhaustion. New real HTTP tests
+first failed at that head: `5\r\nabc` saved empty instead of abc;
+`3\r\nabc\r\n5\r\ndef` saved abc instead of abcdef; valid JSON with declared
+Content-Length ten bytes too large was accepted as success.
+
+The transport now incrementally reads the buffered response-body stream, saving
+each returned payload segment immediately. It validates declared Content-Length,
+chunk size lines, chunk delimiters, terminal zero chunk and final trailer CRLF.
+Short payload, framing failure or read error raises PartialHTTPRead with retained
+bounded payload, HTTP status and a reason code. The ledger halts, actual usage
+remains unknown and later POSTs are blocked even if the retained body is valid JSON.
+Complete fixed-length and chunked response controls still produce valid receipts.
+Unsupported/ambiguous transfer framing is rejected. Legal EOF-delimited bodies
+remain supported without claiming a declared length.
+
+Evidence bounds: incomplete-read evidence is at most max_response_bytes; oversize
+responses retain at most max_response_bytes+1 (one explicit limit sentinel) and
+are rejected. Only payload bytes actually returned by the stream are saved;
+chunk size/delimiter/trailer bytes and HTTP headers are not saved. Bytes not exposed
+by the socket library, not yet read at the cap, or lost inside an underlying I/O
+operation are not reconstructed. This is bounded decoded-body evidence, not a
+capture of all original HTTP/TCP bytes. Exception.partial is not appended because
+it may be framing data or repeat previously returned bytes.
+
+Six new test methods use real local HTTP fake services for all three reproduced
+cases, complete fixed-length/chunked controls, the size cap, and missing final
+trailer termination. The prior bulk-read mock was adapted to the incremental
+buffer boundary. Author validation: 29/29 adapter tests and 92/92 combined
+(29+37+26), compileall and whitespace checks passed. The prior 86 tests are retained;
+counts overlap. No models or endpoint qualification. New exact head and independent
+boundary re-review status are recorded in PR8; author passes are not independent
+acceptance, and CI remains a separate reported fact.

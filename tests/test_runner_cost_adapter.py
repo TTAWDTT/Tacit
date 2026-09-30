@@ -7,6 +7,7 @@ import tempfile
 import sqlite3
 import base64
 import http.client
+import io
 from unittest.mock import patch
 import threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -142,6 +143,66 @@ class AdapterTests(unittest.TestCase):
             finally:ledger.close()
         finally:server.shutdown();server.server_close();t.join()
 
+    def check_wire_response(self, make_wire, *, expected_partial=None, response_limit=8192):
+        owner=self
+        class Handler(BaseHTTPRequestHandler):
+            def log_message(self,*args):pass
+            def do_POST(inner):
+                body=inner.rfile.read(int(inner.headers['Content-Length']))
+                _,valid=owner.transport(body,owner.contract)
+                headers,wire=make_wire(valid)
+                inner.send_response(200)
+                for k,v in headers.items():inner.send_header(k,str(v))
+                inner.end_headers();inner.wfile.write(wire);inner.wfile.flush()
+                inner.close_connection=True
+        server=HTTPServer(('127.0.0.1',0),Handler)
+        t=threading.Thread(target=server.serve_forever,daemon=True);t.start()
+        try:
+            contract=replace(self.contract,endpoint=f'http://127.0.0.1:{server.server_port}/v1/chat/completions',max_response_bytes=response_limit)
+            axes={a:100000 for a in ('request_body_utf8_bytes','response_body_utf8_bytes','model_requests')}
+            for a in ('input_tokens','output_tokens'):axes['receiver:'+contract.identity+':'+a]=100000
+            ledger=Ledger(self.root/('wire-'+str(server.server_port)+'.sqlite'),Policy(per_request=axes,cumulative=axes,max_calls=2))
+            try:
+                c=GuardedChatModel(ledger=ledger,contract=contract,role='receiver',event_prefix='wire',binding='fixture',phase='train',count_prompt=self.counter,count_text=self.text_counter)
+                if expected_partial is None:
+                    self.assertEqual(c.complete([dict(role='user',content='x')]).text,self.response_text)
+                    self.assertEqual(ledger.snapshot()[0]['status'],'success')
+                    self.assertFalse(receipts(ledger)[0]['response_truncated'])
+                else:
+                    with self.assertRaises(GateError):c.complete([dict(role='user',content='x')])
+                    evidence=receipts(ledger)[0]
+                    raw=base64.b64decode(evidence['response_base64'])
+                    if callable(expected_partial):self.assertTrue(expected_partial(raw))
+                    else:self.assertEqual(raw,expected_partial)
+                    self.assertTrue(evidence['response_truncated'])
+                    self.assertEqual(evidence['http_status'],200)
+                    self.assertEqual(ledger.snapshot()[0]['status'],'halted')
+                    self.assertIsNone(ledger.snapshot()[0]['actual'])
+                    before=owner.transport_calls
+                    with self.assertRaises(GateError):c.complete([dict(role='user',content='x')])
+                    self.assertEqual(owner.transport_calls,before)
+            finally:ledger.close()
+        finally:server.shutdown();server.server_close();t.join()
+
+    def test_short_first_chunk_keeps_received_bytes(self):
+        self.check_wire_response(lambda valid:({'Transfer-Encoding':'chunked'},b'5\r\nabc'),expected_partial=b'abc')
+
+    def test_short_later_chunk_keeps_all_returned_body_bytes(self):
+        self.check_wire_response(lambda valid:({'Transfer-Encoding':'chunked'},b'3\r\nabc\r\n5\r\ndef'),expected_partial=b'abcdef')
+
+    def test_short_content_length_valid_json_cannot_succeed(self):
+        self.check_wire_response(lambda valid:({'Content-Length':len(valid)+10},valid),expected_partial=lambda raw:json.loads(raw)['model']=='fixture-model')
+
+    def test_complete_length_and_complete_chunked_controls(self):
+        self.check_wire_response(lambda valid:({'Content-Length':len(valid)},valid))
+        self.check_wire_response(lambda valid:({'Transfer-Encoding':'chunked'},f'{len(valid):x}\r\n'.encode()+valid+b'\r\n0\r\n\r\n'))
+
+    def test_response_size_limit_uses_bounded_evidence(self):
+        self.check_wire_response(lambda valid:({'Content-Length':300},b'x'*300),expected_partial=lambda raw:len(raw)==33,response_limit=32)
+
+    def test_missing_final_trailer_terminator_cannot_succeed(self):
+        self.check_wire_response(lambda valid:({'Transfer-Encoding':'chunked'},f'{len(valid):x}\r\n'.encode()+valid+b'\r\n0\r\n'),expected_partial=lambda raw:json.loads(raw)['model']=='fixture-model')
+
     def test_explicit_peer_contract_axes_only(self):
         peer=replace(self.contract,endpoint='http://127.0.0.1:9877/v1/chat/completions')
         axes={a:100000 for a in ('request_body_utf8_bytes','response_body_utf8_bytes','model_requests')}
@@ -163,20 +224,22 @@ class AdapterTests(unittest.TestCase):
     def test_partial_evidence_is_bounded_and_has_no_headers(self):
         class Response:
             status=200
-            def read(inner,size):raise http.client.IncompleteRead(b'x'*10000)
+            fp=io.BufferedReader(io.BytesIO(b'x'*10000))
+            def getheader(inner,name):return '10010' if name=='Content-Length' else None
+            def close(inner):inner.fp.close()
         class Connection:
             def request(inner,*args,**kwargs):pass
             def getresponse(inner):return Response()
             def close(inner):pass
         with patch('experiments.runner_cost_adapter.adapter.http.client.HTTPConnection',return_value=Connection()):
-            with self.assertRaises(PartialHTTPRead):
+            with self.assertRaises(GateError):
                 self.client(transport=LoopbackHTTP()).complete([dict(role='user',content='x')])
         r=receipts(self.ledger)[0]
-        self.assertEqual(len(base64.b64decode(r['response_base64'])),self.contract.max_response_bytes)
+        self.assertEqual(len(base64.b64decode(r['response_base64'])),self.contract.max_response_bytes+1)
         self.assertEqual(r['http_status'],200)
         self.assertTrue(r['response_truncated'])
-        self.assertEqual(r['receipt']['actual_usage'],None)
-        self.assertNotIn('headers',r['receipt'])
+        self.assertIsNone(self.ledger.snapshot()[0]['actual'])
+        self.assertNotIn('headers',r)
 
     def test_legacy_receipt_columns_migrate_without_reset(self):
         self.ledger.db.execute('CREATE TABLE model_receipts (event_id TEXT PRIMARY KEY, request BLOB NOT NULL, request_sha256 TEXT NOT NULL, contract TEXT NOT NULL, response BLOB, receipt TEXT, error TEXT)')

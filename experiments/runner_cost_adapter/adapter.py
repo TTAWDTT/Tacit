@@ -65,9 +65,9 @@ class Contract:
 
 class PartialHTTPRead(GateError):
     """Bounded response-body evidence only; never carries headers/credentials."""
-    def __init__(self, status, partial):
+    def __init__(self, status, partial, reason='incomplete_http_body'):
         super().__init__('incomplete HTTP response body')
-        self.status, self.partial = status, partial
+        self.status, self.partial, self.reason = status, partial, reason
 
 
 class LoopbackHTTP:
@@ -83,13 +83,98 @@ class LoopbackHTTP:
         try:
             conn.request('POST', u.path, body=body, headers={'Content-Type': 'application/json'})
             response = conn.getresponse()
-            # Preserve limited error/over-cap bytes for audit; caller halts the ledger.
             try:
-                return response.status, response.read(contract.max_response_bytes + 1)
-            except http.client.IncompleteRead as exc:
-                raise PartialHTTPRead(response.status, exc.partial[:contract.max_response_bytes]) from exc
+                return response.status, self.read_body(response, contract.max_response_bytes)
+            finally:
+                response.close()
         finally:
             conn.close()
+
+
+    @staticmethod
+    def read_body(response, limit):
+        """Incremental decoded-body evidence; framing/headers are NOT saved.
+
+        HTTPResponse.read(amount) can discard short chunk payloads or silently
+        accept short Content-Length. Read the buffered stream incrementally and
+        verify declared framing ourselves. Never infer bytes not returned by fp.
+        At most limit+1 body bytes are held (one over-limit sentinel).
+        """
+        body = bytearray()
+        fp = response.fp
+
+        def fail(reason):
+            raise PartialHTTPRead(response.status, bytes(body[:limit]), reason)
+
+        def line():
+            value = fp.readline(8193)
+            if len(value) > 8192 or not value.endswith(b'\r\n'):
+                fail('incomplete_or_invalid_chunk_framing')
+            return value
+
+        def framing_bytes(n):
+            value = bytearray()
+            while len(value) < n:
+                part = fp.read1(n - len(value))
+                if not part:
+                    fail('incomplete_chunk_delimiter')
+                value.extend(part)
+            return bytes(value)
+
+        def payload(n=None):
+            while n is None or n > 0:
+                want = min(4096, limit + 1 - len(body))
+                if n is not None:
+                    want = min(want, n)
+                part = fp.read1(want)
+                if not part:
+                    if n is not None:
+                        fail('incomplete_declared_body')
+                    return False
+                body.extend(part)
+                if len(body) > limit:
+                    return True
+                if n is not None:
+                    n -= len(part)
+            return False
+
+        try:
+            transfer = response.getheader('Transfer-Encoding')
+            length = response.getheader('Content-Length')
+            if transfer is not None:
+                if transfer.lower().strip() != 'chunked' or length is not None:
+                    fail('unsupported_or_ambiguous_transfer_framing')
+                while True:
+                    size_text = line()[:-2].split(b';', 1)[0]
+                    if not size_text or any(c not in b'0123456789abcdefABCDEF' for c in size_text):
+                        fail('invalid_chunk_size')
+                    size = int(size_text, 16)
+                    if size == 0:
+                        trailer_size = 0
+                        while True:
+                            trailer = line()
+                            trailer_size += len(trailer)
+                            if trailer_size > 8192:
+                                fail('trailer_limit_exceeded')
+                            if trailer == b'\r\n':
+                                return bytes(body)
+                    if payload(size):
+                        return bytes(body)
+                    if framing_bytes(2) != b'\r\n':
+                        fail('invalid_chunk_delimiter')
+            if length is not None:
+                if not length.isascii() or not length.isdigit():
+                    fail('invalid_content_length')
+                payload(int(length))
+            else:
+                payload()  # Valid EOF-delimited HTTP body; no length claim.
+            return bytes(body)
+        except PartialHTTPRead:
+            raise
+        except (OSError, http.client.HTTPException) as exc:
+            # Only accumulated, actually-returned payload is evidence. Exception
+            # partial may be framing data; never append or fabricate it.
+            raise PartialHTTPRead(response.status, bytes(body[:limit]), 'body_read_error') from exc
 
 
 class GuardedChatModel:
@@ -216,7 +301,7 @@ class GuardedChatModel:
             except PartialHTTPRead as exc:
                 evidence = dict(http_status=exc.status, response_truncated=True,
                     partial_body_bytes=len(exc.partial), actual_usage=None,
-                    transport_boundary='HTTP response body only; headers excluded', http_read_error='IncompleteRead')
+                    transport_boundary='HTTP response body only; headers excluded', http_read_error=exc.reason)
                 self.ledger.db.execute('UPDATE model_receipts SET response=?,http_status=?,response_truncated=1,receipt=?,error=? WHERE event_id=?',
                     (exc.partial, exc.status, json.dumps(evidence), type(exc).__name__, event_id))
                 raise
