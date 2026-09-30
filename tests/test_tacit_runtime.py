@@ -379,6 +379,22 @@ class TacitRuntimeTests(unittest.TestCase):
         self.assertEqual(report["groups"][0]["channel"]["wire_bytes"]["observed_sum"],
                          transmission.total_application_bytes)
 
+    def test_frame_measure_matches_send_without_opening_a_socket(self) -> None:
+        received = []
+        channel = LocalTCPFrameChannel(lambda metadata, body: received.append((metadata, body)))
+        kwargs = {
+            "protocol_id": "measure-frame-v1", "round_number": 1,
+            "sender": "S1", "recipient": "R", "media_type": "application/octet-stream",
+            "encoding": "identity", "payload_metadata": {"codec": "fixed-width-test"},
+        }
+        measured = channel.measure(b"\x05", **kwargs)
+        self.assertEqual(received, [])
+        with channel:
+            delivered = channel.send(b"\x05", **kwargs)
+        self.assertEqual(received[0][1], b"\x05")
+        self.assertEqual(measured, delivered)
+        self.assertEqual(measured.total_application_bytes, len(b"\x05") + measured.framing_bytes)
+
     def test_frame_channel_rejects_invalid_metadata_and_callback_errors(self) -> None:
         with LocalTCPFrameChannel(lambda _metadata, _payload: None, max_frame_bytes=128) as channel:
             with self.assertRaisesRegex(ValueError, "JSON values"):

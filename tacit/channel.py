@@ -337,6 +337,32 @@ class LocalTCPFrameChannel:
         self._thread.start()
         return self
 
+    def measure(
+        self,
+        payload: bytes,
+        *,
+        protocol_id: str,
+        round_number: int,
+        sender: str,
+        recipient: str,
+        media_type: str = "application/octet-stream",
+        encoding: str = "identity",
+        payload_metadata: dict[str, Any] | None = None,
+    ) -> FrameTransmission:
+        """Measure an opaque frame exactly without opening a socket."""
+        _header, transmission = _prepare_frame(
+            payload,
+            protocol_id=protocol_id,
+            round_number=round_number,
+            sender=sender,
+            recipient=recipient,
+            media_type=media_type,
+            encoding=encoding,
+            payload_metadata=payload_metadata,
+            max_frame_bytes=self._max_frame_bytes,
+        )
+        return transmission
+
     def __exit__(self, exc_type: Any, exc: Any, traceback: Any) -> None:
         if self._server is not None:
             self._server.shutdown()
@@ -360,32 +386,17 @@ class LocalTCPFrameChannel:
     ) -> FrameTransmission:
         if self._server is None:
             raise RuntimeError("channel is not running")
-        _validate_frame_fields(protocol_id, round_number, sender, recipient, media_type, encoding)
-        if not isinstance(payload, bytes):
-            raise ValueError("payload must be bytes")
-        if payload_metadata is not None and not isinstance(payload_metadata, dict):
-            raise ValueError("payload_metadata must be an object")
-        details = dict(payload_metadata or {})
-        reserved = {"schema", "protocol_id", "round", "sender", "recipient", "payload_length"}
-        if reserved.intersection(details):
-            raise ValueError("payload_metadata contains reserved frame fields")
-        metadata = {
-            "schema": FRAME_SCHEMA,
-            "protocol_id": protocol_id,
-            "round": round_number,
-            "sender": sender,
-            "recipient": recipient,
-            "media_type": media_type,
-            "encoding": encoding,
-            "payload_length": len(payload),
-            "payload_metadata": details,
-        }
-        try:
-            header = json.dumps(metadata, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
-        except (TypeError, ValueError) as exc:
-            raise ValueError("payload_metadata must contain JSON values") from exc
-        if len(header) + len(payload) > self._max_frame_bytes:
-            raise ValueError("frame exceeds max_frame_bytes")
+        header, transmission = _prepare_frame(
+            payload,
+            protocol_id=protocol_id,
+            round_number=round_number,
+            sender=sender,
+            recipient=recipient,
+            media_type=media_type,
+            encoding=encoding,
+            payload_metadata=payload_metadata,
+            max_frame_bytes=self._max_frame_bytes,
+        )
         prefix = struct.pack("!I", len(header))
         host, port = self.address
         with socket.create_connection((host, port), timeout=self._timeout_seconds) as client:
@@ -394,17 +405,7 @@ class LocalTCPFrameChannel:
             client.shutdown(socket.SHUT_WR)
             if client.recv(1) != b"\x01":
                 raise RuntimeError("receiver callback failed or did not acknowledge delivery")
-        return FrameTransmission(
-            payload=payload,
-            protocol_id=protocol_id,
-            round_number=round_number,
-            sender=sender,
-            recipient=recipient,
-            media_type=media_type,
-            encoding=encoding,
-            framing_bytes=len(prefix) + len(header) + 1,
-            payload_metadata=details,
-        )
+        return transmission
 
 
 def _recv_exact(sock: socket.socket, size: int) -> bytes:
@@ -454,6 +455,59 @@ def _prepare_message(
         framing_bytes=framing_bytes,
     )
     return body, transmission
+
+
+def _prepare_frame(
+    payload: bytes,
+    *,
+    protocol_id: str,
+    round_number: int,
+    sender: str,
+    recipient: str,
+    media_type: str,
+    encoding: str,
+    payload_metadata: dict[str, Any] | None,
+    max_frame_bytes: int,
+) -> tuple[bytes, FrameTransmission]:
+    """Build one opaque frame and partition payload from exact app framing."""
+    _validate_frame_fields(protocol_id, round_number, sender, recipient, media_type, encoding)
+    if not isinstance(payload, bytes):
+        raise ValueError("payload must be bytes")
+    if payload_metadata is not None and not isinstance(payload_metadata, dict):
+        raise ValueError("payload_metadata must be an object")
+    details = dict(payload_metadata or {})
+    reserved = {"schema", "protocol_id", "round", "sender", "recipient", "payload_length"}
+    if reserved.intersection(details):
+        raise ValueError("payload_metadata contains reserved frame fields")
+    metadata = {
+        "schema": FRAME_SCHEMA,
+        "protocol_id": protocol_id,
+        "round": round_number,
+        "sender": sender,
+        "recipient": recipient,
+        "media_type": media_type,
+        "encoding": encoding,
+        "payload_length": len(payload),
+        "payload_metadata": details,
+    }
+    try:
+        header = json.dumps(metadata, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    except (TypeError, ValueError) as exc:
+        raise ValueError("payload_metadata must contain JSON values") from exc
+    if len(header) + len(payload) > max_frame_bytes:
+        raise ValueError("frame exceeds max_frame_bytes")
+    transmission = FrameTransmission(
+        payload=payload,
+        protocol_id=protocol_id,
+        round_number=round_number,
+        sender=sender,
+        recipient=recipient,
+        media_type=media_type,
+        encoding=encoding,
+        framing_bytes=4 + len(header) + 1,
+        payload_metadata=details,
+    )
+    return header, transmission
 
 
 def _decode_envelope(body: bytes) -> dict[str, Any]:
