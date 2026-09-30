@@ -233,7 +233,7 @@ class OpenAICompatibleClient:
     api_key: str | None = field(default=None, repr=False)
     timeout_seconds: float = 120.0
     max_tokens: int = 512
-    follow_redirects: bool = True
+    follow_redirects: bool = False
     temperature: float | None = None
 
     def complete(self, messages: Sequence[Mapping[str, str]]) -> ChatCompletion:

@@ -568,7 +568,8 @@ class TacitRuntimeTests(unittest.TestCase):
 
         with patch("tacit.runtime.urlopen", return_value=Response()) as open_url:
             client = OpenAICompatibleClient(
-                "http://localhost:8000/v1/", "requested-model", api_key="secret"
+                "http://localhost:8000/v1/", "requested-model", api_key="secret",
+                follow_redirects=True,
             )
             self.assertNotIn("secret", repr(client))
             completion = client.complete([{"role": "user", "content": "hello"}])
@@ -605,7 +606,7 @@ class TacitRuntimeTests(unittest.TestCase):
 
         with patch("tacit.runtime.urlopen", return_value=Response()):
             completion = OpenAICompatibleClient(
-                "http://localhost:8000/v1", "local-qwen"
+                "http://localhost:8000/v1", "local-qwen", follow_redirects=True
             ).complete([{"role": "user", "content": "return a candidate ID"}])
 
         self.assertEqual(completion.text, "candidate-7")
@@ -633,7 +634,7 @@ class TacitRuntimeTests(unittest.TestCase):
         with patch("tacit.runtime.urlopen", return_value=Response()):
             with self.assertRaisesRegex(RuntimeError, "reasoning_content must be text or null"):
                 OpenAICompatibleClient(
-                    "http://localhost:8000/v1", "local-qwen"
+                    "http://localhost:8000/v1", "local-qwen", follow_redirects=True
                 ).complete([{"role": "user", "content": "return a candidate ID"}])
 
     def test_openai_compatible_client_sends_frozen_temperature_when_configured(self) -> None:
@@ -648,7 +649,10 @@ class TacitRuntimeTests(unittest.TestCase):
                 return json.dumps({"model": "m", "choices": [{"message": {"content": "ok"}}]}).encode()
 
         with patch("tacit.runtime.urlopen", return_value=Response()) as open_url:
-            OpenAICompatibleClient("http://localhost:8000/v1", "m", temperature=0.0).complete(
+            OpenAICompatibleClient(
+                "http://localhost:8000/v1", "m", temperature=0.0,
+                follow_redirects=True,
+            ).complete(
                 [{"role": "user", "content": "hello"}]
             )
         request_body = json.loads(open_url.call_args.args[0].data)
@@ -677,7 +681,7 @@ class TacitRuntimeTests(unittest.TestCase):
                 config.update(overrides)
                 OpenAICompatibleClient(**config).complete([])
 
-    def test_loopback_client_can_reject_redirects(self) -> None:
+    def test_loopback_client_rejects_redirects_by_default(self) -> None:
         redirected_requests = []
 
         class RedirectHandler(BaseHTTPRequestHandler):
@@ -710,8 +714,7 @@ class TacitRuntimeTests(unittest.TestCase):
             thread.start()
         try:
             client = OpenAICompatibleClient(
-                f"http://127.0.0.1:{redirect.server_port}/v1", "local-model",
-                follow_redirects=False,
+                f"http://127.0.0.1:{redirect.server_port}/v1", "local-model"
             )
             with self.assertRaisesRegex(RuntimeError, "HTTP 302"):
                 client.complete([{"role": "user", "content": "synthetic prompt"}])
