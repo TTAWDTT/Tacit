@@ -181,6 +181,9 @@ def run_sum_episode(
         })
     syntax_valid_count = sum(row["syntax_valid"] is True for row in sender_messages)
     faithful_count = sum(row["value_faithful"] is True for row in sender_messages)
+    delivered_messages = [row for row in sender_messages if row["delivered"] is True]
+    delivered_syntax_valid_count = sum(row["syntax_valid"] is True for row in delivered_messages)
+    delivered_faithful_count = sum(row["value_faithful"] is True for row in delivered_messages)
     return {
         "protocol_id": result.protocol_id,
         "condition": condition,
@@ -190,10 +193,20 @@ def run_sum_episode(
         "prediction": prediction,
         "exact_success": prediction == sum(values),
         "sender_message_count": len(sender_messages),
+        "sender_generated_message_count": len(sender_messages),
+        "sender_delivered_message_count": len(delivered_messages),
         "sender_syntax_valid_count": syntax_valid_count,
         "sender_value_faithful_count": faithful_count,
         "all_sender_messages_syntax_valid": None if not sender_messages else syntax_valid_count == len(sender_messages),
         "all_sender_values_faithful": None if not sender_messages else faithful_count == len(sender_messages),
+        "sender_delivered_syntax_valid_count": delivered_syntax_valid_count,
+        "sender_delivered_value_faithful_count": delivered_faithful_count,
+        "all_delivered_sender_messages_syntax_valid": (
+            None if not delivered_messages else delivered_syntax_valid_count == len(delivered_messages)
+        ),
+        "all_delivered_sender_values_faithful": (
+            None if not delivered_messages else delivered_faithful_count == len(delivered_messages)
+        ),
         "sender_messages": sender_messages,
         "model_calls": result.model_calls,
         "wire_bytes": result.wire_bytes,

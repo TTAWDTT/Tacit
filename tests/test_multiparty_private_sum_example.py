@@ -2,7 +2,7 @@ import json
 import unittest
 
 from examples.multiparty_private_sum import MESSAGE_FORMATS, _decode_sender_message, run_sum_episode
-from tacit import ChatCompletion
+from tacit import ChatCompletion, LocalTCPMessageChannel
 
 
 def encode_fake_value(message_format, value):
@@ -132,6 +132,41 @@ class MultipartyPrivateSumExampleTests(unittest.TestCase):
         self.assertFalse(result["exact_success"])
         self.assertEqual(result["sender_syntax_valid_count"], 1)
         self.assertEqual(result["sender_value_faithful_count"], 1)
+
+    def test_budget_rejection_separates_generated_from_delivered_message_scores(self):
+        values = [1, 2, 3]
+        senders = [FakeSumAgent(f"S{i + 1}", value) for i, value in enumerate(values)]
+        receiver = FakeSumAgent("R")
+        protocol_id = "private-sum-decimal-v0"
+        channel = LocalTCPMessageChannel(lambda _envelope: None)
+        first_cost = channel.measure(
+            "1", protocol_id=protocol_id, round_number=1, sender="S1", recipient="R",
+        ).total_application_bytes
+        second_minimum = channel.measure(
+            "", protocol_id=protocol_id, round_number=2, sender="S2", recipient="R",
+        ).total_application_bytes
+
+        result = run_sum_episode(
+            values,
+            sender_clients=senders,
+            receiver_client=receiver,
+            wire_budget_bytes=first_cost + second_minimum,
+        )
+
+        self.assertEqual(result["stop_reason"], "wire_budget_exhausted")
+        self.assertEqual(result["model_calls"], 3)  # S1, rejected S2 output, sealed receiver answer
+        self.assertEqual(result["wire_bytes"], first_cost)
+        self.assertEqual(result["sender_generated_message_count"], 2)
+        self.assertEqual(result["sender_delivered_message_count"], 1)
+        self.assertEqual(result["sender_value_faithful_count"], 2)
+        self.assertEqual(result["sender_delivered_value_faithful_count"], 1)
+        self.assertEqual([row["delivered"] for row in result["sender_messages"]], [True, False])
+        self.assertEqual(
+            [row["message"] for row in receiver.calls[0]["visible_transcript"]],
+            ["1"],
+        )
+        self.assertFalse(result["exact_success"])
+        self.assertEqual(senders[2].calls, [])
 
     def test_no_message_and_full_information_are_distinct_controls(self):
         no_message, senders, _receiver = self.run_with_fakes([1, 2], "no_message")
